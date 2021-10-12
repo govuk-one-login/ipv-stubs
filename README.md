@@ -1,7 +1,7 @@
 # Digital Identity IPV Stubs
 `di-ipv-stubs`
 
-This the home for application stubs used be the Identity Proofing and Verification (IPV) system within the GDS digital identity platform, GOV.UK Sign In.
+This is the home for application stubs used be the Identity Proofing and Verification (IPV) system within the GDS digital identity platform, GOV.UK Sign In.
 
 ## Orchestrator Stub
 `di-ipv-orchestrator-stub` [/di-ipv-orchestrator-stub](/di-ipv-orchestrator-stub)
