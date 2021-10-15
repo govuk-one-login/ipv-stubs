@@ -5,7 +5,7 @@ An Orchestrator stub using Spark Java
 
 ## About
 
-THe starting point for manual testing and demonstrating IPV journeys.
+The starting point for manual testing and demonstrating IPV journeys.
 
 ## Environment
 
