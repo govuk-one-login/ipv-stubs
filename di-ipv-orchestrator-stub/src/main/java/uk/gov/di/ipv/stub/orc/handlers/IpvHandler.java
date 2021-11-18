@@ -1,15 +1,5 @@
 package uk.gov.di.ipv.stub.orc.handlers;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JOSEObjectType;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.jwk.source.RemoteJWKSet;
-import com.nimbusds.jose.proc.BadJOSEException;
-import com.nimbusds.jose.proc.DefaultJOSEObjectTypeVerifier;
-import com.nimbusds.jose.proc.JWSVerificationKeySelector;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.proc.DefaultJWTClaimsVerifier;
-import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
@@ -40,11 +30,8 @@ import spark.Route;
 import uk.gov.di.ipv.stub.orc.utils.ViewHelper;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
@@ -75,11 +62,8 @@ public class IpvHandler {
 
     public Route doCallback = (Request request, Response response) -> {
         var authorizationCode = getAuthorizationCode(request);
-        var accessToken = exchangeCodeForToken(authorizationCode);
 
-        if (!isTokenValid(accessToken)) {
-            throw new RuntimeException("token not valid");
-        }
+        var accessToken = exchangeCodeForToken(authorizationCode);
 
         var userInfo = getUserInfo(accessToken);
         var attributes = userInfo.toJSONObject();
@@ -88,11 +72,6 @@ public class IpvHandler {
     };
 
     private AuthorizationCode getAuthorizationCode(Request request) throws ParseException {
-        if (!stateSession.containsKey(request.queryParams("state"))) {
-            logger.error("Returned state does not match");
-            throw new RuntimeException("Returned state does not match the provided one");
-        }
-
         var authorizationResponse = AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
@@ -107,7 +86,7 @@ public class IpvHandler {
 
     private AccessToken exchangeCodeForToken(AuthorizationCode authorizationCode) {
         TokenRequest tokenRequest = new TokenRequest(
-                URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve("/oauth2/token"),
+                URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve("/dev/token"),
                 new ClientID(IPV_CLIENT_ID),
                 new AuthorizationCodeGrant(authorizationCode, URI.create(ORCHESTRATOR_REDIRECT_URL))
         );
@@ -116,7 +95,9 @@ public class IpvHandler {
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
 
         if (tokenResponse instanceof TokenErrorResponse) {
-            logger.error("Failed to get token: " + ((TokenErrorResponse) tokenResponse).getErrorObject());
+            TokenErrorResponse errorResponse = tokenResponse.toErrorResponse();
+            logger.error("Failed to get token: " + errorResponse.getErrorObject());
+            return null;
         }
 
         return tokenResponse
@@ -125,35 +106,9 @@ public class IpvHandler {
                 .getAccessToken();
     }
 
-    public boolean isTokenValid(AccessToken accessToken) throws MalformedURLException {
-        var keySource = new RemoteJWKSet<>(URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve("/.well-known/jwks.json").toURL());
-        var expectedJwsAlgorithm = JWSAlgorithm.RS256;
-        var keySelector = new JWSVerificationKeySelector<>(expectedJwsAlgorithm, keySource);
-        var jwtProcessor = new DefaultJWTProcessor<>();
-
-        jwtProcessor.setJWSTypeVerifier(
-                new DefaultJOSEObjectTypeVerifier<>(new JOSEObjectType("jwt"))
-        );
-
-        jwtProcessor.setJWSKeySelector(keySelector);
-        jwtProcessor.setJWTClaimsSetVerifier(new DefaultJWTClaimsVerifier<>(
-                new JWTClaimsSet.Builder().issuer("urn:di:ipv:ipv-core").build(),
-                new HashSet<>(Arrays.asList("sub", "iat", "exp"))
-        ));
-
-        try {
-            jwtProcessor.process(accessToken.toString(), null);
-        } catch (java.text.ParseException | BadJOSEException | JOSEException e) {
-            logger.error("Invalid JWT token received", e);
-            return false;
-        }
-
-        return true;
-    }
-
     public UserInfo getUserInfo(AccessToken accessToken) {
         var userInfoRequest = new UserInfoRequest(
-                URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve("/oauth2/userinfo"),
+                URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve("/dev/user-identity"),
                 (BearerAccessToken) accessToken
         );
 
