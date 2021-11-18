@@ -11,7 +11,11 @@ The starting point for manual testing and demonstrating IPV journeys.
 
 Variable | Description | Example Value
 --- | --- | --- |
-ORCHESTRATOR_PORT | The port number the orchestrator should run on | `8081` |
+ORCHESTRATOR_PORT          | The port number the orchestrator should run on | `8083` |
+IPV_CLIENT_ID              | The id of the IPV vlient | `some-client-id` |
+IPV_ENDPOINT               | The IPV core-front endpoint | `https://di-ipv-core-front.london.cloudapps.digital/` |
+IPV_BACKCHANNEL_ENDPOINT   | The IPV core-back endpoint | `https://{aws-stage-id}.execute-api.eu-west-2.amazonaws.com/` |
+ORCHESTRATOR_REDIRECT_URL  | The IPV orchestrator stub call back URL | `http://localhost:8083/callback` |
 
 ## Running locally
 
