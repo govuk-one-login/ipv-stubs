@@ -12,3 +12,8 @@ The Orchestrator Stub allows the user to select desired attributes then initiate
 
 On completion of the user journey the Orchestrator Stub receives an authorisation code which it will exchange for an access token and in turn use to access the protected resource in the IPV system. Finally the Orchestrator Stub will display the contents of the protected resource.
 
+## Credential Issuer Stub
+`di-ipv-credential-issuer-stub` [/di-ipv-credential-issuer-stub](/di-ipv-credential-issuer-stub)
+
+The Credential issuer stub allows the user to start an Oauth flow in order to access the credential issuers protected resource.
+
