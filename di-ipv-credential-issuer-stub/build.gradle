@@ -1,0 +1,34 @@
+plugins {
+    id 'idea'
+    id 'application'
+    id 'java'
+}
+
+group 'uk.gov.di.ipv'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 17
+
+dependencies {
+    implementation "com.sparkjava:spark-core:2.9.3",
+        "com.sparkjava:spark-template-mustache:2.7.1",
+        "com.nimbusds:oauth2-oidc-sdk:9.3.1",
+        "org.slf4j:slf4j-simple:1.7.32"
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+
+}
+
+run {
+    debugOptions {
+        enabled = true
+        port = 8084
+        server = true
+        suspend = false
+    }
+}
+
+mainClassName = 'uk.gov.di.ipv.stub.cred.App'
