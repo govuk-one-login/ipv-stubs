@@ -22,5 +22,5 @@ To run locally, you can run the startup script.
 This will first build the project with gradle,
 and after it will attempt to run it.
 
-Once started, visit [http://localhost:8084/authorize](http://localhost:8084/authorize).
-By clicking on the _Generate Auth Code_ button...
+Once started, visit the authorize endpoint with the required query params [http://localhost:8084/authorize?response_type=code&client_id=test&redirect_uri=http://example.com](http://localhost:8084/authorize?response_type=code&client_id=test&redirect_uri=http://example.com).
+By clicking on the _Generate Auth Code_ button you should be redirected to the given redirect_uri with an authentication code as a query param.
