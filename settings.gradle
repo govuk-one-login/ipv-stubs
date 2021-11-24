@@ -1,0 +1,3 @@
+include 'di-ipv-orchestrator-stub'
+
+rootProject.name = 'di-ipv-stubs'
