@@ -15,5 +15,5 @@ On completion of the user journey the Orchestrator Stub receives an authorisatio
 ## Credential Issuer Stub
 `di-ipv-credential-issuer-stub` [/di-ipv-credential-issuer-stub](/di-ipv-credential-issuer-stub)
 
-The Credential issuer stub allows the user to start an Oauth flow in order to access the credential issuers protected resource.
+The Credential Issuer Stub can be used as an endpoint for testing Credential Issuer OAuth flows from the core IPV system. It provides an '/authorize' user endpoint, token exchange and access to a protected resource.
 
