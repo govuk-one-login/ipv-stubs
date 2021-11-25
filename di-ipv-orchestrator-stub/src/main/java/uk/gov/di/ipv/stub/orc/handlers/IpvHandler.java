@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_USER_IDENTITY_PATH;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
@@ -85,8 +87,10 @@ public class IpvHandler {
     }
 
     private AccessToken exchangeCodeForToken(AuthorizationCode authorizationCode) {
+        URI resolve = URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve(IPV_BACKCHANNEL_TOKEN_PATH);
+        logger.info("token url is " + resolve);
         TokenRequest tokenRequest = new TokenRequest(
-                URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve("/dev/token"),
+                resolve,
                 new ClientID(IPV_CLIENT_ID),
                 new AuthorizationCodeGrant(authorizationCode, URI.create(ORCHESTRATOR_REDIRECT_URL))
         );
@@ -108,7 +112,7 @@ public class IpvHandler {
 
     public UserInfo getUserInfo(AccessToken accessToken) {
         var userInfoRequest = new UserInfoRequest(
-                URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve("/dev/user-identity"),
+                URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve(IPV_BACKCHANNEL_USER_IDENTITY_PATH),
                 (BearerAccessToken) accessToken
         );
 
