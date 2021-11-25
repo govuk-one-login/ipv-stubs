@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.stub.cred.validation;
 
+import com.nimbusds.oauth2.sdk.ErrorObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,12 +10,9 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ValidationResult {
     private final boolean valid;
-    private final String errorCode;
-    private final String errorDescription;
+    private final ErrorObject error;
 
-    public ValidationResult(boolean valid) {
-        this.valid = valid;
-        this.errorCode = null;
-        this.errorDescription = null;
+    public static ValidationResult createValidResult() {
+        return new ValidationResult(true, null);
     }
 }

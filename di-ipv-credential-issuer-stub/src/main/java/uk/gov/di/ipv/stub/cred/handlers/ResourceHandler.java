@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import org.eclipse.jetty.http.HttpHeader;
@@ -9,70 +10,62 @@ import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.cred.entity.ProtectedResource;
 import uk.gov.di.ipv.stub.cred.service.ProtectedResourceService;
-import uk.gov.di.ipv.stub.cred.validation.ErrorMessageKeys;
+import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.ResourceBundle;
+import java.util.Objects;
 
 public class ResourceHandler {
 
-    private static final String SESSION_ACCESS_TOKEN_KEY = "accessToken";
-    private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/json";
-    private static final String ERROR_CODE_INVALID_ACCESS_TOKEN = "invalid_token";
-    private static final String ERROR_CODE_MISSING_REQUEST_TOKEN = "missing_request_token";
-    private static final String ERROR_CODE_MISSING_SESSION_TOKEN = "missing_session_token";
-    private static final String ERROR_CODE_UNEXPECTED_ACCESS_TOKEN = "unexpected_access_token";
+    private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/json;charset=UTF-8";
 
     private ProtectedResourceService protectedResourceService;
+    private TokenService tokenService;
 
-    public ResourceHandler(ProtectedResourceService protectedResourceService) {
+    public ResourceHandler(ProtectedResourceService protectedResourceService, TokenService tokenService) {
         this.protectedResourceService = protectedResourceService;
+        this.tokenService = tokenService;
     }
 
     public Route getResource = (Request request, Response response) -> {
         String accessTokenString = request.headers(HttpHeader.AUTHORIZATION.toString());
-        String sessionTokenString = request.session().attribute(SESSION_ACCESS_TOKEN_KEY);
 
-        ValidationResult validationResult = validateAccessToken(accessTokenString, sessionTokenString);
+        ValidationResult validationResult = validateAccessToken(accessTokenString);
 
         if (!validationResult.isValid()) {
-            response.status(HttpServletResponse.SC_BAD_REQUEST);
-            return validationResult.getErrorDescription();
+            response.status(validationResult.getError().getHTTPStatusCode());
+            return validationResult.getError().getDescription();
         }
 
         response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
         response.status(HttpServletResponse.SC_OK);
 
-        ProtectedResource protectedResource = protectedResourceService.getProtectedResource();
+        String resourceId = tokenService.getPayload(accessTokenString);
+        ProtectedResource protectedResource = protectedResourceService.getProtectedResource(resourceId);
+
+        tokenService.revoke(accessTokenString);
+
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writeValueAsString(protectedResource);
     };
 
-
-
-    private ValidationResult validateAccessToken(String accessTokenString, String sessionTokenString) {
-        ResourceBundle resourceBundle = ResourceBundle.getBundle("ErrorMessages");
-
+    private ValidationResult validateAccessToken(String accessTokenString) {
         if (Validator.isNullBlankOrEmpty(accessTokenString)) {
-            return new ValidationResult(false, ERROR_CODE_MISSING_REQUEST_TOKEN, resourceBundle.getString(ErrorMessageKeys.MISSING_REQUEST_TOKEN.getKey()));
+            return new ValidationResult(false, OAuth2Error.INVALID_REQUEST);
         }
 
-        if (Validator.isNullBlankOrEmpty(sessionTokenString)) {
-            return new ValidationResult(false, ERROR_CODE_MISSING_SESSION_TOKEN, resourceBundle.getString(ErrorMessageKeys.MISSING_SESSION_TOKEN.getKey()));
-        }
-
-        if (!accessTokenString.equals(sessionTokenString)) {
-            return new ValidationResult(false, ERROR_CODE_UNEXPECTED_ACCESS_TOKEN, resourceBundle.getString(ErrorMessageKeys.UNEXPECTED_ACCESS_TOKEN.getKey()));
+        if (Objects.isNull(this.tokenService.getPayload(accessTokenString))) {
+            return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
         try {
             AccessToken.parse(accessTokenString);
         } catch (ParseException e) {
-            return new ValidationResult(false, ERROR_CODE_INVALID_ACCESS_TOKEN, resourceBundle.getString(ErrorMessageKeys.INVALID_ACCESS_TOKEN.getKey()));
+            return new ValidationResult(false, OAuth2Error.INVALID_REQUEST);
         }
 
-        return new ValidationResult(true);
+        return ValidationResult.createValidResult();
     }
 }

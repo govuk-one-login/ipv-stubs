@@ -6,9 +6,9 @@ import java.util.Map;
 
 public class ProtectedResourceService {
 
-    public ProtectedResource getProtectedResource() {
+    public ProtectedResource getProtectedResource(String resourceId) {
         Map<String, Object> jsonAttributes = Map.of(
-                "id", "12345",
+                "id", resourceId,
                 "evidenceType", "passport",
                 "evidenceID", "passport-abc-12345"
         );

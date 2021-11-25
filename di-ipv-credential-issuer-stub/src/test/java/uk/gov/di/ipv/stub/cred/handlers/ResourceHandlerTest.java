@@ -7,25 +7,28 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import spark.Request;
 import spark.Response;
-import spark.Session;
 import uk.gov.di.ipv.stub.cred.entity.ProtectedResource;
 import uk.gov.di.ipv.stub.cred.service.ProtectedResourceService;
+import uk.gov.di.ipv.stub.cred.service.TokenService;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ResourceHandlerTest {
-    private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/json";
+    private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/json;charset=UTF-8";
 
     private Response mockResponse;
     private Request mockRequest;
     private ProtectedResourceService mockProtectedResourceService;
-    private Session testSession;
+    private TokenService mockTokenService;
     private ResourceHandler resourceHandler;
     private AccessToken accessToken;
     private ProtectedResource testProtectedResource;
@@ -35,11 +38,10 @@ public class ResourceHandlerTest {
         mockResponse = mock(Response.class);
         mockRequest = mock(Request.class);
         mockProtectedResourceService = mock(ProtectedResourceService.class);
+        mockTokenService = mock(TokenService.class);
 
-        testSession = mock(Session.class);
         accessToken = new BearerAccessToken();
-        when(testSession.attribute("accessToken")).thenReturn("Bearer " + accessToken.getValue());
-        when(mockRequest.session()).thenReturn(testSession);
+        when(mockTokenService.getPayload(accessToken.toAuthorizationHeader())).thenReturn(UUID.randomUUID().toString());
 
         Map<String, Object> jsonAttributes = Map.of(
                 "id", "12345",
@@ -47,14 +49,14 @@ public class ResourceHandlerTest {
                 "evidenceID", "test-passport-abc-12345"
         );
         testProtectedResource = new ProtectedResource(jsonAttributes);
-        when(mockProtectedResourceService.getProtectedResource()).thenReturn(testProtectedResource);
+        when(mockProtectedResourceService.getProtectedResource(anyString())).thenReturn(testProtectedResource);
 
-        resourceHandler = new ResourceHandler(mockProtectedResourceService);
+        resourceHandler = new ResourceHandler(mockProtectedResourceService, mockTokenService);
     }
 
     @Test
     public void shouldReturn200AndProtectedResourceWhenValidRequestReceived() throws Exception {
-        when(mockRequest.headers("Authorization")).thenReturn("Bearer " + accessToken.getValue());
+        when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
 
         String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
 
@@ -66,49 +68,38 @@ public class ResourceHandlerTest {
         assertEquals(testProtectedResource.getJsonAttributes().get("evidenceID"), jsonMap.get("evidenceID"));
         verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
         verify(mockResponse).status(HttpServletResponse.SC_OK);
+        verify(mockTokenService, times(2)).getPayload(accessToken.toAuthorizationHeader());
+        verify(mockTokenService).revoke(accessToken.toAuthorizationHeader());
     }
 
     @Test
     public void shouldReturn400WhenAccessTokenIsNotProvided() throws Exception {
         String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
 
-        assertEquals("an access token must be provided via the Authorization header", result);
+        assertEquals("Invalid request", result);
         verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
     }
 
     @Test
-    public void shouldReturn400WhenSessionAccessTokenIsNotFound() throws Exception {
-        when(mockRequest.headers("Authorization")).thenReturn("Bearer " + accessToken.getValue());
+    public void shouldReturn400WhenIssuedAccessTokenDoesNotMatchRequestAccessToken() throws Exception {
+        when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
 
-        when(testSession.attribute("accessToken")).thenReturn(null);
-
-        String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
-
-        assertEquals("failed to find session token", result);
-        verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
-    }
-
-    @Test
-    public void shouldReturn400WhenSessionAccessTokenDoesNotMatchRequestAccessToken() throws Exception {
-        when(mockRequest.headers("Authorization")).thenReturn("Bearer " + accessToken.getValue());
-
-        when(testSession.attribute("accessToken")).thenReturn("Bearer " + new BearerAccessToken());
+        when(mockTokenService.getPayload(accessToken.toAuthorizationHeader())).thenReturn(null);
 
         String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
 
-        assertEquals("access token from request does not match access token found in session", result);
-        verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
+        assertEquals("Client authentication failed", result);
+        verify(mockResponse).status(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(mockTokenService).getPayload(accessToken.toAuthorizationHeader());
     }
 
     @Test
     public void shouldReturn400WhenRequestAccessTokenIsNotValid() throws Exception {
         when(mockRequest.headers("Authorization")).thenReturn("invalid-token");
 
-        when(testSession.attribute("accessToken")).thenReturn("invalid-token");
-
         String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
 
-        assertEquals("failed to parse the access token", result);
-        verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
+        assertEquals("Client authentication failed", result);
+        verify(mockResponse).status(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }
