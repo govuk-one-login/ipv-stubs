@@ -1,31 +1,39 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
+import com.nimbusds.oauth2.sdk.AuthorizationCode;
+import com.nimbusds.oauth2.sdk.ErrorObject;
+import com.nimbusds.oauth2.sdk.OAuth2Error;
+import com.nimbusds.oauth2.sdk.ResponseType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
+import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.di.ipv.stub.cred.handlers.QueryStringParamConstants.PERMITTED_RESPONSE_TYPE;
-import static uk.gov.di.ipv.stub.cred.handlers.QueryStringParamConstants.QUERY_STRING_PARAM_CLIENT_ID;
-import static uk.gov.di.ipv.stub.cred.handlers.QueryStringParamConstants.QUERY_STRING_PARAM_REDIRECT_URI;
-import static uk.gov.di.ipv.stub.cred.handlers.QueryStringParamConstants.QUERY_STRING_PARAM_RESPONSE_TYPE;
-import static uk.gov.di.ipv.stub.cred.handlers.QueryStringParamConstants.QUERY_STRING_PARAM_STATE;
 
 public class AuthorizeHandlerTest {
 
@@ -33,6 +41,7 @@ public class AuthorizeHandlerTest {
     private Request mockRequest;
     private ViewHelper mockViewHelper;
     private AuthorizeHandler authorizeHandler;
+    private AuthCodeService mockAuthCodeService;
 
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String TEST_REDIRECT_URI = "https://example.com";
@@ -42,8 +51,9 @@ public class AuthorizeHandlerTest {
         mockResponse = mock(Response.class);
         mockRequest = mock(Request.class);
         mockViewHelper = mock(ViewHelper.class);
+        mockAuthCodeService = mock(AuthCodeService.class);
 
-        authorizeHandler = new AuthorizeHandler(mockViewHelper);
+        authorizeHandler = new AuthorizeHandler(mockViewHelper, mockAuthCodeService);
     }
 
     @Test
@@ -51,22 +61,22 @@ public class AuthorizeHandlerTest {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(QUERY_STRING_PARAM_CLIENT_ID, new String[]{"test-client-id"});
-        queryParams.put(QUERY_STRING_PARAM_REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(QUERY_STRING_PARAM_RESPONSE_TYPE, new String[]{PERMITTED_RESPONSE_TYPE});
-        queryParams.put(QUERY_STRING_PARAM_STATE, new String[]{"test-state"});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"test-client-id"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
         String renderOutput = "rendered output";
-        when(mockViewHelper.render(Collections.emptyMap(), "authorize.mustache")).thenReturn(renderOutput);
+        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
 
         String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
 
         assertEquals(renderOutput, result);
-        verify(mockViewHelper).render(Collections.emptyMap(), "authorize.mustache");
+        verify(mockViewHelper).render(anyMap(), eq("authorize.mustache"));
     }
 
     @Test
@@ -85,29 +95,28 @@ public class AuthorizeHandlerTest {
 
     @Test
     void shouldReturn302WithErrorQueryParamsWhenResponseTypeParamNotProvided() throws Exception {
-
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(QUERY_STRING_PARAM_REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
 
-        invokeDoAuthorizeAndMakeAssertsions(queryParams, "?error=invalid_request&error_description=response_type+param+must+be+provided");
+        invokeDoAuthorizeAndMakeAssertions(queryParams, createExpectedErrorQueryStringParams(OAuth2Error.UNSUPPORTED_RESPONSE_TYPE));
     }
 
     @Test
     void shouldReturn302WithErrorQueryParamsWhenResponseTypeParamNotCode() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(QUERY_STRING_PARAM_REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(QUERY_STRING_PARAM_RESPONSE_TYPE, new String[]{"invalid-type"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{"invalid-type"});
 
-        invokeDoAuthorizeAndMakeAssertsions(queryParams, "?error=unsupported_response_type&error_description=response_type+param+must+be+set+to+%27code%27");
+        invokeDoAuthorizeAndMakeAssertions(queryParams, createExpectedErrorQueryStringParams(OAuth2Error.UNSUPPORTED_RESPONSE_TYPE));
     }
 
     @Test
     void shouldReturn302WithErrorQueryParamsWhenClientIdParamNotProvided() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(QUERY_STRING_PARAM_REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(QUERY_STRING_PARAM_RESPONSE_TYPE, new String[]{PERMITTED_RESPONSE_TYPE});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
 
-        invokeDoAuthorizeAndMakeAssertsions(queryParams, "?error=invalid_request&error_description=client_id+param+must+be+provided");
+        invokeDoAuthorizeAndMakeAssertions(queryParams, createExpectedErrorQueryStringParams(OAuth2Error.INVALID_CLIENT));
     }
 
     @Test
@@ -115,10 +124,11 @@ public class AuthorizeHandlerTest {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(QUERY_STRING_PARAM_CLIENT_ID, new String[]{"test-client-id"});
-        queryParams.put(QUERY_STRING_PARAM_REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(QUERY_STRING_PARAM_RESPONSE_TYPE, new String[]{PERMITTED_RESPONSE_TYPE});
-        queryParams.put(QUERY_STRING_PARAM_STATE, new String[]{"test-state"});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"test-client-id"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
+        queryParams.put(RequestParamConstants.RESOURCE_ID, new String[]{UUID.randomUUID().toString()});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
@@ -129,12 +139,23 @@ public class AuthorizeHandlerTest {
         ArgumentCaptor<String> redirectUriCaptor = ArgumentCaptor.forClass(String.class);
         assertNull(result);
         verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
+        verify(mockAuthCodeService).persist(any(AuthorizationCode.class), anyString());
         verify(mockResponse).redirect(redirectUriCaptor.capture());
         assertNotNull(redirectUriCaptor.getValue());
     }
 
+    private String createExpectedErrorQueryStringParams(ErrorObject error) {
+        return createExpectedErrorQueryStringParams(error.getCode(), error.getDescription());
+    }
 
-    private void invokeDoAuthorizeAndMakeAssertsions(Map<String, String[]> queryParams, String expectedErrorCodeAndDescription) throws Exception {
+    private String createExpectedErrorQueryStringParams(String errorCode, String errorDesc) {
+        return "?error="
+                + errorCode
+                + "&error_description="
+                + URLEncoder.encode(errorDesc, StandardCharsets.UTF_8);
+    }
+
+    private void invokeDoAuthorizeAndMakeAssertions(Map<String, String[]> queryParams, String expectedErrorCodeAndDescription) throws Exception {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
