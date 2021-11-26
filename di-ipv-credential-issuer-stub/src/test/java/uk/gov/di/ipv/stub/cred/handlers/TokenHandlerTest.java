@@ -7,6 +7,7 @@ import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.AccessTokenType;
+import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import spark.QueryParamsMap;
@@ -72,6 +73,7 @@ public class TokenHandlerTest {
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
         when(mockAuthCodeService.getPayload(TEST_AUTH_CODE)).thenReturn(resourceId);
+        when(mockTokenService.createBearerAccessToken()).thenReturn(new BearerAccessToken());
 
         String result = (String) tokenHandler.issueAccessToken.handle(mockRequest, mockResponse);
 
@@ -90,7 +92,6 @@ public class TokenHandlerTest {
 
         assertNotNull(accessTokenResponse.getTokens().getAccessToken());
         assertNotNull(accessTokenResponse.getTokens().getRefreshToken());
-        assertEquals(3600, accessTokenResponse.getTokens().getAccessToken().getLifetime());
         assertEquals(AccessTokenType.BEARER, accessTokenResponse.getTokens().getAccessToken().getType());
     }
 

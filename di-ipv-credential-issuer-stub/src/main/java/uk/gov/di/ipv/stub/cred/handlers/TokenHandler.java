@@ -22,7 +22,6 @@ import java.util.Objects;
 
 public class TokenHandler {
 
-    private static final long DEFAULT_ACCESS_TOKEN_TTL_IN_SECS = 3600;
     private TokenService tokenService;
     private AuthCodeService authCodeService;
 
@@ -44,7 +43,7 @@ public class TokenHandler {
             return errorResponse.toJSONObject().toJSONString();
         }
 
-        AccessToken accessToken = new BearerAccessToken(DEFAULT_ACCESS_TOKEN_TTL_IN_SECS, null);
+        AccessToken accessToken = tokenService.createBearerAccessToken();
         AccessTokenResponse tokenResponse = new AccessTokenResponse(new Tokens(accessToken, new RefreshToken()));
 
         String code = requestParams.value(RequestParamConstants.AUTH_CODE);

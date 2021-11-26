@@ -1,11 +1,14 @@
 package uk.gov.di.ipv.stub.cred.service;
 
 import com.nimbusds.oauth2.sdk.token.AccessToken;
+import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TokenService {
+
+    private static final long DEFAULT_ACCESS_TOKEN_TTL_IN_SECS = 3600;
     private final Map<String, String> accessTokens;
 
     public TokenService() {
@@ -22,5 +25,9 @@ public class TokenService {
 
     public void revoke(String authorizationHeaderValue) {
         this.accessTokens.remove(authorizationHeaderValue);
+    }
+
+    public AccessToken createBearerAccessToken() {
+        return new BearerAccessToken(DEFAULT_ACCESS_TOKEN_TTL_IN_SECS, null);
     }
 }
