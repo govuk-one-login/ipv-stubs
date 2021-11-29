@@ -29,13 +29,4 @@ test {
     useJUnitPlatform ()
 }
 
-run {
-    debugOptions {
-        enabled = true
-        port = 8084
-        server = true
-        suspend = false
-    }
-}
-
 mainClassName = 'uk.gov.di.ipv.stub.cred.App'
