@@ -1,18 +1,18 @@
 package uk.gov.di.ipv.stub.cred.service;
 
-import uk.gov.di.ipv.stub.cred.entity.ProtectedResource;
+import uk.gov.di.ipv.stub.cred.domain.Credential;
 
 import java.util.Map;
 
-public class ProtectedResourceService {
+public class CredentialService {
 
-    public ProtectedResource getProtectedResource(String resourceId) {
+    public Credential getCredential(String resourceId) {
         Map<String, Object> jsonAttributes = Map.of(
                 "id", resourceId,
                 "evidenceType", "passport",
                 "evidenceID", "passport-abc-12345"
         );
 
-        return new ProtectedResource(jsonAttributes);
+        return new Credential(jsonAttributes);
     }
 }

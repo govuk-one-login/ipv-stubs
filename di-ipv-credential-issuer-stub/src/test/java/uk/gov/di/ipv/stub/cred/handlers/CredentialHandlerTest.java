@@ -7,8 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import spark.Request;
 import spark.Response;
-import uk.gov.di.ipv.stub.cred.entity.ProtectedResource;
-import uk.gov.di.ipv.stub.cred.service.ProtectedResourceService;
+import uk.gov.di.ipv.stub.cred.domain.Credential;
+import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -16,29 +16,32 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ResourceHandlerTest {
+public class CredentialHandlerTest {
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/json;charset=UTF-8";
 
     private Response mockResponse;
     private Request mockRequest;
-    private ProtectedResourceService mockProtectedResourceService;
+    private CredentialService mockCredentialService;
     private TokenService mockTokenService;
-    private ResourceHandler resourceHandler;
+    private ObjectMapper mockObjectMapper;
+    private CredentialHandler resourceHandler;
     private AccessToken accessToken;
-    private ProtectedResource testProtectedResource;
+    private Credential testProtectedResource;
 
     @BeforeEach
     void setup() {
         mockResponse = mock(Response.class);
         mockRequest = mock(Request.class);
-        mockProtectedResourceService = mock(ProtectedResourceService.class);
+        mockCredentialService = mock(CredentialService.class);
         mockTokenService = mock(TokenService.class);
+        mockObjectMapper = mock(ObjectMapper.class);
 
         accessToken = new BearerAccessToken();
         when(mockTokenService.getPayload(accessToken.toAuthorizationHeader())).thenReturn(UUID.randomUUID().toString());
@@ -48,24 +51,20 @@ public class ResourceHandlerTest {
                 "evidenceType", "test-passport",
                 "evidenceID", "test-passport-abc-12345"
         );
-        testProtectedResource = new ProtectedResource(jsonAttributes);
-        when(mockProtectedResourceService.getProtectedResource(anyString())).thenReturn(testProtectedResource);
+        testProtectedResource = new Credential(jsonAttributes);
+        when(mockCredentialService.getCredential(anyString())).thenReturn(testProtectedResource);
 
-        resourceHandler = new ResourceHandler(mockProtectedResourceService, mockTokenService);
+        resourceHandler = new CredentialHandler(mockCredentialService, mockTokenService, mockObjectMapper);
     }
 
     @Test
     public void shouldReturn200AndProtectedResourceWhenValidRequestReceived() throws Exception {
         when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
+        when(mockObjectMapper.writeValueAsString(any())).thenReturn("test credential");
 
-        String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
+        resourceHandler.getResource.handle(mockRequest, mockResponse);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> jsonMap = objectMapper.readValue(result, Map.class);
-
-        assertEquals(testProtectedResource.getJsonAttributes().get("id"), jsonMap.get("id"));
-        assertEquals(testProtectedResource.getJsonAttributes().get("evidenceType"), jsonMap.get("evidenceType"));
-        assertEquals(testProtectedResource.getJsonAttributes().get("evidenceID"), jsonMap.get("evidenceID"));
+        verify(mockObjectMapper).writeValueAsString(any());
         verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
         verify(mockResponse).status(HttpServletResponse.SC_OK);
         verify(mockTokenService, times(2)).getPayload(accessToken.toAuthorizationHeader());

@@ -8,8 +8,8 @@ import org.eclipse.jetty.http.HttpHeader;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import uk.gov.di.ipv.stub.cred.entity.ProtectedResource;
-import uk.gov.di.ipv.stub.cred.service.ProtectedResourceService;
+import uk.gov.di.ipv.stub.cred.domain.Credential;
+import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -17,16 +17,18 @@ import uk.gov.di.ipv.stub.cred.validation.Validator;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
-public class ResourceHandler {
+public class CredentialHandler {
 
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/json;charset=UTF-8";
 
-    private ProtectedResourceService protectedResourceService;
+    private CredentialService credentialService;
     private TokenService tokenService;
+    private ObjectMapper objectMapper;
 
-    public ResourceHandler(ProtectedResourceService protectedResourceService, TokenService tokenService) {
-        this.protectedResourceService = protectedResourceService;
+    public CredentialHandler(CredentialService credentialService, TokenService tokenService, ObjectMapper objectMapper) {
+        this.credentialService = credentialService;
         this.tokenService = tokenService;
+        this.objectMapper = objectMapper;
     }
 
     public Route getResource = (Request request, Response response) -> {
@@ -43,11 +45,10 @@ public class ResourceHandler {
         response.status(HttpServletResponse.SC_OK);
 
         String resourceId = tokenService.getPayload(accessTokenString);
-        ProtectedResource protectedResource = protectedResourceService.getProtectedResource(resourceId);
+        Credential protectedResource = credentialService.getCredential(resourceId);
 
         tokenService.revoke(accessTokenString);
 
-        ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writeValueAsString(protectedResource);
     };
 
