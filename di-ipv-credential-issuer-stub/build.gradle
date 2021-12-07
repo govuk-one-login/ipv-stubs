@@ -32,4 +32,13 @@ test {
     useJUnitPlatform ()
 }
 
+run {
+    debugOptions {
+        enabled = true
+        port = 5006
+        server = true
+        suspend = false
+    }
+}
+
 mainClassName = 'uk.gov.di.ipv.stub.cred.App'

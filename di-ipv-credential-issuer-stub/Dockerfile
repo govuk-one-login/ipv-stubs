@@ -5,7 +5,8 @@ RUN gradle build --no-daemon
 
 FROM openjdk:17-jdk-slim@sha256:919c92bf200dc4faf73dcd858ac7a495edfafe7552e3a7ad6266c386a34bad60
 
-ENV PORT 8081
+ENV PORT 8084
+ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
 RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser --gid 1001
 RUN mkdir /app
 RUN apt-get update && apt-get install -y curl
@@ -20,6 +21,7 @@ RUN tar -xvf src.tar \
 RUN chown -R appuser:appgroup /app/
 USER appuser
 EXPOSE $PORT
+EXPOSE 5006
 
 ENTRYPOINT ["./src/bin/src"]
 LABEL project="di-ipv-credential-issuer-stub"
