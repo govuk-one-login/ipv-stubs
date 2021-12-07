@@ -26,3 +26,6 @@ Once started, visit the authorize endpoint with the required query params
  [http://localhost:8084/authorize?response_type=code&client_id=test&redirect_uri=http://example.com](http://localhost:8084/authorize?response_type=code&client_id=test&redirect_uri=http://example.com).
 
 By clicking on the _Generate Auth Code_ button you should be redirected to the given redirect_uri with an authentication code as a query param.
+
+### Remote Debugging
+A remote JVM debugger can be attached on port `5006`
