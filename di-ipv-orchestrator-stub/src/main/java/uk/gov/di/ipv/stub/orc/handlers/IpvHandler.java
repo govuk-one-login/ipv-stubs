@@ -18,10 +18,9 @@ import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
-import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
 import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
@@ -68,9 +67,8 @@ public class IpvHandler {
         var accessToken = exchangeCodeForToken(authorizationCode);
 
         var userInfo = getUserInfo(accessToken);
-        var attributes = userInfo.toJSONObject();
 
-        return ViewHelper.renderSet(attributes.entrySet(), "userinfo.mustache");
+        return ViewHelper.renderSet(userInfo.entrySet(), "userinfo.mustache");
     };
 
     private AuthorizationCode getAuthorizationCode(Request request) throws ParseException {
@@ -110,23 +108,19 @@ public class IpvHandler {
                 .getAccessToken();
     }
 
-    public UserInfo getUserInfo(AccessToken accessToken) {
+    public JSONObject getUserInfo(AccessToken accessToken) {
         var userInfoRequest = new UserInfoRequest(
                 URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve(IPV_BACKCHANNEL_USER_IDENTITY_PATH),
                 (BearerAccessToken) accessToken
         );
 
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest.toHTTPRequest());
-        UserInfoResponse userInfoResponse = parseUserInfoResponse(userInfoHttpResponse);
 
-        if (userInfoResponse instanceof UserInfoErrorResponse) {
-            logger.error("Failed to get user info: " + userInfoResponse.toErrorResponse().getErrorObject());
-            throw new RuntimeException("Failed to get user info");
+        try {
+            return userInfoHttpResponse.getContentAsJSONObject();
+        } catch (ParseException e) {
+            throw new RuntimeException("Failed to parse user info response to JSON");
         }
-
-        return userInfoResponse
-                .toSuccessResponse()
-                .getUserInfo();
     }
 
     private HTTPResponse sendHttpRequest(HTTPRequest httpRequest) {
