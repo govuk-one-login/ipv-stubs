@@ -25,7 +25,7 @@ dependencies {
 run {
     debugOptions {
         enabled = true
-        port = 8083
+        port = 5007
         server = true
         suspend = false
     }

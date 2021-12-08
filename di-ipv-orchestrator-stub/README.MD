@@ -32,3 +32,6 @@ to the IPV engine, which will redirect back to the callback URL.
 
 After, the orchestrator sends some HTTP requests to exchange the code
 for a token and to fetch the user info via back-channels.
+
+### Remote Debugging
+A remote JVM debugger can be attached on port `5007`
