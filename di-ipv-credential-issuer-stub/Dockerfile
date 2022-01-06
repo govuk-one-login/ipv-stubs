@@ -1,9 +1,9 @@
-FROM gradle:7.2.0-jdk17@sha256:0619ec0c28cdd0f5f7ba389e7fea845b400cf282dd28b46b4d67f60a009732fa AS build
-COPY --chown=gradle:gradle . /home/gradle/src
+FROM openjdk:17-jdk-slim AS build
+COPY . /home/gradle/src
 WORKDIR /home/gradle/src
-RUN gradle build --no-daemon
+RUN ./gradlew build --no-daemon
 
-FROM openjdk:17-jdk-slim@sha256:919c92bf200dc4faf73dcd858ac7a495edfafe7552e3a7ad6266c386a34bad60
+FROM openjdk:17-jdk-slim
 
 ENV PORT 8084
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
