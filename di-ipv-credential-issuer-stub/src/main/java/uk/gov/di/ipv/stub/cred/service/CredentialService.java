@@ -1,18 +1,17 @@
 package uk.gov.di.ipv.stub.cred.service;
 
-import uk.gov.di.ipv.stub.cred.domain.Credential;
-
+import java.util.HashMap;
 import java.util.Map;
 
 public class CredentialService {
 
-    public Credential getCredential(String resourceId) {
-        Map<String, Object> jsonAttributes = Map.of(
-                "id", resourceId,
-                "evidenceType", "passport",
-                "evidenceID", "passport-abc-12345"
-        );
+    Map<String, Map<String, Object>> credentials = new HashMap<>();
 
-        return new Credential(jsonAttributes);
+    public Map<String, Object> getCredential(String resourceId) {
+        return credentials.get(resourceId);
+    }
+
+    public void persist(Map<String, Object> jsonPayload, String resourceId) {
+        credentials.put(resourceId, jsonPayload);
     }
 }

@@ -15,6 +15,7 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
+import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -37,12 +38,14 @@ public class AuthorizeHandler {
 
 
     private AuthCodeService authCodeService;
+    private CredentialService credentialService;
     private ViewHelper viewHelper;
 
-    public AuthorizeHandler(ViewHelper viewHelper, AuthCodeService authCodeService) {
+    public AuthorizeHandler(ViewHelper viewHelper, AuthCodeService authCodeService, CredentialService credentialService) {
         Objects.requireNonNull(viewHelper);
         this.viewHelper = viewHelper;
         this.authCodeService = authCodeService;
+        this.credentialService = credentialService;
     }
 
     public Route doAuthorize = (Request request, Response response) -> {
@@ -99,7 +102,9 @@ public class AuthorizeHandler {
         response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
         response.redirect(successResponse.toURI().toString());
 
-        this.authCodeService.persist(authorizationCode, queryParamsMap.value(RequestParamConstants.RESOURCE_ID));
+        String resourceId = queryParamsMap.value(RequestParamConstants.RESOURCE_ID);
+        this.authCodeService.persist(authorizationCode, resourceId);
+        this.credentialService.persist(jsonMap, resourceId);
 
         // No content required in response
         return null;
@@ -110,7 +115,7 @@ public class AuthorizeHandler {
         return objectMapper.readValue(payload, Map.class);
     }
 
-    private Map<String, String> verifyGpgAttributes(int activityHistory, int identityFraud, int verification) {
+    private Map<String, String> verifyGpgAttributes(String activityHistory, String identityFraud, String verification) {
         Map<String, String> gpgMap = new HashMap<>();
         gpgMap.put("activityHistory", activityHistory);
         gpgMap.put("identityFraud", identityFraud);

@@ -8,13 +8,13 @@ import org.eclipse.jetty.http.HttpHeader;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 import java.util.Objects;
 
 public class CredentialHandler {
@@ -45,7 +45,7 @@ public class CredentialHandler {
         response.status(HttpServletResponse.SC_OK);
 
         String resourceId = tokenService.getPayload(accessTokenString);
-        Credential protectedResource = credentialService.getCredential(resourceId);
+        Map<String, Object> protectedResource = credentialService.getCredential(resourceId);
 
         tokenService.revoke(accessTokenString);
 
