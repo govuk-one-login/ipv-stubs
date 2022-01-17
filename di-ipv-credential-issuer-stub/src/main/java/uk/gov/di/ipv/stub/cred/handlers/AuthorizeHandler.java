@@ -1,5 +1,7 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationErrorResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationSuccessResponse;
@@ -19,6 +21,7 @@ import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -28,6 +31,10 @@ public class AuthorizeHandler {
 
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String ERROR_CODE_INVALID_REDIRECT_URI = "invalid_request_redirect_uri";
+    private static final String ACTIVITY_HISTORY_PARAM_NAME = "activityHistory";
+    private static final String IDENTITY_FRAUD_PARAM_NAME = "identityFraud";
+    private static final String VERIFICATION_PARAM_NAME = "verification";
+
 
     private AuthCodeService authCodeService;
     private ViewHelper viewHelper;
@@ -70,6 +77,15 @@ public class AuthorizeHandler {
     public Route generateAuthCode = (Request request, Response response) -> {
         QueryParamsMap queryParamsMap = request.queryMap();
 
+        Map<String, Object> jsonMap = verifyJsonPayload(queryParamsMap.value("jsonPayload"));
+        Map<String, String> gpgAttributes = verifyGpgAttributes(
+                queryParamsMap.value(ACTIVITY_HISTORY_PARAM_NAME),
+                queryParamsMap.value(IDENTITY_FRAUD_PARAM_NAME),
+                queryParamsMap.value(VERIFICATION_PARAM_NAME)
+        );
+
+        jsonMap.putAll(gpgAttributes);
+
         AuthorizationCode authorizationCode = new AuthorizationCode();
 
         AuthorizationSuccessResponse successResponse = new AuthorizationSuccessResponse(
@@ -88,6 +104,20 @@ public class AuthorizeHandler {
         // No content required in response
         return null;
     };
+
+    private Map<String, Object> verifyJsonPayload(String payload) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(payload, Map.class);
+    }
+
+    private Map<String, String> verifyGpgAttributes(int activityHistory, int identityFraud, int verification) {
+        Map<String, String> gpgMap = new HashMap<>();
+        gpgMap.put("activityHistory", activityHistory);
+        gpgMap.put("identityFraud", identityFraud);
+        gpgMap.put("verification", verification);
+
+        return gpgMap;
+    }
 
     private ValidationResult validateQueryParams(QueryParamsMap queryParams) {
         String redirectUriValue = queryParams.value(RequestParamConstants.REDIRECT_URI);

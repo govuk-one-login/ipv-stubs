@@ -52,42 +52,42 @@
                 Credential Issuer Stub
             </h1>
         </div>
-        <form method="post">
+        <form method="POST">
             <div class="govuk-form-group">
                 <h1 class="govuk-label-wrapper">
-                    <label class="govuk-label govuk-label--l" for="more-detail">
+                    <label class="govuk-label govuk-label--l" for="jsonPayload">
                         Please supply data in JSON format
                     </label>
                 </h1>
                 <div id="more-detail-hint" class="govuk-hint">
                     { test : example }
                 </div>
-              <textarea class="govuk-textarea" id="more-detail" name="more-detail" rows="5" aria-describedby="more-detail-hint"></textarea>
+              <textarea class="govuk-textarea" id="jsonPayload" name="jsonPayload" rows="5" aria-describedby="more-detail-hint"></textarea>
           </div>
 
           <div class="govuk-form-group">
-              <label class="govuk-label" for="activity-history">
+              <label class="govuk-label" for="activityHistory">
                   Activity history
               </label>
-              <input class="govuk-input govuk-input--width-2" id="activity-history" name="activity-history" type="text">
+              <input class="govuk-input govuk-input--width-2" id="activityHistory" name="activityHistory" type="number">
           </div>
 
           <div class="govuk-form-group">
-              <label class="govuk-label" for="identity-fraud">
+              <label class="govuk-label" for="identityFraud">
                   Indentity fraud
               </label>
-              <input class="govuk-input govuk-input--width-2" id="identity-fraud" name="identity-fraud" type="text">
+              <input class="govuk-input govuk-input--width-2" id="identityFraud" name="identityFraud" type="number">
           </div>
 
           <div class="govuk-form-group">
               <label class="govuk-label" for="verification">
                   Verification
               </label>
-              <input class="govuk-input govuk-input--width-2" id="verification" name="verification" type="text">
+              <input class="govuk-input govuk-input--width-2" id="verification" name="verification" type="number">
           </div>
 
             <input type="hidden" name="resourceId" value="{{resource-id}}">
-            <input class="govuk-button" data-module="govuk-button" type="submit" value="Submit data and generate auth code">
+            <input class="govuk-button" data-module="govuk-button" type="submit" name="submit" value="Submit data and generate auth code">
         </form>  
     </main>
 </div>
