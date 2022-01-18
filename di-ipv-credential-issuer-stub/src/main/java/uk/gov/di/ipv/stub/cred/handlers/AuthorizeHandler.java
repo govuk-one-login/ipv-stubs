@@ -14,6 +14,7 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import uk.gov.di.ipv.stub.cred.error.CriStubException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
@@ -32,10 +33,6 @@ public class AuthorizeHandler {
 
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String ERROR_CODE_INVALID_REDIRECT_URI = "invalid_request_redirect_uri";
-    private static final String ACTIVITY_HISTORY_PARAM_NAME = "activityHistory";
-    private static final String IDENTITY_FRAUD_PARAM_NAME = "identityFraud";
-    private static final String VERIFICATION_PARAM_NAME = "verification";
-
 
     private AuthCodeService authCodeService;
     private CredentialService credentialService;
@@ -72,56 +69,59 @@ public class AuthorizeHandler {
             return null;
         }
 
+        String error = request.attribute("error");
+        boolean hasError = error != null;
+        Map<String, Object> frontendParams = new HashMap<>();
+        frontendParams.put("resource-id", UUID.randomUUID().toString());
+        frontendParams.put("hasError", hasError);
+
+        if (hasError) {
+            frontendParams.put("error", error);
+        }
+
         return viewHelper.render(
-                Map.of("resource-id", UUID.randomUUID().toString()),
+                frontendParams,
                 "authorize.mustache");
     };
 
     public Route generateAuthCode = (Request request, Response response) -> {
         QueryParamsMap queryParamsMap = request.queryMap();
 
-        Map<String, Object> jsonMap = verifyJsonPayload(queryParamsMap.value("jsonPayload"));
-        Map<String, String> gpgAttributes = verifyGpgAttributes(
-                queryParamsMap.value(ACTIVITY_HISTORY_PARAM_NAME),
-                queryParamsMap.value(IDENTITY_FRAUD_PARAM_NAME),
-                queryParamsMap.value(VERIFICATION_PARAM_NAME)
-        );
+        try {
+            Map<String, Object> jsonMap = verifyJsonPayload(queryParamsMap.value("jsonPayload"));
 
-        jsonMap.putAll(gpgAttributes);
+            AuthorizationCode authorizationCode = new AuthorizationCode();
 
-        AuthorizationCode authorizationCode = new AuthorizationCode();
+            AuthorizationSuccessResponse successResponse = new AuthorizationSuccessResponse(
+                    URI.create(queryParamsMap.value(RequestParamConstants.REDIRECT_URI)),
+                    authorizationCode,
+                    null,
+                    State.parse(queryParamsMap.value(RequestParamConstants.STATE)),
+                    ResponseMode.QUERY
+            );
 
-        AuthorizationSuccessResponse successResponse = new AuthorizationSuccessResponse(
-                URI.create(queryParamsMap.value(RequestParamConstants.REDIRECT_URI)),
-                authorizationCode,
-                null,
-                State.parse(queryParamsMap.value(RequestParamConstants.STATE)),
-                ResponseMode.QUERY
-        );
+            response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
+            response.redirect(successResponse.toURI().toString());
 
-        response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
-        response.redirect(successResponse.toURI().toString());
-
-        String resourceId = queryParamsMap.value(RequestParamConstants.RESOURCE_ID);
-        this.authCodeService.persist(authorizationCode, resourceId);
-        this.credentialService.persist(jsonMap, resourceId);
+            String resourceId = queryParamsMap.value(RequestParamConstants.RESOURCE_ID);
+            this.authCodeService.persist(authorizationCode, resourceId);
+            this.credentialService.persist(jsonMap, resourceId);
+        } catch(CriStubException e) {
+            request.attribute("error", e.getMessage());
+            return doAuthorize.handle(request, response);
+        }
 
         // No content required in response
         return null;
     };
 
-    private Map<String, Object> verifyJsonPayload(String payload) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(payload, Map.class);
-    }
-
-    private Map<String, String> verifyGpgAttributes(String activityHistory, String identityFraud, String verification) {
-        Map<String, String> gpgMap = new HashMap<>();
-        gpgMap.put("activityHistory", activityHistory);
-        gpgMap.put("identityFraud", identityFraud);
-        gpgMap.put("verification", verification);
-
-        return gpgMap;
+    private Map<String, Object> verifyJsonPayload(String payload) throws CriStubException {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(payload, Map.class);
+        } catch(JsonProcessingException e) {
+            throw new CriStubException("Invalid JSON", e);
+        }
     }
 
     private ValidationResult validateQueryParams(QueryParamsMap queryParams) {
