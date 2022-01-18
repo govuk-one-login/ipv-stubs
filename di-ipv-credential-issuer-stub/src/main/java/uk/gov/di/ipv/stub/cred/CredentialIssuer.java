@@ -37,7 +37,7 @@ public class CredentialIssuer {
 
     private void initRoutes(){
         Spark.get("/authorize", authorizeHandler.doAuthorize);
-        Spark.post("/authorize", authorizeHandler.generateAuthCode);
+        Spark.post("/authorize", authorizeHandler.generateResponse);
         Spark.post("/token", tokenHandler.issueAccessToken);
         Spark.get("/credential", credentialHandler.getResource);
     }
