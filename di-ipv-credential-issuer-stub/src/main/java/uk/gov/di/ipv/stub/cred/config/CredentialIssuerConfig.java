@@ -2,6 +2,7 @@ package uk.gov.di.ipv.stub.cred.config;
 
 public class CredentialIssuerConfig {
     public static final String PORT = getConfigValue("CREDENTIAL_ISSUER_PORT","8084");
+    public static final String NAME = getConfigValue("CREDENTIAL_ISSUER_NAME","Credential Issuer Stub");
 
     public static final String EVIDENCE_STRENGTH = "strength";
     public static final String EVIDENCE_VALIDITY = "validity";
