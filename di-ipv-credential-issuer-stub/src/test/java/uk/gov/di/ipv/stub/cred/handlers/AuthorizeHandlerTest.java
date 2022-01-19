@@ -10,6 +10,7 @@ import org.mockito.ArgumentCaptor;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
+import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
@@ -36,7 +37,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class AuthorizeHandlerTest {
+class AuthorizeHandlerTest {
 
     private Response mockResponse;
     private Request mockRequest;
@@ -133,12 +134,14 @@ public class AuthorizeHandlerTest {
         queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
         queryParams.put(RequestParamConstants.RESOURCE_ID, new String[]{UUID.randomUUID().toString()});
         queryParams.put(RequestParamConstants.JSON_PAYLOAD, new String[]{"{\"test\": \"test-value\"}"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH, new String[]{"2"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY, new String[]{"3"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
-        String result = (String) authorizeHandler.generateAuthCode.handle(mockRequest, mockResponse);
+        String result = (String) authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
 
         ArgumentCaptor<String> redirectUriCaptor = ArgumentCaptor.forClass(String.class);
         assertNull(result);
@@ -146,6 +149,30 @@ public class AuthorizeHandlerTest {
         verify(mockAuthCodeService).persist(any(AuthorizationCode.class), anyString());
         verify(mockResponse).redirect(redirectUriCaptor.capture());
         assertNotNull(redirectUriCaptor.getValue());
+    }
+
+    @Test
+    void shouldCalldoAuthorizeMethodWhenInvalidJsonPayloadProvided() throws Exception {
+        HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
+
+        Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"test-client-id"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
+        queryParams.put(RequestParamConstants.RESOURCE_ID, new String[]{UUID.randomUUID().toString()});
+        queryParams.put(RequestParamConstants.JSON_PAYLOAD, new String[]{"invalid-json"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH, new String[]{"2"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY, new String[]{"3"});
+        when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
+
+        QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+
+        verify(mockRequest).attribute("error", "Invalid JSON");
+        verify(mockViewHelper).render(anyMap(), eq("authorize.mustache"));
     }
 
     private String createExpectedErrorQueryStringParams(ErrorObject error) {
