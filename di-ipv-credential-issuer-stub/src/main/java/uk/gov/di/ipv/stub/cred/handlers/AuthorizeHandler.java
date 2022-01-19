@@ -107,11 +107,11 @@ public class AuthorizeHandler {
 
             Map<String, Object> gpgMap = generateGpg45Score(
                     CredentialIssuerConfig.getCriType(),
-                    queryParamsMap.value(CredentialIssuerConfig.EVIDENCE_STRENGTH),
-                    queryParamsMap.value(CredentialIssuerConfig.EVIDENCE_VALIDITY),
-                    queryParamsMap.value(CriType.ACTIVITY_CRI_TYPE.value),
-                    queryParamsMap.value(CriType.FRAUD_CRI_TYPE.value),
-                    queryParamsMap.value(CriType.VERIFICATION_CRI_TYPE.value)
+                    queryParamsMap.value(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM),
+                    queryParamsMap.value(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM),
+                    queryParamsMap.value(CredentialIssuerConfig.ACTIVITY_PARAM),
+                    queryParamsMap.value(CredentialIssuerConfig.FRAUD_PARAM),
+                    queryParamsMap.value(CredentialIssuerConfig.VERIFICATION_PARAM)
             );
 
             Map<String, Object> credential = new HashMap<>();
@@ -170,13 +170,13 @@ public class AuthorizeHandler {
         switch (criType) {
             case EVIDENCE_CRI_TYPE -> {
                 Map<String, Object> evidence = new HashMap<>();
-                evidence.put(CredentialIssuerConfig.EVIDENCE_STRENGTH, Integer.parseInt(strengthValue));
-                evidence.put(CredentialIssuerConfig.EVIDENCE_VALIDITY, Integer.parseInt(validityValue));
+                evidence.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, Integer.parseInt(strengthValue));
+                evidence.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, Integer.parseInt(validityValue));
                 gpg45Score.put(criType.value, evidence);
             }
-            case ACTIVITY_CRI_TYPE -> gpg45Score.put(criType.value, Integer.parseInt(activityValue));
-            case FRAUD_CRI_TYPE -> gpg45Score.put(criType.value, Integer.parseInt(fraudValue));
-            case VERIFICATION_CRI_TYPE -> gpg45Score.put(criType.value, Integer.parseInt(verificationValue));
+            case ACTIVITY_CRI_TYPE -> gpg45Score.put(CredentialIssuerConfig.ACTIVITY_PARAM, Integer.parseInt(activityValue));
+            case FRAUD_CRI_TYPE -> gpg45Score.put(CredentialIssuerConfig.FRAUD_PARAM, Integer.parseInt(fraudValue));
+            case VERIFICATION_CRI_TYPE -> gpg45Score.put(CredentialIssuerConfig.VERIFICATION_PARAM, Integer.parseInt(verificationValue));
         }
         return gpg45Score;
     }

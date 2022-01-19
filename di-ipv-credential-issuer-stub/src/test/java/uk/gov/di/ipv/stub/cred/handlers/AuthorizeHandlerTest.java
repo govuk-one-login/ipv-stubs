@@ -134,8 +134,8 @@ class AuthorizeHandlerTest {
         queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
         queryParams.put(RequestParamConstants.RESOURCE_ID, new String[]{UUID.randomUUID().toString()});
         queryParams.put(RequestParamConstants.JSON_PAYLOAD, new String[]{"{\"test\": \"test-value\"}"});
-        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH, new String[]{"2"});
-        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY, new String[]{"3"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, new String[]{"2"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[]{"3"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
@@ -162,8 +162,8 @@ class AuthorizeHandlerTest {
         queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
         queryParams.put(RequestParamConstants.RESOURCE_ID, new String[]{UUID.randomUUID().toString()});
         queryParams.put(RequestParamConstants.JSON_PAYLOAD, new String[]{"invalid-json"});
-        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH, new String[]{"2"});
-        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY, new String[]{"3"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, new String[]{"2"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[]{"3"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
