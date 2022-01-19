@@ -27,7 +27,7 @@ public class CredentialIssuer {
         TokenService tokenService = new TokenService();
         CredentialService credentialService = new CredentialService();
 
-        authorizeHandler = new AuthorizeHandler(new ViewHelper(), authCodeService);
+        authorizeHandler = new AuthorizeHandler(new ViewHelper(), authCodeService, credentialService);
         tokenHandler = new TokenHandler(authCodeService, tokenService);
         credentialHandler = new CredentialHandler(credentialService, tokenService, objectMapper);
 

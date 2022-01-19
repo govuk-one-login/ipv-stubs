@@ -11,6 +11,7 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
+import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,6 +43,7 @@ public class AuthorizeHandlerTest {
     private ViewHelper mockViewHelper;
     private AuthorizeHandler authorizeHandler;
     private AuthCodeService mockAuthCodeService;
+    private CredentialService mockCredentialService;
 
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String TEST_REDIRECT_URI = "https://example.com";
@@ -52,8 +54,9 @@ public class AuthorizeHandlerTest {
         mockRequest = mock(Request.class);
         mockViewHelper = mock(ViewHelper.class);
         mockAuthCodeService = mock(AuthCodeService.class);
+        mockCredentialService = mock(CredentialService.class);
 
-        authorizeHandler = new AuthorizeHandler(mockViewHelper, mockAuthCodeService);
+        authorizeHandler = new AuthorizeHandler(mockViewHelper, mockAuthCodeService, mockCredentialService);
     }
 
     @Test
@@ -129,6 +132,7 @@ public class AuthorizeHandlerTest {
         queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
         queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
         queryParams.put(RequestParamConstants.RESOURCE_ID, new String[]{UUID.randomUUID().toString()});
+        queryParams.put(RequestParamConstants.JSON_PAYLOAD, new String[]{"{\"test\": \"test-value\"}"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);

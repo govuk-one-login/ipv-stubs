@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import spark.Request;
 import spark.Response;
-import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 
@@ -33,7 +32,6 @@ public class CredentialHandlerTest {
     private ObjectMapper mockObjectMapper;
     private CredentialHandler resourceHandler;
     private AccessToken accessToken;
-    private Credential testProtectedResource;
 
     @BeforeEach
     void setup() {
@@ -51,8 +49,7 @@ public class CredentialHandlerTest {
                 "evidenceType", "test-passport",
                 "evidenceID", "test-passport-abc-12345"
         );
-        testProtectedResource = new Credential(jsonAttributes);
-        when(mockCredentialService.getCredential(anyString())).thenReturn(testProtectedResource);
+        when(mockCredentialService.getCredential(anyString())).thenReturn(jsonAttributes);
 
         resourceHandler = new CredentialHandler(mockCredentialService, mockTokenService, mockObjectMapper);
     }

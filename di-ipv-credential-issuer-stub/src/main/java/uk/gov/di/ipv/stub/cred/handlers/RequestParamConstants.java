@@ -8,4 +8,8 @@ public class RequestParamConstants {
     public static final String GRANT_TYPE = "grant_type";
     public static final String AUTH_CODE = "code";
     public static final String RESOURCE_ID = "resourceId";
+    public static final String JSON_PAYLOAD = "jsonPayload";
+    public static final String ACTIVITY_HISTORY = "activityHistory";
+    public static final String IDENTITY_FRAUD = "identityFraud";
+    public static final String VERIFICATION = "verification";
 }

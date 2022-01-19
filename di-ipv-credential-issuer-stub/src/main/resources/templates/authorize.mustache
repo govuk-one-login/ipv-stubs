@@ -52,11 +52,57 @@
                 Credential Issuer Stub
             </h1>
         </div>
-        <h2 class="govuk-heading-l">Test credential</h2>
-        <form method="post">
+
+        {{#hasError}}
+            <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+                <h2 class="govuk-error-summary__title" id="error-summary-title">
+                    There is a problem
+                </h2>
+                <div class="govuk-error-summary__body">
+                    <ul class="govuk-list govuk-error-summary__list">
+                        <li>
+                            <a href="#jsonPayload">The JSON entered is not valid</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        {{/hasError}}
+
+        <form method="POST">
+            {{^hasError}}
+                <div class="govuk-form-group">
+                    <h1 class="govuk-label-wrapper">
+                        <label class="govuk-label govuk-label--l" for="jsonPayload">
+                            Please supply data in JSON format
+                        </label>
+                    </h1>
+                    <div id="more-detail-hint" class="govuk-hint">
+                        { test : example }
+                    </div>
+                  <textarea class="govuk-textarea" id="jsonPayload" name="jsonPayload" rows="5" aria-describedby="more-detail-hint"></textarea>
+                </div>
+            {{/hasError}}
+            {{#hasError}}
+                <div class="govuk-form-group govuk-form-group--error">
+                    <h1 class="govuk-label-wrapper">
+                        <label class="govuk-label govuk-label--l" for="jsonPayload">
+                            Please supply data in JSON format
+                        </label>
+                    </h1>
+                    <div id="more-detail-hint" class="govuk-hint">
+                        { test : example }
+                    </div>
+
+                    <p id="more-detail-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span> {{error}}
+                    </p>
+
+                    <textarea class="govuk-textarea govuk-textarea--error" id="jsonPayload" name="jsonPayload" rows="5" aria-describedby="more-detail-hint more-detail-error"></textarea>
+                </div>
+            {{/hasError}}
             <input type="hidden" name="resourceId" value="{{resource-id}}">
-            <input class="govuk-button" data-module="govuk-button" type="submit" value="Generate Auth Code">
-        </form>
+            <input class="govuk-button" data-module="govuk-button" type="submit" name="submit" value="Submit data and generate auth code">
+        </form>  
     </main>
 </div>
 
