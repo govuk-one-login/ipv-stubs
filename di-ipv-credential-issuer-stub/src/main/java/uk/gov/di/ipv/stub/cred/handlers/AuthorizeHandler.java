@@ -24,6 +24,7 @@ import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ObjectInputFilter;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class AuthorizeHandler {
     private static final String IS_VERIFICATION_TYPE_PARAM = "isVerificationType";
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
+    private static final String CRI_NAME_PARAM = "cri-name";
 
     private AuthCodeService authCodeService;
     private CredentialService credentialService;
@@ -94,6 +96,8 @@ public class AuthorizeHandler {
         if (hasError) {
             frontendParams.put(ERROR_PARAM, error);
         }
+
+        frontendParams.put(CRI_NAME_PARAM, CredentialIssuerConfig.NAME);
 
         return viewHelper.render(
                 frontendParams,
