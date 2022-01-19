@@ -1,4 +1,0 @@
-include 'di-ipv-orchestrator-stub'
-include 'di-ipv-credential-issuer-stub'
-
-rootProject.name = 'di-ipv-stubs'
