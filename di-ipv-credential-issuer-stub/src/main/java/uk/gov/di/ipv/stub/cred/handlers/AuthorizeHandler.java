@@ -50,6 +50,7 @@ public class AuthorizeHandler {
     private static final String IS_ACTIVITY_TYPE_PARAM = "isActivityType";
     private static final String IS_FRAUD_TYPE_PARAM = "isFraudType";
     private static final String IS_VERIFICATION_TYPE_PARAM = "isVerificationType";
+    private static final String SHARED_ATTRIBUTES_PARAM = "sharedAttributes";
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
@@ -99,6 +100,7 @@ public class AuthorizeHandler {
         frontendParams.put(IS_ACTIVITY_TYPE_PARAM, criType.equals(CriType.ACTIVITY_CRI_TYPE));
         frontendParams.put(IS_FRAUD_TYPE_PARAM, criType.equals(CriType.FRAUD_CRI_TYPE));
         frontendParams.put(IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
+        frontendParams.put(SHARED_ATTRIBUTES_PARAM, sharedAttributeJson);
 
         String error = request.attribute(ERROR_PARAM);
         boolean hasError = error != null;
@@ -231,6 +233,7 @@ public class AuthorizeHandler {
                 sharedAttributesJson = gson.toJson(claimsMap);
             } catch (ParseException e) {
                 LOGGER.error("Failed to parse the shared attributes JWT");
+                sharedAttributesJson = "Error: failed to parse shared attribute JWT";
             }
         }
         return sharedAttributesJson;

@@ -53,6 +53,19 @@
             </h1>
         </div>
 
+        {{#sharedAttributes}}
+            <details class="govuk-details" data-module="govuk-details">
+                <summary class="govuk-details__summary">
+                    <span class="govuk-details__summary-text">
+                      Shared Attributes:
+                    </span>
+                </summary>
+                <div class="govuk-details__text">
+                    <pre><code>{{sharedAttributes}}</code></pre>
+                </div>
+            </details>
+        {{/sharedAttributes}}
+
         {{#hasError}}
             <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
                 <h2 class="govuk-error-summary__title" id="error-summary-title">
