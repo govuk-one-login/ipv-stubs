@@ -55,7 +55,42 @@
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
                 <dl class="govuk-summary-list">
-                    {{{ . }}}
+                    {{#data}}
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key">
+                                <span class="govuk-heading-s">Cri Type: {{criType}}</span>
+                            </dt>
+                            <dd class="govuk-summary-list__value">
+                                <details class="govuk-details" data-module="govuk-details">
+                                    <summary class="govuk-details__summary">
+                                        <span class="govuk-details__summary-text">Credential GPG45 Score</span>
+                                    </summary>
+                                    <div class="govuk-details__text">
+                                        {{#gpg45Score}}
+                                            <pre><code>{{gpg45Score}}</code></pre>
+                                        {{/gpg45Score}}
+                                        {{^gpg45Score}}
+                                            <p>No GPG45 score provided with this credential</p>
+                                        {{/gpg45Score}}
+                                    </div>
+                                </details>
+                                <details class="govuk-details" data-module="govuk-details">
+                                    <summary class="govuk-details__summary">
+                                        <span class="govuk-details__summary-text">Credential attributes</span>
+                                    </summary>
+                                    <div class="govuk-details__text">
+                                        <pre><code>{{attributes}}</code></pre>
+                                    </div>
+                                </details>
+                            </dd>
+                        </div>
+                    {{/data}}
+                    {{^data}}
+                        <h3 class="govuk-heading-s">Something went wrong when trying to format the JSON response</h3>
+                        {{#error}}
+                            {{{.}}}
+                        {{/error}}
+                    {{/data}}
                 </dl>
             </div>
         </div>

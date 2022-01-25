@@ -1,5 +1,9 @@
 package uk.gov.di.ipv.stub.orc.handlers;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonParser;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
@@ -17,6 +21,7 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.oauth2.sdk.util.JSONObjectUtils;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
@@ -30,7 +35,9 @@ import uk.gov.di.ipv.stub.orc.utils.ViewHelper;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
@@ -67,8 +74,17 @@ public class IpvHandler {
         var accessToken = exchangeCodeForToken(authorizationCode);
 
         var userInfo = getUserInfo(accessToken);
+        List<Map<String, Object>> mustacheData = new ArrayList<>();
+        Map<String, Object> moustacheDataModel = new HashMap<>();
 
-        return ViewHelper.renderSet(userInfo.entrySet(), "userinfo.mustache");
+        try {
+            mustacheData = buildMustacheData(userInfo);
+            moustacheDataModel.put("data", mustacheData);
+        } catch (ParseException | JsonIOException e) {
+            moustacheDataModel.put("error", userInfo.toJSONString());
+        }
+
+        return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
     };
 
     private AuthorizationCode getAuthorizationCode(Request request) throws ParseException {
@@ -121,6 +137,37 @@ public class IpvHandler {
         } catch (ParseException e) {
             throw new RuntimeException("Failed to parse user info response to JSON");
         }
+    }
+
+    private List<Map<String, Object>> buildMustacheData(JSONObject credentials) throws ParseException {
+        List<Map<String, Object>> moustacheDataModel = new ArrayList<>();
+
+        for (String key : credentials.keySet()) {
+            JSONObject criJson = JSONObjectUtils.getJSONObject(credentials, key);
+
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+            String attributesJson;
+            if (JSONObjectUtils.containsKey(criJson, "attributes")) {
+                attributesJson = gson.toJson(JsonParser.parseString(criJson.getAsString("attributes")));
+            } else {
+                throw new ParseException("Could not find attributes field in JSON");
+            }
+
+            String gpg45ScoreJson = null;
+            if (JSONObjectUtils.containsKey(criJson, "gpg45Score")) {
+                gpg45ScoreJson = gson.toJson(JsonParser.parseString(criJson.getAsString("gpg45Score")));
+            }
+
+            Map<String, Object> criMap = new HashMap<>();
+            criMap.put("attributes", attributesJson);
+            if (gpg45ScoreJson != null) {
+                criMap.put("gpg45Score", gpg45ScoreJson);
+            }
+            criMap.put("criType", key);
+            moustacheDataModel.add(criMap);
+        }
+        return moustacheDataModel;
     }
 
     private HTTPResponse sendHttpRequest(HTTPRequest httpRequest) {
