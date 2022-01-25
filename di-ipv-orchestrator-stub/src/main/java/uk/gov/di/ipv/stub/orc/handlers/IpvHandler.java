@@ -2,8 +2,8 @@ package uk.gov.di.ipv.stub.orc.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
@@ -80,7 +80,7 @@ public class IpvHandler {
         try {
             mustacheData = buildMustacheData(userInfo);
             moustacheDataModel.put("data", mustacheData);
-        } catch (ParseException | JsonIOException e) {
+        } catch (ParseException | JsonSyntaxException e) {
             moustacheDataModel.put("error", userInfo.toJSONString());
         }
 
@@ -139,13 +139,11 @@ public class IpvHandler {
         }
     }
 
-    private List<Map<String, Object>> buildMustacheData(JSONObject credentials) throws ParseException {
+    private List<Map<String, Object>> buildMustacheData(JSONObject credentials) throws ParseException, JsonSyntaxException {
         List<Map<String, Object>> moustacheDataModel = new ArrayList<>();
-
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
         for (String key : credentials.keySet()) {
-            JSONObject criJson = JSONObjectUtils.getJSONObject(credentials, key);
-
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            JSONObject criJson = gson.fromJson(credentials.get(key).toString(), JSONObject.class);
 
             String attributesJson;
             if (JSONObjectUtils.containsKey(criJson, "attributes")) {
