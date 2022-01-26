@@ -2,6 +2,10 @@ package uk.gov.di.ipv.stub.cred.handlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationErrorResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationSuccessResponse;
@@ -10,6 +14,8 @@ import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.id.State;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
@@ -24,14 +30,16 @@ import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.ObjectInputFilter;
 import java.net.URI;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
 public class AuthorizeHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
 
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String ERROR_CODE_INVALID_REDIRECT_URI = "invalid_request_redirect_uri";
@@ -80,6 +88,8 @@ public class AuthorizeHandler {
             // No content required in response
             return null;
         }
+
+        String sharedAttributeJson = getSharedAttributes(queryParamsMap);
 
         CriType criType = CredentialIssuerConfig.getCriType();
 
@@ -205,5 +215,24 @@ public class AuthorizeHandler {
         }
 
         return ValidationResult.createValidResult();
+    }
+
+    private String getSharedAttributes(QueryParamsMap queryParamsMap) {
+        String requestParam = queryParamsMap.value(RequestParamConstants.REQUEST);
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String sharedAttributesJson = null;
+        if (!Validator.isNullBlankOrEmpty(requestParam)) {
+            try {
+                SignedJWT signedJWT = SignedJWT.parse(requestParam);
+
+                JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
+                Map<String, Object> claimsMap = claimsSet.toJSONObject();
+                sharedAttributesJson = gson.toJson(claimsMap);
+            } catch (ParseException e) {
+                LOGGER.error("Failed to parse the shared attributes JWT");
+            }
+        }
+        return sharedAttributesJson;
     }
 }

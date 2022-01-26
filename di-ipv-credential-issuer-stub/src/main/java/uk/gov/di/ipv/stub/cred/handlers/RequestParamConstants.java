@@ -6,6 +6,7 @@ public class RequestParamConstants {
     public static final String REDIRECT_URI = "redirect_uri";
     public static final String STATE = "state";
     public static final String GRANT_TYPE = "grant_type";
+    public static final String REQUEST = "request";
     public static final String AUTH_CODE = "code";
     public static final String RESOURCE_ID = "resourceId";
     public static final String JSON_PAYLOAD = "jsonPayload";

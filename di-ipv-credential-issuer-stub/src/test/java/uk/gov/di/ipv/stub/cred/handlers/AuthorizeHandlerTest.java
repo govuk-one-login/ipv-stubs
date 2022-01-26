@@ -1,5 +1,11 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
@@ -19,8 +25,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -121,6 +130,73 @@ class AuthorizeHandlerTest {
         queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
 
         invokeDoAuthorizeAndMakeAssertions(queryParams, createExpectedErrorQueryStringParams(OAuth2Error.INVALID_CLIENT));
+    }
+
+    @Test
+    void shouldRenderMustacheTemplateWhenValidRequestReceivedWithRequestJWT() throws Exception {
+        HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
+
+        List<String> givenNames = Arrays.asList("Daniel", "Dan", "Danny");
+        List<String> dateOfBirths = Arrays.asList("01/01/1980", "02/01/1980");
+        List<String> addresses = Arrays.asList("{\"line1\":\"\321 Street\",\"postcode\":\"M34 1AA\"");
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .claim("givenNames", givenNames)
+                .claim("dateOfBirths", dateOfBirths)
+                .claim("addresses", addresses)
+                .build();
+
+        SecureRandom random = new SecureRandom();
+        byte[] sharedSecret = new byte[32];
+        random.nextBytes(sharedSecret);
+
+        JWSSigner signer = new MACSigner(sharedSecret);
+
+        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
+
+        signedJWT.sign(signer);
+
+        Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"test-client-id"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
+        queryParams.put(RequestParamConstants.REQUEST, new String[]{signedJWT.serialize()});
+        when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
+
+        QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String renderOutput = "rendered output";
+        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
+
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        assertEquals(renderOutput, result);
+        verify(mockViewHelper).render(anyMap(), eq("authorize.mustache"));
+    }
+
+    @Test
+    void shouldRenderMustacheTemplateWhenValidRequestReceivedWithInvalidRequestJWT() throws Exception {
+        HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
+
+        Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"test-client-id"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
+        queryParams.put(RequestParamConstants.REQUEST, new String[]{"invalid-shared-attributes-JWT"});
+        when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
+
+        QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String renderOutput = "rendered output";
+        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
+
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        assertEquals(renderOutput, result);
+        verify(mockViewHelper).render(anyMap(), eq("authorize.mustache"));
     }
 
     @Test
