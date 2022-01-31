@@ -32,6 +32,7 @@ import uk.gov.di.ipv.stub.cred.validation.Validator;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.text.ParseException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -221,8 +222,23 @@ public class AuthorizeHandler {
 
     private String getSharedAttributes(QueryParamsMap queryParamsMap) {
         String requestParam = queryParamsMap.value(RequestParamConstants.REQUEST);
+        String clientIdParam = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
+
+        if (CredentialIssuerConfig.CLIENT_CONFIG == null) {
+            return "Missing cri stub client configuration env variable";
+        }
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String clientConfigJson =
+                new String(Base64.getDecoder()
+                        .decode(CredentialIssuerConfig.CLIENT_CONFIG));
+        Map<String, Map<String, String>> clientConfig = gson.fromJson(clientConfigJson, Map.class);
+        Map<String, String> client = clientConfig.get(clientIdParam);
+
+        if (client == null) {
+            return "Could not find client configuration details for: " + clientIdParam;
+        }
+
         String sharedAttributesJson = null;
         if (!Validator.isNullBlankOrEmpty(requestParam)) {
             try {
