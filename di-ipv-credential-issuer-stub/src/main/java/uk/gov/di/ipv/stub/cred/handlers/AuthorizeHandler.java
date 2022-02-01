@@ -14,6 +14,7 @@ import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
@@ -32,6 +33,7 @@ import uk.gov.di.ipv.stub.cred.validation.Validator;
 import javax.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.text.ParseException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -221,8 +223,23 @@ public class AuthorizeHandler {
 
     private String getSharedAttributes(QueryParamsMap queryParamsMap) {
         String requestParam = queryParamsMap.value(RequestParamConstants.REQUEST);
+        String clientIdParam = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
+
+        if (StringUtils.isBlank(CredentialIssuerConfig.CLIENT_CONFIG)) {
+            return "Missing cri stub client configuration env variable";
+        }
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String clientConfigJson =
+                new String(Base64.getDecoder()
+                        .decode(CredentialIssuerConfig.CLIENT_CONFIG));
+        Map<String, Map<String, String>> clientConfig = gson.fromJson(clientConfigJson, Map.class);
+        Map<String, String> client = clientConfig.get(clientIdParam);
+
+        if (client == null) {
+            return "Could not find client configuration details for: " + clientIdParam;
+        }
+
         String sharedAttributesJson = null;
         if (!Validator.isNullBlankOrEmpty(requestParam)) {
             try {
