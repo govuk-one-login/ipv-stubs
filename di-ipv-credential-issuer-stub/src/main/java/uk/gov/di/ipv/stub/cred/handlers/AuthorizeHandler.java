@@ -14,6 +14,7 @@ import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
@@ -224,7 +225,7 @@ public class AuthorizeHandler {
         String requestParam = queryParamsMap.value(RequestParamConstants.REQUEST);
         String clientIdParam = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
 
-        if (CredentialIssuerConfig.CLIENT_CONFIG == null) {
+        if (StringUtils.isBlank(CredentialIssuerConfig.CLIENT_CONFIG)) {
             return "Missing cri stub client configuration env variable";
         }
 
