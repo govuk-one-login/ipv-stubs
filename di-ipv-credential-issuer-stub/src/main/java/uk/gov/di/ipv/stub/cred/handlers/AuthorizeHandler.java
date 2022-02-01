@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -30,7 +32,13 @@ import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
 import java.net.URI;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
 import java.util.Base64;
 import java.util.HashMap;
@@ -55,6 +63,7 @@ public class AuthorizeHandler {
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
+    private static final String SIGNING_CERT_PARAM = "signingCert";
 
     private AuthCodeService authCodeService;
     private CredentialService credentialService;
@@ -225,7 +234,7 @@ public class AuthorizeHandler {
         String clientIdParam = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
 
         if (CredentialIssuerConfig.CLIENT_CONFIG == null) {
-            return "Missing cri stub client configuration env variable";
+            return "Error: Missing cri stub client configuration env variable";
         }
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -236,13 +245,18 @@ public class AuthorizeHandler {
         Map<String, String> client = clientConfig.get(clientIdParam);
 
         if (client == null) {
-            return "Could not find client configuration details for: " + clientIdParam;
+            return "Error: Could not find client configuration details for: " + clientIdParam;
         }
 
-        String sharedAttributesJson = null;
+        String sharedAttributesJson;
         if (!Validator.isNullBlankOrEmpty(requestParam)) {
             try {
                 SignedJWT signedJWT = SignedJWT.parse(requestParam);
+
+                if (isInvalidSignature(signedJWT, client)) {
+                    LOGGER.error("JWT signature is invalid");
+                    return "Error: Signature of the shared attribute JWT is not valid";
+                }
 
                 JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
                 Map<String, Object> claimsMap = claimsSet.toJSONObject();
@@ -250,8 +264,27 @@ public class AuthorizeHandler {
             } catch (ParseException e) {
                 LOGGER.error("Failed to parse the shared attributes JWT");
                 sharedAttributesJson = "Error: failed to parse shared attribute JWT";
+            } catch (JOSEException | CertificateException e) {
+                LOGGER.error("Failed to verify the signature of the JWT", e);
+                sharedAttributesJson = "Error: failed to verify the signature of the shared attribute JWT";
             }
+        } else {
+            sharedAttributesJson = "Error: missing 'request' query parameter";
         }
         return sharedAttributesJson;
+    }
+
+    private boolean isInvalidSignature(SignedJWT signedJWT, Map<String, String> client)
+            throws CertificateException, JOSEException {
+        byte[] binaryCertificate =
+                Base64.getDecoder().decode(client.get(SIGNING_CERT_PARAM));
+        CertificateFactory factory = CertificateFactory.getInstance("X.509");
+        Certificate certificate = factory.generateCertificate(new ByteArrayInputStream(binaryCertificate));
+
+        PublicKey publicKey = certificate.getPublicKey();
+        RSASSAVerifier rsassaVerifier =
+                new RSASSAVerifier(
+                        (RSAPublicKey) publicKey);
+        return !signedJWT.verify(rsassaVerifier);
     }
 }
