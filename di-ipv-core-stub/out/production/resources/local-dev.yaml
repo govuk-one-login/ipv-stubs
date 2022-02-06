@@ -1,0 +1,20 @@
+credentialIssuerConfigs:
+  - id: address
+    name: Address CRI
+    authorizeUrl: http://localhost:8084/oauth2/authorize
+    tokenUrl: http://localhost:8084/token
+    credentialUrl: http://localhost:8084/credential
+  - id: kbv
+    name: KBV CRI
+    authorizeUrl: http://localhost:8083/oauth2/authorize
+    tokenUrl: http://localhost:8083/token
+    credentialUrl: http://localhost:8083/credential
+    sendIdentityClaims: true
+  - id: cri-stub
+    name: Stub CRI
+    authorizeUrl: http://localhost:8084/authorize
+    tokenUrl: http://localhost:8084/token
+    credentialUrl: http://localhost:8084/credential
+    sendIdentityClaims: true
+
+
