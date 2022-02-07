@@ -35,9 +35,12 @@ run {
 
 mainClassName = "uk.gov.di.ipv.stub.core.App"
 
-distZip {
-    into(project.name) {
-        from "../../di-ipv-config"
-        include "stubs/di-ipv-core-stub/*"
+distributions {
+    main {
+        contents {
+            from(layout.projectDirectory) {
+          include "config/**"
+        }
+        }
     }
 }
