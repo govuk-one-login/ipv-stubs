@@ -32,7 +32,7 @@ public class CoreStubConfig {
     public static final String CORE_STUB_CLIENT_ID = getConfigValue("CORE_STUB_CLIENT_ID", "ipv-core-stub");
     public static final URI CORE_STUB_REDIRECT_URL = URI.create(getConfigValue("CORE_STUB_REDIRECT_URL", "http://localhost:" + CORE_STUB_PORT + "/callback"));
     public static final int CORE_STUB_MAX_SEARCH_RESULTS = Integer.parseInt(getConfigValue("CORE_STUB_MAX_SEARCH_RESULTS", "200"));
-    public static final String CORE_STUB_USER_DATA_PATH = getConfigValue("CORE_STUB_USER_DATA_PATH", "/app/config/experian-uat-users-large.zip");
+    public static final String CORE_STUB_USER_DATA_PATH = getConfigValue("CORE_STUB_USER_DATA_PATH", "config/experian-uat-users-large.zip");
     public static final String CORE_STUB_CONFIG_BASE64 = getConfigValue("CORE_STUB_CONFIG_BASE64", null);
     public static final byte[] CORE_STUB_KEYSTORE_BASE64 = getConfigValue("CORE_STUB_KEYSTORE_BASE64", null).getBytes();
     public static final String CORE_STUB_KEYSTORE_PASSWORD = getConfigValue("CORE_STUB_KEYSTORE_PASSWORD", null);
