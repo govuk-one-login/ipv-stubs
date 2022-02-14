@@ -88,13 +88,9 @@ public class IpvHandler {
 
             var userInfo = getUserInfo(accessToken);
 
-            try {
-                mustacheData = buildMustacheData(userInfo);
-                moustacheDataModel.put("data", mustacheData);
-            } catch (ParseException | JsonSyntaxException e) {
-                moustacheDataModel.put("error", userInfo.toJSONString());
-            }
-        } catch (OrchestratorStubException e) {
+            mustacheData = buildMustacheData(userInfo);
+            moustacheDataModel.put("data", mustacheData);
+        } catch (OrchestratorStubException | ParseException | JsonSyntaxException e) {
             moustacheDataModel.put("error", e.getMessage());
         }
 
