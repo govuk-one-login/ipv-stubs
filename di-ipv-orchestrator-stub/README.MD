@@ -9,13 +9,18 @@ The starting point for manual testing and demonstrating IPV journeys.
 
 ## Environment
 
-Variable | Description | Example Value
---- | --- | --- |
-ORCHESTRATOR_PORT          | The port number the orchestrator should run on | `8083` |
-IPV_CLIENT_ID              | The id of the IPV vlient | `some-client-id` |
-IPV_ENDPOINT               | The IPV core-front endpoint | `https://di-ipv-core-front.london.cloudapps.digital/` |
-IPV_BACKCHANNEL_ENDPOINT   | The IPV core-back endpoint | `https://{aws-stage-id}.execute-api.eu-west-2.amazonaws.com/` |
-ORCHESTRATOR_REDIRECT_URL  | The IPV orchestrator stub call back URL | `http://localhost:8083/callback` |
+| Variable                            | Description                                                 | Example Value                                                 |
+|-------------------------------------|-------------------------------------------------------------|---------------------------------------------------------------|
+| IPV_ENDPOINT                        | The IPV core-front endpoint                                 | `https://di-ipv-core-front.london.cloudapps.digital/`         |
+| IPV_BACKCHANNEL_ENDPOINT            | The IPV core-back endpoint                                  | `https://{aws-stage-id}.execute-api.eu-west-2.amazonaws.com/` |
+| IPV_BACKCHANNEL_TOKEN_PATH          | The IPV core-back token endpoint path                       | `/dev/token`                                                  |
+| IPV_BACKCHANNEL_USER_IDENTITY_PATH  | The IPV core-back user identity path                        | `/dev/user-identity`                                          |
+| ORCHESTRATOR_CLIENT_ID              | The id of the orch stub                                     | `some-client-id`                                              |
+| ORCHESTRATOR_REDIRECT_URL           | The orch stub call-back url                                 | `http://localhost:8083/callback`                              |
+| ORCHESTRATOR_CLIENT_SIGNING_KEY     | The orch stub private key for its client authentication JWT | `{base64 encoded pkcs8 private key}`                          |
+| ORCHESTRATOR_CLIENT_JWT_EXPIRY_MINS | The expiry time in mins for the orch client auth JWT        | `10`                                                          |
+| PORT                                | The port number the orchestrator should run on              | `8083`                                                        |
+
 
 ## Running locally
 
