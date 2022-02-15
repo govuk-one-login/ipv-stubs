@@ -73,6 +73,7 @@ public class TokenHandlerTest {
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
         when(mockAuthCodeService.getPayload(TEST_AUTH_CODE)).thenReturn(resourceId);
+        when(mockAuthCodeService.getRedirectUrl(TEST_AUTH_CODE)).thenReturn(TEST_REDIRECT_URI);
         when(mockTokenService.createBearerAccessToken()).thenReturn(new BearerAccessToken());
 
         String result = (String) tokenHandler.issueAccessToken.handle(mockRequest, mockResponse);
@@ -178,6 +179,23 @@ public class TokenHandlerTest {
                 queryParams,
                 INVALID_REQUEST_CODE,
                 "Invalid request",
+                HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    @Test
+    void shouldReturn400ResponseWhenRedirectUrlsDoNotMatch() throws Exception {
+        Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(RequestParamConstants.GRANT_TYPE, new String[]{GrantType.AUTHORIZATION_CODE.getValue()});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"test-client-id"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.AUTH_CODE, new String[]{TEST_AUTH_CODE});
+
+        when(mockAuthCodeService.getRedirectUrl(TEST_AUTH_CODE)).thenReturn("https://invalid.example.com");
+
+        invokeIssueAccessTokenAndMakeAssertions(
+                queryParams,
+                INVALID_GRANT_CODE,
+                "Invalid grant",
                 HttpServletResponse.SC_BAD_REQUEST);
     }
 

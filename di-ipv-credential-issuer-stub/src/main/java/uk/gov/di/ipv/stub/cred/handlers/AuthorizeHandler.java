@@ -130,6 +130,7 @@ public class AuthorizeHandler {
 
     public Route generateResponse = (Request request, Response response) -> {
         QueryParamsMap queryParamsMap = request.queryMap();
+
         try {
             Map<String, Object> attributesMap = generateJsonPayload(queryParamsMap.value(JSON_PAYLOAD_PARAM));
 
@@ -174,7 +175,8 @@ public class AuthorizeHandler {
 
     private void persistData(QueryParamsMap queryParamsMap, AuthorizationCode authorizationCode, Map<String, Object> credential) {
         String resourceId = queryParamsMap.value(RequestParamConstants.RESOURCE_ID);
-        this.authCodeService.persist(authorizationCode, resourceId);
+        String redirectUrl = queryParamsMap.value(RequestParamConstants.REDIRECT_URI);
+        this.authCodeService.persist(authorizationCode, resourceId, redirectUrl);
         this.credentialService.persist(credential, resourceId);
     }
 

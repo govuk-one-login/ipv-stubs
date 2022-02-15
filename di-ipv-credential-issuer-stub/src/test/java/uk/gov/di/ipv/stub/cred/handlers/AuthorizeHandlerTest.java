@@ -328,7 +328,7 @@ class AuthorizeHandlerTest {
         ArgumentCaptor<String> redirectUriCaptor = ArgumentCaptor.forClass(String.class);
         assertNull(result);
         verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
-        verify(mockAuthCodeService).persist(any(AuthorizationCode.class), anyString());
+        verify(mockAuthCodeService).persist(any(AuthorizationCode.class), anyString(), eq(TEST_REDIRECT_URI));
         verify(mockResponse).redirect(redirectUriCaptor.capture());
         assertNotNull(redirectUriCaptor.getValue());
     }
