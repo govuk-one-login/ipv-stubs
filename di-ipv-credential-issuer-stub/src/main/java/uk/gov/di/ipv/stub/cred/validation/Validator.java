@@ -1,7 +1,11 @@
 package uk.gov.di.ipv.stub.cred.validation;
 
 import com.nimbusds.oauth2.sdk.ErrorObject;
+import spark.QueryParamsMap;
+import uk.gov.di.ipv.stub.cred.config.ClientConfig;
+import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
+import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,6 +18,8 @@ public class Validator {
     private static final String INVALID_ACTIVITY_VALUES_ERROR_CODE = "1003";
     private static final String INVALID_FRAUD_VALUES_ERROR_CODE = "1004";
     private static final String INVALID_VERIFICATION_VALUES_ERROR_CODE = "1005";
+
+    private static final String REDIRECT_URI_SEPARATOR = ",";
 
     private Validator() {}
 
@@ -59,6 +65,15 @@ public class Validator {
             default:
                 return ValidationResult.createValidResult();
         }
+    }
+
+    public static boolean redirectUrlIsInvalid(QueryParamsMap queryParams) {
+        String redirectUri = queryParams.value(RequestParamConstants.REDIRECT_URI);
+        String clientId = queryParams.value(RequestParamConstants.CLIENT_ID);
+
+        ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientId);
+        List<String> validRedirectUrls = Arrays.asList(clientConfig.getJwtAuthentication().get("validRedirectUrls").split(REDIRECT_URI_SEPARATOR));
+        return !validRedirectUrls.contains(redirectUri);
     }
 
     private static ValidationResult areStringsNullOrEmpty(List<String> values) {
