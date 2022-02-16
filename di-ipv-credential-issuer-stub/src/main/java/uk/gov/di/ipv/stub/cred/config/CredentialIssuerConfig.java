@@ -13,6 +13,8 @@ public class CredentialIssuerConfig {
     public static final String PORT = getConfigValue("CREDENTIAL_ISSUER_PORT","8084");
     public static final String NAME = getConfigValue("CREDENTIAL_ISSUER_NAME","Credential Issuer Stub");
 
+    public static String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
+
     public static final String EVIDENCE_STRENGTH_PARAM = "strength";
     public static final String EVIDENCE_VALIDITY_PARAM = "validity";
     public static final String ACTIVITY_PARAM = "activity";
@@ -22,7 +24,6 @@ public class CredentialIssuerConfig {
     public static Map<String, ClientConfig> CLIENT_CONFIGS;
 
     private static final Gson gson = new Gson();
-    private static final String CLIENT_CONFIG = getConfigValue("CLIENT_CONFIG",null);
     private static final String CREDENTIAL_ISSUER_TYPE_VAR = "CREDENTIAL_ISSUER_TYPE";
 
     private CredentialIssuerConfig() {}
@@ -38,6 +39,12 @@ public class CredentialIssuerConfig {
         return CLIENT_CONFIGS.get(clientId);
     }
 
+    public static void resetClientConfigs() {
+        // For testing purposes only.
+        CLIENT_CONFIGS = null;
+        CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
+    }
+
     private static String getConfigValue(String key, String defaultValue){
         var envValue = System.getenv(key);
         if (envValue == null) {
@@ -48,13 +55,14 @@ public class CredentialIssuerConfig {
     }
 
     private static Map<String, ClientConfig> parseClientConfigs() {
-        if (CLIENT_CONFIG == null) {
+        String client_config = getConfigValue("CLIENT_CONFIG", null);
+        if (client_config == null) {
             return new HashMap<>();
         }
 
         String clientConfigJson =
                 new String(Base64.getDecoder()
-                        .decode(CLIENT_CONFIG));
+                        .decode(client_config));
         Type type = new TypeToken<Map<String, ClientConfig>>() {}.getType();
 
         return gson.fromJson(clientConfigJson, type);

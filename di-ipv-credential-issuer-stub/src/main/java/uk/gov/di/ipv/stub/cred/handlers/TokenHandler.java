@@ -1,41 +1,52 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
-import com.nimbusds.oauth2.sdk.GrantType;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
-import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.oauth2.sdk.token.Tokens;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import uk.gov.di.ipv.stub.cred.config.ClientConfig;
+import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
+import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
+import uk.gov.di.ipv.stub.cred.service.JwtAuthenticationService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.Objects;
 
 public class TokenHandler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TokenHandler.class);
+    private static final String RESPONSE_TYPE = "application/json;charset=UTF-8";
+    private static final String AUTHENTICATION_METHOD = "authenticationMethod";
+    private static final String NONE_AUTHENTICATION_METHOD = "none";
+
     private TokenService tokenService;
     private AuthCodeService authCodeService;
+    private Validator validator;
+    private JwtAuthenticationService jwtAuthenticationService;
 
-    public TokenHandler(AuthCodeService authCodeService, TokenService tokenService) {
+    public TokenHandler(AuthCodeService authCodeService, TokenService tokenService, Validator validator, JwtAuthenticationService jwtAuthenticationService) {
         this.authCodeService = authCodeService;
         this.tokenService = tokenService;
+        this.validator = validator;
+        this.jwtAuthenticationService = jwtAuthenticationService;
     }
 
     public Route issueAccessToken = (Request request, Response response) -> {
         QueryParamsMap requestParams = request.queryMap();
-        ValidationResult validationResult = validateTokenRequest(requestParams);
+        response.type(RESPONSE_TYPE);
 
-        response.type("application/json;charset=UTF-8");
-
+        ValidationResult validationResult = validator.validateTokenRequest(requestParams);
         if (!validationResult.isValid()) {
             TokenErrorResponse errorResponse = new TokenErrorResponse(validationResult.getError());
             response.status(validationResult.getError().getHTTPStatusCode());
@@ -43,9 +54,29 @@ public class TokenHandler {
             return errorResponse.toJSONObject().toJSONString();
         }
 
-        String code = requestParams.value(RequestParamConstants.AUTH_CODE);
+        if (Validator.isNullBlankOrEmpty(requestParams.value(RequestParamConstants.CLIENT_ID))) {
+            try {
+                jwtAuthenticationService.authenticateClient(requestParams);
+            } catch (ClientAuthenticationException e) {
+                LOGGER.error("Failed client JWT authentication: %s", e);
+                TokenErrorResponse errorResponse = new TokenErrorResponse(OAuth2Error.INVALID_CLIENT);
+                response.status(OAuth2Error.INVALID_CLIENT.getHTTPStatusCode());
 
-        var redirectValidationResult = validateRedirectUrlsMatch(
+                return errorResponse.toJSONObject().toJSONString();
+            }
+
+        } else {
+            ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(requestParams.value(RequestParamConstants.CLIENT_ID));
+            String authMethod = clientConfig.getJwtAuthentication().get(AUTHENTICATION_METHOD);
+            if (!authMethod.equals(NONE_AUTHENTICATION_METHOD)) {
+                TokenErrorResponse errorResponse = new TokenErrorResponse(OAuth2Error.INVALID_REQUEST);
+                response.status(OAuth2Error.INVALID_REQUEST.getHTTPStatusCode());
+                return errorResponse.toJSONObject().toJSONString();
+            }
+        }
+
+        String code = requestParams.value(RequestParamConstants.AUTH_CODE);
+        var redirectValidationResult = validator.validateRedirectUrlsMatch(
                 authCodeService.getRedirectUrl(code), requestParams.value(RequestParamConstants.REDIRECT_URI));
 
         if (!redirectValidationResult.isValid()) {
@@ -65,46 +96,4 @@ public class TokenHandler {
         response.status(HttpServletResponse.SC_OK);
         return tokenResponse.toJSONObject().toJSONString();
     };
-
-    private ValidationResult validateTokenRequest(QueryParamsMap requestParams) {
-        String grantTypeValue = requestParams.value(RequestParamConstants.GRANT_TYPE);
-        if (Validator.isNullBlankOrEmpty(grantTypeValue) || !grantTypeValue.equalsIgnoreCase(GrantType.AUTHORIZATION_CODE.getValue())) {
-            return new ValidationResult(false, OAuth2Error.UNSUPPORTED_GRANT_TYPE);
-        }
-
-        String authCodeValue = requestParams.value(RequestParamConstants.AUTH_CODE);
-        if (Validator.isNullBlankOrEmpty(authCodeValue)) {
-            return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
-        }
-        if (Objects.isNull(this.authCodeService.getPayload(authCodeValue))) {
-            return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
-        }
-
-        String redirectUriValue = requestParams.value(RequestParamConstants.REDIRECT_URI);
-        if (Validator.isNullBlankOrEmpty(redirectUriValue)) {
-            return new ValidationResult(false, OAuth2Error.INVALID_REQUEST);
-        }
-
-        String clientIdValue = requestParams.value(RequestParamConstants.CLIENT_ID);
-        if (Validator.isNullBlankOrEmpty(clientIdValue)) {
-            return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
-        }
-        return ValidationResult.createValidResult();
-    }
-
-    private ValidationResult validateRedirectUrlsMatch(String redirectUrlFromAuthEndpoint, String redirectUrlFromTokenEndpoint) {
-        if (Validator.isNullBlankOrEmpty(redirectUrlFromAuthEndpoint) && Validator.isNullBlankOrEmpty(redirectUrlFromTokenEndpoint)) {
-            return ValidationResult.createValidResult();
-        }
-
-        if (Validator.isNullBlankOrEmpty(redirectUrlFromAuthEndpoint) || Validator.isNullBlankOrEmpty(redirectUrlFromTokenEndpoint)) {
-            return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
-        }
-
-        if (!redirectUrlFromAuthEndpoint.equals(redirectUrlFromTokenEndpoint)) {
-            return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
-        }
-
-        return ValidationResult.createValidResult();
-    }
 }

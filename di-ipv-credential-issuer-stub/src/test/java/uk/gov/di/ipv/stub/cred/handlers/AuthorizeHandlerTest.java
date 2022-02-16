@@ -410,6 +410,6 @@ class AuthorizeHandlerTest {
                 KeyFactory.getInstance("RSA")
                         .generatePrivate(
                                 new PKCS8EncodedKeySpec(
-                                        Base64.getDecoder().decode(TestFixtures.PRIVATE_KEY)));
+                                        Base64.getDecoder().decode(TestFixtures.CLIENT_CONFIG_PRIVATE_KEY)));
     }
 }

@@ -8,8 +8,10 @@ import uk.gov.di.ipv.stub.cred.handlers.CredentialHandler;
 import uk.gov.di.ipv.stub.cred.handlers.TokenHandler;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
+import uk.gov.di.ipv.stub.cred.service.JwtAuthenticationService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
+import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 public class CredentialIssuer {
 
@@ -25,10 +27,12 @@ public class CredentialIssuer {
 
         AuthCodeService authCodeService = new AuthCodeService();
         TokenService tokenService = new TokenService();
+        Validator validator = new Validator(authCodeService);
+        JwtAuthenticationService jwtAuthenticationService = new JwtAuthenticationService();
         CredentialService credentialService = new CredentialService();
 
         authorizeHandler = new AuthorizeHandler(new ViewHelper(), authCodeService, credentialService);
-        tokenHandler = new TokenHandler(authCodeService, tokenService);
+        tokenHandler = new TokenHandler(authCodeService, tokenService, validator, jwtAuthenticationService);
         credentialHandler = new CredentialHandler(credentialService, tokenService, objectMapper);
 
         initRoutes();
