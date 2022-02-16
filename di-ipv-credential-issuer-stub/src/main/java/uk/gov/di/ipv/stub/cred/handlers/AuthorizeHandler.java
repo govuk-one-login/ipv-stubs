@@ -16,13 +16,14 @@ import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.id.State;
-import com.nimbusds.oauth2.sdk.util.StringUtils;
+import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.error.CriStubException;
@@ -64,7 +65,8 @@ public class AuthorizeHandler {
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
-    private static final String SIGNING_CERT_PARAM = "signingCert";
+
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     private AuthCodeService authCodeService;
     private CredentialService credentialService;
@@ -129,6 +131,7 @@ public class AuthorizeHandler {
 
     public Route generateResponse = (Request request, Response response) -> {
         QueryParamsMap queryParamsMap = request.queryMap();
+
         try {
             Map<String, Object> attributesMap = generateJsonPayload(queryParamsMap.value(JSON_PAYLOAD_PARAM));
 
@@ -173,7 +176,8 @@ public class AuthorizeHandler {
 
     private void persistData(QueryParamsMap queryParamsMap, AuthorizationCode authorizationCode, Map<String, Object> credential) {
         String resourceId = queryParamsMap.value(RequestParamConstants.RESOURCE_ID);
-        this.authCodeService.persist(authorizationCode, resourceId);
+        String redirectUrl = queryParamsMap.value(RequestParamConstants.REDIRECT_URI);
+        this.authCodeService.persist(authorizationCode, resourceId, redirectUrl);
         this.credentialService.persist(credential, resourceId);
     }
 
@@ -209,22 +213,29 @@ public class AuthorizeHandler {
     }
 
     private ValidationResult validateQueryParams(QueryParamsMap queryParams) {
-        String redirectUriValue = queryParams.value(RequestParamConstants.REDIRECT_URI);
-        if (Validator.isNullBlankOrEmpty(redirectUriValue)) {
-            return new ValidationResult(false, new ErrorObject(
-                    ERROR_CODE_INVALID_REDIRECT_URI,
-                    "redirect_uri param must be provided",
-                    HttpServletResponse.SC_BAD_REQUEST));
-        }
-
         String responseTypeValue = queryParams.value(RequestParamConstants.RESPONSE_TYPE);
         if (Validator.isNullBlankOrEmpty(responseTypeValue) || !responseTypeValue.equals(ResponseType.Value.CODE.getValue())) {
             return new ValidationResult(false, OAuth2Error.UNSUPPORTED_RESPONSE_TYPE);
         }
 
         String clientIdValue = queryParams.value(RequestParamConstants.CLIENT_ID);
-        if (Validator.isNullBlankOrEmpty(clientIdValue)) {
+        if (Validator.isNullBlankOrEmpty(clientIdValue) || CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
+        }
+
+        String redirectUrl = queryParams.value(RequestParamConstants.REDIRECT_URI);
+        if (Validator.isNullBlankOrEmpty(redirectUrl)) {
+            return new ValidationResult(false, new ErrorObject(
+                    ERROR_CODE_INVALID_REDIRECT_URI,
+                    "redirect_uri param must be provided",
+                    HttpServletResponse.SC_BAD_REQUEST));
+        }
+
+        if (Validator.redirectUrlIsInvalid(queryParams)) {
+            return new ValidationResult(false, new ErrorObject(
+                    ERROR_CODE_INVALID_REDIRECT_URI,
+                    "redirect_uri param provided does not match any of the redirect_uri values configured",
+                    HttpServletResponse.SC_BAD_REQUEST));
         }
 
         return ValidationResult.createValidResult();
@@ -234,18 +245,13 @@ public class AuthorizeHandler {
         String requestParam = queryParamsMap.value(RequestParamConstants.REQUEST);
         String clientIdParam = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
 
-        if (StringUtils.isBlank(CredentialIssuerConfig.CLIENT_CONFIG)) {
+        if (MapUtils.isEmpty(CredentialIssuerConfig.CLIENT_CONFIGS)) {
             return "Error: Missing cri stub client configuration env variable";
         }
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String clientConfigJson =
-                new String(Base64.getDecoder()
-                        .decode(CredentialIssuerConfig.CLIENT_CONFIG));
-        Map<String, Map<String, String>> clientConfig = gson.fromJson(clientConfigJson, Map.class);
-        Map<String, String> client = clientConfig.get(clientIdParam);
+        ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdParam);
 
-        if (client == null) {
+        if (clientConfig == null) {
             return "Error: Could not find client configuration details for: " + clientIdParam;
         }
 
@@ -254,7 +260,7 @@ public class AuthorizeHandler {
             try {
                 SignedJWT signedJWT = SignedJWT.parse(requestParam);
 
-                if (isInvalidSignature(signedJWT, client)) {
+                if (isInvalidSignature(signedJWT, clientConfig)) {
                     LOGGER.error("JWT signature is invalid");
                     return "Error: Signature of the shared attribute JWT is not valid";
                 }
@@ -275,10 +281,10 @@ public class AuthorizeHandler {
         return sharedAttributesJson;
     }
 
-    private boolean isInvalidSignature(SignedJWT signedJWT, Map<String, String> client)
+    private boolean isInvalidSignature(SignedJWT signedJWT, ClientConfig clientConfig)
             throws CertificateException, JOSEException {
         byte[] binaryCertificate =
-                Base64.getDecoder().decode(client.get(SIGNING_CERT_PARAM));
+                Base64.getDecoder().decode(clientConfig.getSigningCert());
         CertificateFactory factory = CertificateFactory.getInstance("X.509");
         Certificate certificate = factory.generateCertificate(new ByteArrayInputStream(binaryCertificate));
 

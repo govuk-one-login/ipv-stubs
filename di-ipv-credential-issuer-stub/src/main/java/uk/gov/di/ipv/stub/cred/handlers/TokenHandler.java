@@ -43,10 +43,21 @@ public class TokenHandler {
             return errorResponse.toJSONObject().toJSONString();
         }
 
+        String code = requestParams.value(RequestParamConstants.AUTH_CODE);
+
+        var redirectValidationResult = validateRedirectUrlsMatch(
+                authCodeService.getRedirectUrl(code), requestParams.value(RequestParamConstants.REDIRECT_URI));
+
+        if (!redirectValidationResult.isValid()) {
+            TokenErrorResponse errorResponse = new TokenErrorResponse(redirectValidationResult.getError());
+            response.status(redirectValidationResult.getError().getHTTPStatusCode());
+
+            return errorResponse.toJSONObject().toJSONString();
+        }
+
         AccessToken accessToken = tokenService.createBearerAccessToken();
         AccessTokenResponse tokenResponse = new AccessTokenResponse(new Tokens(accessToken, new RefreshToken()));
 
-        String code = requestParams.value(RequestParamConstants.AUTH_CODE);
         String payloadAssociatedWithCode = authCodeService.getPayload(code);
         authCodeService.revoke(code);
         tokenService.persist(accessToken, payloadAssociatedWithCode);
@@ -78,6 +89,22 @@ public class TokenHandler {
         if (Validator.isNullBlankOrEmpty(clientIdValue)) {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
+        return ValidationResult.createValidResult();
+    }
+
+    private ValidationResult validateRedirectUrlsMatch(String redirectUrlFromAuthEndpoint, String redirectUrlFromTokenEndpoint) {
+        if (Validator.isNullBlankOrEmpty(redirectUrlFromAuthEndpoint) && Validator.isNullBlankOrEmpty(redirectUrlFromTokenEndpoint)) {
+            return ValidationResult.createValidResult();
+        }
+
+        if (Validator.isNullBlankOrEmpty(redirectUrlFromAuthEndpoint) || Validator.isNullBlankOrEmpty(redirectUrlFromTokenEndpoint)) {
+            return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
+        }
+
+        if (!redirectUrlFromAuthEndpoint.equals(redirectUrlFromTokenEndpoint)) {
+            return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
+        }
+
         return ValidationResult.createValidResult();
     }
 }
