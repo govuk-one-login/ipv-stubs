@@ -16,14 +16,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_JWT_EXPIRY_MINS;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_JWT_TTL;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_SIGNING_KEY;
 
 public class JwtHelper {
@@ -56,11 +55,7 @@ public class JwtHelper {
         OffsetDateTime dateTime = OffsetDateTime.now();
         claimsBuilder.claim(
                 JWTClaimNames.EXPIRATION_TIME,
-                Instant.parse(
-                                dateTime.plusMinutes(
-                                                Long.parseLong(ORCHESTRATOR_CLIENT_JWT_EXPIRY_MINS))
-                                        .toString())
-                        .toEpochMilli());
+                dateTime.plusSeconds(Long.parseLong(ORCHESTRATOR_CLIENT_JWT_TTL)).toEpochSecond());
 
         return claimsBuilder.build();
     }

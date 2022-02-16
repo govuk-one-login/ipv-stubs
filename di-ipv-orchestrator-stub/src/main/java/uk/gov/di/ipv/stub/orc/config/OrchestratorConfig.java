@@ -18,8 +18,8 @@ public class OrchestratorConfig {
             getConfigValue("ORCHESTRATOR_REDIRECT_URL", "http://localhost:8083/callback");
     public static final String ORCHESTRATOR_CLIENT_SIGNING_KEY =
             getConfigValue("ORCHESTRATOR_CLIENT_SIGNING_KEY", "missing-key");
-    public static final String ORCHESTRATOR_CLIENT_JWT_EXPIRY_MINS =
-            getConfigValue("ORCHESTRATOR_CLIENT_JWT_EXPIRY_MINS", "15");
+    public static final String ORCHESTRATOR_CLIENT_JWT_TTL =
+            getConfigValue("ORCHESTRATOR_CLIENT_JWT_TTL", "900");
 
     private static String getConfigValue(String key, String defaultValue) {
         var envValue = System.getenv(key);
