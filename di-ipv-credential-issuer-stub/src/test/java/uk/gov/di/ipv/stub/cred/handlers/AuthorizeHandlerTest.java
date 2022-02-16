@@ -116,6 +116,27 @@ class AuthorizeHandlerTest {
 
         Map<String, String[]> queryParams = new HashMap<>();
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{"https://not-registered.example.com"});
+        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
+        when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
+
+        QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        assertEquals("redirect_uri param provided does not match any of the redirect_uri values configured", result);
+        verify(mockViewHelper, never()).render(Collections.emptyMap(), "authorize.mustache");
+        verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
+    }
+
+    @Test
+    void shouldReturn400WhenRedirectUriParamNotRegistered() throws Exception {
+        HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
+
+        Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
         queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
         queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);

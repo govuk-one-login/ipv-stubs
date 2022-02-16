@@ -16,6 +16,7 @@ import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
@@ -222,10 +223,18 @@ public class AuthorizeHandler {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
-        if (Validator.redirectUrlIsInvalid(queryParams)) {
+        String redirectUrl = queryParams.value(RequestParamConstants.REDIRECT_URI);
+        if (Validator.isNullBlankOrEmpty(redirectUrl)) {
             return new ValidationResult(false, new ErrorObject(
                     ERROR_CODE_INVALID_REDIRECT_URI,
                     "redirect_uri param must be provided",
+                    HttpServletResponse.SC_BAD_REQUEST));
+        }
+
+        if (Validator.redirectUrlIsInvalid(queryParams)) {
+            return new ValidationResult(false, new ErrorObject(
+                    ERROR_CODE_INVALID_REDIRECT_URI,
+                    "redirect_uri param provided does not match any of the redirect_uri values configured",
                     HttpServletResponse.SC_BAD_REQUEST));
         }
 
@@ -236,7 +245,7 @@ public class AuthorizeHandler {
         String requestParam = queryParamsMap.value(RequestParamConstants.REQUEST);
         String clientIdParam = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
 
-        if (CredentialIssuerConfig.CLIENT_CONFIGS.isEmpty()) {
+        if (MapUtils.isEmpty(CredentialIssuerConfig.CLIENT_CONFIGS)) {
             return "Error: Missing cri stub client configuration env variable";
         }
 

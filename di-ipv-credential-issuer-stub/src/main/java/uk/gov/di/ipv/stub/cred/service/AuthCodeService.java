@@ -20,19 +20,19 @@ public class AuthCodeService {
     }
 
     public String getPayload(String authCode) {
-        try {
-            return this.authCodes.get(authCode).get(RESOURCE_PAYLOAD);
-        } catch (NullPointerException e) {
-            return null;
-        }
+        return getAuthCodesEntryAttribute(authCode, RESOURCE_PAYLOAD);
     }
 
     public String getRedirectUrl(String authCode) {
-        try {
-            return this.authCodes.get(authCode).get(REDIRECT_URL);
-        } catch (NullPointerException e) {
-            return null;
+        return getAuthCodesEntryAttribute(authCode, REDIRECT_URL);
+    }
+
+    private String getAuthCodesEntryAttribute(String authCode, String attribute) {
+        Map<String, String> maybeAuthCodesEntry = this.authCodes.get(authCode);
+        if (!(maybeAuthCodesEntry == null)) {
+            return maybeAuthCodesEntry.get(attribute);
         }
+        return null;
     }
 
     public void revoke(String authCode) {
