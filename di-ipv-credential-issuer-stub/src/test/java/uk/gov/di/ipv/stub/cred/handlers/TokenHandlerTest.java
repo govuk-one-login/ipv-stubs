@@ -189,7 +189,7 @@ public class TokenHandlerTest {
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
         when(mockValidator.validateTokenRequest(any())).thenReturn(ValidationResult.createValidResult());
-        doThrow(new ClientAuthenticationException("Fail.")).when(mockJwtAuthenticationService).authenticateClient(queryParamsMap);
+        doThrow(new ClientAuthenticationException("Fail.")).when(mockJwtAuthenticationService).authenticateClient(null);
 
         String result = (String) tokenHandler.issueAccessToken.handle(mockRequest, mockResponse);
 

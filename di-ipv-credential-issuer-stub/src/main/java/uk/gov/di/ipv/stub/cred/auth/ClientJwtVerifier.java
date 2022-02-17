@@ -28,12 +28,12 @@ public class ClientJwtVerifier {
         this.verifier = getPopulatedClientAuthVerifier();
     }
 
-    public void authenticateClient(QueryParamsMap requestParams)
+    public void authenticateClient(String queryString)
             throws ClientAuthenticationException {
 
         PrivateKeyJWT authenticationJwt;
         try {
-            authenticationJwt = PrivateKeyJWT.parse(listifyParamValues(requestParams));
+            authenticationJwt = PrivateKeyJWT.parse(queryString);
         } catch (ParseException e) {
             throw new ClientAuthenticationException(e);
         }
@@ -52,13 +52,6 @@ public class ClientJwtVerifier {
         } catch (InvalidClientException | JOSEException e) {
             throw new ClientAuthenticationException(e);
         }
-    }
-
-    private Map<String, List<String>> listifyParamValues(QueryParamsMap requestParams) {
-        Map<String, List<String>> listifiedParams = new HashMap<>();
-        requestParams.toMap()
-                .forEach((key, value) -> listifiedParams.put(key, Arrays.asList(value)));
-        return listifiedParams;
     }
 
     private ClientAuthenticationVerifier<Object> getPopulatedClientAuthVerifier() {
