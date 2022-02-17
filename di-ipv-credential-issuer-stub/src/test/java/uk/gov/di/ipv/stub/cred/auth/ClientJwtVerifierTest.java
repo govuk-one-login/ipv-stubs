@@ -1,6 +1,5 @@
-package uk.gov.di.ipv.stub.cred.service;
+package uk.gov.di.ipv.stub.cred.auth;
 
-import com.google.gson.Gson;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -15,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import spark.QueryParamsMap;
+import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
@@ -24,7 +24,6 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -44,7 +43,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SystemStubsExtension.class)
 @ExtendWith(MockitoExtension.class)
-public class JwtAuthenticationServiceTest {
+public class ClientJwtVerifierTest {
     @SystemStub
     private final EnvironmentVariables environmentVariables = new EnvironmentVariables(
             "CLIENT_CONFIG", TestFixtures.JWT_AUTH_SERVICE_TEST_CLIENT_CONFIG,
@@ -53,11 +52,12 @@ public class JwtAuthenticationServiceTest {
 
     @Mock private HttpServletRequest mockHttpRequest;
 
-    private final JwtAuthenticationService jwtAuthenticationService = new JwtAuthenticationService();
+    private ClientJwtVerifier jwtAuthenticationService;
 
     @BeforeEach
     public void setUp() {
         CredentialIssuerConfig.resetClientConfigs();
+        jwtAuthenticationService = new ClientJwtVerifier();
     }
 
     @Test
@@ -81,7 +81,7 @@ public class JwtAuthenticationServiceTest {
             jwtAuthenticationService.authenticateClient(new QueryParamsMap(mockHttpRequest));
         });
 
-        assertEquals("Failed to verify client authentication JWT signature", exception.getMessage());
+        assertTrue(exception.getMessage().contains("InvalidClientException: Bad JWT signature"));
     }
 
     @Test
@@ -116,39 +116,6 @@ public class JwtAuthenticationServiceTest {
     }
 
     @Test
-    void itShouldThrowIfIssuerInConfigDoesNotMatchClaimsSet() throws Exception {
-        var validQueryParams = getValidQueryParams(generateClientAssertion(getValidClaimsSetValues()));
-        when(mockHttpRequest.getParameterMap()).thenReturn(validQueryParams);
-
-        new EnvironmentVariables("CLIENT_CONFIG", getModifiedJwtAuthenticationConfigValue("issuer", "NON_MATCHING_ISSUER"))
-                .execute(() -> {
-                    CredentialIssuerConfig.resetClientConfigs();
-                    ClientAuthenticationException exception = assertThrows(ClientAuthenticationException.class, () -> {
-                        jwtAuthenticationService.authenticateClient(new QueryParamsMap(mockHttpRequest));
-                    });
-                    assertEquals("Client auth claims set failed validation for 'issuer'. Expected: 'NON_MATCHING_ISSUER'. Received: 'aTestClient'", exception.getMessage());
-                });
-        CredentialIssuerConfig.resetClientConfigs();
-    }
-
-    @Test
-    void itShouldThrowIfSubjectInConfigDoesNotMatchClaimsSet() throws Exception {
-        var validQueryParams = getValidQueryParams(generateClientAssertion(getValidClaimsSetValues()));
-        when(mockHttpRequest.getParameterMap()).thenReturn(validQueryParams);
-
-        new EnvironmentVariables("CLIENT_CONFIG", getModifiedJwtAuthenticationConfigValue("subject", "NON_MATCHING_SUBJECT"))
-                .execute(() -> {
-                    CredentialIssuerConfig.resetClientConfigs();
-                    ClientAuthenticationException exception = assertThrows(ClientAuthenticationException.class, () -> {
-                        jwtAuthenticationService.authenticateClient(new QueryParamsMap(mockHttpRequest));
-                    });
-
-                    assertEquals("Client auth claims set failed validation for 'subject'. Expected: 'NON_MATCHING_SUBJECT'. Received: 'aTestClient'", exception.getMessage());
-                });
-        CredentialIssuerConfig.resetClientConfigs();
-    }
-
-    @Test
     void itShouldThrowIfWrongAudience() throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         var wrongAudienceClaimsSetValues = new HashMap<>(getValidClaimsSetValues());
         wrongAudienceClaimsSetValues.put(JWTClaimNames.AUDIENCE, "NOT_THE_AUDIENCE_YOU_ARE_LOOKING_FOR");
@@ -159,16 +126,13 @@ public class JwtAuthenticationServiceTest {
             jwtAuthenticationService.authenticateClient(new QueryParamsMap(mockHttpRequest));
         });
 
-        assertEquals(
-                "Invalid audience in claims set. Expected: 'https://test-server.example.com/token'. Received '[NOT_THE_AUDIENCE_YOU_ARE_LOOKING_FOR]'",
-                exception.getMessage()
-        );
+        assertTrue(exception.getMessage().contains("Invalid JWT audience claim, expected [https://test-server.example.com/token]"));
     }
 
     @Test
     void itShouldThrowIfClaimsSetHasExpired() throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         var expiredClaimsSetValues = new HashMap<>(getValidClaimsSetValues());
-        expiredClaimsSetValues.put(JWTClaimNames.EXPIRATION_TIME, new Date(new Date().getTime() - 1000).getTime() / 1000);
+        expiredClaimsSetValues.put(JWTClaimNames.EXPIRATION_TIME, new Date(new Date().getTime() - 61000).getTime() / 1000);
         var expiredQueryParams = getValidQueryParams(generateClientAssertion(expiredClaimsSetValues));
         when(mockHttpRequest.getParameterMap()).thenReturn(expiredQueryParams);
 
@@ -176,10 +140,7 @@ public class JwtAuthenticationServiceTest {
             jwtAuthenticationService.authenticateClient(new QueryParamsMap(mockHttpRequest));
         });
 
-        assertEquals(
-                "Expiration date in client auth claims set has passed",
-                exception.getMessage()
-        );
+        assertTrue(exception.getMessage().contains("Expired JWT"));
     }
 
     private Map<String, String[]> getValidQueryParams(String clientAssertion) {
@@ -226,16 +187,5 @@ public class JwtAuthenticationServiceTest {
                 .claim(JWTClaimNames.AUDIENCE, claimsSetValues.get(JWTClaimNames.AUDIENCE))
                 .claim(JWTClaimNames.EXPIRATION_TIME, claimsSetValues.get(JWTClaimNames.EXPIRATION_TIME))
                 .build();
-    }
-
-    private String getModifiedJwtAuthenticationConfigValue(String key, String value) {
-        String validConfig = TestFixtures.JWT_AUTH_SERVICE_TEST_CLIENT_CONFIG;
-        String jsonString = new String(Base64.getDecoder().decode(validConfig));
-        Gson gson = new Gson();
-        Map<String, Object> configMap = gson.fromJson(jsonString, Map.class);
-        Map<String, Object> aTestClientConfig = (Map<String, Object>) configMap.get("aTestClient");
-        Map<String, String> jwtAuthenticationConfig = (Map<String, String>) aTestClientConfig.get("jwtAuthentication");
-        jwtAuthenticationConfig.put(key, value);
-        return Base64.getEncoder().encodeToString(gson.toJson(configMap).getBytes(StandardCharsets.UTF_8));
     }
 }

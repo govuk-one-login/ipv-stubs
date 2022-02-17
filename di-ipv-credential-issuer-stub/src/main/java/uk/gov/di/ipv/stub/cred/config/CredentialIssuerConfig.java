@@ -39,6 +39,13 @@ public class CredentialIssuerConfig {
         return CLIENT_CONFIGS.get(clientId);
     }
 
+    public static Map<String, ClientConfig> getClientConfigs() {
+        if (CLIENT_CONFIGS == null) {
+            CLIENT_CONFIGS = parseClientConfigs();
+        }
+        return CLIENT_CONFIGS;
+    }
+
     public static void resetClientConfigs() {
         // For testing purposes only.
         CLIENT_CONFIGS = null;

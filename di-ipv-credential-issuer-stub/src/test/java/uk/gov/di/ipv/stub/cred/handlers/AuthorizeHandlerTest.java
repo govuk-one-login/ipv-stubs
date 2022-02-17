@@ -78,6 +78,8 @@ class AuthorizeHandlerTest {
 
     @BeforeEach
     void setup() {
+        CredentialIssuerConfig.resetClientConfigs();
+
         mockResponse = mock(Response.class);
         mockRequest = mock(Request.class);
         mockViewHelper = mock(ViewHelper.class);

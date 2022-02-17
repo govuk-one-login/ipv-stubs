@@ -22,7 +22,7 @@ import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
-import uk.gov.di.ipv.stub.cred.service.JwtAuthenticationService;
+import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -62,7 +62,7 @@ public class TokenHandlerTest {
     @Mock private TokenService mockTokenService;
     @Mock private AuthCodeService mockAuthCodeService;
     @Mock private Validator mockValidator;
-    @Mock private JwtAuthenticationService mockJwtAuthenticationService;
+    @Mock private ClientJwtVerifier mockJwtAuthenticationService;
     @InjectMocks private TokenHandler tokenHandler;
 
     @SystemStub

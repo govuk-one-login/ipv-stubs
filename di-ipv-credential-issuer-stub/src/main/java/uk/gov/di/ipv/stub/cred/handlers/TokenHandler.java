@@ -16,7 +16,7 @@ import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
-import uk.gov.di.ipv.stub.cred.service.JwtAuthenticationService;
+import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -33,13 +33,13 @@ public class TokenHandler {
     private TokenService tokenService;
     private AuthCodeService authCodeService;
     private Validator validator;
-    private JwtAuthenticationService jwtAuthenticationService;
+    private ClientJwtVerifier clientJwtVerifier;
 
-    public TokenHandler(AuthCodeService authCodeService, TokenService tokenService, Validator validator, JwtAuthenticationService jwtAuthenticationService) {
+    public TokenHandler(AuthCodeService authCodeService, TokenService tokenService, Validator validator, ClientJwtVerifier clientJwtVerifier) {
         this.authCodeService = authCodeService;
         this.tokenService = tokenService;
         this.validator = validator;
-        this.jwtAuthenticationService = jwtAuthenticationService;
+        this.clientJwtVerifier = clientJwtVerifier;
     }
 
     public Route issueAccessToken = (Request request, Response response) -> {
@@ -56,7 +56,7 @@ public class TokenHandler {
 
         if (Validator.isNullBlankOrEmpty(requestParams.value(RequestParamConstants.CLIENT_ID))) {
             try {
-                jwtAuthenticationService.authenticateClient(requestParams);
+                clientJwtVerifier.authenticateClient(requestParams);
             } catch (ClientAuthenticationException e) {
                 LOGGER.error("Failed client JWT authentication: %s", e);
                 TokenErrorResponse errorResponse = new TokenErrorResponse(OAuth2Error.INVALID_CLIENT);

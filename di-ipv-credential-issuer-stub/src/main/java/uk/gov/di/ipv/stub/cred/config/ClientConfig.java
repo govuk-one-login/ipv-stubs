@@ -13,4 +13,12 @@ public class ClientConfig {
     public Map<String, String> getJwtAuthentication() {
         return jwtAuthentication;
     }
+
+    public void setSigningCert(String signingCert) {
+        this.signingCert = signingCert;
+    }
+
+    public void setJwtAuthentication(Map<String, String> jwtAuthentication) {
+        this.jwtAuthentication = jwtAuthentication;
+    }
 }
