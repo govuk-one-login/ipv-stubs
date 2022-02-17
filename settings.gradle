@@ -1,0 +1,3 @@
+include "di-ipv-core-stub",
+        "di-ipv-credential-issuer-stub",
+        "di-ipv-orchestrator-stub"
