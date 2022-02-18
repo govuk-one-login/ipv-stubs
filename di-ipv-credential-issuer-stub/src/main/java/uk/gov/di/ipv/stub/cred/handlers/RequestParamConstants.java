@@ -13,4 +13,6 @@ public class RequestParamConstants {
     public static final String ACTIVITY_HISTORY = "activityHistory";
     public static final String IDENTITY_FRAUD = "identityFraud";
     public static final String VERIFICATION = "verification";
+    public static final String CLIENT_ASSERTION_TYPE = "client_assertion_type";
+    public static final String CLIENT_ASSERTION = "client_assertion";
 }

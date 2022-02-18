@@ -78,6 +78,8 @@ class AuthorizeHandlerTest {
 
     @BeforeEach
     void setup() {
+        CredentialIssuerConfig.resetClientConfigs();
+
         mockResponse = mock(Response.class);
         mockRequest = mock(Request.class);
         mockViewHelper = mock(ViewHelper.class);
@@ -410,6 +412,6 @@ class AuthorizeHandlerTest {
                 KeyFactory.getInstance("RSA")
                         .generatePrivate(
                                 new PKCS8EncodedKeySpec(
-                                        Base64.getDecoder().decode(TestFixtures.PRIVATE_KEY)));
+                                        Base64.getDecoder().decode(TestFixtures.CLIENT_CONFIG_PRIVATE_KEY)));
     }
 }

@@ -1,11 +1,14 @@
 package uk.gov.di.ipv.stub.cred.validation;
 
 import com.nimbusds.oauth2.sdk.ErrorObject;
+import com.nimbusds.oauth2.sdk.GrantType;
+import com.nimbusds.oauth2.sdk.OAuth2Error;
 import spark.QueryParamsMap;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
+import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +24,11 @@ public class Validator {
 
     private static final String REDIRECT_URI_SEPARATOR = ",";
 
-    private Validator() {}
+    private final AuthCodeService authCodeService;
+
+    public Validator(AuthCodeService authCodeService) {
+        this.authCodeService = authCodeService;
+    }
 
     public static boolean isNullBlankOrEmpty(String value) {
         return Objects.isNull(value) || value.isEmpty() || value.isBlank();
@@ -74,6 +81,56 @@ public class Validator {
         ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientId);
         List<String> validRedirectUrls = Arrays.asList(clientConfig.getJwtAuthentication().get("validRedirectUrls").split(REDIRECT_URI_SEPARATOR));
         return !validRedirectUrls.contains(redirectUri);
+    }
+
+    public ValidationResult validateRedirectUrlsMatch(String redirectUrlFromAuthEndpoint, String redirectUrlFromTokenEndpoint) {
+        if (Validator.isNullBlankOrEmpty(redirectUrlFromAuthEndpoint) && Validator.isNullBlankOrEmpty(redirectUrlFromTokenEndpoint)) {
+            return ValidationResult.createValidResult();
+        }
+
+        if (Validator.isNullBlankOrEmpty(redirectUrlFromAuthEndpoint)) {
+            return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
+        }
+
+        if (!redirectUrlFromAuthEndpoint.equals(redirectUrlFromTokenEndpoint)) {
+            return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
+        }
+
+        return ValidationResult.createValidResult();
+    }
+
+    public ValidationResult validateTokenRequest(QueryParamsMap requestParams) {
+        String clientIdValue = requestParams.value(RequestParamConstants.CLIENT_ID);
+        String assertionType = requestParams.value(RequestParamConstants.CLIENT_ASSERTION_TYPE);
+        String assertion = requestParams.value(RequestParamConstants.CLIENT_ASSERTION);
+        if (Validator.isNullBlankOrEmpty(clientIdValue) &&
+                (Validator.isNullBlankOrEmpty(assertionType) || Validator.isNullBlankOrEmpty(assertion))) {
+            return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
+        }
+
+        if (!Validator.isNullBlankOrEmpty(clientIdValue) && CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
+            return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
+        }
+
+        String grantTypeValue = requestParams.value(RequestParamConstants.GRANT_TYPE);
+        if (Validator.isNullBlankOrEmpty(grantTypeValue) || !grantTypeValue.equalsIgnoreCase(GrantType.AUTHORIZATION_CODE.getValue())) {
+            return new ValidationResult(false, OAuth2Error.UNSUPPORTED_GRANT_TYPE);
+        }
+
+        String authCodeValue = requestParams.value(RequestParamConstants.AUTH_CODE);
+        if (Validator.isNullBlankOrEmpty(authCodeValue)) {
+            return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
+        }
+        if (Objects.isNull(this.authCodeService.getPayload(authCodeValue))) {
+            return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
+        }
+
+        String redirectUriValue = requestParams.value(RequestParamConstants.REDIRECT_URI);
+        if (Validator.isNullBlankOrEmpty(redirectUriValue)) {
+            return new ValidationResult(false, OAuth2Error.INVALID_REQUEST);
+        }
+
+        return ValidationResult.createValidResult();
     }
 
     private static ValidationResult areStringsNullOrEmpty(List<String> values) {
