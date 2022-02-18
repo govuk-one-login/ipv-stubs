@@ -1,46 +1,46 @@
 plugins {
-    id "idea"
-    id "application"
-    id "java"
+	id "idea"
+	id "application"
+	id "java"
 }
 
 group "uk.gov.di.ipv"
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 sourceCompatibility = 17
 
 dependencies {
-    implementation "com.sparkjava:spark-core:2.9.3",
-            "com.sparkjava:spark-template-mustache:2.7.1",
-            "com.nimbusds:oauth2-oidc-sdk:9.22.1",
-            "com.google.code.gson:gson:2.8.9",
-            "org.slf4j:slf4j-simple:1.7.33",
-            "org.yaml:snakeyaml:1.30",
-            "com.fasterxml.jackson.core:jackson-databind:2.13.0"
+	implementation "com.sparkjava:spark-core:2.9.3",
+			"com.sparkjava:spark-template-mustache:2.7.1",
+			"com.nimbusds:oauth2-oidc-sdk:9.22.1",
+			"com.google.code.gson:gson:2.8.9",
+			"org.slf4j:slf4j-simple:1.7.33",
+			"org.yaml:snakeyaml:1.30",
+			"com.fasterxml.jackson.core:jackson-databind:2.13.0"
 
-    testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
+	testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
 }
 
 run {
-    debugOptions {
-        enabled = true
-        port = 8087
-        server = true
-        suspend = false
-    }
+	debugOptions {
+		enabled = true
+		port = 8087
+		server = true
+		suspend = false
+	}
 }
 
 mainClassName = "uk.gov.di.ipv.stub.core.App"
 
 distributions {
-    main {
-        contents {
-            from(layout.projectDirectory) {
-          include "config/**"
-        }
-        }
-    }
+	main {
+		contents {
+			from(layout.projectDirectory) {
+				include "config/**"
+			}
+		}
+	}
 }

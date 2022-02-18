@@ -61,56 +61,60 @@ public class IpvHandler {
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
     private final Map<String, Object> stateSession = new HashMap<>();
 
-    public Route doAuthorize = (Request request, Response response) -> {
-        var state = new State();
-        stateSession.put(state.getValue(), null);
+    public Route doAuthorize =
+            (Request request, Response response) -> {
+                var state = new State();
+                stateSession.put(state.getValue(), null);
 
-        var authRequest = new AuthorizationRequest.Builder(
-                new ResponseType(ResponseType.Value.CODE), new ClientID(ORCHESTRATOR_CLIENT_ID))
-                .state(state)
-                .scope(new Scope("openid"))
-                .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
-                .endpointURI(new URI(IPV_ENDPOINT).resolve("/oauth2/authorize"))
-                .build();
+                var authRequest =
+                        new AuthorizationRequest.Builder(
+                                        new ResponseType(ResponseType.Value.CODE),
+                                        new ClientID(ORCHESTRATOR_CLIENT_ID))
+                                .state(state)
+                                .scope(new Scope("openid"))
+                                .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
+                                .endpointURI(new URI(IPV_ENDPOINT).resolve("/oauth2/authorize"))
+                                .build();
 
-        response.redirect(authRequest.toURI().toString());
-        return null;
-    };
+                response.redirect(authRequest.toURI().toString());
+                return null;
+            };
 
-    public Route doCallback = (Request request, Response response) -> {
-        var authorizationCode = getAuthorizationCode(request);
+    public Route doCallback =
+            (Request request, Response response) -> {
+                var authorizationCode = getAuthorizationCode(request);
 
-        List<Map<String, Object>> mustacheData = new ArrayList<>();
-        Map<String, Object> moustacheDataModel = new HashMap<>();
+                List<Map<String, Object>> mustacheData = new ArrayList<>();
+                Map<String, Object> moustacheDataModel = new HashMap<>();
 
-        try {
-            var accessToken = exchangeCodeForToken(authorizationCode);
+                try {
+                    var accessToken = exchangeCodeForToken(authorizationCode);
 
-            var userInfo = getUserInfo(accessToken);
+                    var userInfo = getUserInfo(accessToken);
 
-            mustacheData = buildMustacheData(userInfo);
-            moustacheDataModel.put("data", mustacheData);
-        } catch (OrchestratorStubException | ParseException | JsonSyntaxException e) {
-            moustacheDataModel.put("error", e.getMessage());
-        }
+                    mustacheData = buildMustacheData(userInfo);
+                    moustacheDataModel.put("data", mustacheData);
+                } catch (OrchestratorStubException | ParseException | JsonSyntaxException e) {
+                    moustacheDataModel.put("error", e.getMessage());
+                }
 
-        return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
-    };
+                return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
+            };
 
     private AuthorizationCode getAuthorizationCode(Request request) throws ParseException {
-        var authorizationResponse = AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
+        var authorizationResponse =
+                AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
             logger.error("Failed authorization code request: {}", error);
             throw new RuntimeException("Failed authorization code request");
         }
 
-        return authorizationResponse
-                .toSuccessResponse()
-                .getAuthorizationCode();
+        return authorizationResponse.toSuccessResponse().getAuthorizationCode();
     }
 
-    private AccessToken exchangeCodeForToken(AuthorizationCode authorizationCode) throws OrchestratorStubException, CertificateException, JOSEException {
+    private AccessToken exchangeCodeForToken(AuthorizationCode authorizationCode)
+            throws OrchestratorStubException, CertificateException, JOSEException {
         URI resolve = URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve(IPV_BACKCHANNEL_TOKEN_PATH);
         logger.info("token url is " + resolve);
 
@@ -118,17 +122,18 @@ public class IpvHandler {
         try {
             signedClientJwt = JwtHelper.createSignedClientAuthJwt();
         } catch (JOSEException | InvalidKeySpecException | NoSuchAlgorithmException e) {
-           logger.error("Failed to generate orch client JWT", e);
-           throw new OrchestratorStubException("Failed to generate orch client JWT");
+            logger.error("Failed to generate orch client JWT", e);
+            throw new OrchestratorStubException("Failed to generate orch client JWT");
         }
 
         ClientAuthentication clientAuthentication = new PrivateKeyJWT(signedClientJwt);
 
-        TokenRequest tokenRequest = new TokenRequest(
-                resolve,
-                clientAuthentication,
-                new AuthorizationCodeGrant(authorizationCode, URI.create(ORCHESTRATOR_REDIRECT_URL))
-        );
+        TokenRequest tokenRequest =
+                new TokenRequest(
+                        resolve,
+                        clientAuthentication,
+                        new AuthorizationCodeGrant(
+                                authorizationCode, URI.create(ORCHESTRATOR_REDIRECT_URL)));
 
         var httpTokenResponse = sendHttpRequest(tokenRequest.toHTTPRequest());
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
@@ -139,17 +144,15 @@ public class IpvHandler {
             throw new OrchestratorStubException(errorResponse.getErrorObject().getDescription());
         }
 
-        return tokenResponse
-                .toSuccessResponse()
-                .getTokens()
-                .getAccessToken();
+        return tokenResponse.toSuccessResponse().getTokens().getAccessToken();
     }
 
     public JSONObject getUserInfo(AccessToken accessToken) {
-        var userInfoRequest = new UserInfoRequest(
-                URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve(IPV_BACKCHANNEL_USER_IDENTITY_PATH),
-                (BearerAccessToken) accessToken
-        );
+        var userInfoRequest =
+                new UserInfoRequest(
+                        URI.create(IPV_BACKCHANNEL_ENDPOINT)
+                                .resolve(IPV_BACKCHANNEL_USER_IDENTITY_PATH),
+                        (BearerAccessToken) accessToken);
 
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest.toHTTPRequest());
 
@@ -160,7 +163,8 @@ public class IpvHandler {
         }
     }
 
-    private List<Map<String, Object>> buildMustacheData(JSONObject credentials) throws ParseException, JsonSyntaxException {
+    private List<Map<String, Object>> buildMustacheData(JSONObject credentials)
+            throws ParseException, JsonSyntaxException {
         List<Map<String, Object>> moustacheDataModel = new ArrayList<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         for (String key : credentials.keySet()) {
@@ -168,14 +172,16 @@ public class IpvHandler {
 
             String attributesJson;
             if (JSONObjectUtils.containsKey(criJson, "attributes")) {
-                attributesJson = gson.toJson(JsonParser.parseString(criJson.getAsString("attributes")));
+                attributesJson =
+                        gson.toJson(JsonParser.parseString(criJson.getAsString("attributes")));
             } else {
                 throw new ParseException("Could not find attributes field in JSON");
             }
 
             String gpg45ScoreJson = null;
             if (JSONObjectUtils.containsKey(criJson, "gpg45Score")) {
-                gpg45ScoreJson = gson.toJson(JsonParser.parseString(criJson.getAsString("gpg45Score")));
+                gpg45ScoreJson =
+                        gson.toJson(JsonParser.parseString(criJson.getAsString("gpg45Score")));
             }
 
             Map<String, Object> criMap = new HashMap<>();

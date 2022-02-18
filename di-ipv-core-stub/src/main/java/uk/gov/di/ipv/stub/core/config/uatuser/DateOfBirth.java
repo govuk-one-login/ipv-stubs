@@ -11,6 +11,4 @@ public record DateOfBirth(Instant dateOfBirth, Instant dateOfEntryOnCtdb) {
         Instant aged = dateOfBirth.plus(diff, ChronoUnit.SECONDS);
         return Date.from(aged);
     }
-
-
 }

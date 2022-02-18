@@ -18,6 +18,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +36,10 @@ class ValidatorTest {
     @Mock private AuthCodeService mockAuthCodeService;
 
     @SystemStub
-    private final EnvironmentVariables environmentVariables = new EnvironmentVariables("CLIENT_CONFIG", TestFixtures.CLIENT_CONFIG);;
+    private final EnvironmentVariables environmentVariables =
+            new EnvironmentVariables("CLIENT_CONFIG", TestFixtures.CLIENT_CONFIG);
+
+    ;
 
     @BeforeAll
     public static void setUp() {
@@ -44,8 +48,9 @@ class ValidatorTest {
 
     @Test
     void shouldReturnFalseWhenNullBlankOrEmptyStringProvided() {
-        String[] testCases = new String[] { null, "", "  " };
-        Arrays.stream(testCases).forEach(testCase -> assertTrue(Validator.isNullBlankOrEmpty(testCase)));
+        String[] testCases = new String[] {null, "", "  "};
+        Arrays.stream(testCases)
+                .forEach(testCase -> assertTrue(Validator.isNullBlankOrEmpty(testCase)));
     }
 
     @Test
@@ -55,80 +60,95 @@ class ValidatorTest {
 
     @Test
     void shouldReturnSuccessfulValidationOnValidEvidenceGpg() {
-        ValidationResult result = Validator.verifyGpg45(CriType.EVIDENCE_CRI_TYPE, "1", "3", null, null, null);
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.EVIDENCE_CRI_TYPE, "1", "3", null, null, null);
         assertTrue(result.isValid());
     }
 
     @Test
     void shouldReturnFailedValidationIfInvalidNumberParamProvidedInEvidence() {
-        ValidationResult result = Validator.verifyGpg45(CriType.EVIDENCE_CRI_TYPE, "abc", "/&43", null, null, null);
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.EVIDENCE_CRI_TYPE, "abc", "/&43", null, null, null);
         assertFalse(result.isValid());
-        assertEquals("Invalid numbers provided for evidence strength and validity", result.getError().getDescription());
+        assertEquals(
+                "Invalid numbers provided for evidence strength and validity",
+                result.getError().getDescription());
     }
 
     @Test
     void shouldReturnFailedValidationIfScoresProvidedForInvalidCriTypeOnEvidence() {
-        ValidationResult result = Validator.verifyGpg45(CriType.EVIDENCE_CRI_TYPE, "1", "2", null, "4", null);
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.EVIDENCE_CRI_TYPE, "1", "2", null, "4", null);
         assertFalse(result.isValid());
         assertEquals("Invalid GPG45 score provided", result.getError().getDescription());
     }
 
     @Test
     void shouldReturnSuccessfulValidationOnValidActivityGpg() {
-        ValidationResult result = Validator.verifyGpg45(CriType.ACTIVITY_CRI_TYPE, null, null, "1", null, null);
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.ACTIVITY_CRI_TYPE, null, null, "1", null, null);
         assertTrue(result.isValid());
     }
 
     @Test
     void shouldReturnFailedValidationIfInvalidNumberParamProvidedInActivity() {
-        ValidationResult result = Validator.verifyGpg45(CriType.ACTIVITY_CRI_TYPE, null, null, "abc", null, null);
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.ACTIVITY_CRI_TYPE, null, null, "abc", null, null);
         assertFalse(result.isValid());
         assertEquals("Invalid number provided for activity", result.getError().getDescription());
     }
 
     @Test
     void shouldReturnFailedValidationIfScoresProvidedForInvalidCriTypeOnActivity() {
-        ValidationResult result = Validator.verifyGpg45(CriType.ACTIVITY_CRI_TYPE, "1", "2", "1", null, null);
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.ACTIVITY_CRI_TYPE, "1", "2", "1", null, null);
         assertFalse(result.isValid());
         assertEquals("Invalid GPG45 score provided", result.getError().getDescription());
     }
 
     @Test
     void shouldReturnSuccessfulValidationOnValidFraudGpg() {
-        ValidationResult result = Validator.verifyGpg45(CriType.FRAUD_CRI_TYPE, null, null, null, "1", null);
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.FRAUD_CRI_TYPE, null, null, null, "1", null);
         assertTrue(result.isValid());
     }
 
     @Test
     void shouldReturnFailedValidationIfInvalidNumberParamProvidedInFraud() {
-        ValidationResult result = Validator.verifyGpg45(CriType.FRAUD_CRI_TYPE, null, null, null, "abc", null);
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.FRAUD_CRI_TYPE, null, null, null, "abc", null);
         assertFalse(result.isValid());
         assertEquals("Invalid number provided for fraud", result.getError().getDescription());
     }
 
     @Test
     void shouldReturnFailedValidationIfScoresProvidedForInvalidCriTypeOnFraud() {
-        ValidationResult result = Validator.verifyGpg45(CriType.FRAUD_CRI_TYPE, "1", "2", null, "1", null);
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.FRAUD_CRI_TYPE, "1", "2", null, "1", null);
         assertFalse(result.isValid());
         assertEquals("Invalid GPG45 score provided", result.getError().getDescription());
     }
 
     @Test
     void shouldReturnSuccessfulValidationOnValidVerificationGpg() {
-        ValidationResult result = Validator.verifyGpg45(CriType.VERIFICATION_CRI_TYPE, null, null, null, null, "1");
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.VERIFICATION_CRI_TYPE, null, null, null, null, "1");
         assertTrue(result.isValid());
     }
 
     @Test
     void shouldReturnFailedValidationIfInvalidNumberParamProvidedInVerfication() {
-        ValidationResult result = Validator.verifyGpg45(CriType.VERIFICATION_CRI_TYPE, null, null, null, null, "abc");
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.VERIFICATION_CRI_TYPE, null, null, null, null, "abc");
         assertFalse(result.isValid());
-        assertEquals("Invalid number provided for verification", result.getError().getDescription());
+        assertEquals(
+                "Invalid number provided for verification", result.getError().getDescription());
     }
 
     @Test
     void shouldReturnFailedValidationIfScoresProvidedForInvalidCriTypeOnVerification() {
-        ValidationResult result = Validator.verifyGpg45(CriType.VERIFICATION_CRI_TYPE, "1", "2", null, null, "1");
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.VERIFICATION_CRI_TYPE, "1", "2", null, null, "1");
         assertFalse(result.isValid());
         assertEquals("Invalid GPG45 score provided", result.getError().getDescription());
     }
@@ -136,7 +156,8 @@ class ValidatorTest {
     @Test
     void redirectUrlIsInvalidShouldReturnFalseForValidUrlWithOnlyOneRegistered() {
         QueryParamsMap queryParams = mock(QueryParamsMap.class);
-        when(queryParams.value(RequestParamConstants.REDIRECT_URI)).thenReturn("https://valid.example.com");
+        when(queryParams.value(RequestParamConstants.REDIRECT_URI))
+                .thenReturn("https://valid.example.com");
         when(queryParams.value(RequestParamConstants.CLIENT_ID)).thenReturn("clientIdValid");
 
         assertFalse(Validator.redirectUrlIsInvalid(queryParams));
@@ -145,8 +166,10 @@ class ValidatorTest {
     @Test
     void redirectUrlIsInvalidShouldReturnFalseForValidUrlWithMultipleRegistered() {
         QueryParamsMap queryParams = mock(QueryParamsMap.class);
-        when(queryParams.value(RequestParamConstants.REDIRECT_URI)).thenReturn("https://valid3.example.com");
-        when(queryParams.value(RequestParamConstants.CLIENT_ID)).thenReturn("clientIdValidMultipleUri");
+        when(queryParams.value(RequestParamConstants.REDIRECT_URI))
+                .thenReturn("https://valid3.example.com");
+        when(queryParams.value(RequestParamConstants.CLIENT_ID))
+                .thenReturn("clientIdValidMultipleUri");
 
         assertFalse(Validator.redirectUrlIsInvalid(queryParams));
     }
@@ -154,19 +177,22 @@ class ValidatorTest {
     @Test
     void redirectUrlIsInvalidShouldReturnTrueForUnregisteredUrl() {
         QueryParamsMap queryParams = mock(QueryParamsMap.class);
-        when(queryParams.value(RequestParamConstants.REDIRECT_URI)).thenReturn("https://example.com");
-        when(queryParams.value(RequestParamConstants.CLIENT_ID)).thenReturn("clientIdNonRegistered");
+        when(queryParams.value(RequestParamConstants.REDIRECT_URI))
+                .thenReturn("https://example.com");
+        when(queryParams.value(RequestParamConstants.CLIENT_ID))
+                .thenReturn("clientIdNonRegistered");
 
         assertTrue(Validator.redirectUrlIsInvalid(queryParams));
     }
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientAssertion() {
-        QueryParamsMap queryParamsMap = getQueryParamsMap(Map.of(
-                RequestParamConstants.CLIENT_ID, "",
-                RequestParamConstants.CLIENT_ASSERTION_TYPE, "some-assertion-type",
-                RequestParamConstants.CLIENT_ASSERTION, ""
-        ));
+        QueryParamsMap queryParamsMap =
+                getQueryParamsMap(
+                        Map.of(
+                                RequestParamConstants.CLIENT_ID, "",
+                                RequestParamConstants.CLIENT_ASSERTION_TYPE, "some-assertion-type",
+                                RequestParamConstants.CLIENT_ASSERTION, ""));
 
         Validator validator = new Validator(mockAuthCodeService);
 
@@ -180,11 +206,12 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientAssertionType() {
-        QueryParamsMap queryParamsMap = getQueryParamsMap(Map.of(
-                RequestParamConstants.CLIENT_ID, "",
-                RequestParamConstants.CLIENT_ASSERTION_TYPE, "",
-                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion"
-        ));
+        QueryParamsMap queryParamsMap =
+                getQueryParamsMap(
+                        Map.of(
+                                RequestParamConstants.CLIENT_ID, "",
+                                RequestParamConstants.CLIENT_ASSERTION_TYPE, "",
+                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion"));
 
         Validator validator = new Validator(mockAuthCodeService);
 
@@ -198,11 +225,12 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientAssertionTypeOrClientAssertion() {
-        QueryParamsMap queryParamsMap = getQueryParamsMap(Map.of(
-                RequestParamConstants.CLIENT_ID, "",
-                RequestParamConstants.CLIENT_ASSERTION_TYPE, "",
-                RequestParamConstants.CLIENT_ASSERTION, ""
-        ));
+        QueryParamsMap queryParamsMap =
+                getQueryParamsMap(
+                        Map.of(
+                                RequestParamConstants.CLIENT_ID, "",
+                                RequestParamConstants.CLIENT_ASSERTION_TYPE, "",
+                                RequestParamConstants.CLIENT_ASSERTION, ""));
 
         Validator validator = new Validator(mockAuthCodeService);
 
@@ -216,11 +244,13 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientConfig() {
-        QueryParamsMap queryParamsMap = getQueryParamsMap(Map.of(
-                RequestParamConstants.CLIENT_ID, "No-config-for-me",
-                RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
-                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion"
-        ));
+        QueryParamsMap queryParamsMap =
+                getQueryParamsMap(
+                        Map.of(
+                                RequestParamConstants.CLIENT_ID, "No-config-for-me",
+                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
+                                        "a-client-assertion-type",
+                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion"));
 
         Validator validator = new Validator(mockAuthCodeService);
 
@@ -234,12 +264,14 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoGrantType() {
-        QueryParamsMap queryParamsMap = getQueryParamsMap(Map.of(
-                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
-                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                RequestParamConstants.GRANT_TYPE, ""
-        ));
+        QueryParamsMap queryParamsMap =
+                getQueryParamsMap(
+                        Map.of(
+                                RequestParamConstants.CLIENT_ID, "clientIdValid",
+                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
+                                        "a-client-assertion-type",
+                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                                RequestParamConstants.GRANT_TYPE, ""));
 
         Validator validator = new Validator(mockAuthCodeService);
 
@@ -253,12 +285,14 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoWrongType() {
-        QueryParamsMap queryParamsMap = getQueryParamsMap(Map.of(
-                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
-                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                RequestParamConstants.GRANT_TYPE, "not-an-auth-code-grant"
-        ));
+        QueryParamsMap queryParamsMap =
+                getQueryParamsMap(
+                        Map.of(
+                                RequestParamConstants.CLIENT_ID, "clientIdValid",
+                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
+                                        "a-client-assertion-type",
+                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                                RequestParamConstants.GRANT_TYPE, "not-an-auth-code-grant"));
 
         Validator validator = new Validator(mockAuthCodeService);
 
@@ -272,13 +306,16 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoAuthCode() {
-        QueryParamsMap queryParamsMap = getQueryParamsMap(Map.of(
-                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
-                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                RequestParamConstants.GRANT_TYPE, GrantType.AUTHORIZATION_CODE.getValue(),
-                RequestParamConstants.AUTH_CODE, ""
-        ));
+        QueryParamsMap queryParamsMap =
+                getQueryParamsMap(
+                        Map.of(
+                                RequestParamConstants.CLIENT_ID, "clientIdValid",
+                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
+                                        "a-client-assertion-type",
+                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                                RequestParamConstants.GRANT_TYPE,
+                                        GrantType.AUTHORIZATION_CODE.getValue(),
+                                RequestParamConstants.AUTH_CODE, ""));
 
         Validator validator = new Validator(mockAuthCodeService);
 
@@ -292,13 +329,16 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoPayloadAssociatedWithAuthCode() {
-        QueryParamsMap queryParamsMap = getQueryParamsMap(Map.of(
-                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
-                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                RequestParamConstants.GRANT_TYPE, GrantType.AUTHORIZATION_CODE.getValue(),
-                RequestParamConstants.AUTH_CODE, "a-legit-auth-code"
-        ));
+        QueryParamsMap queryParamsMap =
+                getQueryParamsMap(
+                        Map.of(
+                                RequestParamConstants.CLIENT_ID, "clientIdValid",
+                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
+                                        "a-client-assertion-type",
+                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                                RequestParamConstants.GRANT_TYPE,
+                                        GrantType.AUTHORIZATION_CODE.getValue(),
+                                RequestParamConstants.AUTH_CODE, "a-legit-auth-code"));
 
         when(mockAuthCodeService.getPayload("a-legit-auth-code")).thenReturn(null);
         Validator validator = new Validator(mockAuthCodeService);
@@ -313,14 +353,17 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoRedirectUri() {
-        QueryParamsMap queryParamsMap = getQueryParamsMap(Map.of(
-                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
-                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                RequestParamConstants.GRANT_TYPE, GrantType.AUTHORIZATION_CODE.getValue(),
-                RequestParamConstants.AUTH_CODE, "a-legit-auth-code",
-                RequestParamConstants.REDIRECT_URI, ""
-        ));
+        QueryParamsMap queryParamsMap =
+                getQueryParamsMap(
+                        Map.of(
+                                RequestParamConstants.CLIENT_ID, "clientIdValid",
+                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
+                                        "a-client-assertion-type",
+                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                                RequestParamConstants.GRANT_TYPE,
+                                        GrantType.AUTHORIZATION_CODE.getValue(),
+                                RequestParamConstants.AUTH_CODE, "a-legit-auth-code",
+                                RequestParamConstants.REDIRECT_URI, ""));
 
         when(mockAuthCodeService.getPayload("a-legit-auth-code")).thenReturn("something");
         Validator validator = new Validator(mockAuthCodeService);
@@ -335,14 +378,17 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldPassForValidParams() {
-        QueryParamsMap queryParamsMap = getQueryParamsMap(Map.of(
-                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
-                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                RequestParamConstants.GRANT_TYPE, GrantType.AUTHORIZATION_CODE.getValue(),
-                RequestParamConstants.AUTH_CODE, "a-legit-auth-code",
-                RequestParamConstants.REDIRECT_URI, "https://example.com"
-        ));
+        QueryParamsMap queryParamsMap =
+                getQueryParamsMap(
+                        Map.of(
+                                RequestParamConstants.CLIENT_ID, "clientIdValid",
+                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
+                                        "a-client-assertion-type",
+                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                                RequestParamConstants.GRANT_TYPE,
+                                        GrantType.AUTHORIZATION_CODE.getValue(),
+                                RequestParamConstants.AUTH_CODE, "a-legit-auth-code",
+                                RequestParamConstants.REDIRECT_URI, "https://example.com"));
 
         when(mockAuthCodeService.getPayload("a-legit-auth-code")).thenReturn("something");
         Validator validator = new Validator(mockAuthCodeService);
@@ -356,7 +402,8 @@ class ValidatorTest {
     void validateRedirectUrlsMatchShouldReturnValidIfTheyMatch() {
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateRedirectUrlsMatch("https://example.com", "https://example.com");
+        ValidationResult validationResult =
+                validator.validateRedirectUrlsMatch("https://example.com", "https://example.com");
 
         assertTrue(validationResult.isValid());
     }
@@ -383,7 +430,9 @@ class ValidatorTest {
     void validateRedirectUrlsMatchShouldReturnNotValidIfTheyAreDifferent() {
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateRedirectUrlsMatch("https://example.com", "https://different.example.com");
+        ValidationResult validationResult =
+                validator.validateRedirectUrlsMatch(
+                        "https://example.com", "https://different.example.com");
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -395,7 +444,8 @@ class ValidatorTest {
     void validateRedirectUrlsMatchShouldReturnNotValidIfTheFirstValueIsNull() {
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateRedirectUrlsMatch(null, "https://example.com");
+        ValidationResult validationResult =
+                validator.validateRedirectUrlsMatch(null, "https://example.com");
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -407,7 +457,8 @@ class ValidatorTest {
     void validateRedirectUrlsMatchShouldReturnNotValidIfTheSecondValueIsNull() {
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateRedirectUrlsMatch("https://example.com", null);
+        ValidationResult validationResult =
+                validator.validateRedirectUrlsMatch("https://example.com", null);
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -417,7 +468,7 @@ class ValidatorTest {
 
     private QueryParamsMap getQueryParamsMap(Map<String, String> params) {
         Map<String, String[]> listParams = new HashMap<>();
-        params.forEach((key, value) -> listParams.put(key, new String[]{value}));
+        params.forEach((key, value) -> listParams.put(key, new String[] {value}));
 
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
         when(mockHttpRequest.getParameterMap()).thenReturn(listParams);

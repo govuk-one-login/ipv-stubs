@@ -1,7 +1,6 @@
 package uk.gov.di.ipv.stub.cred.service;
 
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
-import uk.gov.di.ipv.stub.cred.error.CriStubException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +15,9 @@ public class AuthCodeService {
     }
 
     public void persist(AuthorizationCode authCode, String resourcePayload, String redirectUrl) {
-        this.authCodes.put(authCode.getValue(), Map.of(RESOURCE_PAYLOAD, resourcePayload, REDIRECT_URL, redirectUrl));
+        this.authCodes.put(
+                authCode.getValue(),
+                Map.of(RESOURCE_PAYLOAD, resourcePayload, REDIRECT_URL, redirectUrl));
     }
 
     public String getPayload(String authCode) {

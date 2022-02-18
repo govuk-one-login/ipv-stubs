@@ -24,83 +24,104 @@ import java.util.stream.Collectors;
 public class CoreStubHandler {
 
     private final Map<String, CredentialIssuer> stateSession = new HashMap<>();
-    public Route serveHomePage = (Request request, Response response) ->
-            ViewHelper.render(null, "home.mustache");
-    public Route showCredentialIssuer = (Request request, Response response) ->
-            ViewHelper.render(Map.of("cris", CoreStubConfig.credentialIssuers), "credential-issuers.mustache");
+    public Route serveHomePage =
+            (Request request, Response response) -> ViewHelper.render(null, "home.mustache");
+    public Route showCredentialIssuer =
+            (Request request, Response response) ->
+                    ViewHelper.render(
+                            Map.of("cris", CoreStubConfig.credentialIssuers),
+                            "credential-issuers.mustache");
     private HandlerHelper handlerHelper;
-    public Route userSearch = (Request request, Response response) -> {
-        var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+    public Route userSearch =
+            (Request request, Response response) -> {
+                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
 
-        var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
+                var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
 
-        var results = handlerHelper.findByName(request.queryParams("name"));
-        int size = results.size();
-        if (size > CoreStubConfig.CORE_STUB_MAX_SEARCH_RESULTS  ) {
-            throw new IllegalStateException("Too many matches: %d".formatted(size));
-        }
+                var results = handlerHelper.findByName(request.queryParams("name"));
+                int size = results.size();
+                if (size > CoreStubConfig.CORE_STUB_MAX_SEARCH_RESULTS) {
+                    throw new IllegalStateException("Too many matches: %d".formatted(size));
+                }
 
-        if (size == 0) {
-            throw new IllegalStateException("No matches");
-        }
+                if (size == 0) {
+                    throw new IllegalStateException("No matches");
+                }
 
-        var identityMapper = new IdentityMapper();
-        var displayIdentities = results.stream()
-                .map(identityMapper::mapToDisplayable)
-                .sorted(Comparator.comparingInt(DisplayIdentity::rowNumber))
-                .collect(Collectors.toList());
+                var identityMapper = new IdentityMapper();
+                var displayIdentities =
+                        results.stream()
+                                .map(identityMapper::mapToDisplayable)
+                                .sorted(Comparator.comparingInt(DisplayIdentity::rowNumber))
+                                .collect(Collectors.toList());
 
-        var modelMap = new HashMap<String, Object>();
-        modelMap.put("cri", credentialIssuer.id());
-        modelMap.put("criName", credentialIssuer.name());
-        modelMap.put("identities", displayIdentities);
-        return ViewHelper.render(modelMap, "search-results.mustache");
-    };
-    public Route doCallback = (Request request, Response response) -> {
-        var authorizationResponse = handlerHelper.getAuthorizationResponse(request);
-        var authorizationCode = authorizationResponse.toSuccessResponse().getAuthorizationCode();
-        var state = authorizationResponse.toSuccessResponse().getState();
-        var cri = stateSession.remove(state.getValue());
-        var credentialIssuer = handlerHelper.findCredentialIssuer(cri.id());
-        var accessToken = handlerHelper.exchangeCodeForToken(authorizationCode, credentialIssuer);
-        var userInfo = handlerHelper.getUserInfo(accessToken, credentialIssuer);
+                var modelMap = new HashMap<String, Object>();
+                modelMap.put("cri", credentialIssuer.id());
+                modelMap.put("criName", credentialIssuer.name());
+                modelMap.put("identities", displayIdentities);
+                return ViewHelper.render(modelMap, "search-results.mustache");
+            };
+    public Route doCallback =
+            (Request request, Response response) -> {
+                var authorizationResponse = handlerHelper.getAuthorizationResponse(request);
+                var authorizationCode =
+                        authorizationResponse.toSuccessResponse().getAuthorizationCode();
+                var state = authorizationResponse.toSuccessResponse().getState();
+                var cri = stateSession.remove(state.getValue());
+                var credentialIssuer = handlerHelper.findCredentialIssuer(cri.id());
+                var accessToken =
+                        handlerHelper.exchangeCodeForToken(authorizationCode, credentialIssuer);
+                var userInfo = handlerHelper.getUserInfo(accessToken, credentialIssuer);
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        Map jsonMap = gson.fromJson(userInfo.toJSONString(), Map.class);
-        Map<String, Object> moustacheDataModel = new HashMap<>();
-        moustacheDataModel.put("data", gson.toJson(jsonMap));
-        moustacheDataModel.put("cri", cri.id());
-        moustacheDataModel.put("criName", cri.name());
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                Map jsonMap = gson.fromJson(userInfo.toJSONString(), Map.class);
+                Map<String, Object> moustacheDataModel = new HashMap<>();
+                moustacheDataModel.put("data", gson.toJson(jsonMap));
+                moustacheDataModel.put("cri", cri.id());
+                moustacheDataModel.put("criName", cri.name());
 
-        return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
-    };
+                return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
+            };
     private RSAKey signingKey;
-    public Route handleCredentialIssuerRequest = (Request request, Response response) -> {
-        var credentialIssuer = handlerHelper.findCredentialIssuer(Objects.requireNonNull(request.queryParams("cri")));
+    public Route handleCredentialIssuerRequest =
+            (Request request, Response response) -> {
+                var credentialIssuer =
+                        handlerHelper.findCredentialIssuer(
+                                Objects.requireNonNull(request.queryParams("cri")));
 
-        if (credentialIssuer.sendIdentityClaims()) {
-            return ViewHelper.render(Map.of("cri", credentialIssuer.id(), "criName", credentialIssuer.name()), "user-search.mustache");
-        } else {
-            String jwt = handlerHelper.createClaimsJWT(Map.of(), signingKey);
-            State state = createNewState(credentialIssuer);
-            AuthorizationRequest authRequest = handlerHelper.createAuthorizationRequest(state, credentialIssuer, jwt);
-            response.redirect(authRequest.toURI().toString());
-            return null;
-        }
-    };
-    public Route authorize = (Request request, Response response) -> {
-        var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
-        var rowNumber = Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
-        var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
-        var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
+                if (credentialIssuer.sendIdentityClaims()) {
+                    return ViewHelper.render(
+                            Map.of(
+                                    "cri",
+                                    credentialIssuer.id(),
+                                    "criName",
+                                    credentialIssuer.name()),
+                            "user-search.mustache");
+                } else {
+                    String jwt = handlerHelper.createClaimsJWT(Map.of(), signingKey);
+                    State state = createNewState(credentialIssuer);
+                    AuthorizationRequest authRequest =
+                            handlerHelper.createAuthorizationRequest(state, credentialIssuer, jwt);
+                    response.redirect(authRequest.toURI().toString());
+                    return null;
+                }
+            };
+    public Route authorize =
+            (Request request, Response response) -> {
+                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                var rowNumber =
+                        Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
+                var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
+                var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
 
-        var claimIdentity = new IdentityMapper().mapToJTWClaim(identity);
-        var jwt = handlerHelper.createClaimsJWT(claimIdentity, signingKey);
-        var state = createNewState(credentialIssuer);
-        var authRequest = handlerHelper.createAuthorizationRequest(state, credentialIssuer, jwt);
-        response.redirect(authRequest.toURI().toString());
-        return null;
-    };
+                var claimIdentity = new IdentityMapper().mapToJTWClaim(identity);
+                var jwt = handlerHelper.createClaimsJWT(claimIdentity, signingKey);
+                var state = createNewState(credentialIssuer);
+                var authRequest =
+                        handlerHelper.createAuthorizationRequest(state, credentialIssuer, jwt);
+                response.redirect(authRequest.toURI().toString());
+                return null;
+            };
 
     public CoreStubHandler(HandlerHelper handlerHelper, RSAKey signingKey) {
         this.handlerHelper = handlerHelper;
@@ -112,5 +133,4 @@ public class CoreStubHandler {
         stateSession.put(state.getValue(), credentialIssuer);
         return state;
     }
-
 }

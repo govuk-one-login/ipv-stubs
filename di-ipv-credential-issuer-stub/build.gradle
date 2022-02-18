@@ -1,47 +1,47 @@
 plugins {
-    id 'idea'
-    id 'application'
-    id 'java'
+	id 'idea'
+	id 'application'
+	id 'java'
 }
 
 group 'uk.gov.di.ipv'
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 sourceCompatibility = 17
 
 dependencies {
-    implementation "com.sparkjava:spark-core:2.9.3",
-        "com.sparkjava:spark-template-mustache:2.7.1",
-        "com.nimbusds:oauth2-oidc-sdk:9.20",
-        "com.fasterxml.jackson.core:jackson-core:2.13.1",
-        "com.fasterxml.jackson.core:jackson-databind:2.13.1",
-        "com.fasterxml.jackson.core:jackson-annotations:2.13.1",
-        "com.google.code.gson:gson:2.8.9",
-        "org.slf4j:slf4j-simple:1.7.32"
+	implementation "com.sparkjava:spark-core:2.9.3",
+			"com.sparkjava:spark-template-mustache:2.7.1",
+			"com.nimbusds:oauth2-oidc-sdk:9.20",
+			"com.fasterxml.jackson.core:jackson-core:2.13.1",
+			"com.fasterxml.jackson.core:jackson-databind:2.13.1",
+			"com.fasterxml.jackson.core:jackson-annotations:2.13.1",
+			"com.google.code.gson:gson:2.8.9",
+			"org.slf4j:slf4j-simple:1.7.32"
 
-    compileOnly 'org.projectlombok:lombok:1.18.22'
-    annotationProcessor 'org.projectlombok:lombok:1.18.22'
+	compileOnly 'org.projectlombok:lombok:1.18.22'
+	annotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2',
-            'org.mockito:mockito-core:4.2.0',
-            "org.mockito:mockito-junit-jupiter:4.1.0",
-            'uk.org.webcompere:system-stubs-jupiter:1.1.0'
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2',
+			'org.mockito:mockito-core:4.2.0',
+			"org.mockito:mockito-junit-jupiter:4.1.0",
+			'uk.org.webcompere:system-stubs-jupiter:1.1.0'
 }
 
 test {
-    useJUnitPlatform ()
+	useJUnitPlatform ()
 }
 
 run {
-    debugOptions {
-        enabled = true
-        port = 5006
-        server = true
-        suspend = false
-    }
+	debugOptions {
+		enabled = true
+		port = 5006
+		server = true
+		suspend = false
+	}
 }
 
 mainClassName = 'uk.gov.di.ipv.stub.cred.App'

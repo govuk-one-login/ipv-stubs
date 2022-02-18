@@ -7,5 +7,4 @@ public record Identity(
         UKAddress UKAddress,
         DateOfBirth dateOfBirth,
         Name name,
-        Questions questions) {
-}
+        Questions questions) {}

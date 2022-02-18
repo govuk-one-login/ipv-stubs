@@ -8,11 +8,11 @@ import uk.gov.di.ipv.stub.orc.utils.ViewHelper;
 import java.util.HashMap;
 
 public class HomeHandler {
-    public static Route serveHomePage = (Request request, Response response) -> {
+    public static Route serveHomePage =
+            (Request request, Response response) -> {
+                var modelMap = new HashMap<String, Object>();
+                modelMap.put("welcome", "Hello world");
 
-        var modelMap = new HashMap<String, Object>();
-        modelMap.put("welcome", "Hello world");
-
-        return ViewHelper.render(modelMap, "home.mustache");
-    };
+                return ViewHelper.render(modelMap, "home.mustache");
+            };
 }

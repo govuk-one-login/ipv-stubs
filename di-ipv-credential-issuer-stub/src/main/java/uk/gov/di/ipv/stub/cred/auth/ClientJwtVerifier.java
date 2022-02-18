@@ -6,15 +6,10 @@ import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
 import com.nimbusds.oauth2.sdk.auth.verifier.ClientAuthenticationVerifier;
 import com.nimbusds.oauth2.sdk.auth.verifier.InvalidClientException;
 import com.nimbusds.oauth2.sdk.id.Audience;
-import spark.QueryParamsMap;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class ClientJwtVerifier {
@@ -28,8 +23,7 @@ public class ClientJwtVerifier {
         this.verifier = getPopulatedClientAuthVerifier();
     }
 
-    public void authenticateClient(String queryString)
-            throws ClientAuthenticationException {
+    public void authenticateClient(String queryString) throws ClientAuthenticationException {
 
         PrivateKeyJWT authenticationJwt;
         try {
@@ -38,9 +32,13 @@ public class ClientJwtVerifier {
             throw new ClientAuthenticationException(e);
         }
 
-        ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(authenticationJwt.getClientID().getValue());
+        ClientConfig clientConfig =
+                CredentialIssuerConfig.getClientConfig(authenticationJwt.getClientID().getValue());
         if (clientConfig == null) {
-            throw new ClientAuthenticationException(String.format("Config for client ID '%s' not found", authenticationJwt.getClientID().getValue()));
+            throw new ClientAuthenticationException(
+                    String.format(
+                            "Config for client ID '%s' not found",
+                            authenticationJwt.getClientID().getValue()));
         }
 
         if (clientConfig.getJwtAuthentication().get(AUTHENTICATION_METHOD).equals(NONE)) {

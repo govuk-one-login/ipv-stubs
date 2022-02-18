@@ -4,5 +4,4 @@ import java.util.Date;
 import java.util.List;
 
 public record JWTClaimIdentity(
-        List<Name> names, List<UKAddress> UKAddresses, List<Date> datesOfBirth) {
-}
+        List<Name> names, List<UKAddress> UKAddresses, List<Date> datesOfBirth) {}

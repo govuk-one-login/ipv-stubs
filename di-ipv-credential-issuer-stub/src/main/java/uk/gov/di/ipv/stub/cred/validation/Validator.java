@@ -34,40 +34,71 @@ public class Validator {
         return Objects.isNull(value) || value.isEmpty() || value.isBlank();
     }
 
-    public static ValidationResult verifyGpg45(CriType criType, String strengthValue, String validityValue, String activityValue, String fraudValue, String verificationValue) {
+    public static ValidationResult verifyGpg45(
+            CriType criType,
+            String strengthValue,
+            String validityValue,
+            String activityValue,
+            String fraudValue,
+            String verificationValue) {
         switch (criType) {
             case EVIDENCE_CRI_TYPE:
                 try {
                     Integer.parseInt(strengthValue);
                     Integer.parseInt(validityValue);
 
-                    return areStringsNullOrEmpty(Arrays.asList(activityValue, fraudValue, verificationValue));
+                    return areStringsNullOrEmpty(
+                            Arrays.asList(activityValue, fraudValue, verificationValue));
                 } catch (NumberFormatException e) {
-                    return new ValidationResult(false, new ErrorObject(INVALID_EVIDENCE_VALUES_ERROR_CODE, "Invalid numbers provided for evidence strength and validity"));
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_EVIDENCE_VALUES_ERROR_CODE,
+                                    "Invalid numbers provided for evidence strength and validity"));
                 }
             case ACTIVITY_CRI_TYPE:
                 try {
                     Integer.parseInt(activityValue);
 
-                    return areStringsNullOrEmpty(Arrays.asList(strengthValue, validityValue, fraudValue, verificationValue));
+                    return areStringsNullOrEmpty(
+                            Arrays.asList(
+                                    strengthValue, validityValue, fraudValue, verificationValue));
                 } catch (NumberFormatException e) {
-                    return new ValidationResult(false, new ErrorObject(INVALID_ACTIVITY_VALUES_ERROR_CODE, "Invalid number provided for activity"));
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_ACTIVITY_VALUES_ERROR_CODE,
+                                    "Invalid number provided for activity"));
                 }
             case FRAUD_CRI_TYPE:
                 try {
                     Integer.parseInt(fraudValue);
 
-                    return areStringsNullOrEmpty(Arrays.asList(strengthValue, validityValue, activityValue, verificationValue));
+                    return areStringsNullOrEmpty(
+                            Arrays.asList(
+                                    strengthValue,
+                                    validityValue,
+                                    activityValue,
+                                    verificationValue));
                 } catch (NumberFormatException e) {
-                    return new ValidationResult(false, new ErrorObject(INVALID_FRAUD_VALUES_ERROR_CODE, "Invalid number provided for fraud"));
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_FRAUD_VALUES_ERROR_CODE,
+                                    "Invalid number provided for fraud"));
                 }
             case VERIFICATION_CRI_TYPE:
                 try {
                     Integer.parseInt(verificationValue);
 
-                    return areStringsNullOrEmpty(Arrays.asList(strengthValue, validityValue, activityValue, fraudValue));
+                    return areStringsNullOrEmpty(
+                            Arrays.asList(strengthValue, validityValue, activityValue, fraudValue));
                 } catch (NumberFormatException e) {
-                    return new ValidationResult(false, new ErrorObject(INVALID_VERIFICATION_VALUES_ERROR_CODE, "Invalid number provided for verification"));
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_VERIFICATION_VALUES_ERROR_CODE,
+                                    "Invalid number provided for verification"));
                 }
             default:
                 return ValidationResult.createValidResult();
@@ -79,12 +110,19 @@ public class Validator {
         String clientId = queryParams.value(RequestParamConstants.CLIENT_ID);
 
         ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientId);
-        List<String> validRedirectUrls = Arrays.asList(clientConfig.getJwtAuthentication().get("validRedirectUrls").split(REDIRECT_URI_SEPARATOR));
+        List<String> validRedirectUrls =
+                Arrays.asList(
+                        clientConfig
+                                .getJwtAuthentication()
+                                .get("validRedirectUrls")
+                                .split(REDIRECT_URI_SEPARATOR));
         return !validRedirectUrls.contains(redirectUri);
     }
 
-    public ValidationResult validateRedirectUrlsMatch(String redirectUrlFromAuthEndpoint, String redirectUrlFromTokenEndpoint) {
-        if (Validator.isNullBlankOrEmpty(redirectUrlFromAuthEndpoint) && Validator.isNullBlankOrEmpty(redirectUrlFromTokenEndpoint)) {
+    public ValidationResult validateRedirectUrlsMatch(
+            String redirectUrlFromAuthEndpoint, String redirectUrlFromTokenEndpoint) {
+        if (Validator.isNullBlankOrEmpty(redirectUrlFromAuthEndpoint)
+                && Validator.isNullBlankOrEmpty(redirectUrlFromTokenEndpoint)) {
             return ValidationResult.createValidResult();
         }
 
@@ -103,17 +141,20 @@ public class Validator {
         String clientIdValue = requestParams.value(RequestParamConstants.CLIENT_ID);
         String assertionType = requestParams.value(RequestParamConstants.CLIENT_ASSERTION_TYPE);
         String assertion = requestParams.value(RequestParamConstants.CLIENT_ASSERTION);
-        if (Validator.isNullBlankOrEmpty(clientIdValue) &&
-                (Validator.isNullBlankOrEmpty(assertionType) || Validator.isNullBlankOrEmpty(assertion))) {
+        if (Validator.isNullBlankOrEmpty(clientIdValue)
+                && (Validator.isNullBlankOrEmpty(assertionType)
+                        || Validator.isNullBlankOrEmpty(assertion))) {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
-        if (!Validator.isNullBlankOrEmpty(clientIdValue) && CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
+        if (!Validator.isNullBlankOrEmpty(clientIdValue)
+                && CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
         String grantTypeValue = requestParams.value(RequestParamConstants.GRANT_TYPE);
-        if (Validator.isNullBlankOrEmpty(grantTypeValue) || !grantTypeValue.equalsIgnoreCase(GrantType.AUTHORIZATION_CODE.getValue())) {
+        if (Validator.isNullBlankOrEmpty(grantTypeValue)
+                || !grantTypeValue.equalsIgnoreCase(GrantType.AUTHORIZATION_CODE.getValue())) {
             return new ValidationResult(false, OAuth2Error.UNSUPPORTED_GRANT_TYPE);
         }
 
@@ -134,9 +175,12 @@ public class Validator {
     }
 
     private static ValidationResult areStringsNullOrEmpty(List<String> values) {
-        for (String value: values) {
+        for (String value : values) {
             if (!isNullBlankOrEmpty(value)) {
-                return new ValidationResult(false, new ErrorObject(INVALID_GPG45_SCORE_ERROR_CODE, "Invalid GPG45 score provided"));
+                return new ValidationResult(
+                        false,
+                        new ErrorObject(
+                                INVALID_GPG45_SCORE_ERROR_CODE, "Invalid GPG45 score provided"));
             }
         }
         return ValidationResult.createValidResult();

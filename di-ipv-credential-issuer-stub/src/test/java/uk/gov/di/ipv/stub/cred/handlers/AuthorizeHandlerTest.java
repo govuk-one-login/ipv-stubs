@@ -32,6 +32,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
@@ -74,7 +75,8 @@ class AuthorizeHandlerTest {
     private static final String TEST_REDIRECT_URI = "https://valid.example.com";
 
     @SystemStub
-    private final EnvironmentVariables environmentVariables = new EnvironmentVariables("CLIENT_CONFIG", TestFixtures.CLIENT_CONFIG);
+    private final EnvironmentVariables environmentVariables =
+            new EnvironmentVariables("CLIENT_CONFIG", TestFixtures.CLIENT_CONFIG);
 
     @BeforeEach
     void setup() {
@@ -86,7 +88,8 @@ class AuthorizeHandlerTest {
         mockAuthCodeService = mock(AuthCodeService.class);
         mockCredentialService = mock(CredentialService.class);
 
-        authorizeHandler = new AuthorizeHandler(mockViewHelper, mockAuthCodeService, mockCredentialService);
+        authorizeHandler =
+                new AuthorizeHandler(mockViewHelper, mockAuthCodeService, mockCredentialService);
     }
 
     @Test
@@ -94,10 +97,12 @@ class AuthorizeHandlerTest {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
-        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
@@ -117,10 +122,14 @@ class AuthorizeHandlerTest {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{"https://not-registered.example.com"});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
-        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(
+                RequestParamConstants.REDIRECT_URI,
+                new String[] {"https://not-registered.example.com"});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
@@ -128,7 +137,9 @@ class AuthorizeHandlerTest {
 
         String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
 
-        assertEquals("redirect_uri param provided does not match any of the redirect_uri values configured", result);
+        assertEquals(
+                "redirect_uri param provided does not match any of the redirect_uri values configured",
+                result);
         verify(mockViewHelper, never()).render(Collections.emptyMap(), "authorize.mustache");
         verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
     }
@@ -138,9 +149,11 @@ class AuthorizeHandlerTest {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
-        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
@@ -156,37 +169,47 @@ class AuthorizeHandlerTest {
     @Test
     void shouldReturn302WithErrorQueryParamsWhenResponseTypeParamNotProvided() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
 
-        invokeDoAuthorizeAndMakeAssertions(queryParams, createExpectedErrorQueryStringParams(OAuth2Error.UNSUPPORTED_RESPONSE_TYPE));
+        invokeDoAuthorizeAndMakeAssertions(
+                queryParams,
+                createExpectedErrorQueryStringParams(OAuth2Error.UNSUPPORTED_RESPONSE_TYPE));
     }
 
     @Test
     void shouldReturn302WithErrorQueryParamsWhenResponseTypeParamNotCode() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{"invalid-type"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[] {"invalid-type"});
 
-        invokeDoAuthorizeAndMakeAssertions(queryParams, createExpectedErrorQueryStringParams(OAuth2Error.UNSUPPORTED_RESPONSE_TYPE));
+        invokeDoAuthorizeAndMakeAssertions(
+                queryParams,
+                createExpectedErrorQueryStringParams(OAuth2Error.UNSUPPORTED_RESPONSE_TYPE));
     }
 
     @Test
     void shouldReturn302WithErrorQueryParamsWhenClientIdParamNotProvided() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
 
-        invokeDoAuthorizeAndMakeAssertions(queryParams, createExpectedErrorQueryStringParams(OAuth2Error.INVALID_CLIENT));
+        invokeDoAuthorizeAndMakeAssertions(
+                queryParams, createExpectedErrorQueryStringParams(OAuth2Error.INVALID_CLIENT));
     }
 
     @Test
     void shouldReturn302WithErrorQueryParamsWhenClientIdParamNotRegistered() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"not-registered"});
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"not-registered"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
 
-        invokeDoAuthorizeAndMakeAssertions(queryParams, createExpectedErrorQueryStringParams(OAuth2Error.INVALID_CLIENT));
+        invokeDoAuthorizeAndMakeAssertions(
+                queryParams, createExpectedErrorQueryStringParams(OAuth2Error.INVALID_CLIENT));
     }
 
     @Test
@@ -197,23 +220,27 @@ class AuthorizeHandlerTest {
 
         List<String> givenNames = Arrays.asList("Daniel", "Dan", "Danny");
         List<String> dateOfBirths = Arrays.asList("01/01/1980", "02/01/1980");
-        List<String> addresses = Arrays.asList("{\"line1\":\"\321 Street\",\"postcode\":\"M34 1AA\"");
-        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .claim("givenNames", givenNames)
-                .claim("dateOfBirths", dateOfBirths)
-                .claim("addresses", addresses)
-                .build();
+        List<String> addresses =
+                Arrays.asList("{\"line1\":\"\321 Street\",\"postcode\":\"M34 1AA\"");
+        JWTClaimsSet claimsSet =
+                new JWTClaimsSet.Builder()
+                        .claim("givenNames", givenNames)
+                        .claim("dateOfBirths", dateOfBirths)
+                        .claim("addresses", addresses)
+                        .build();
 
         RSASSASigner rsaSigner = new RSASSASigner(getPrivateKey());
         SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claimsSet);
         signedJWT.sign(rsaSigner);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
-        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
-        queryParams.put(RequestParamConstants.REQUEST, new String[]{signedJWT.serialize()});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
+        queryParams.put(RequestParamConstants.REQUEST, new String[] {signedJWT.serialize()});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
@@ -226,23 +253,32 @@ class AuthorizeHandlerTest {
 
         assertEquals(renderOutput, result);
 
-        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor =
+                ArgumentCaptor.forClass(Map.class);
         verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
 
-        assertTrue(Boolean.parseBoolean(frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
-        assertEquals(gson.toJson(claimsSet.toJSONObject()), frontendParamsCaptor.getValue().get("sharedAttributes"));
+        assertTrue(
+                Boolean.parseBoolean(
+                        frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
+        assertEquals(
+                gson.toJson(claimsSet.toJSONObject()),
+                frontendParamsCaptor.getValue().get("sharedAttributes"));
     }
 
     @Test
-    void shouldRenderMustacheTemplateWhenValidRequestReceivedWithInvalidRequestJWT() throws Exception {
+    void shouldRenderMustacheTemplateWhenValidRequestReceivedWithInvalidRequestJWT()
+            throws Exception {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
-        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
-        queryParams.put(RequestParamConstants.REQUEST, new String[]{"invalid-shared-attributes-JWT"});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
+        queryParams.put(
+                RequestParamConstants.REQUEST, new String[] {"invalid-shared-attributes-JWT"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
@@ -254,21 +290,29 @@ class AuthorizeHandlerTest {
         String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
 
         assertEquals(renderOutput, result);
-        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor =
+                ArgumentCaptor.forClass(Map.class);
         verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
-        assertTrue(Boolean.parseBoolean(frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
-        assertEquals("Error: failed to parse shared attribute JWT", frontendParamsCaptor.getValue().get("sharedAttributes"));
+        assertTrue(
+                Boolean.parseBoolean(
+                        frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
+        assertEquals(
+                "Error: failed to parse shared attribute JWT",
+                frontendParamsCaptor.getValue().get("sharedAttributes"));
     }
 
     @Test
-    void shouldRenderMustacheTemplateWhenValidRequestReceivedWithMissingRequestJWT() throws Exception {
+    void shouldRenderMustacheTemplateWhenValidRequestReceivedWithMissingRequestJWT()
+            throws Exception {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
-        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
@@ -280,38 +324,44 @@ class AuthorizeHandlerTest {
         String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
 
         assertEquals(renderOutput, result);
-        ArgumentCaptor<Map<String, String>> frontendParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Map<String, String>> frontendParamsCaptor =
+                ArgumentCaptor.forClass(Map.class);
         verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
-        assertEquals("Error: missing 'request' query parameter", frontendParamsCaptor.getValue().get("sharedAttributes"));
+        assertEquals(
+                "Error: missing 'request' query parameter",
+                frontendParamsCaptor.getValue().get("sharedAttributes"));
     }
 
     @Test
-    void shouldRenderMustacheTemplateWhenValidRequestReceivedWhenSignatureVerificationFails() throws Exception {
+    void shouldRenderMustacheTemplateWhenValidRequestReceivedWhenSignatureVerificationFails()
+            throws Exception {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         List<String> givenNames = Arrays.asList("Daniel", "Dan", "Danny");
         List<String> dateOfBirths = Arrays.asList("01/01/1980", "02/01/1980");
-        List<String> addresses = Arrays.asList("{\"line1\":\"\321 Street\",\"postcode\":\"M34 1AA\"");
-        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                .claim("givenNames", givenNames)
-                .claim("dateOfBirths", dateOfBirths)
-                .claim("addresses", addresses)
-                .build();
+        List<String> addresses =
+                Arrays.asList("{\"line1\":\"\321 Street\",\"postcode\":\"M34 1AA\"");
+        JWTClaimsSet claimsSet =
+                new JWTClaimsSet.Builder()
+                        .claim("givenNames", givenNames)
+                        .claim("dateOfBirths", dateOfBirths)
+                        .claim("addresses", addresses)
+                        .build();
 
-        RSAKey rsaJWK = new RSAKeyGenerator(2048)
-                .keyID("123")
-                .generate();
+        RSAKey rsaJWK = new RSAKeyGenerator(2048).keyID("123").generate();
         JWSSigner signer = new RSASSASigner(rsaJWK);
 
         SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claimsSet);
         signedJWT.sign(signer);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
-        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
-        queryParams.put(RequestParamConstants.REQUEST, new String[]{signedJWT.serialize()});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
+        queryParams.put(RequestParamConstants.REQUEST, new String[] {signedJWT.serialize()});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
@@ -323,9 +373,12 @@ class AuthorizeHandlerTest {
         String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
 
         assertEquals(renderOutput, result);
-        ArgumentCaptor<Map<String, String>> frontendParamsCaptor = ArgumentCaptor.forClass(Map.class);
+        ArgumentCaptor<Map<String, String>> frontendParamsCaptor =
+                ArgumentCaptor.forClass(Map.class);
         verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
-        assertEquals("Error: Signature of the shared attribute JWT is not valid", frontendParamsCaptor.getValue().get("sharedAttributes"));
+        assertEquals(
+                "Error: Signature of the shared attribute JWT is not valid",
+                frontendParamsCaptor.getValue().get("sharedAttributes"));
     }
 
     @Test
@@ -333,25 +386,31 @@ class AuthorizeHandlerTest {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
-        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
-        queryParams.put(RequestParamConstants.RESOURCE_ID, new String[]{UUID.randomUUID().toString()});
-        queryParams.put(RequestParamConstants.JSON_PAYLOAD, new String[]{"{\"test\": \"test-value\"}"});
-        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, new String[]{"2"});
-        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[]{"3"});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
+        queryParams.put(
+                RequestParamConstants.RESOURCE_ID, new String[] {UUID.randomUUID().toString()});
+        queryParams.put(
+                RequestParamConstants.JSON_PAYLOAD, new String[] {"{\"test\": \"test-value\"}"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, new String[] {"2"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[] {"3"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
-        String result = (String) authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+        String result =
+                (String) authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
 
         ArgumentCaptor<String> redirectUriCaptor = ArgumentCaptor.forClass(String.class);
         assertNull(result);
         verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
-        verify(mockAuthCodeService).persist(any(AuthorizationCode.class), anyString(), eq(TEST_REDIRECT_URI));
+        verify(mockAuthCodeService)
+                .persist(any(AuthorizationCode.class), anyString(), eq(TEST_REDIRECT_URI));
         verify(mockResponse).redirect(redirectUriCaptor.capture());
         assertNotNull(redirectUriCaptor.getValue());
     }
@@ -361,14 +420,17 @@ class AuthorizeHandlerTest {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[]{"clientIdValid"});
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[]{TEST_REDIRECT_URI});
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[]{ResponseType.Value.CODE.getValue()});
-        queryParams.put(RequestParamConstants.STATE, new String[]{"test-state"});
-        queryParams.put(RequestParamConstants.RESOURCE_ID, new String[]{UUID.randomUUID().toString()});
-        queryParams.put(RequestParamConstants.JSON_PAYLOAD, new String[]{"invalid-json"});
-        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, new String[]{"2"});
-        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[]{"3"});
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
+        queryParams.put(
+                RequestParamConstants.RESOURCE_ID, new String[] {UUID.randomUUID().toString()});
+        queryParams.put(RequestParamConstants.JSON_PAYLOAD, new String[] {"invalid-json"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, new String[] {"2"});
+        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[] {"3"});
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
 
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
@@ -391,7 +453,9 @@ class AuthorizeHandlerTest {
                 + URLEncoder.encode(errorDesc, StandardCharsets.UTF_8);
     }
 
-    private void invokeDoAuthorizeAndMakeAssertions(Map<String, String[]> queryParams, String expectedErrorCodeAndDescription) throws Exception {
+    private void invokeDoAuthorizeAndMakeAssertions(
+            Map<String, String[]> queryParams, String expectedErrorCodeAndDescription)
+            throws Exception {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
 
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
@@ -412,6 +476,7 @@ class AuthorizeHandlerTest {
                 KeyFactory.getInstance("RSA")
                         .generatePrivate(
                                 new PKCS8EncodedKeySpec(
-                                        Base64.getDecoder().decode(TestFixtures.CLIENT_CONFIG_PRIVATE_KEY)));
+                                        Base64.getDecoder()
+                                                .decode(TestFixtures.CLIENT_CONFIG_PRIVATE_KEY)));
     }
 }

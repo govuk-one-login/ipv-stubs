@@ -14,7 +14,6 @@ import java.net.URI;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
@@ -48,18 +47,27 @@ public class JwtHelper {
 
         claimsBuilder.claim(JWTClaimNames.ISSUER, ORCHESTRATOR_CLIENT_ID);
         claimsBuilder.claim(JWTClaimNames.SUBJECT, ORCHESTRATOR_CLIENT_ID);
-        claimsBuilder.claim(JWTClaimNames.AUDIENCE, URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve(IPV_BACKCHANNEL_TOKEN_PATH).toString());
+        claimsBuilder.claim(
+                JWTClaimNames.AUDIENCE,
+                URI.create(IPV_BACKCHANNEL_ENDPOINT)
+                        .resolve(IPV_BACKCHANNEL_TOKEN_PATH)
+                        .toString());
 
         OffsetDateTime dateTime = OffsetDateTime.now();
-        claimsBuilder.claim(JWTClaimNames.EXPIRATION_TIME,
-                Instant.parse(dateTime.plusMinutes(Long.parseLong(ORCHESTRATOR_CLIENT_JWT_EXPIRY_MINS)).toString()).toEpochMilli());
+        claimsBuilder.claim(
+                JWTClaimNames.EXPIRATION_TIME,
+                Instant.parse(
+                                dateTime.plusMinutes(
+                                                Long.parseLong(ORCHESTRATOR_CLIENT_JWT_EXPIRY_MINS))
+                                        .toString())
+                        .toEpochMilli());
 
         return claimsBuilder.build();
     }
 
-    private static PrivateKey getPrivateKey() throws InvalidKeySpecException, NoSuchAlgorithmException {
-        byte[] binaryKey =
-                Base64.getDecoder().decode(ORCHESTRATOR_CLIENT_SIGNING_KEY);
+    private static PrivateKey getPrivateKey()
+            throws InvalidKeySpecException, NoSuchAlgorithmException {
+        byte[] binaryKey = Base64.getDecoder().decode(ORCHESTRATOR_CLIENT_SIGNING_KEY);
         KeyFactory factory = KeyFactory.getInstance("RSA");
         PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(binaryKey);
         return factory.generatePrivate(privateKeySpec);

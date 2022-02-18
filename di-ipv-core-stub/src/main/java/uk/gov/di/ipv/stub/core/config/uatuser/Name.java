@@ -5,7 +5,9 @@ import spark.utils.StringUtils;
 public record Name(String firstName, String surname) {
 
     public String firstLastName() {
-        return "%s %s".formatted(nonBlankValueOrBlank(firstName), nonBlankValueOrBlank(surname)).trim();
+        return "%s %s"
+                .formatted(nonBlankValueOrBlank(firstName), nonBlankValueOrBlank(surname))
+                .trim();
     }
 
     private String nonBlankValueOrBlank(String value) {

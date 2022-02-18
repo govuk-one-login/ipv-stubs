@@ -29,7 +29,8 @@ public class CriConfigPublicKeySelector implements ClientCredentialsSelector<Obj
     public Map<String, List<PublicKey>> clientPublicKeys = new HashMap<>();
 
     @Override
-    public List<Secret> selectClientSecrets(ClientID claimedClientID, ClientAuthenticationMethod authMethod, Context context) {
+    public List<Secret> selectClientSecrets(
+            ClientID claimedClientID, ClientAuthenticationMethod authMethod, Context context) {
         throw new UnsupportedOperationException("We don't do that round here...");
     }
 
@@ -39,10 +40,13 @@ public class CriConfigPublicKeySelector implements ClientCredentialsSelector<Obj
             ClientAuthenticationMethod authMethod,
             JWSHeader jwsHeader,
             boolean forceRefresh,
-            Context context) throws InvalidClientException {
+            Context context)
+            throws InvalidClientException {
         List<PublicKey> publicKeys = clientPublicKeys.get(claimedClientID.getValue());
         if (publicKeys == null) {
-            throw new InvalidClientException(String.format("No public keys found for clientId '%s'", claimedClientID.getValue()));
+            throw new InvalidClientException(
+                    String.format(
+                            "No public keys found for clientId '%s'", claimedClientID.getValue()));
         }
         return publicKeys;
     }
@@ -56,13 +60,19 @@ public class CriConfigPublicKeySelector implements ClientCredentialsSelector<Obj
         }
 
         Base64.Decoder decoder = Base64.getDecoder();
-        for(Map.Entry<String, ClientConfig> configEntry: clientConfigs.entrySet()) {
+        for (Map.Entry<String, ClientConfig> configEntry : clientConfigs.entrySet()) {
             try {
-                PublicKey publicKey = certificateFactory.generateCertificate(
-                                new ByteArrayInputStream(
-                                        decoder.decode(
-                                                configEntry.getValue().getJwtAuthentication().get(PUBLIC_CERTIFICATE_CONFIG_KEY))))
-                        .getPublicKey();
+                PublicKey publicKey =
+                        certificateFactory
+                                .generateCertificate(
+                                        new ByteArrayInputStream(
+                                                decoder.decode(
+                                                        configEntry
+                                                                .getValue()
+                                                                .getJwtAuthentication()
+                                                                .get(
+                                                                        PUBLIC_CERTIFICATE_CONFIG_KEY))))
+                                .getPublicKey();
 
                 clientPublicKeys.put(configEntry.getKey(), List.of(publicKey));
             } catch (CertificateException | IllegalArgumentException e) {

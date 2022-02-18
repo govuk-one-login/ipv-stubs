@@ -29,7 +29,8 @@ public class CoreStub {
     }
 
     private void initRoutes() throws Exception {
-        CoreStubHandler coreStubHandler = new CoreStubHandler(new HandlerHelper(), getSigningKeystore());
+        CoreStubHandler coreStubHandler =
+                new CoreStubHandler(new HandlerHelper(), getSigningKeystore());
         Spark.get("/", coreStubHandler.serveHomePage);
         Spark.get("/credential-issuers", coreStubHandler.showCredentialIssuer);
         Spark.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
@@ -49,10 +50,15 @@ public class CoreStub {
 
     private RSAKey getSigningKeystore() throws Exception {
         KeyStore keystore = KeyStore.getInstance("pkcs12");
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64.getDecoder().decode(CoreStubConfig.CORE_STUB_KEYSTORE_BASE64))) {
+        try (ByteArrayInputStream inputStream =
+                new ByteArrayInputStream(
+                        Base64.getDecoder().decode(CoreStubConfig.CORE_STUB_KEYSTORE_BASE64))) {
             keystore.load(inputStream, CoreStubConfig.CORE_STUB_KEYSTORE_PASSWORD.toCharArray());
         }
-        return Objects.requireNonNull(RSAKey.load(keystore, CoreStubConfig.CORE_STUB_KEYSTORE_ALIAS, CoreStubConfig.CORE_STUB_KEYSTORE_PASSWORD.toCharArray()));
+        return Objects.requireNonNull(
+                RSAKey.load(
+                        keystore,
+                        CoreStubConfig.CORE_STUB_KEYSTORE_ALIAS,
+                        CoreStubConfig.CORE_STUB_KEYSTORE_PASSWORD.toCharArray()));
     }
-
 }
