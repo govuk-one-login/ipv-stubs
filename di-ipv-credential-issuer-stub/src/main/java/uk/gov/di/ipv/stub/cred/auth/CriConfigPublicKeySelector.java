@@ -61,20 +61,30 @@ public class CriConfigPublicKeySelector implements ClientCredentialsSelector<Obj
 
         Base64.Decoder decoder = Base64.getDecoder();
         for (Map.Entry<String, ClientConfig> configEntry : clientConfigs.entrySet()) {
-            try {
-                PublicKey publicKey =
-                        certificateFactory
-                                .generateCertificate(
-                                        new ByteArrayInputStream(
-                                                decoder.decode(
-                                                        configEntry
-                                                                .getValue()
-                                                                .getJwtAuthentication()
-                                                                .get(
-                                                                        PUBLIC_CERTIFICATE_CONFIG_KEY))))
-                                .getPublicKey();
+            Map<String, String> jwtAuthentication = configEntry.getValue().getJwtAuthentication();
+            String authenticationMethod =
+                    jwtAuthentication.getOrDefault("authenticationMethod", "none");
+            LOGGER.info(
+                    String.format(
+                            "Using %s auth method  for client id %s",
+                            authenticationMethod, configEntry.getKey()));
 
-                clientPublicKeys.put(configEntry.getKey(), List.of(publicKey));
+            try {
+                if (authenticationMethod.equals("jwt")) {
+                    PublicKey publicKey =
+                            certificateFactory
+                                    .generateCertificate(
+                                            new ByteArrayInputStream(
+                                                    decoder.decode(
+                                                            configEntry
+                                                                    .getValue()
+                                                                    .getJwtAuthentication()
+                                                                    .get(
+                                                                            PUBLIC_CERTIFICATE_CONFIG_KEY))))
+                                    .getPublicKey();
+
+                    clientPublicKeys.put(configEntry.getKey(), List.of(publicKey));
+                }
             } catch (CertificateException | IllegalArgumentException e) {
                 LOGGER.error(
                         "Failed to parse JWT authentication certificate for clientId '{}'. Continuing in degraded state. Error:'{}'",
