@@ -2,13 +2,13 @@ package uk.gov.di.ipv.stub.cred;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import spark.Spark;
+import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler;
 import uk.gov.di.ipv.stub.cred.handlers.CredentialHandler;
 import uk.gov.di.ipv.stub.cred.handlers.TokenHandler;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
-import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -31,15 +31,17 @@ public class CredentialIssuer {
         ClientJwtVerifier clientJwtVerifier = new ClientJwtVerifier();
         CredentialService credentialService = new CredentialService();
 
-        authorizeHandler = new AuthorizeHandler(new ViewHelper(), authCodeService, credentialService);
-        tokenHandler = new TokenHandler(authCodeService, tokenService, validator, clientJwtVerifier);
+        authorizeHandler =
+                new AuthorizeHandler(new ViewHelper(), authCodeService, credentialService);
+        tokenHandler =
+                new TokenHandler(authCodeService, tokenService, validator, clientJwtVerifier);
         credentialHandler = new CredentialHandler(credentialService, tokenService, objectMapper);
 
         initRoutes();
         initErrorMapping();
     }
 
-    private void initRoutes(){
+    private void initRoutes() {
         Spark.get("/authorize", authorizeHandler.doAuthorize);
         Spark.post("/authorize", authorizeHandler.generateResponse);
         Spark.post("/token", tokenHandler.issueAccessToken);
@@ -47,6 +49,7 @@ public class CredentialIssuer {
     }
 
     private void initErrorMapping() {
-        Spark.internalServerError("<html><body><h1>Error! Something went wrong!</h1></body></html>");
+        Spark.internalServerError(
+                "<html><body><h1>Error! Something went wrong!</h1></body></html>");
     }
 }

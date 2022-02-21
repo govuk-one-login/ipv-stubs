@@ -11,6 +11,7 @@ import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.util.Map;
 import java.util.UUID;
 
@@ -42,16 +43,18 @@ public class CredentialHandlerTest {
         mockObjectMapper = mock(ObjectMapper.class);
 
         accessToken = new BearerAccessToken();
-        when(mockTokenService.getPayload(accessToken.toAuthorizationHeader())).thenReturn(UUID.randomUUID().toString());
+        when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
+                .thenReturn(UUID.randomUUID().toString());
 
-        Map<String, Object> jsonAttributes = Map.of(
-                "id", "12345",
-                "evidenceType", "test-passport",
-                "evidenceID", "test-passport-abc-12345"
-        );
+        Map<String, Object> jsonAttributes =
+                Map.of(
+                        "id", "12345",
+                        "evidenceType", "test-passport",
+                        "evidenceID", "test-passport-abc-12345");
         when(mockCredentialService.getCredential(anyString())).thenReturn(jsonAttributes);
 
-        resourceHandler = new CredentialHandler(mockCredentialService, mockTokenService, mockObjectMapper);
+        resourceHandler =
+                new CredentialHandler(mockCredentialService, mockTokenService, mockObjectMapper);
     }
 
     @Test
@@ -77,7 +80,8 @@ public class CredentialHandlerTest {
     }
 
     @Test
-    public void shouldReturn400WhenIssuedAccessTokenDoesNotMatchRequestAccessToken() throws Exception {
+    public void shouldReturn400WhenIssuedAccessTokenDoesNotMatchRequestAccessToken()
+            throws Exception {
         when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
 
         when(mockTokenService.getPayload(accessToken.toAuthorizationHeader())).thenReturn(null);

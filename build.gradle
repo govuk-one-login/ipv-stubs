@@ -1,0 +1,23 @@
+plugins {
+	id "java"
+	id "com.diffplug.spotless" version "6.3.0"
+}
+
+repositories {
+	mavenCentral()
+}
+
+spotless {
+	java {
+		target "**/src/**/*.java"
+		googleJavaFormat("1.14.0").aosp()
+		importOrder "", "javax", "java", "\\#"
+		endWithNewline()
+	}
+	groovyGradle {
+		target '**/*.gradle'
+		greclipse()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+}

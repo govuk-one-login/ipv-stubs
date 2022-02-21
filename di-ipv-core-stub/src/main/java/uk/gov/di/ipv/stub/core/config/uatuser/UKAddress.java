@@ -6,5 +6,4 @@ public record UKAddress(
         String county,
         String townCity,
         String postCode,
-        boolean currentAddress) {
-}
+        boolean currentAddress) {}

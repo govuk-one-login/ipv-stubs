@@ -12,11 +12,11 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
-import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -35,65 +35,81 @@ public class TokenHandler {
     private Validator validator;
     private ClientJwtVerifier clientJwtVerifier;
 
-    public TokenHandler(AuthCodeService authCodeService, TokenService tokenService, Validator validator, ClientJwtVerifier clientJwtVerifier) {
+    public TokenHandler(
+            AuthCodeService authCodeService,
+            TokenService tokenService,
+            Validator validator,
+            ClientJwtVerifier clientJwtVerifier) {
         this.authCodeService = authCodeService;
         this.tokenService = tokenService;
         this.validator = validator;
         this.clientJwtVerifier = clientJwtVerifier;
     }
 
-    public Route issueAccessToken = (Request request, Response response) -> {
-        QueryParamsMap requestParams = request.queryMap();
-        response.type(RESPONSE_TYPE);
+    public Route issueAccessToken =
+            (Request request, Response response) -> {
+                QueryParamsMap requestParams = request.queryMap();
+                response.type(RESPONSE_TYPE);
 
-        ValidationResult validationResult = validator.validateTokenRequest(requestParams);
-        if (!validationResult.isValid()) {
-            TokenErrorResponse errorResponse = new TokenErrorResponse(validationResult.getError());
-            response.status(validationResult.getError().getHTTPStatusCode());
+                ValidationResult validationResult = validator.validateTokenRequest(requestParams);
+                if (!validationResult.isValid()) {
+                    TokenErrorResponse errorResponse =
+                            new TokenErrorResponse(validationResult.getError());
+                    response.status(validationResult.getError().getHTTPStatusCode());
 
-            return errorResponse.toJSONObject().toJSONString();
-        }
+                    return errorResponse.toJSONObject().toJSONString();
+                }
 
-        if (Validator.isNullBlankOrEmpty(requestParams.value(RequestParamConstants.CLIENT_ID))) {
-            try {
-                clientJwtVerifier.authenticateClient(request.queryString());
-            } catch (ClientAuthenticationException e) {
-                LOGGER.error("Failed client JWT authentication: %s", e);
-                TokenErrorResponse errorResponse = new TokenErrorResponse(OAuth2Error.INVALID_CLIENT);
-                response.status(OAuth2Error.INVALID_CLIENT.getHTTPStatusCode());
+                if (Validator.isNullBlankOrEmpty(
+                        requestParams.value(RequestParamConstants.CLIENT_ID))) {
+                    try {
+                        clientJwtVerifier.authenticateClient(request.queryString());
+                    } catch (ClientAuthenticationException e) {
+                        LOGGER.error("Failed client JWT authentication: %s", e);
+                        TokenErrorResponse errorResponse =
+                                new TokenErrorResponse(OAuth2Error.INVALID_CLIENT);
+                        response.status(OAuth2Error.INVALID_CLIENT.getHTTPStatusCode());
 
-                return errorResponse.toJSONObject().toJSONString();
-            }
+                        return errorResponse.toJSONObject().toJSONString();
+                    }
 
-        } else {
-            ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(requestParams.value(RequestParamConstants.CLIENT_ID));
-            String authMethod = clientConfig.getJwtAuthentication().get(AUTHENTICATION_METHOD);
-            if (!authMethod.equals(NONE_AUTHENTICATION_METHOD)) {
-                TokenErrorResponse errorResponse = new TokenErrorResponse(OAuth2Error.INVALID_REQUEST);
-                response.status(OAuth2Error.INVALID_REQUEST.getHTTPStatusCode());
-                return errorResponse.toJSONObject().toJSONString();
-            }
-        }
+                } else {
+                    ClientConfig clientConfig =
+                            CredentialIssuerConfig.getClientConfig(
+                                    requestParams.value(RequestParamConstants.CLIENT_ID));
+                    String authMethod =
+                            clientConfig.getJwtAuthentication().get(AUTHENTICATION_METHOD);
+                    if (!authMethod.equals(NONE_AUTHENTICATION_METHOD)) {
+                        TokenErrorResponse errorResponse =
+                                new TokenErrorResponse(OAuth2Error.INVALID_REQUEST);
+                        response.status(OAuth2Error.INVALID_REQUEST.getHTTPStatusCode());
+                        return errorResponse.toJSONObject().toJSONString();
+                    }
+                }
 
-        String code = requestParams.value(RequestParamConstants.AUTH_CODE);
-        var redirectValidationResult = validator.validateRedirectUrlsMatch(
-                authCodeService.getRedirectUrl(code), requestParams.value(RequestParamConstants.REDIRECT_URI));
+                String code = requestParams.value(RequestParamConstants.AUTH_CODE);
+                var redirectValidationResult =
+                        validator.validateRedirectUrlsMatch(
+                                authCodeService.getRedirectUrl(code),
+                                requestParams.value(RequestParamConstants.REDIRECT_URI));
 
-        if (!redirectValidationResult.isValid()) {
-            TokenErrorResponse errorResponse = new TokenErrorResponse(redirectValidationResult.getError());
-            response.status(redirectValidationResult.getError().getHTTPStatusCode());
+                if (!redirectValidationResult.isValid()) {
+                    TokenErrorResponse errorResponse =
+                            new TokenErrorResponse(redirectValidationResult.getError());
+                    response.status(redirectValidationResult.getError().getHTTPStatusCode());
 
-            return errorResponse.toJSONObject().toJSONString();
-        }
+                    return errorResponse.toJSONObject().toJSONString();
+                }
 
-        AccessToken accessToken = tokenService.createBearerAccessToken();
-        AccessTokenResponse tokenResponse = new AccessTokenResponse(new Tokens(accessToken, new RefreshToken()));
+                AccessToken accessToken = tokenService.createBearerAccessToken();
+                AccessTokenResponse tokenResponse =
+                        new AccessTokenResponse(new Tokens(accessToken, new RefreshToken()));
 
-        String payloadAssociatedWithCode = authCodeService.getPayload(code);
-        authCodeService.revoke(code);
-        tokenService.persist(accessToken, payloadAssociatedWithCode);
+                String payloadAssociatedWithCode = authCodeService.getPayload(code);
+                authCodeService.revoke(code);
+                tokenService.persist(accessToken, payloadAssociatedWithCode);
 
-        response.status(HttpServletResponse.SC_OK);
-        return tokenResponse.toJSONObject().toJSONString();
-    };
+                response.status(HttpServletResponse.SC_OK);
+                return tokenResponse.toJSONObject().toJSONString();
+            };
 }

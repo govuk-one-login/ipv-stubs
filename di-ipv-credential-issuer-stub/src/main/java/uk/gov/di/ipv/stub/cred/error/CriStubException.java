@@ -9,5 +9,4 @@ public class CriStubException extends Exception {
     public CriStubException(String message, Throwable cause) {
         super(message, cause);
     }
-
 }

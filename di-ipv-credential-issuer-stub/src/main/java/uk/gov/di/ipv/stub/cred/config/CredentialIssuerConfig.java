@@ -1,6 +1,5 @@
 package uk.gov.di.ipv.stub.cred.config;
 
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -10,8 +9,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CredentialIssuerConfig {
-    public static final String PORT = getConfigValue("CREDENTIAL_ISSUER_PORT","8084");
-    public static final String NAME = getConfigValue("CREDENTIAL_ISSUER_NAME","Credential Issuer Stub");
+    public static final String PORT = getConfigValue("CREDENTIAL_ISSUER_PORT", "8084");
+    public static final String NAME =
+            getConfigValue("CREDENTIAL_ISSUER_NAME", "Credential Issuer Stub");
 
     public static String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
 
@@ -29,7 +29,8 @@ public class CredentialIssuerConfig {
     private CredentialIssuerConfig() {}
 
     public static CriType getCriType() {
-        return CriType.fromValue(getConfigValue(CREDENTIAL_ISSUER_TYPE_VAR, CriType.EVIDENCE_CRI_TYPE.value));
+        return CriType.fromValue(
+                getConfigValue(CREDENTIAL_ISSUER_TYPE_VAR, CriType.EVIDENCE_CRI_TYPE.value));
     }
 
     public static ClientConfig getClientConfig(String clientId) {
@@ -52,7 +53,7 @@ public class CredentialIssuerConfig {
         CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
     }
 
-    private static String getConfigValue(String key, String defaultValue){
+    private static String getConfigValue(String key, String defaultValue) {
         var envValue = System.getenv(key);
         if (envValue == null) {
             return defaultValue;
@@ -67,9 +68,7 @@ public class CredentialIssuerConfig {
             return new HashMap<>();
         }
 
-        String clientConfigJson =
-                new String(Base64.getDecoder()
-                        .decode(client_config));
+        String clientConfigJson = new String(Base64.getDecoder().decode(client_config));
         Type type = new TypeToken<Map<String, ClientConfig>>() {}.getType();
 
         return gson.fromJson(clientConfigJson, type);

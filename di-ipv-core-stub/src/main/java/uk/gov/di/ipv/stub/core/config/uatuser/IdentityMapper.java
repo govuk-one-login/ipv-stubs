@@ -9,20 +9,23 @@ import static java.util.stream.Collectors.toList;
 public class IdentityMapper {
 
     public Identity map(Map<String, String> map, int rowNumber) {
-        List<Question> listOfQuestions = map.keySet().stream()
-                .filter(k -> k.toLowerCase().startsWith("q0"))
-                .map(k -> new Question(k, new Answer(map.get(k))))
-                .collect(toList());
+        List<Question> listOfQuestions =
+                map.keySet().stream()
+                        .filter(k -> k.toLowerCase().startsWith("q0"))
+                        .map(k -> new Question(k, new Answer(map.get(k))))
+                        .collect(toList());
 
-        String noOfQuestionsAfterApplyingBusinessRules = map.get("noOfQuestionsAfterApplyingBusinessRules");
+        String noOfQuestionsAfterApplyingBusinessRules =
+                map.get("noOfQuestionsAfterApplyingBusinessRules");
 
         String noOfQuestionsTotal = map.get("noOfQuestionsTotal");
-        int numAfterBus = noOfQuestionsAfterApplyingBusinessRules == null ? 0 : Integer.parseInt(noOfQuestionsAfterApplyingBusinessRules);
+        int numAfterBus =
+                noOfQuestionsAfterApplyingBusinessRules == null
+                        ? 0
+                        : Integer.parseInt(noOfQuestionsAfterApplyingBusinessRules);
         int numTotal = noOfQuestionsTotal == null ? 0 : Integer.parseInt(noOfQuestionsTotal);
 
-
         Questions questions = new Questions(listOfQuestions, numAfterBus, numTotal);
-
 
         Object hn = map.get("houseNo");
         String houseNo;
@@ -33,7 +36,14 @@ public class IdentityMapper {
             houseNo = (String) hn;
         }
 
-        UKAddress address = new UKAddress(houseNo, map.get("street"), map.get("district"), map.get("posttown"), map.get("postcode"), true);
+        UKAddress address =
+                new UKAddress(
+                        houseNo,
+                        map.get("street"),
+                        map.get("district"),
+                        map.get("posttown"),
+                        map.get("postcode"),
+                        true);
 
         Instant dob = Instant.parse(map.get("dob"));
         Instant dateOfEntryOnCtdb = Instant.parse(map.get("dateOfEntryOnCtdb"));
@@ -41,12 +51,21 @@ public class IdentityMapper {
 
         Name name = new Name(map.get("name"), map.get("surname"));
 
-        return new Identity(rowNumber, map.get("accountNumber"), map.get("ctdbDatabase"), address, dateOfBirth, name, questions);
-
+        return new Identity(
+                rowNumber,
+                map.get("accountNumber"),
+                map.get("ctdbDatabase"),
+                address,
+                dateOfBirth,
+                name,
+                questions);
     }
 
     public DisplayIdentity mapToDisplayable(Identity identity) {
-        return new DisplayIdentity(identity.rowNumber(), identity.name().firstLastName(), identity.questions().numQuestionsTotal());
+        return new DisplayIdentity(
+                identity.rowNumber(),
+                identity.name().firstLastName(),
+                identity.questions().numQuestionsTotal());
     }
 
     public JWTClaimIdentity mapToJTWClaim(Identity identity) {

@@ -14,6 +14,7 @@ import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.util.Map;
 import java.util.Objects;
 
@@ -25,32 +26,36 @@ public class CredentialHandler {
     private TokenService tokenService;
     private ObjectMapper objectMapper;
 
-    public CredentialHandler(CredentialService credentialService, TokenService tokenService, ObjectMapper objectMapper) {
+    public CredentialHandler(
+            CredentialService credentialService,
+            TokenService tokenService,
+            ObjectMapper objectMapper) {
         this.credentialService = credentialService;
         this.tokenService = tokenService;
         this.objectMapper = objectMapper;
     }
 
-    public Route getResource = (Request request, Response response) -> {
-        String accessTokenString = request.headers(HttpHeader.AUTHORIZATION.toString());
+    public Route getResource =
+            (Request request, Response response) -> {
+                String accessTokenString = request.headers(HttpHeader.AUTHORIZATION.toString());
 
-        ValidationResult validationResult = validateAccessToken(accessTokenString);
+                ValidationResult validationResult = validateAccessToken(accessTokenString);
 
-        if (!validationResult.isValid()) {
-            response.status(validationResult.getError().getHTTPStatusCode());
-            return validationResult.getError().getDescription();
-        }
+                if (!validationResult.isValid()) {
+                    response.status(validationResult.getError().getHTTPStatusCode());
+                    return validationResult.getError().getDescription();
+                }
 
-        response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
-        response.status(HttpServletResponse.SC_OK);
+                response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
+                response.status(HttpServletResponse.SC_OK);
 
-        String resourceId = tokenService.getPayload(accessTokenString);
-        Map<String, Object> protectedResource = credentialService.getCredential(resourceId);
+                String resourceId = tokenService.getPayload(accessTokenString);
+                Map<String, Object> protectedResource = credentialService.getCredential(resourceId);
 
-        tokenService.revoke(accessTokenString);
+                tokenService.revoke(accessTokenString);
 
-        return objectMapper.writeValueAsString(protectedResource);
-    };
+                return objectMapper.writeValueAsString(protectedResource);
+            };
 
     private ValidationResult validateAccessToken(String accessTokenString) {
         if (Validator.isNullBlankOrEmpty(accessTokenString)) {
