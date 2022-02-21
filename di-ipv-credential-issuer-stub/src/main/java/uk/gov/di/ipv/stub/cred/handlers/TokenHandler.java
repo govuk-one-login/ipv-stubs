@@ -63,7 +63,7 @@ public class TokenHandler {
                 if (Validator.isNullBlankOrEmpty(
                         requestParams.value(RequestParamConstants.CLIENT_ID))) {
                     try {
-                        clientJwtVerifier.authenticateClient(request.queryString());
+                        clientJwtVerifier.authenticateClient(requestParams);
                     } catch (ClientAuthenticationException e) {
                         LOGGER.error("Failed client JWT authentication: %s", e);
                         TokenErrorResponse errorResponse =

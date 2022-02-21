@@ -209,7 +209,7 @@ public class TokenHandlerTest {
                 .thenReturn(ValidationResult.createValidResult());
         doThrow(new ClientAuthenticationException("Fail."))
                 .when(mockJwtAuthenticationService)
-                .authenticateClient(null);
+                .authenticateClient(any());
 
         String result = (String) tokenHandler.issueAccessToken.handle(mockRequest, mockResponse);
 
