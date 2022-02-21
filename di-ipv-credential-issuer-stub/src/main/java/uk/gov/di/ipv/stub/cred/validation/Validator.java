@@ -16,6 +16,7 @@ import java.util.Objects;
 
 public class Validator {
 
+    private static final String PAAS_DOMAIN = ".london.cloudapps.digital";
     private static final String INVALID_GPG45_SCORE_ERROR_CODE = "1001";
     private static final String INVALID_EVIDENCE_VALUES_ERROR_CODE = "1002";
     private static final String INVALID_ACTIVITY_VALUES_ERROR_CODE = "1003";
@@ -107,6 +108,10 @@ public class Validator {
 
     public static boolean redirectUrlIsInvalid(QueryParamsMap queryParams) {
         String redirectUri = queryParams.value(RequestParamConstants.REDIRECT_URI);
+        if (isRedirectUriPaasDomain(redirectUri)) {
+            return false;
+        }
+
         String clientId = queryParams.value(RequestParamConstants.CLIENT_ID);
 
         ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientId);
@@ -117,6 +122,21 @@ public class Validator {
                                 .get("validRedirectUrls")
                                 .split(REDIRECT_URI_SEPARATOR));
         return !validRedirectUrls.contains(redirectUri);
+    }
+
+    /**
+     * To simplify the configuration of the CRI stubs they will accept any redirectUri that includes
+     * the London PaaS Domain. This removes the need to configure the stub with the redirect uri of
+     * each of the developer environments which share the common stubs.
+     *
+     * <p>Keeping some redirect uri validation will still permit developers to check the behaviour
+     * when required.
+     *
+     * @param redirectUri
+     * @return true if the redirect uri includes the London PaaS Domain
+     */
+    private static boolean isRedirectUriPaasDomain(String redirectUri) {
+        return redirectUri != null && redirectUri.contains(PAAS_DOMAIN);
     }
 
     public ValidationResult validateRedirectUrlsMatch(

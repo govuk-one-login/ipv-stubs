@@ -164,6 +164,15 @@ class ValidatorTest {
     }
 
     @Test
+    void redirectUrlValidationShouldAcceptARedirectUriWithAPaaSDomain() {
+        QueryParamsMap queryParams = mock(QueryParamsMap.class);
+        when(queryParams.value(RequestParamConstants.REDIRECT_URI))
+                .thenReturn("https://valid.london.cloudapps.digital");
+
+        assertFalse(Validator.redirectUrlIsInvalid(queryParams));
+    }
+
+    @Test
     void redirectUrlIsInvalidShouldReturnFalseForValidUrlWithMultipleRegistered() {
         QueryParamsMap queryParams = mock(QueryParamsMap.class);
         when(queryParams.value(RequestParamConstants.REDIRECT_URI))
