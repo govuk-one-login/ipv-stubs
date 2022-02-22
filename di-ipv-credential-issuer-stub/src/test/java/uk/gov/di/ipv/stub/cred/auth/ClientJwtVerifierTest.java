@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import spark.QueryParamsMap;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
@@ -23,8 +24,6 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 import javax.servlet.http.HttpServletRequest;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -38,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SystemStubsExtension.class)
 @ExtendWith(MockitoExtension.class)
@@ -66,9 +66,12 @@ public class ClientJwtVerifierTest {
         var validQueryParams =
                 getValidQueryParams(generateClientAssertion(getValidClaimsSetValues()));
 
+        when(mockHttpRequest.getParameterMap()).thenReturn(validQueryParams);
+
         assertDoesNotThrow(
                 () -> {
-                    jwtAuthenticationService.authenticateClient(queryMapToString(validQueryParams));
+                    jwtAuthenticationService.authenticateClient(
+                            new QueryParamsMap(mockHttpRequest));
                 });
     }
 
@@ -77,16 +80,15 @@ public class ClientJwtVerifierTest {
         var invalidSignatureQueryParams =
                 new HashMap<>(
                         getValidQueryParams(generateClientAssertion(getValidClaimsSetValues())));
-        invalidSignatureQueryParams.put(
-                "client_assertion",
-                invalidSignatureQueryParams.get("client_assertion") + "BREAKING_THE_SIGNATURE");
+        invalidSignatureQueryParams.get("client_assertion")[0] += "BREAKING_THE_SIGNATURE";
+        when(mockHttpRequest.getParameterMap()).thenReturn(invalidSignatureQueryParams);
 
         ClientAuthenticationException exception =
                 assertThrows(
                         ClientAuthenticationException.class,
                         () -> {
                             jwtAuthenticationService.authenticateClient(
-                                    queryMapToString(invalidSignatureQueryParams));
+                                    new QueryParamsMap(mockHttpRequest));
                         });
 
         assertTrue(exception.getMessage().contains("InvalidClientException: Bad JWT signature"));
@@ -100,13 +102,14 @@ public class ClientJwtVerifierTest {
         var differentIssuerAndSubjectQueryParams =
                 getValidQueryParams(
                         generateClientAssertion(differentIssuerAndSubjectClaimsSetValues));
+        when(mockHttpRequest.getParameterMap()).thenReturn(differentIssuerAndSubjectQueryParams);
 
         ClientAuthenticationException exception =
                 assertThrows(
                         ClientAuthenticationException.class,
                         () -> {
                             jwtAuthenticationService.authenticateClient(
-                                    queryMapToString(differentIssuerAndSubjectQueryParams));
+                                    new QueryParamsMap(mockHttpRequest));
                         });
 
         assertTrue(
@@ -127,12 +130,14 @@ public class ClientJwtVerifierTest {
         var wrongIssuerAndSubjectQueryParams =
                 getValidQueryParams(generateClientAssertion(wrongIssuerAndSubjectClaimsSetValues));
 
+        when(mockHttpRequest.getParameterMap()).thenReturn(wrongIssuerAndSubjectQueryParams);
+
         ClientAuthenticationException exception =
                 assertThrows(
                         ClientAuthenticationException.class,
                         () -> {
                             jwtAuthenticationService.authenticateClient(
-                                    queryMapToString(wrongIssuerAndSubjectQueryParams));
+                                    new QueryParamsMap(mockHttpRequest));
                         });
 
         assertEquals(
@@ -149,12 +154,14 @@ public class ClientJwtVerifierTest {
         var wrongAudienceQueryParams =
                 getValidQueryParams(generateClientAssertion(wrongAudienceClaimsSetValues));
 
+        when(mockHttpRequest.getParameterMap()).thenReturn(wrongAudienceQueryParams);
+
         ClientAuthenticationException exception =
                 assertThrows(
                         ClientAuthenticationException.class,
                         () -> {
                             jwtAuthenticationService.authenticateClient(
-                                    queryMapToString(wrongAudienceQueryParams));
+                                    new QueryParamsMap(mockHttpRequest));
                         });
 
         assertTrue(
@@ -174,41 +181,27 @@ public class ClientJwtVerifierTest {
         var expiredQueryParams =
                 getValidQueryParams(generateClientAssertion(expiredClaimsSetValues));
 
+        when(mockHttpRequest.getParameterMap()).thenReturn(expiredQueryParams);
+
         ClientAuthenticationException exception =
                 assertThrows(
                         ClientAuthenticationException.class,
                         () -> {
                             jwtAuthenticationService.authenticateClient(
-                                    queryMapToString(expiredQueryParams));
+                                    new QueryParamsMap(mockHttpRequest));
                         });
 
         assertTrue(exception.getMessage().contains("Expired JWT"));
     }
 
-    private Map<String, String> getValidQueryParams(String clientAssertion) {
+    private Map<String, String[]> getValidQueryParams(String clientAssertion) {
         return Map.of(
-                "client_assertion", clientAssertion,
-                "client_assertion_type", "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-                "code", ResponseType.Value.CODE.getValue(),
-                "grant_type", "authorization_code",
-                "redirect_uri", "https://test-client.example.com/callback");
-    }
-
-    private String queryMapToString(Map<String, String> queryParams)
-            throws UnsupportedEncodingException {
-        StringBuilder sb = new StringBuilder();
-
-        for (Map.Entry<String, String> param : queryParams.entrySet()) {
-            if (sb.length() > 0) {
-                sb.append("&");
-            }
-            sb.append(
-                    String.format(
-                            "%s=%s",
-                            URLEncoder.encode(param.getKey(), "UTF-8"),
-                            URLEncoder.encode(param.getValue(), "UTF-8")));
-        }
-        return sb.toString();
+                "client_assertion", new String[] {clientAssertion},
+                "client_assertion_type",
+                        new String[] {"urn:ietf:params:oauth:client-assertion-type:jwt-bearer"},
+                "code", new String[] {ResponseType.Value.CODE.getValue()},
+                "grant_type", new String[] {"authorization_code"},
+                "redirect_uri", new String[] {"https://test-client.example.com/callback"});
     }
 
     private Map<String, Object> getValidClaimsSetValues() {
