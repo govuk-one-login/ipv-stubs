@@ -2,6 +2,7 @@ package uk.gov.di.ipv.stub.orc.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.nimbusds.jose.JOSEException;
@@ -25,7 +26,6 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
-import com.nimbusds.oauth2.sdk.util.JSONObjectUtils;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
@@ -168,20 +168,20 @@ public class IpvHandler {
         List<Map<String, Object>> moustacheDataModel = new ArrayList<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         for (String key : credentials.keySet()) {
-            JSONObject criJson = gson.fromJson(credentials.get(key).toString(), JSONObject.class);
+            JsonObject criJson = gson.fromJson(credentials.get(key).toString(), JsonObject.class);
 
             String attributesJson;
-            if (JSONObjectUtils.containsKey(criJson, "attributes")) {
+            if (criJson.has("attributes")) {
                 attributesJson =
-                        gson.toJson(JsonParser.parseString(criJson.getAsString("attributes")));
+                        gson.toJson(JsonParser.parseString(criJson.get("attributes").toString()));
             } else {
                 throw new ParseException("Could not find attributes field in JSON");
             }
 
             String gpg45ScoreJson = null;
-            if (JSONObjectUtils.containsKey(criJson, "gpg45Score")) {
+            if (criJson.has("gpg45Score")) {
                 gpg45ScoreJson =
-                        gson.toJson(JsonParser.parseString(criJson.getAsString("gpg45Score")));
+                        gson.toJson(JsonParser.parseString(criJson.get("gpg45Score").toString()));
             }
 
             Map<String, Object> criMap = new HashMap<>();
