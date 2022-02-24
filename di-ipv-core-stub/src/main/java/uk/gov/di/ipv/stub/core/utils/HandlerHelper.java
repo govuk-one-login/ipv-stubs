@@ -177,7 +177,7 @@ public class HandlerHelper {
                                 .issuer(CoreStubConfig.CORE_STUB_CLIENT_ID)
                                 .notBeforeTime(Date.from(now))
                                 .expirationTime(Date.from(now.plus(1, ChronoUnit.HOURS)))
-                                .claim("vc_http_api", map)
+                                .claim("claims", Map.of("vc_http_api", map))
                                 .build());
 
         signedJWT.sign(new RSASSASigner(signingPrivateKey));
