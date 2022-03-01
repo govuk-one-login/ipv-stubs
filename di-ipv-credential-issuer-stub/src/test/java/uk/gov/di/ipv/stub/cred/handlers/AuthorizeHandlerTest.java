@@ -44,6 +44,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -60,6 +61,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.VC_HTTP_API_CLAIM;
 
 @ExtendWith(SystemStubsExtension.class)
 class AuthorizeHandlerTest {
@@ -218,16 +220,13 @@ class AuthorizeHandlerTest {
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-        List<String> givenNames = Arrays.asList("Daniel", "Dan", "Danny");
-        List<String> dateOfBirths = Arrays.asList("01/01/1980", "02/01/1980");
-        List<String> addresses =
-                Arrays.asList("{\"line1\":\"\321 Street\",\"postcode\":\"M34 1AA\"");
+        Map<String, List<String>> vcHttpApiClaim = new LinkedHashMap<>();
+        vcHttpApiClaim.put("dateOfBirths", Arrays.asList("01/01/1980", "02/01/1980"));
+        vcHttpApiClaim.put("addresses", Collections.singletonList("123 random street, M13 7GE"));
+        vcHttpApiClaim.put("givenNames", Arrays.asList("Daniel", "Dan", "Danny"));
+
         JWTClaimsSet claimsSet =
-                new JWTClaimsSet.Builder()
-                        .claim("givenNames", givenNames)
-                        .claim("dateOfBirths", dateOfBirths)
-                        .claim("addresses", addresses)
-                        .build();
+                new JWTClaimsSet.Builder().claim(VC_HTTP_API_CLAIM, vcHttpApiClaim).build();
 
         RSASSASigner rsaSigner = new RSASSASigner(getPrivateKey());
         SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claimsSet);
@@ -261,7 +260,7 @@ class AuthorizeHandlerTest {
                 Boolean.parseBoolean(
                         frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
         assertEquals(
-                gson.toJson(claimsSet.toJSONObject()),
+                gson.toJson(claimsSet.toJSONObject().get(VC_HTTP_API_CLAIM)),
                 frontendParamsCaptor.getValue().get("sharedAttributes"));
     }
 
@@ -298,6 +297,51 @@ class AuthorizeHandlerTest {
                         frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
         assertEquals(
                 "Error: failed to parse shared attribute JWT",
+                frontendParamsCaptor.getValue().get("sharedAttributes"));
+    }
+
+    @Test
+    void shouldRenderMustacheTemplateWhenValidRequestReceivedWithRequestJWTMissingVcHttpApiClaim()
+            throws Exception {
+        HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
+
+        JWTClaimsSet claimsSet =
+                new JWTClaimsSet.Builder().claim("NO_VC_HTTP_API_CLAIM", "nope").build();
+
+        RSASSASigner rsaSigner = new RSASSASigner(getPrivateKey());
+        SignedJWT noVcHttpApiClaimSignedJWT =
+                new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claimsSet);
+        noVcHttpApiClaimSignedJWT.sign(rsaSigner);
+
+        Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
+        queryParams.put(
+                RequestParamConstants.RESPONSE_TYPE,
+                new String[] {ResponseType.Value.CODE.getValue()});
+        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
+        queryParams.put(
+                RequestParamConstants.REQUEST,
+                new String[] {noVcHttpApiClaimSignedJWT.serialize()});
+        when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
+
+        QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String renderOutput = "rendered output";
+        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
+
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        assertEquals(renderOutput, result);
+        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor =
+                ArgumentCaptor.forClass(Map.class);
+        verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
+        assertTrue(
+                Boolean.parseBoolean(
+                        frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
+        assertEquals(
+                "Error: vc_http_api claim not found in JWT",
                 frontendParamsCaptor.getValue().get("sharedAttributes"));
     }
 
