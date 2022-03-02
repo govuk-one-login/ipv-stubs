@@ -61,6 +61,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CLAIMS_CLAIM;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.VC_HTTP_API_CLAIM;
 
 @ExtendWith(SystemStubsExtension.class)
@@ -226,7 +227,9 @@ class AuthorizeHandlerTest {
         vcHttpApiClaim.put("givenNames", Arrays.asList("Daniel", "Dan", "Danny"));
 
         JWTClaimsSet claimsSet =
-                new JWTClaimsSet.Builder().claim(VC_HTTP_API_CLAIM, vcHttpApiClaim).build();
+                new JWTClaimsSet.Builder()
+                        .claim(CLAIMS_CLAIM, Map.of(VC_HTTP_API_CLAIM, vcHttpApiClaim))
+                        .build();
 
         RSASSASigner rsaSigner = new RSASSASigner(getPrivateKey());
         SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claimsSet);
@@ -259,8 +262,10 @@ class AuthorizeHandlerTest {
         assertTrue(
                 Boolean.parseBoolean(
                         frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
+        Map<String, Object> claims =
+                (Map<String, Object>) claimsSet.toJSONObject().get(CLAIMS_CLAIM);
         assertEquals(
-                gson.toJson(claimsSet.toJSONObject().get(VC_HTTP_API_CLAIM)),
+                gson.toJson(claims.get(VC_HTTP_API_CLAIM)),
                 frontendParamsCaptor.getValue().get("sharedAttributes"));
     }
 
