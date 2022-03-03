@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
@@ -8,14 +9,17 @@ import org.eclipse.jetty.http.HttpHeader;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
+import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
 import javax.servlet.http.HttpServletResponse;
 
-import java.util.Map;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Objects;
 
 public class CredentialHandler {
@@ -24,15 +28,15 @@ public class CredentialHandler {
 
     private CredentialService credentialService;
     private TokenService tokenService;
-    private ObjectMapper objectMapper;
+    private VerifiableCredentialGenerator verifiableCredentialGenerator;
 
     public CredentialHandler(
             CredentialService credentialService,
             TokenService tokenService,
-            ObjectMapper objectMapper) {
+            VerifiableCredentialGenerator verifiableCredentialGenerator) {
         this.credentialService = credentialService;
         this.tokenService = tokenService;
-        this.objectMapper = objectMapper;
+        this.verifiableCredentialGenerator = verifiableCredentialGenerator;
     }
 
     public Route getResource =
@@ -46,15 +50,41 @@ public class CredentialHandler {
                     return validationResult.getError().getDescription();
                 }
 
-                response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
-                response.status(HttpServletResponse.SC_OK);
+                if (Validator.isNullBlankOrEmpty(request.body())) {
+                    response.status(HttpServletResponse.SC_BAD_REQUEST);
+                    return "Error: No body found in request";
+                }
+
+                String subject;
+                try {
+                    subject = PlainJWT.parse(request.body()).getJWTClaimsSet().getSubject();
+                } catch (java.text.ParseException e) {
+                    response.status(HttpServletResponse.SC_BAD_REQUEST);
+                    return "Error: Could not parse VC request JWT";
+                }
+                if (Validator.isNullBlankOrEmpty(subject)) {
+                    response.status(HttpServletResponse.SC_BAD_REQUEST);
+                    return "Error: Subject missing from VC request JWT";
+                }
 
                 String resourceId = tokenService.getPayload(accessTokenString);
-                Map<String, Object> protectedResource = credentialService.getCredential(resourceId);
+                Credential credential = credentialService.getCredential(resourceId);
+
+                String verifiableCredential;
+                try {
+                    verifiableCredential =
+                            verifiableCredentialGenerator.generate(credential, subject).serialize();
+                } catch (NoSuchAlgorithmException | InvalidKeySpecException | JOSEException e) {
+                    response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    return String.format("Error: Unable to generate VC - '%s'", e.getMessage());
+                }
 
                 tokenService.revoke(accessTokenString);
 
-                return objectMapper.writeValueAsString(protectedResource);
+                response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
+                response.status(HttpServletResponse.SC_OK);
+
+                return verifiableCredential;
             };
 
     private ValidationResult validateAccessToken(String accessTokenString) {

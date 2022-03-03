@@ -26,6 +26,7 @@ import spark.Route;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
+import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.error.CriStubException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
@@ -151,6 +152,11 @@ public class AuthorizeHandler {
                     Map<String, Object> attributesMap =
                             generateJsonPayload(queryParamsMap.value(JSON_PAYLOAD_PARAM));
 
+                    Map<String, Object> combinedAttributeJson =
+                            generateJsonPayload(getSharedAttributes(queryParamsMap));
+
+                    combinedAttributeJson.putAll(attributesMap);
+
                     Map<String, Object> gpgMap =
                             generateGpg45Score(
                                     CredentialIssuerConfig.getCriType(),
@@ -163,9 +169,7 @@ public class AuthorizeHandler {
                                     queryParamsMap.value(
                                             CredentialIssuerConfig.VERIFICATION_PARAM));
 
-                    Map<String, Object> credential = new HashMap<>();
-                    credential.put("attributes", attributesMap);
-                    credential.put("gpg45Score", gpgMap);
+                    Credential credential = new Credential(combinedAttributeJson, gpgMap);
 
                     AuthorizationSuccessResponse successResponse = generateAuthCode(queryParamsMap);
 
@@ -194,7 +198,7 @@ public class AuthorizeHandler {
     private void persistData(
             QueryParamsMap queryParamsMap,
             AuthorizationCode authorizationCode,
-            Map<String, Object> credential) {
+            Credential credential) {
         String resourceId = queryParamsMap.value(RequestParamConstants.RESOURCE_ID);
         String redirectUrl = queryParamsMap.value(RequestParamConstants.REDIRECT_URI);
         this.authCodeService.persist(authorizationCode, resourceId, redirectUrl);
@@ -292,7 +296,7 @@ public class AuthorizeHandler {
         String requestParam = queryParamsMap.value(RequestParamConstants.REQUEST);
         String clientIdParam = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
 
-        if (MapUtils.isEmpty(CredentialIssuerConfig.CLIENT_CONFIGS)) {
+        if (MapUtils.isEmpty(CredentialIssuerConfig.getClientConfigs())) {
             return "Error: Missing cri stub client configuration env variable";
         }
 
