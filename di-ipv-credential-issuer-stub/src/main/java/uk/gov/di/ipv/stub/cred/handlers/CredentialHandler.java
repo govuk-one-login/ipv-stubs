@@ -24,7 +24,7 @@ import java.util.Objects;
 
 public class CredentialHandler {
 
-    private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/json;charset=UTF-8";
+    private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/jwt;charset=UTF-8";
 
     private CredentialService credentialService;
     private TokenService tokenService;
