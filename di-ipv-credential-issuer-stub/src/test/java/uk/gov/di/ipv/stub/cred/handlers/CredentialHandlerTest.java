@@ -50,7 +50,7 @@ public class CredentialHandlerTest {
     }
 
     @Test
-    public void shouldReturn200AndProtectedResourceWhenValidRequestReceived() throws Exception {
+    public void shouldReturn201AndProtectedResourceWhenValidRequestReceived() throws Exception {
         PlainJWT requestJWT =
                 new PlainJWT(
                         new JWTClaimsSet.Builder()
@@ -67,7 +67,7 @@ public class CredentialHandlerTest {
 
         assertEquals("A.VERIFIABLE.CREDENTIAL", response);
         verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
-        verify(mockResponse).status(HttpServletResponse.SC_OK);
+        verify(mockResponse).status(HttpServletResponse.SC_CREATED);
         verify(mockTokenService, times(2)).getPayload(accessToken.toAuthorizationHeader());
         verify(mockTokenService).revoke(accessToken.toAuthorizationHeader());
     }

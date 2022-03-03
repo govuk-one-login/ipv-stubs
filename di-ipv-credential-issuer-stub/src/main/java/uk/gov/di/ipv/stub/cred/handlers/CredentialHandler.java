@@ -82,7 +82,7 @@ public class CredentialHandler {
                 tokenService.revoke(accessTokenString);
 
                 response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
-                response.status(HttpServletResponse.SC_OK);
+                response.status(HttpServletResponse.SC_CREATED);
 
                 return verifiableCredential;
             };
