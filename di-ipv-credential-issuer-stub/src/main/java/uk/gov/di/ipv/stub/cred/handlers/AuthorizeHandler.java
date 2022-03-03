@@ -70,6 +70,7 @@ public class AuthorizeHandler {
     private static final String CRI_NAME_PARAM = "cri-name";
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    public static final String CLAIMS_CLAIM = "claims";
 
     private AuthCodeService authCodeService;
     private CredentialService credentialService;
@@ -312,14 +313,14 @@ public class AuthorizeHandler {
                 }
 
                 JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
-                Map<String, Object> sharedAttributes =
-                        claimsSet.getJSONObjectClaim(VC_HTTP_API_CLAIM);
+                Map<String, Object> claims = claimsSet.getJSONObjectClaim(CLAIMS_CLAIM);
 
-                if (sharedAttributes == null) {
+                if (claims == null || claims.get(VC_HTTP_API_CLAIM) == null) {
                     LOGGER.error("vc_http_api claim not found in JWT");
                     return "Error: vc_http_api claim not found in JWT";
                 }
-                sharedAttributesJson = gson.toJson(sharedAttributes);
+
+                sharedAttributesJson = gson.toJson(claims.get(VC_HTTP_API_CLAIM));
             } catch (ParseException e) {
                 LOGGER.error("Failed to parse the shared attributes JWT");
                 sharedAttributesJson = "Error: failed to parse shared attribute JWT";
