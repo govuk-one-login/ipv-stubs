@@ -54,7 +54,12 @@
         </div>
         <h2 class="govuk-heading-l">Prove Your Identity</h2>
         <form action="/authorize">
-            <input class="govuk-button" data-module="govuk-button" type="submit" value="Prove your identity">
+            <input type="hidden" name="journeyType" value="debug" />
+            <input class="govuk-button" data-module="govuk-button" type="submit" value="Debug route">
+        </form>
+        <form action="/authorize">
+            <input type="hidden" name="journeyType" value="full" />
+            <input class="govuk-button" data-module="govuk-button" type="submit" value="Full journey route">
         </form>
     </main>
 </div>
