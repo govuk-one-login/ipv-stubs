@@ -7,6 +7,7 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.domain.Credential;
 
 import java.security.KeyFactory;
@@ -42,8 +43,6 @@ import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.W3_BASE_C
 public class VerifiableCredentialGenerator {
 
     public static final String EC_ALGO = "EC";
-    public static final String VC_ISSUER_ENV_VAR = "VC_ISSUER";
-    public static final String VC_SIGNING_KEY_ENV_VAR = "VC_SIGNING_KEY";
 
     public SignedJWT generate(Credential credential, String subject)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
@@ -98,16 +97,24 @@ public class VerifiableCredentialGenerator {
         JWTClaimsSet claimsSet =
                 new JWTClaimsSet.Builder()
                         .claim(SUBJECT, subject)
-                        .claim(ISSUER, System.getenv(VC_ISSUER_ENV_VAR))
+                        .claim(ISSUER, CredentialIssuerConfig.getVerifiableCredentialIssuer())
                         .claim(NOT_BEFORE, now.getEpochSecond())
-                        .claim(EXPIRATION_TIME, now.plusSeconds(60 * 5).getEpochSecond())
+                        .claim(
+                                EXPIRATION_TIME,
+                                now.plusSeconds(
+                                                CredentialIssuerConfig
+                                                        .getVerifiableCredentialTtlSeconds())
+                                        .getEpochSecond())
                         .claim(VC_CLAIM, vc)
                         .build();
 
         KeyFactory kf = KeyFactory.getInstance(EC_ALGO);
         EncodedKeySpec privateKeySpec =
                 new PKCS8EncodedKeySpec(
-                        Base64.getDecoder().decode(System.getenv(VC_SIGNING_KEY_ENV_VAR)));
+                        Base64.getDecoder()
+                                .decode(
+                                        CredentialIssuerConfig
+                                                .getVerifiableCredentialSigningKey()));
         ECDSASigner ecdsaSigner =
                 new ECDSASigner((ECPrivateKey) kf.generatePrivate(privateKeySpec));
 

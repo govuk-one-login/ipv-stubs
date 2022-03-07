@@ -12,6 +12,7 @@ public class CredentialIssuerConfig {
     public static final String PORT = getConfigValue("CREDENTIAL_ISSUER_PORT", "8084");
     public static final String NAME =
             getConfigValue("CREDENTIAL_ISSUER_NAME", "Credential Issuer Stub");
+    public static final String VC_DEFAULT_TTL = "300";
 
     public static String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
 
@@ -51,6 +52,18 @@ public class CredentialIssuerConfig {
         // For testing purposes only.
         CLIENT_CONFIGS = null;
         CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
+    }
+
+    public static String getVerifiableCredentialIssuer() {
+        return getConfigValue("VC_ISSUER", null);
+    }
+
+    public static String getVerifiableCredentialSigningKey() {
+        return getConfigValue("VC_SIGNING_KEY", null);
+    }
+
+    public static Long getVerifiableCredentialTtlSeconds() {
+        return Long.parseLong(getConfigValue("VC_TTL_SECONDS", VC_DEFAULT_TTL));
     }
 
     private static String getConfigValue(String key, String defaultValue) {
