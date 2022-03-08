@@ -65,7 +65,11 @@ public class IpvHandler {
             (Request request, Response response) -> {
                 var state = new State();
                 stateSession.put(state.getValue(), null);
-
+                String journeyType = request.queryMap().get("journeyType").value();
+                URI journeyTypeEndpointURI =
+                        journeyType.equals("debug")
+                                ? new URI(IPV_ENDPOINT).resolve("/oauth2/debug-authorize")
+                                : new URI(IPV_ENDPOINT).resolve("/oauth2/authorize");
                 var authRequest =
                         new AuthorizationRequest.Builder(
                                         new ResponseType(ResponseType.Value.CODE),
@@ -73,7 +77,7 @@ public class IpvHandler {
                                 .state(state)
                                 .scope(new Scope("openid"))
                                 .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
-                                .endpointURI(new URI(IPV_ENDPOINT).resolve("/oauth2/authorize"))
+                                .endpointURI(journeyTypeEndpointURI)
                                 .build();
 
                 response.redirect(authRequest.toURI().toString());
