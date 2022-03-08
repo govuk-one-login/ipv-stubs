@@ -8,7 +8,7 @@ import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuerMapper;
 import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
 import uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper;
 
-import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,8 +39,8 @@ public class CoreStubConfig {
             Integer.parseInt(getConfigValue("CORE_STUB_MAX_SEARCH_RESULTS", "200"));
     public static final String CORE_STUB_USER_DATA_PATH =
             getConfigValue("CORE_STUB_USER_DATA_PATH", "config/experian-uat-users-large.zip");
-    public static final String CORE_STUB_CONFIG_BASE64 =
-            getConfigValue("CORE_STUB_CONFIG_BASE64", null);
+    public static final String CORE_STUB_CONFIG_FILE =
+            getConfigValue("CORE_STUB_CONFIG_FILE", "/app/config/cris-dev.yaml");
     public static final byte[] CORE_STUB_KEYSTORE_BASE64 =
             getConfigValue("CORE_STUB_KEYSTORE_BASE64", null).getBytes();
     public static final String CORE_STUB_KEYSTORE_PASSWORD =
@@ -62,11 +61,15 @@ public class CoreStubConfig {
     }
 
     public static void initCRIS() throws IOException {
-        byte[] decode = Base64.getDecoder().decode(CoreStubConfig.CORE_STUB_CONFIG_BASE64);
-        Map<String, Object> obj = new Yaml().load(new ByteArrayInputStream(decode));
-        CredentialIssuerMapper mapper = new CredentialIssuerMapper();
-        List<Map> cis = (List<Map>) obj.get("credentialIssuerConfigs");
-        credentialIssuers.addAll(cis.stream().map(mapper::map).collect(Collectors.toList()));
+        String configFile = CoreStubConfig.CORE_STUB_CONFIG_FILE;
+        try (FileInputStream inputStream = new FileInputStream(configFile)) {
+            Map<String, Object> obj = new Yaml().load(inputStream);
+            CredentialIssuerMapper mapper = new CredentialIssuerMapper();
+            List<Map> cis = (List<Map>) obj.get("credentialIssuerConfigs");
+            credentialIssuers.addAll(cis.stream().map(mapper::map).collect(Collectors.toList()));
+
+        }
+
     }
 
     public static void initUATUsers() throws IOException {
