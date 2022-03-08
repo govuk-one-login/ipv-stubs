@@ -67,7 +67,6 @@ public class CoreStubConfig {
             CredentialIssuerMapper mapper = new CredentialIssuerMapper();
             List<Map> cis = (List<Map>) obj.get("credentialIssuerConfigs");
             credentialIssuers.addAll(cis.stream().map(mapper::map).collect(Collectors.toList()));
-
         }
 
     }
