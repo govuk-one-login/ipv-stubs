@@ -68,7 +68,6 @@ public class CoreStubConfig {
             List<Map> cis = (List<Map>) obj.get("credentialIssuerConfigs");
             credentialIssuers.addAll(cis.stream().map(mapper::map).collect(Collectors.toList()));
         }
-
     }
 
     public static void initUATUsers() throws IOException {
