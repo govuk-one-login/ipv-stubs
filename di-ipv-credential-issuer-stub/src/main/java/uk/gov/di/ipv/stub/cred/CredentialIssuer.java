@@ -1,6 +1,5 @@
 package uk.gov.di.ipv.stub.cred;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import spark.Spark;
 import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
@@ -12,6 +11,7 @@ import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
+import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
 public class CredentialIssuer {
 
@@ -23,19 +23,18 @@ public class CredentialIssuer {
         Spark.staticFileLocation("/public");
         Spark.port(Integer.parseInt(CredentialIssuerConfig.PORT));
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
         AuthCodeService authCodeService = new AuthCodeService();
         TokenService tokenService = new TokenService();
         Validator validator = new Validator(authCodeService);
         ClientJwtVerifier clientJwtVerifier = new ClientJwtVerifier();
         CredentialService credentialService = new CredentialService();
+        VerifiableCredentialGenerator vcGenerator = new VerifiableCredentialGenerator();
 
         authorizeHandler =
                 new AuthorizeHandler(new ViewHelper(), authCodeService, credentialService);
         tokenHandler =
                 new TokenHandler(authCodeService, tokenService, validator, clientJwtVerifier);
-        credentialHandler = new CredentialHandler(credentialService, tokenService, objectMapper);
+        credentialHandler = new CredentialHandler(credentialService, tokenService, vcGenerator);
 
         initRoutes();
         initErrorMapping();
@@ -45,7 +44,7 @@ public class CredentialIssuer {
         Spark.get("/authorize", authorizeHandler.doAuthorize);
         Spark.post("/authorize", authorizeHandler.generateResponse);
         Spark.post("/token", tokenHandler.issueAccessToken);
-        Spark.get("/credential", credentialHandler.getResource);
+        Spark.post("/credentials/issue", credentialHandler.getResource);
     }
 
     private void initErrorMapping() {

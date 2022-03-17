@@ -2,9 +2,8 @@ package uk.gov.di.ipv.stub.cred.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
+import uk.gov.di.ipv.stub.cred.domain.Credential;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,16 +19,13 @@ public class CredentialServiceTest {
 
     @Test
     void shouldPersistAndGetPayload() {
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("test", "test-value");
-        payload.put(RequestParamConstants.ACTIVITY_HISTORY, "0");
-        payload.put(RequestParamConstants.IDENTITY_FRAUD, "2");
-        payload.put(RequestParamConstants.VERIFICATION, "4");
+        Credential credential =
+                new Credential(Map.of("an", "attribute"), Map.of("a", "gpg45Score"));
 
-        credentialService.persist(payload, "1234");
+        credentialService.persist(credential, "1234");
 
-        Map<String, Object> resultantCredential = credentialService.getCredential("1234");
+        Credential resultantCredential = credentialService.getCredential("1234");
         assertNotNull(resultantCredential);
-        assertEquals(payload, resultantCredential);
+        assertEquals(credential, resultantCredential);
     }
 }

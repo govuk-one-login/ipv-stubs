@@ -39,8 +39,6 @@ class ValidatorTest {
     private final EnvironmentVariables environmentVariables =
             new EnvironmentVariables("CLIENT_CONFIG", TestFixtures.CLIENT_CONFIG);
 
-    ;
-
     @BeforeAll
     public static void setUp() {
         CredentialIssuerConfig.resetClientConfigs();
