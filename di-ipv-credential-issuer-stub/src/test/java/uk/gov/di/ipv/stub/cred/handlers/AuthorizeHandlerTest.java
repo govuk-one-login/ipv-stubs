@@ -346,7 +346,7 @@ class AuthorizeHandlerTest {
 
         authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
 
-        verify(mockResponse).redirect(TEST_REDIRECT_URI + "?error=Invalid+JSON&iss=Credential+Issuer+Stub");
+        verify(mockResponse).redirect(TEST_REDIRECT_URI + "?error=invalid_json&iss=Credential+Issuer+Stub&error_description=Unable+to+generate+valid+JSON+Payload");
     }
 
     @Test

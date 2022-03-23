@@ -12,7 +12,6 @@ import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationErrorResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationSuccessResponse;
 import com.nimbusds.oauth2.sdk.ErrorObject;
-import com.nimbusds.oauth2.sdk.ErrorResponse;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
@@ -180,7 +179,7 @@ public class AuthorizeHandler {
                     response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
                     response.redirect(successResponse.toURI().toString());
                 } catch (CriStubException e) {
-                    AuthorizationErrorResponse errorResponse = generateErrorResponse(queryParamsMap, e.getMessage());
+                    AuthorizationErrorResponse errorResponse = generateErrorResponse(queryParamsMap, e);
                     response.redirect(errorResponse.toURI().toString());
                 }
                 return null;
@@ -197,10 +196,10 @@ public class AuthorizeHandler {
                 ResponseMode.QUERY);
     }
 
-    private AuthorizationErrorResponse generateErrorResponse(QueryParamsMap queryParamsMap, String error) {
+    private AuthorizationErrorResponse generateErrorResponse(QueryParamsMap queryParamsMap, CriStubException error) {
         return new AuthorizationErrorResponse(
                 URI.create(queryParamsMap.value(RequestParamConstants.REDIRECT_URI)),
-                new ErrorObject(error),
+                new ErrorObject(error.getMessage(), error.getDescription()),
                 null,
                 new Issuer(CredentialIssuerConfig.NAME),
                 ResponseMode.QUERY);
@@ -221,7 +220,7 @@ public class AuthorizeHandler {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(payload, Map.class);
         } catch (JsonProcessingException e) {
-            throw new CriStubException("Invalid JSON", e);
+            throw new CriStubException("invalid_json", "Unable to generate valid JSON Payload", e);
         }
     }
 
@@ -243,7 +242,7 @@ public class AuthorizeHandler {
                         verificationValue);
 
         if (!validationResult.isValid()) {
-            throw new CriStubException(validationResult.getError().getDescription());
+            throw new CriStubException("invalid_request", validationResult.getError().getDescription());
         }
 
         Map<String, Object> gpg45Score = new HashMap<>();
