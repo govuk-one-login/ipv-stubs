@@ -74,8 +74,8 @@ public class AuthorizeHandler {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     public static final String CLAIMS_CLAIM = "claims";
 
-    private AuthCodeService authCodeService;
-    private CredentialService credentialService;
+    private final AuthCodeService authCodeService;
+    private final CredentialService credentialService;
     private ViewHelper viewHelper;
 
     public AuthorizeHandler(
@@ -179,7 +179,8 @@ public class AuthorizeHandler {
                     response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
                     response.redirect(successResponse.toURI().toString());
                 } catch (CriStubException e) {
-                    AuthorizationErrorResponse errorResponse = generateErrorResponse(queryParamsMap, e);
+                    AuthorizationErrorResponse errorResponse =
+                            generateErrorResponse(queryParamsMap, e);
                     response.redirect(errorResponse.toURI().toString());
                 }
                 return null;
@@ -196,7 +197,8 @@ public class AuthorizeHandler {
                 ResponseMode.QUERY);
     }
 
-    private AuthorizationErrorResponse generateErrorResponse(QueryParamsMap queryParamsMap, CriStubException error) {
+    private AuthorizationErrorResponse generateErrorResponse(
+            QueryParamsMap queryParamsMap, CriStubException error) {
         return new AuthorizationErrorResponse(
                 URI.create(queryParamsMap.value(RequestParamConstants.REDIRECT_URI)),
                 new ErrorObject(error.getMessage(), error.getDescription()),
@@ -242,7 +244,8 @@ public class AuthorizeHandler {
                         verificationValue);
 
         if (!validationResult.isValid()) {
-            throw new CriStubException("invalid_request", validationResult.getError().getDescription());
+            throw new CriStubException(
+                    "invalid_request", validationResult.getError().getDescription());
         }
 
         Map<String, Object> gpg45Score = new HashMap<>();
