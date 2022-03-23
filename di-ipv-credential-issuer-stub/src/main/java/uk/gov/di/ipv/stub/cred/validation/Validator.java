@@ -165,16 +165,25 @@ public class Validator {
         String clientIdValue = requestParams.value(RequestParamConstants.CLIENT_ID);
         String assertionType = requestParams.value(RequestParamConstants.CLIENT_ASSERTION_TYPE);
         String assertion = requestParams.value(RequestParamConstants.CLIENT_ASSERTION);
-        if (Validator.isNullBlankOrEmpty(clientIdValue)
-                && (Validator.isNullBlankOrEmpty(assertionType)
-                        || Validator.isNullBlankOrEmpty(assertion))) {
-            LOGGER.error("Client id or client assertion query param value is missing");
+        if (Validator.isNullBlankOrEmpty(clientIdValue)) {
+            LOGGER.error("Missing client id value");
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
-        if (!Validator.isNullBlankOrEmpty(clientIdValue)
-                && CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
-            LOGGER.error("Failed to find config for provided client id");
+        LOGGER.info("Processing token request for client {}", clientIdValue);
+
+        if (Validator.isNullBlankOrEmpty(assertionType)){
+            LOGGER.error("Missing client assertion type param");
+            return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
+        }
+
+        if (Validator.isNullBlankOrEmpty(assertion)) {
+            LOGGER.error("Missing client assertion jwt param");
+            return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
+        }
+
+        if (CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
+            LOGGER.error("Failed to find config for provided client id: {}", clientIdValue);
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
