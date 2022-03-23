@@ -3,11 +3,14 @@ package uk.gov.di.ipv.stub.cred.validation;
 import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.GrantType;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
+import uk.gov.di.ipv.stub.cred.handlers.TokenHandler;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 
 import java.util.Arrays;
@@ -16,6 +19,7 @@ import java.util.Objects;
 
 public class Validator {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Validator.class);
     private static final String PAAS_DOMAIN = ".london.cloudapps.digital";
     private static final String INVALID_GPG45_SCORE_ERROR_CODE = "1001";
     private static final String INVALID_EVIDENCE_VALUES_ERROR_CODE = "1002";
@@ -161,14 +165,25 @@ public class Validator {
         String clientIdValue = requestParams.value(RequestParamConstants.CLIENT_ID);
         String assertionType = requestParams.value(RequestParamConstants.CLIENT_ASSERTION_TYPE);
         String assertion = requestParams.value(RequestParamConstants.CLIENT_ASSERTION);
-        if (Validator.isNullBlankOrEmpty(clientIdValue)
-                && (Validator.isNullBlankOrEmpty(assertionType)
-                        || Validator.isNullBlankOrEmpty(assertion))) {
+        if (Validator.isNullBlankOrEmpty(clientIdValue)) {
+            LOGGER.error("Missing client id value");
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
-        if (!Validator.isNullBlankOrEmpty(clientIdValue)
-                && CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
+        LOGGER.info("Processing token request for client {}", clientIdValue);
+
+        if (Validator.isNullBlankOrEmpty(assertionType)){
+            LOGGER.error("Missing client assertion type param");
+            return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
+        }
+
+        if (Validator.isNullBlankOrEmpty(assertion)) {
+            LOGGER.error("Missing client assertion jwt param");
+            return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
+        }
+
+        if (CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
+            LOGGER.error("Failed to find config for provided client id: {}", clientIdValue);
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
