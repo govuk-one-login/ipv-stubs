@@ -346,8 +346,7 @@ class AuthorizeHandlerTest {
 
         authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
 
-        verify(mockRequest).attribute("error", "Invalid JSON");
-        verify(mockViewHelper).render(anyMap(), eq("authorize.mustache"));
+        verify(mockResponse).redirect(TEST_REDIRECT_URI + "?error=Invalid+JSON&iss=Credential+Issuer+Stub");
     }
 
     @Test
