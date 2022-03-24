@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
@@ -168,31 +169,19 @@ public class IpvHandler {
     }
 
     private List<Map<String, Object>> buildMustacheData(JSONObject credentials)
-            throws ParseException, JsonSyntaxException {
+            throws ParseException, JsonSyntaxException, java.text.ParseException {
         List<Map<String, Object>> moustacheDataModel = new ArrayList<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         for (String key : credentials.keySet()) {
-            JsonObject criJson = gson.fromJson(credentials.get(key).toString(), JsonObject.class);
+            SignedJWT signedJWT = SignedJWT.parse(credentials.get(key).toString());
 
-            String attributesJson;
-            if (criJson.has("attributes")) {
-                attributesJson =
-                        gson.toJson(JsonParser.parseString(criJson.get("attributes").toString()));
-            } else {
-                throw new ParseException("Could not find attributes field in JSON");
-            }
+            JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
+            Map<String, Object> claims = claimsSet.toJSONObject();
 
-            String gpg45ScoreJson = null;
-            if (criJson.has("gpg45Score")) {
-                gpg45ScoreJson =
-                        gson.toJson(JsonParser.parseString(criJson.get("gpg45Score").toString()));
-            }
+            String json = gson.toJson(claims);
 
             Map<String, Object> criMap = new HashMap<>();
-            criMap.put("attributes", attributesJson);
-            if (gpg45ScoreJson != null) {
-                criMap.put("gpg45Score", gpg45ScoreJson);
-            }
+            criMap.put("VC", json);
             criMap.put("criType", key);
             moustacheDataModel.add(criMap);
         }
