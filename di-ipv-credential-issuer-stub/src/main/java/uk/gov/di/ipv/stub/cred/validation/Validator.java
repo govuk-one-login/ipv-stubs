@@ -165,20 +165,11 @@ public class Validator {
         String clientIdValue = requestParams.value(RequestParamConstants.CLIENT_ID);
         String assertionType = requestParams.value(RequestParamConstants.CLIENT_ASSERTION_TYPE);
         String assertion = requestParams.value(RequestParamConstants.CLIENT_ASSERTION);
-        if (Validator.isNullBlankOrEmpty(clientIdValue)) {
-            LOGGER.error("Missing client id value");
-            return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
-        }
 
-        LOGGER.info("Processing token request for client {}", clientIdValue);
-
-        if (Validator.isNullBlankOrEmpty(assertionType)){
-            LOGGER.error("Missing client assertion type param");
-            return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
-        }
-
-        if (Validator.isNullBlankOrEmpty(assertion)) {
-            LOGGER.error("Missing client assertion jwt param");
+        if (Validator.isNullBlankOrEmpty(clientIdValue)
+                && (Validator.isNullBlankOrEmpty(assertionType)
+                || Validator.isNullBlankOrEmpty(assertion))) {
+            LOGGER.error("Missing client id or client assertion param values");
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
