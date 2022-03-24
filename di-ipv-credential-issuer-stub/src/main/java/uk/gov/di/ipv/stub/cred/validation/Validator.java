@@ -10,7 +10,6 @@ import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
-import uk.gov.di.ipv.stub.cred.handlers.TokenHandler;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 
 import java.util.Arrays;
@@ -168,7 +167,7 @@ public class Validator {
 
         if (Validator.isNullBlankOrEmpty(clientIdValue)
                 && (Validator.isNullBlankOrEmpty(assertionType)
-                || Validator.isNullBlankOrEmpty(assertion))) {
+                        || Validator.isNullBlankOrEmpty(assertion))) {
             LOGGER.error("Missing client id or client assertion param values");
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
