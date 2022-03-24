@@ -172,7 +172,8 @@ public class Validator {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
-        if (CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
+        if (!Validator.isNullBlankOrEmpty(clientIdValue)
+                && CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
             LOGGER.error("Failed to find config for provided client id: {}", clientIdValue);
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
