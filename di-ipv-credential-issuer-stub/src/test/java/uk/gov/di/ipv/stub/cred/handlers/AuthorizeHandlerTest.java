@@ -346,8 +346,10 @@ class AuthorizeHandlerTest {
 
         authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
 
-        verify(mockRequest).attribute("error", "Invalid JSON");
-        verify(mockViewHelper).render(anyMap(), eq("authorize.mustache"));
+        verify(mockResponse)
+                .redirect(
+                        TEST_REDIRECT_URI
+                                + "?error=invalid_json&iss=Credential+Issuer+Stub&error_description=Unable+to+generate+valid+JSON+Payload");
     }
 
     @Test
@@ -403,9 +405,7 @@ class AuthorizeHandlerTest {
 
     private QueryParamsMap toQueryParamsMap(Map<String, String[]> queryParams) {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
-        ;
         when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
-
         return new QueryParamsMap(mockHttpRequest);
     }
 

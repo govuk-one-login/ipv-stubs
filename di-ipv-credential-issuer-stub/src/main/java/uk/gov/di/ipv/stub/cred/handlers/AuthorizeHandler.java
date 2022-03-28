@@ -15,6 +15,7 @@ import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
+import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
 import org.slf4j.Logger;
@@ -73,8 +74,8 @@ public class AuthorizeHandler {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     public static final String CLAIMS_CLAIM = "claims";
 
-    private AuthCodeService authCodeService;
-    private CredentialService credentialService;
+    private final AuthCodeService authCodeService;
+    private final CredentialService credentialService;
     private ViewHelper viewHelper;
 
     public AuthorizeHandler(
@@ -178,8 +179,9 @@ public class AuthorizeHandler {
                     response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
                     response.redirect(successResponse.toURI().toString());
                 } catch (CriStubException e) {
-                    request.attribute(ERROR_PARAM, e.getMessage());
-                    return doAuthorize.handle(request, response);
+                    AuthorizationErrorResponse errorResponse =
+                            generateErrorResponse(queryParamsMap, e);
+                    response.redirect(errorResponse.toURI().toString());
                 }
                 return null;
             };
@@ -192,6 +194,16 @@ public class AuthorizeHandler {
                 authorizationCode,
                 null,
                 State.parse(queryParamsMap.value(RequestParamConstants.STATE)),
+                ResponseMode.QUERY);
+    }
+
+    private AuthorizationErrorResponse generateErrorResponse(
+            QueryParamsMap queryParamsMap, CriStubException error) {
+        return new AuthorizationErrorResponse(
+                URI.create(queryParamsMap.value(RequestParamConstants.REDIRECT_URI)),
+                new ErrorObject(error.getMessage(), error.getDescription()),
+                null,
+                new Issuer(CredentialIssuerConfig.NAME),
                 ResponseMode.QUERY);
     }
 
@@ -210,7 +222,7 @@ public class AuthorizeHandler {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(payload, Map.class);
         } catch (JsonProcessingException e) {
-            throw new CriStubException("Invalid JSON", e);
+            throw new CriStubException("invalid_json", "Unable to generate valid JSON Payload", e);
         }
     }
 
@@ -232,7 +244,8 @@ public class AuthorizeHandler {
                         verificationValue);
 
         if (!validationResult.isValid()) {
-            throw new CriStubException(validationResult.getError().getDescription());
+            throw new CriStubException(
+                    "invalid_request", validationResult.getError().getDescription());
         }
 
         Map<String, Object> gpg45Score = new HashMap<>();
