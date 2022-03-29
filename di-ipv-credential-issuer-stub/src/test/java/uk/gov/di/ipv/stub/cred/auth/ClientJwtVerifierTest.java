@@ -4,7 +4,8 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -46,7 +47,7 @@ public class ClientJwtVerifierTest {
     private final EnvironmentVariables environmentVariables =
             new EnvironmentVariables(
                     "CLIENT_CONFIG",
-                    TestFixtures.JWT_AUTH_SERVICE_TEST_CLIENT_CONFIG,
+                    TestFixtures.CLIENT_CONFIG_WITH_PUBLIC_JWK,
                     "CLIENT_AUDIENCE",
                     "https://test-server.example.com/token");
 
@@ -218,19 +219,18 @@ public class ClientJwtVerifierTest {
 
     private String generateClientAssertion(Map<String, Object> claimsSetValues)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
-        RSASSASigner signer =
-                new RSASSASigner(
-                        (KeyFactory.getInstance("RSA")
+        ECDSASigner signer =
+                new ECDSASigner(
+                        (KeyFactory.getInstance("EC")
                                 .generatePrivate(
                                         new PKCS8EncodedKeySpec(
                                                 Base64.getDecoder()
-                                                        .decode(
-                                                                TestFixtures
-                                                                        .JWT_AUTH_SERVICE_TEST_CLIENT_CONFIG_PRIVATE_KEY)))));
+                                                        .decode(TestFixtures.EC_PRIVATE_KEY_1)))),
+                        Curve.P_256);
 
         SignedJWT signedJWT =
                 new SignedJWT(
-                        new JWSHeader.Builder(JWSAlgorithm.RS256).type(JOSEObjectType.JWT).build(),
+                        new JWSHeader.Builder(JWSAlgorithm.ES256).type(JOSEObjectType.JWT).build(),
                         generateClaimsSet(claimsSetValues));
         signedJWT.sign(signer);
 

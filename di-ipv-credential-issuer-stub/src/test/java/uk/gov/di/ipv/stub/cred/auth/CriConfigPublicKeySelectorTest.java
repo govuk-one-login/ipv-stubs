@@ -1,5 +1,7 @@
 package uk.gov.di.ipv.stub.cred.auth;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.oauth2.sdk.auth.verifier.Context;
 import com.nimbusds.oauth2.sdk.auth.verifier.InvalidClientException;
 import com.nimbusds.oauth2.sdk.id.ClientID;
@@ -7,11 +9,8 @@ import org.junit.jupiter.api.Test;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 
-import java.io.ByteArrayInputStream;
 import java.security.PublicKey;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.util.Base64;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
@@ -33,15 +32,14 @@ public class CriConfigPublicKeySelectorTest {
     }
 
     @Test
-    void registerClientsAllowsSelectionOfTheirKey()
-            throws InvalidClientException, CertificateException {
+    void registerClientsAllowsSelectionOfTheirKey() throws Exception {
         ClientConfig clientConfig1 = new ClientConfig();
         Map<String, String> jwtAuthConfig1 =
                 Map.of(
                         "id", "clientConfig1",
                         "issuer", "clientConfig1",
                         "subject", "clientConfig1",
-                        "publicCertificateToVerify", TestFixtures.TEST_CERT_1,
+                        "signingPublicJwk", TestFixtures.EC_PUBLIC_JWK_1,
                         "validRedirectUrls", "https://example.com",
                         "authenticationMethod", "jwt");
         clientConfig1.setJwtAuthentication(jwtAuthConfig1);
@@ -52,7 +50,7 @@ public class CriConfigPublicKeySelectorTest {
                         "id", "clientConfig2",
                         "issuer", "clientConfig2",
                         "subject", "clientConfig2",
-                        "publicCertificateToVerify", TestFixtures.TEST_CERT_2,
+                        "signingPublicJwk", TestFixtures.EC_PUBLIC_JWK_2,
                         "validRedirectUrls", "https://example.com",
                         "authenticationMethod", "jwt");
         clientConfig2.setJwtAuthentication(jwtAuthConfig2);
@@ -63,7 +61,7 @@ public class CriConfigPublicKeySelectorTest {
                         "id", "clientConfig3",
                         "issuer", "clientConfig3",
                         "subject", "clientConfig3",
-                        "publicCertificateToVerify", TestFixtures.TEST_CERT_3,
+                        "signingPublicJwk", TestFixtures.EC_PUBLIC_JWK_3,
                         "validRedirectUrls", "https://example.com",
                         "authenticationMethod", "jwt");
         clientConfig3.setJwtAuthentication(jwtAuthConfig3);
@@ -90,21 +88,20 @@ public class CriConfigPublicKeySelectorTest {
         assertEquals(1, client1PublicKeys.size());
         assertEquals(1, client2PublicKeys.size());
         assertEquals(1, client3PublicKeys.size());
-        assertEquals(extractPublicKey(TestFixtures.TEST_CERT_1), client1PublicKeys.get(0));
-        assertEquals(extractPublicKey(TestFixtures.TEST_CERT_2), client2PublicKeys.get(0));
-        assertEquals(extractPublicKey(TestFixtures.TEST_CERT_3), client3PublicKeys.get(0));
+        assertEquals(extractPublicKey(TestFixtures.EC_PUBLIC_JWK_1), client1PublicKeys.get(0));
+        assertEquals(extractPublicKey(TestFixtures.EC_PUBLIC_JWK_2), client2PublicKeys.get(0));
+        assertEquals(extractPublicKey(TestFixtures.EC_PUBLIC_JWK_3), client3PublicKeys.get(0));
     }
 
     @Test
-    void onlyThrowsForBadCertsWhenRetrievingPublicKeys()
-            throws InvalidClientException, CertificateException {
+    void onlyThrowsForBadCertsWhenRetrievingPublicKeys() throws Exception {
         ClientConfig clientConfig1 = new ClientConfig();
         Map<String, String> jwtAuthConfig1 =
                 Map.of(
                         "id", "clientConfig1",
                         "issuer", "clientConfig1",
                         "subject", "clientConfig1",
-                        "publicCertificateToVerify", "VALIDBASE64BUTNOTACERT",
+                        "signingPublicJwk", "{\"valid_json\": \"but_not_a_jwk\"}",
                         "validRedirectUrls", "https://example.com",
                         "authenticationMethod", "jwt");
         clientConfig1.setJwtAuthentication(jwtAuthConfig1);
@@ -115,7 +112,7 @@ public class CriConfigPublicKeySelectorTest {
                         "id", "clientConfig2",
                         "issuer", "clientConfig2",
                         "subject", "clientConfig2",
-                        "publicCertificateToVerify", TestFixtures.TEST_CERT_2,
+                        "signingPublicJwk", TestFixtures.EC_PUBLIC_JWK_1,
                         "validRedirectUrls", "https://example.com",
                         "authenticationMethod", "jwt");
         clientConfig2.setJwtAuthentication(jwtAuthConfig2);
@@ -126,7 +123,7 @@ public class CriConfigPublicKeySelectorTest {
                         "id", "clientConfig3",
                         "issuer", "clientConfig3",
                         "subject", "clientConfig3",
-                        "publicCertificateToVerify", "NOT_VALID_BASE_64",
+                        "signingPublicJwk", "Not even json",
                         "validRedirectUrls", "https://example.com",
                         "authenticationMethod", "jwt");
         clientConfig3.setJwtAuthentication(jwtAuthConfig3);
@@ -170,13 +167,10 @@ public class CriConfigPublicKeySelectorTest {
                 "No public keys found for clientId 'clientConfig1'", client1exception.getMessage());
         assertEquals(
                 "No public keys found for clientId 'clientConfig3'", client3exception.getMessage());
-        assertEquals(extractPublicKey(TestFixtures.TEST_CERT_2), client2PublicKeys.get(0));
+        assertEquals(extractPublicKey(TestFixtures.EC_PUBLIC_JWK_1), client2PublicKeys.get(0));
     }
 
-    private PublicKey extractPublicKey(String certificate) throws CertificateException {
-        return CertificateFactory.getInstance("X.509")
-                .generateCertificate(
-                        new ByteArrayInputStream(Base64.getDecoder().decode(certificate)))
-                .getPublicKey();
+    private PublicKey extractPublicKey(String jwk) throws ParseException, JOSEException {
+        return ECKey.parse(jwk).toECPublicKey();
     }
 }

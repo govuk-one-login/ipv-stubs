@@ -5,7 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -37,15 +38,8 @@ import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -339,9 +333,10 @@ public class AuthorizeHandler {
 
                 sharedAttributesJson = gson.toJson(claims.get(VC_HTTP_API_CLAIM));
             } catch (ParseException e) {
-                LOGGER.error("Failed to parse the shared attributes JWT");
-                sharedAttributesJson = "Error: failed to parse shared attribute JWT";
-            } catch (JOSEException | CertificateException e) {
+                LOGGER.error("Failed to parse something: {}", e.getMessage());
+                sharedAttributesJson =
+                        String.format("Error: failed to parse something: %s", e.getMessage());
+            } catch (JOSEException e) {
                 LOGGER.error("Failed to verify the signature of the JWT", e);
                 sharedAttributesJson =
                         "Error: failed to verify the signature of the shared attribute JWT";
@@ -353,14 +348,9 @@ public class AuthorizeHandler {
     }
 
     private boolean isInvalidSignature(SignedJWT signedJWT, ClientConfig clientConfig)
-            throws CertificateException, JOSEException {
-        byte[] binaryCertificate = Base64.getDecoder().decode(clientConfig.getSigningCert());
-        CertificateFactory factory = CertificateFactory.getInstance("X.509");
-        Certificate certificate =
-                factory.generateCertificate(new ByteArrayInputStream(binaryCertificate));
-
-        PublicKey publicKey = certificate.getPublicKey();
-        RSASSAVerifier rsassaVerifier = new RSASSAVerifier((RSAPublicKey) publicKey);
-        return !signedJWT.verify(rsassaVerifier);
+            throws JOSEException, ParseException {
+        ECKey signingPublicJwk = ECKey.parse(clientConfig.getSigningPublicJwk());
+        ECDSAVerifier ecdsaVerifier = new ECDSAVerifier(signingPublicJwk);
+        return !signedJWT.verify(ecdsaVerifier);
     }
 }
