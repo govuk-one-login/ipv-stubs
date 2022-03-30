@@ -1,5 +1,7 @@
 package uk.gov.di.ipv.stub.core.config.uatuser;
 
+import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -7,6 +9,9 @@ import java.util.Map;
 import static java.util.stream.Collectors.toList;
 
 public class IdentityMapper {
+
+    public static final String GIVEN_NAME = "GivenName";
+    public static final String FAMILY_NAME = "FamilyName";
 
     public Identity map(Map<String, String> map, int rowNumber) {
         List<Question> listOfQuestions =
@@ -47,9 +52,9 @@ public class IdentityMapper {
 
         Instant dob = Instant.parse(map.get("dob"));
         Instant dateOfEntryOnCtdb = Instant.parse(map.get("dateOfEntryOnCtdb"));
-        DateOfBirth dateOfBirth = new DateOfBirth(dob, dateOfEntryOnCtdb);
+        FindDateOfBirth dateOfBirth = new FindDateOfBirth(dob, dateOfEntryOnCtdb);
 
-        Name name = new Name(map.get("name"), map.get("surname"));
+        FullName name = new FullName(map.get("name"), map.get("surname"));
 
         return new Identity(
                 rowNumber,
@@ -68,10 +73,10 @@ public class IdentityMapper {
                 identity.questions().numQuestionsTotal());
     }
 
-    public JWTClaimIdentity mapToJTWClaim(Identity identity) {
-        return new JWTClaimIdentity(
-                List.of(identity.name()),
-                List.of(identity.UKAddress()),
-                List.of(identity.dateOfBirth().getDOB()));
+    public SharedClaims mapToSharedClaim(Identity identity) {
+        return new SharedClaims(
+                List.of(CoreStubConfig.CORE_STUB_CONTEXT, CoreStubConfig.CORE_STUB_JSON_SCHEMA),
+                List.of(new Name(List.of(new NameParts(GIVEN_NAME, identity.name().firstName()), new NameParts(FAMILY_NAME, identity.name().surname())))),
+                List.of(new DateOfBirth(identity.findDateOfBirth().getDOB())));
     }
 }

@@ -48,6 +48,11 @@ public class CoreStubConfig {
     public static final String CORE_STUB_KEYSTORE_ALIAS =
             getConfigValue("CORE_STUB_KEYSTORE_ALIAS", null);
 
+    public static final String CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI = getConfigValue("CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI", "https://experian.cri.account.gov.uk");
+    public static final String CORE_STUB_JWT_ISS_EXPERIAN_CRI_URI = getConfigValue("CORE_STUB_JWT_ISS_EXPERIAN_CRI_URI", "https://ipv.core.account.gov.uk");
+    public static final String CORE_STUB_CONTEXT = getConfigValue("CORE_STUB_CONTEXT", "https://www.w3.org/2018/credentials/v1");
+    public static final String CORE_STUB_JSON_SCHEMA = getConfigValue("CORE_STUB_JSON_SCHEMA", "https://vocab.london.cloudapps.digital/contexts/identity-v1.jsonld");
+
     public static final List<Identity> identities = new ArrayList<>();
     public static final List<CredentialIssuer> credentialIssuers = new ArrayList<>();
 
