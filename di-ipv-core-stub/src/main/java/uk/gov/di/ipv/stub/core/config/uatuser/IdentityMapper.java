@@ -1,7 +1,5 @@
 package uk.gov.di.ipv.stub.core.config.uatuser;
 
-import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
-
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +73,9 @@ public class IdentityMapper {
 
     public SharedClaims mapToSharedClaim(Identity identity) {
         return new SharedClaims(
-                List.of("https://www.w3.org/2018/credentials/v1", "https://vocab.london.cloudapps.digital/contexts/identity-v1.jsonld"),
+                List.of(
+                        "https://www.w3.org/2018/credentials/v1",
+                        "https://vocab.london.cloudapps.digital/contexts/identity-v1.jsonld"),
                 List.of(
                         new Name(
                                 List.of(
