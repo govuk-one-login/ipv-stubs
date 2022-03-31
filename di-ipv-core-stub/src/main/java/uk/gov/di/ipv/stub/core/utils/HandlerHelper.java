@@ -177,7 +177,7 @@ public class HandlerHelper {
                                 .subject(subjectIdentifier)
                                 .audience(CoreStubConfig.CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI)
                                 .issueTime(Date.from(now))
-                                .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_EXPERIAN_CRI_URI)
+                                .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
                                 .notBeforeTime(Date.from(now))
                                 .expirationTime(Date.from(now.plus(1, ChronoUnit.HOURS)))
                                 .claim(SHARED_CLAIMS, map)

@@ -75,7 +75,7 @@ public class IdentityMapper {
 
     public SharedClaims mapToSharedClaim(Identity identity) {
         return new SharedClaims(
-                List.of(CoreStubConfig.CORE_STUB_CONTEXT, CoreStubConfig.CORE_STUB_JSON_SCHEMA),
+                List.of("https://www.w3.org/2018/credentials/v1", "https://vocab.london.cloudapps.digital/contexts/identity-v1.jsonld"),
                 List.of(
                         new Name(
                                 List.of(
