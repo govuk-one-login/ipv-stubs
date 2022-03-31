@@ -4,5 +4,4 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Date;
 
-public record DateOfBirth(@JsonProperty("value") Date dob) {
-}
+public record DateOfBirth(@JsonProperty("value") Date dob) {}

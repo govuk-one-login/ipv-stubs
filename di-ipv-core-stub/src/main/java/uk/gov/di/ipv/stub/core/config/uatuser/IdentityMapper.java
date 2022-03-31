@@ -76,7 +76,11 @@ public class IdentityMapper {
     public SharedClaims mapToSharedClaim(Identity identity) {
         return new SharedClaims(
                 List.of(CoreStubConfig.CORE_STUB_CONTEXT, CoreStubConfig.CORE_STUB_JSON_SCHEMA),
-                List.of(new Name(List.of(new NameParts(GIVEN_NAME, identity.name().firstName()), new NameParts(FAMILY_NAME, identity.name().surname())))),
+                List.of(
+                        new Name(
+                                List.of(
+                                        new NameParts(GIVEN_NAME, identity.name().firstName()),
+                                        new NameParts(FAMILY_NAME, identity.name().surname())))),
                 List.of(new DateOfBirth(identity.findDateOfBirth().getDOB())));
     }
 }

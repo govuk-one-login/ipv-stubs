@@ -4,5 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
-public record SharedClaims(@JsonProperty("@context") List<String> context, @JsonProperty("name") List<Name> name, @JsonProperty("birthDate") List<DateOfBirth> birthDate) {
-}
+public record SharedClaims(
+        @JsonProperty("@context") List<String> context,
+        @JsonProperty("name") List<Name> name,
+        @JsonProperty("birthDate") List<DateOfBirth> birthDate) {}
