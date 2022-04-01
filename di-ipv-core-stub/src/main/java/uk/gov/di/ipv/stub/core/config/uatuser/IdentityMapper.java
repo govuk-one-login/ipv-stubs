@@ -8,6 +8,9 @@ import static java.util.stream.Collectors.toList;
 
 public class IdentityMapper {
 
+    public static final String GIVEN_NAME = "GivenName";
+    public static final String FAMILY_NAME = "FamilyName";
+
     public Identity map(Map<String, String> map, int rowNumber) {
         List<Question> listOfQuestions =
                 map.keySet().stream()
@@ -47,9 +50,9 @@ public class IdentityMapper {
 
         Instant dob = Instant.parse(map.get("dob"));
         Instant dateOfEntryOnCtdb = Instant.parse(map.get("dateOfEntryOnCtdb"));
-        DateOfBirth dateOfBirth = new DateOfBirth(dob, dateOfEntryOnCtdb);
+        FindDateOfBirth dateOfBirth = new FindDateOfBirth(dob, dateOfEntryOnCtdb);
 
-        Name name = new Name(map.get("name"), map.get("surname"));
+        FullName name = new FullName(map.get("name"), map.get("surname"));
 
         return new Identity(
                 rowNumber,
@@ -68,10 +71,16 @@ public class IdentityMapper {
                 identity.questions().numQuestionsTotal());
     }
 
-    public JWTClaimIdentity mapToJTWClaim(Identity identity) {
-        return new JWTClaimIdentity(
-                List.of(identity.name()),
-                List.of(identity.UKAddress()),
-                List.of(identity.dateOfBirth().getDOB()));
+    public SharedClaims mapToSharedClaim(Identity identity) {
+        return new SharedClaims(
+                List.of(
+                        "https://www.w3.org/2018/credentials/v1",
+                        "https://vocab.london.cloudapps.digital/contexts/identity-v1.jsonld"),
+                List.of(
+                        new Name(
+                                List.of(
+                                        new NameParts(GIVEN_NAME, identity.name().firstName()),
+                                        new NameParts(FAMILY_NAME, identity.name().surname())))),
+                List.of(new DateOfBirth(identity.findDateOfBirth().getDOB())));
     }
 }

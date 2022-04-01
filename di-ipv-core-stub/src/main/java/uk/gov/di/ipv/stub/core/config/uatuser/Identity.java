@@ -5,6 +5,6 @@ public record Identity(
         String accountNumber,
         String ctdbDatabase,
         UKAddress UKAddress,
-        DateOfBirth dateOfBirth,
-        Name name,
+        FindDateOfBirth findDateOfBirth,
+        FullName name,
         Questions questions) {}

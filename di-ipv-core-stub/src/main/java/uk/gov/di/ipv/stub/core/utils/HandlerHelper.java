@@ -49,6 +49,8 @@ import java.util.stream.Collectors;
 
 public class HandlerHelper {
 
+    public static final String URN_UUID = "urn:uuid:";
+    public static final String SHARED_CLAIMS = "shared_claims";
     private final Logger logger = LoggerFactory.getLogger(HandlerHelper.class);
 
     public AuthorizationResponse getAuthorizationResponse(Request request) throws ParseException {
@@ -159,7 +161,7 @@ public class HandlerHelper {
 
     public String createClaimsJWT(Object identity, RSAKey signingPrivateKey) throws JOSEException {
 
-        String ipv_session_id = UUID.randomUUID().toString();
+        String subjectIdentifier = URN_UUID + UUID.randomUUID();
         Instant now = Instant.now();
 
         ObjectMapper objectMapper = new ObjectMapper();
@@ -172,12 +174,13 @@ public class HandlerHelper {
                                 .keyID(signingPrivateKey.getKeyID())
                                 .build(),
                         new JWTClaimsSet.Builder()
-                                .subject(ipv_session_id)
+                                .subject(subjectIdentifier)
+                                .audience(CoreStubConfig.CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI)
                                 .issueTime(Date.from(now))
-                                .issuer(CoreStubConfig.CORE_STUB_CLIENT_ID)
+                                .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
                                 .notBeforeTime(Date.from(now))
                                 .expirationTime(Date.from(now.plus(1, ChronoUnit.HOURS)))
-                                .claim("claims", Map.of("vc_http_api", map))
+                                .claim(SHARED_CLAIMS, map)
                                 .build());
 
         signedJWT.sign(new RSASSASigner(signingPrivateKey));

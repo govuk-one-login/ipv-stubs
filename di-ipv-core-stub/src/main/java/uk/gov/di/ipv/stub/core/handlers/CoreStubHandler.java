@@ -113,8 +113,7 @@ public class CoreStubHandler {
                         Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
-
-                var claimIdentity = new IdentityMapper().mapToJTWClaim(identity);
+                var claimIdentity = new IdentityMapper().mapToSharedClaim(identity);
                 var jwt = handlerHelper.createClaimsJWT(claimIdentity, signingKey);
                 var state = createNewState(credentialIssuer);
                 var authRequest =
