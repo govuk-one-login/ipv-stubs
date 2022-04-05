@@ -22,13 +22,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PRIVATE_KEY_1;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PUBLIC_JWK_1;
 
-public class JwtVerifierTest {
+public class ES256SignatureVerifierTest {
 
-    private final JwtVerifier jwtVerifier = new JwtVerifier();
+    private final ES256SignatureVerifier es256SignatureVerifier = new ES256SignatureVerifier();
 
     @Test
     void validReturnsTrueForGoodSignature() throws Exception {
-        assertTrue(jwtVerifier.valid(createSignedJwt(), EC_PUBLIC_JWK_1));
+        assertTrue(es256SignatureVerifier.valid(createSignedJwt(), EC_PUBLIC_JWK_1));
     }
 
     @Test
@@ -36,7 +36,9 @@ public class JwtVerifierTest {
         String signedJwt = createSignedJwt().serialize();
         String invalidSignatureJwt = signedJwt.substring(0, signedJwt.length() - 4) + "nope";
 
-        assertFalse(jwtVerifier.valid(SignedJWT.parse(invalidSignatureJwt), EC_PUBLIC_JWK_1));
+        assertFalse(
+                es256SignatureVerifier.valid(
+                        SignedJWT.parse(invalidSignatureJwt), EC_PUBLIC_JWK_1));
     }
 
     @Test
@@ -45,10 +47,10 @@ public class JwtVerifierTest {
         String[] jwtParts = signedJwt.serialize().split("\\.");
         Base64URL derSignature =
                 Base64URL.encode(ECDSA.transcodeSignatureToDER(signedJwt.getSignature().decode()));
-        SignedJWT derSignaatureJwt =
+        SignedJWT derSignatureJwt =
                 SignedJWT.parse(String.format("%s.%s.%s", jwtParts[0], jwtParts[1], derSignature));
 
-        assertTrue(jwtVerifier.valid(derSignaatureJwt, EC_PUBLIC_JWK_1));
+        assertTrue(es256SignatureVerifier.valid(derSignatureJwt, EC_PUBLIC_JWK_1));
     }
 
     private SignedJWT createSignedJwt() throws Exception {

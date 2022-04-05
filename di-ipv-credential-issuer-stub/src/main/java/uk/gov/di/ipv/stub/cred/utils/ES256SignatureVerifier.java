@@ -11,7 +11,7 @@ import java.text.ParseException;
 
 import static com.nimbusds.jose.JWSAlgorithm.ES256;
 
-public class JwtVerifier {
+public class ES256SignatureVerifier {
     public boolean valid(SignedJWT signedJWT, String publicJwk)
             throws JOSEException, ParseException {
         ECKey signingPublicJwk = ECKey.parse(publicJwk);
@@ -22,7 +22,7 @@ public class JwtVerifier {
         return signedJWT.verify(ecdsaVerifier);
     }
 
-    private SignedJWT transcodeSignature(SignedJWT signedJWT)
+    public SignedJWT transcodeSignature(SignedJWT signedJWT)
             throws JOSEException, java.text.ParseException {
         Base64URL transcodedSignatureBase64 =
                 Base64URL.encode(
@@ -34,7 +34,7 @@ public class JwtVerifier {
                 String.format("%s.%s.%s", jwtParts[0], jwtParts[1], transcodedSignatureBase64));
     }
 
-    private boolean signatureIsDerFormat(SignedJWT signedJWT) throws JOSEException {
+    public boolean signatureIsDerFormat(SignedJWT signedJWT) throws JOSEException {
         return signedJWT.getSignature().decode().length != ECDSA.getSignatureByteArrayLength(ES256);
     }
 }

@@ -30,7 +30,7 @@ import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.error.CriStubException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
-import uk.gov.di.ipv.stub.cred.utils.JwtVerifier;
+import uk.gov.di.ipv.stub.cred.utils.ES256SignatureVerifier;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -69,7 +69,7 @@ public class AuthorizeHandler {
 
     private final AuthCodeService authCodeService;
     private final CredentialService credentialService;
-    private final JwtVerifier jwtVerifier = new JwtVerifier();
+    private final ES256SignatureVerifier es256SignatureVerifier = new ES256SignatureVerifier();
     private ViewHelper viewHelper;
 
     public AuthorizeHandler(
@@ -318,7 +318,7 @@ public class AuthorizeHandler {
             try {
                 SignedJWT signedJWT = SignedJWT.parse(requestParam);
 
-                if (!jwtVerifier.valid(signedJWT, clientConfig.getSigningPublicJwk())) {
+                if (!es256SignatureVerifier.valid(signedJWT, clientConfig.getSigningPublicJwk())) {
                     LOGGER.error("JWT signature is invalid");
                     return "Error: Signature of the shared attribute JWT is not valid";
                 }
