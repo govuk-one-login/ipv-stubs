@@ -27,8 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PRIVATE_KEY;
-import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PUBLIC_KEY;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PRIVATE_KEY_1;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PUBLIC_KEY_1;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_ADDRESS;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_BIRTH_DATE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_NAME;
@@ -53,7 +53,7 @@ public class VerifiableCredentialGeneratorTest {
     @SystemStub
     private final EnvironmentVariables environmentVariables =
             new EnvironmentVariables(
-                    "VC_ISSUER", "https://issuer.example.com", "VC_SIGNING_KEY", EC_PRIVATE_KEY);
+                    "VC_ISSUER", "https://issuer.example.com", "VC_SIGNING_KEY", EC_PRIVATE_KEY_1);
 
     @Test
     void shouldGenerateASignedVerifiableCredential() throws Exception {
@@ -82,7 +82,8 @@ public class VerifiableCredentialGeneratorTest {
         ECPublicKey ecPublicKey =
                 (ECPublicKey)
                         kf.generatePublic(
-                                new X509EncodedKeySpec(Base64.getDecoder().decode(EC_PUBLIC_KEY)));
+                                new X509EncodedKeySpec(
+                                        Base64.getDecoder().decode(EC_PUBLIC_KEY_1)));
         ECDSAVerifier ecVerifier = new ECDSAVerifier(ecPublicKey);
         assertTrue(verifiableCredential.verify(ecVerifier));
 

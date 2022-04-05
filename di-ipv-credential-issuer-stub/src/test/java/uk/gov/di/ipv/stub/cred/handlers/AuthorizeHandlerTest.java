@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -35,7 +35,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Arrays;
@@ -233,7 +233,7 @@ class AuthorizeHandlerTest {
                 Boolean.parseBoolean(
                         frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
         assertEquals(
-                "Error: failed to parse shared attribute JWT",
+                "Error: failed to parse something: Invalid serialized unsecured/JWS/JWE object: Missing part delimiters",
                 frontendParamsCaptor.getValue().get("sharedAttributes"));
     }
 
@@ -394,13 +394,12 @@ class AuthorizeHandlerTest {
         verify(mockResponse).redirect(TEST_REDIRECT_URI + expectedErrorCodeAndDescription);
     }
 
-    private RSAPrivateKey getPrivateKey() throws InvalidKeySpecException, NoSuchAlgorithmException {
-        return (RSAPrivateKey)
-                KeyFactory.getInstance("RSA")
+    private ECPrivateKey getPrivateKey() throws InvalidKeySpecException, NoSuchAlgorithmException {
+        return (ECPrivateKey)
+                KeyFactory.getInstance("EC")
                         .generatePrivate(
                                 new PKCS8EncodedKeySpec(
-                                        Base64.getDecoder()
-                                                .decode(TestFixtures.CLIENT_CONFIG_PRIVATE_KEY)));
+                                        Base64.getDecoder().decode(TestFixtures.EC_PRIVATE_KEY_1)));
     }
 
     private QueryParamsMap toQueryParamsMap(Map<String, String[]> queryParams) {
@@ -447,9 +446,9 @@ class AuthorizeHandlerTest {
     }
 
     private SignedJWT signedRequestJwt(JWTClaimsSet claimsSet) throws Exception {
-        RSASSASigner rsaSigner = new RSASSASigner(getPrivateKey());
-        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.RS256), claimsSet);
-        signedJWT.sign(rsaSigner);
+        ECDSASigner ecdsaSigner = new ECDSASigner(getPrivateKey());
+        SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.ES256), claimsSet);
+        signedJWT.sign(ecdsaSigner);
 
         return signedJWT;
     }
