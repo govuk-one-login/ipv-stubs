@@ -298,7 +298,8 @@ class AuthorizeHandlerTest {
             doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWhenSignatureVerificationFails()
                     throws Exception {
         Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-        String invalidSignatureJwt = signedRequestJwt(validClaimsSet()).serialize() + "Nope";
+        String signedJWT = signedRequestJwt(validClaimsSet()).serialize();
+        String invalidSignatureJwt = signedJWT.substring(0, signedJWT.length() - 4) + "Nope";
         queryParams.put(RequestParamConstants.REQUEST, new String[] {invalidSignatureJwt});
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);

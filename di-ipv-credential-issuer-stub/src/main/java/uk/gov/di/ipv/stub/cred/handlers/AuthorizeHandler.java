@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.crypto.ECDSAVerifier;
-import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -32,6 +30,7 @@ import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.error.CriStubException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
+import uk.gov.di.ipv.stub.cred.utils.JwtVerifier;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -70,6 +69,7 @@ public class AuthorizeHandler {
 
     private final AuthCodeService authCodeService;
     private final CredentialService credentialService;
+    private final JwtVerifier jwtVerifier = new JwtVerifier();
     private ViewHelper viewHelper;
 
     public AuthorizeHandler(
@@ -318,7 +318,7 @@ public class AuthorizeHandler {
             try {
                 SignedJWT signedJWT = SignedJWT.parse(requestParam);
 
-                if (isInvalidSignature(signedJWT, clientConfig)) {
+                if (!jwtVerifier.valid(signedJWT, clientConfig.getSigningPublicJwk())) {
                     LOGGER.error("JWT signature is invalid");
                     return "Error: Signature of the shared attribute JWT is not valid";
                 }
@@ -345,12 +345,5 @@ public class AuthorizeHandler {
             sharedAttributesJson = "Error: missing 'request' query parameter";
         }
         return sharedAttributesJson;
-    }
-
-    private boolean isInvalidSignature(SignedJWT signedJWT, ClientConfig clientConfig)
-            throws JOSEException, ParseException {
-        ECKey signingPublicJwk = ECKey.parse(clientConfig.getSigningPublicJwk());
-        ECDSAVerifier ecdsaVerifier = new ECDSAVerifier(signingPublicJwk);
-        return !signedJWT.verify(ecdsaVerifier);
     }
 }
