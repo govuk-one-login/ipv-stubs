@@ -5,7 +5,9 @@ import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.crypto.impl.ECDSA;
 import com.nimbusds.jose.jwk.Curve;
+import com.nimbusds.jose.util.Base64URL;
 import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -42,7 +44,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SystemStubsExtension.class)
 @ExtendWith(MockitoExtension.class)
-public class ClientJwtVerifierTest {
+public class ClientEs256SignatureVerifierTest {
     @SystemStub
     private final EnvironmentVariables environmentVariables =
             new EnvironmentVariables(
@@ -77,11 +79,33 @@ public class ClientJwtVerifierTest {
     }
 
     @Test
+    void itShouldNotThrowForJwtWithDerEncodedSignature() throws Exception {
+        SignedJWT signedJwt = SignedJWT.parse(generateClientAssertion(getValidClaimsSetValues()));
+        String[] jwtParts = signedJwt.serialize().split("\\.");
+        Base64URL derSignature =
+                Base64URL.encode(ECDSA.transcodeSignatureToDER(signedJwt.getSignature().decode()));
+        SignedJWT derSignatureJwt =
+                SignedJWT.parse(String.format("%s.%s.%s", jwtParts[0], jwtParts[1], derSignature));
+        var validQueryParams = getValidQueryParams(derSignatureJwt.serialize());
+
+        when(mockHttpRequest.getParameterMap()).thenReturn(validQueryParams);
+
+        assertDoesNotThrow(
+                () -> {
+                    jwtAuthenticationService.authenticateClient(
+                            new QueryParamsMap(mockHttpRequest));
+                });
+    }
+
+    @Test
     void itShouldThrowIfInvalidSignature() throws Exception {
         var invalidSignatureQueryParams =
                 new HashMap<>(
                         getValidQueryParams(generateClientAssertion(getValidClaimsSetValues())));
-        invalidSignatureQueryParams.get("client_assertion")[0] += "BREAKING_THE_SIGNATURE";
+        String client_assertion = invalidSignatureQueryParams.get("client_assertion")[0];
+        String badSignatureAssertion =
+                client_assertion.substring(0, client_assertion.length() - 4) + "nope";
+        invalidSignatureQueryParams.get("client_assertion")[0] = badSignatureAssertion;
         when(mockHttpRequest.getParameterMap()).thenReturn(invalidSignatureQueryParams);
 
         ClientAuthenticationException exception =

@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.stub.cred.auth;
 
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
 import com.nimbusds.oauth2.sdk.auth.verifier.ClientAuthenticationVerifier;
@@ -10,6 +11,7 @@ import spark.QueryParamsMap;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
+import uk.gov.di.ipv.stub.cred.utils.ES256SignatureVerifier;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,19 +23,23 @@ public class ClientJwtVerifier {
 
     public static final String AUTHENTICATION_METHOD = "authenticationMethod";
     public static final String NONE = "none";
+    public static final String CLIENT_ASSERTION_PARAM = "client_assertion";
 
-    private final ClientAuthenticationVerifier<Object> verifier;
+    private final ClientAuthenticationVerifier<Object> clientAuthVerifier;
+    private final ES256SignatureVerifier es256SignatureVerifier;
 
     public ClientJwtVerifier() {
-        this.verifier = getPopulatedClientAuthVerifier();
+        this.clientAuthVerifier = getPopulatedClientAuthVerifier();
+        this.es256SignatureVerifier = new ES256SignatureVerifier();
     }
 
     public void authenticateClient(QueryParamsMap queryParamsMap)
             throws ClientAuthenticationException {
 
+        Map<String, List<String>> queryParams = listifyParamValues(queryParamsMap);
         PrivateKeyJWT authenticationJwt;
         try {
-            authenticationJwt = PrivateKeyJWT.parse(listifyParamValues(queryParamsMap));
+            authenticationJwt = PrivateKeyJWT.parse(queryParams);
         } catch (ParseException e) {
             throw new ClientAuthenticationException(e);
         }
@@ -52,8 +58,19 @@ public class ClientJwtVerifier {
         }
 
         try {
-            verifier.verify(authenticationJwt, null, null);
-        } catch (InvalidClientException | JOSEException e) {
+            PrivateKeyJWT concatSignatureAuthJwt;
+            if (es256SignatureVerifier.signatureIsDerFormat(
+                    authenticationJwt.getClientAssertion())) {
+                concatSignatureAuthJwt =
+                        transcodeSignatureToConcatFormat(authenticationJwt, queryParams);
+            } else {
+                concatSignatureAuthJwt = authenticationJwt;
+            }
+            clientAuthVerifier.verify(concatSignatureAuthJwt, null, null);
+        } catch (InvalidClientException
+                | JOSEException
+                | ParseException
+                | java.text.ParseException e) {
             throw new ClientAuthenticationException(e);
         }
     }
@@ -64,6 +81,15 @@ public class ClientJwtVerifier {
                 .toMap()
                 .forEach((key, value) -> listifiedParams.put(key, Arrays.asList(value)));
         return listifiedParams;
+    }
+
+    private PrivateKeyJWT transcodeSignatureToConcatFormat(
+            PrivateKeyJWT authJwt, Map<String, List<String>> queryParams)
+            throws java.text.ParseException, JOSEException, ParseException {
+        SignedJWT transcodedSignedJwt =
+                es256SignatureVerifier.transcodeSignature(authJwt.getClientAssertion());
+        queryParams.put(CLIENT_ASSERTION_PARAM, List.of(transcodedSignedJwt.serialize()));
+        return PrivateKeyJWT.parse(queryParams);
     }
 
     private ClientAuthenticationVerifier<Object> getPopulatedClientAuthVerifier() {
