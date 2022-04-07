@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 public class CoreStubHandler {
 
     private final Map<String, CredentialIssuer> stateSession = new HashMap<>();
+    private RSAKey signingKey;
+
     public Route serveHomePage =
             (Request request, Response response) -> ViewHelper.render(null, "home.mustache");
     public Route showCredentialIssuer =
@@ -61,6 +63,7 @@ public class CoreStubHandler {
                 modelMap.put("identities", displayIdentities);
                 return ViewHelper.render(modelMap, "search-results.mustache");
             };
+
     public Route doCallback =
             (Request request, Response response) -> {
                 var authorizationResponse = handlerHelper.getAuthorizationResponse(request);
@@ -70,7 +73,8 @@ public class CoreStubHandler {
                 var cri = stateSession.remove(state.getValue());
                 var credentialIssuer = handlerHelper.findCredentialIssuer(cri.id());
                 var accessToken =
-                        handlerHelper.exchangeCodeForToken(authorizationCode, credentialIssuer);
+                        handlerHelper.exchangeCodeForToken(
+                                authorizationCode, credentialIssuer, signingKey);
                 var userInfo = handlerHelper.getUserInfo(accessToken, credentialIssuer);
 
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -82,7 +86,6 @@ public class CoreStubHandler {
 
                 return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
             };
-    private RSAKey signingKey;
     public Route handleCredentialIssuerRequest =
             (Request request, Response response) -> {
                 var credentialIssuer =
@@ -106,6 +109,7 @@ public class CoreStubHandler {
                     return null;
                 }
             };
+
     public Route authorize =
             (Request request, Response response) -> {
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));

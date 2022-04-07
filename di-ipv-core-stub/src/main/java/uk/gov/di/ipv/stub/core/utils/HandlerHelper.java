@@ -19,6 +19,7 @@ import com.nimbusds.oauth2.sdk.SerializeException;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
@@ -61,20 +62,34 @@ public class HandlerHelper {
             logger.error("Failed authorization code request: {}", error);
             throw new RuntimeException("Failed authorization code request");
         }
-
         return authorizationResponse;
     }
 
     public AccessToken exchangeCodeForToken(
-            AuthorizationCode authorizationCode, CredentialIssuer credentialIssuer) {
+            AuthorizationCode authorizationCode,
+            CredentialIssuer credentialIssuer,
+            RSAKey signingPrivateKey)
+            throws JOSEException {
+
+        ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
         URI resolve = credentialIssuer.tokenUrl();
+
         logger.info("token url is " + resolve);
-        TokenRequest tokenRequest =
-                new TokenRequest(
+
+        AuthorizationCodeGrant authzGrant =
+                new AuthorizationCodeGrant(
+                        authorizationCode, CoreStubConfig.CORE_STUB_REDIRECT_URL);
+
+        PrivateKeyJWT privateKeyJWT =
+                new PrivateKeyJWT(
+                        clientID,
                         resolve,
-                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
-                        new AuthorizationCodeGrant(
-                                authorizationCode, CoreStubConfig.CORE_STUB_REDIRECT_URL));
+                        JWSAlgorithm.RS256,
+                        signingPrivateKey.toRSAPrivateKey(),
+                        signingPrivateKey.getKeyID(),
+                        null);
+
+        TokenRequest tokenRequest = new TokenRequest(resolve, privateKeyJWT, authzGrant);
 
         var httpTokenResponse = sendHttpRequest(tokenRequest.toHTTPRequest());
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
