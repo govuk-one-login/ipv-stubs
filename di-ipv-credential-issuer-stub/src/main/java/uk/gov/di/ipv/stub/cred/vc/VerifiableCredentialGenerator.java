@@ -75,7 +75,7 @@ public class VerifiableCredentialGenerator {
         credentialSubject.putAll(attributes);
         vc.put(VC_CREDENTIAL_SUBJECT, credentialSubject);
         // The schema is unclear on how this should be presented so just copying wholesale for now.
-        vc.put(VC_EVIDENCE, List.of(credential.getGpg45Score()));
+        vc.put(VC_EVIDENCE, List.of(credential.getEvidence()));
 
         return generateAndSignVerifiableCredentialJwt(subject, vc);
     }

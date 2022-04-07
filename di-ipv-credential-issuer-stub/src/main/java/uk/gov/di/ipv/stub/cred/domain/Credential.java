@@ -4,18 +4,18 @@ import java.util.Map;
 
 public class Credential {
     private final Map<String, Object> attributes;
-    private final Map<String, Object> gpg45Score;
+    private final Map<String, Object> evidence;
 
-    public Credential(Map<String, Object> attributes, Map<String, Object> gpg45Score) {
+    public Credential(Map<String, Object> attributes, Map<String, Object> evidence) {
         this.attributes = attributes;
-        this.gpg45Score = gpg45Score;
+        this.evidence = evidence;
     }
 
     public Map<String, Object> getAttributes() {
         return attributes;
     }
 
-    public Map<String, Object> getGpg45Score() {
-        return gpg45Score;
+    public Map<String, Object> getEvidence() {
+        return evidence;
     }
 }
