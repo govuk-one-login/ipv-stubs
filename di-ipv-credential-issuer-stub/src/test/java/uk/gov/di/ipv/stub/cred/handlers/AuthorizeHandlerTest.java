@@ -58,7 +58,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CLAIMS_CLAIM;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 
 @ExtendWith(SystemStubsExtension.class)
@@ -205,10 +204,8 @@ class AuthorizeHandlerTest {
                         frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
 
         Map<String, Object> claims =
-                (Map<String, Object>) validClaimsSet().toJSONObject().get(CLAIMS_CLAIM);
-        assertEquals(
-                gson.toJson(claims.get(SHARED_CLAIMS)),
-                frontendParamsCaptor.getValue().get("sharedAttributes"));
+                (Map<String, Object>) validClaimsSet().toJSONObject().get(SHARED_CLAIMS);
+        assertEquals(gson.toJson(claims), frontendParamsCaptor.getValue().get("shared_claims"));
     }
 
     @Test
@@ -234,7 +231,7 @@ class AuthorizeHandlerTest {
                         frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
         assertEquals(
                 "Error: failed to parse something: Invalid serialized unsecured/JWS/JWE object: Missing part delimiters",
-                frontendParamsCaptor.getValue().get("sharedAttributes"));
+                frontendParamsCaptor.getValue().get("shared_claims"));
     }
 
     @Test
@@ -268,7 +265,7 @@ class AuthorizeHandlerTest {
                         frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
         assertEquals(
                 "Error: shared_claims not found in JWT",
-                frontendParamsCaptor.getValue().get("sharedAttributes"));
+                frontendParamsCaptor.getValue().get("shared_claims"));
     }
 
     @Test
@@ -290,7 +287,7 @@ class AuthorizeHandlerTest {
         verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
         assertEquals(
                 "Error: missing 'request' query parameter",
-                frontendParamsCaptor.getValue().get("sharedAttributes"));
+                frontendParamsCaptor.getValue().get("shared_claims"));
     }
 
     @Test
@@ -315,7 +312,7 @@ class AuthorizeHandlerTest {
         verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
         assertEquals(
                 "Error: Signature of the shared attribute JWT is not valid",
-                frontendParamsCaptor.getValue().get("sharedAttributes"));
+                frontendParamsCaptor.getValue().get("shared_claims"));
     }
 
     @Test
@@ -436,14 +433,12 @@ class AuthorizeHandlerTest {
     }
 
     private JWTClaimsSet validClaimsSet() {
-        Map<String, List<String>> vcHttpApiClaim = new LinkedHashMap<>();
-        vcHttpApiClaim.put("dateOfBirths", Arrays.asList("01/01/1980", "02/01/1980"));
-        vcHttpApiClaim.put("addresses", Collections.singletonList("123 random street, M13 7GE"));
-        vcHttpApiClaim.put("givenNames", Arrays.asList("Daniel", "Dan", "Danny"));
+        Map<String, List<String>> sharedClaims = new LinkedHashMap<>();
+        sharedClaims.put("dateOfBirths", Arrays.asList("01/01/1980", "02/01/1980"));
+        sharedClaims.put("addresses", Collections.singletonList("123 random street, M13 7GE"));
+        sharedClaims.put("givenNames", Arrays.asList("Daniel", "Dan", "Danny"));
 
-        return new JWTClaimsSet.Builder()
-                .claim(CLAIMS_CLAIM, Map.of(SHARED_CLAIMS, vcHttpApiClaim))
-                .build();
+        return new JWTClaimsSet.Builder().claim(SHARED_CLAIMS, sharedClaims).build();
     }
 
     private SignedJWT signedRequestJwt(JWTClaimsSet claimsSet) throws Exception {
