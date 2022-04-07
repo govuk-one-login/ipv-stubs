@@ -327,8 +327,8 @@ public class AuthorizeHandler {
                 Map<String, Object> claims = claimsSet.getJSONObjectClaim(CLAIMS_CLAIM);
 
                 if (claims == null || claims.get(SHARED_CLAIMS) == null) {
-                    LOGGER.error("vc_http_api claim not found in JWT");
-                    return "Error: vc_http_api claim not found in JWT";
+                    LOGGER.error("shared_claims not found in JWT");
+                    return "Error: shared_claims not found in JWT";
                 }
 
                 sharedAttributesJson = gson.toJson(claims.get(SHARED_CLAIMS));

@@ -267,7 +267,7 @@ class AuthorizeHandlerTest {
                 Boolean.parseBoolean(
                         frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
         assertEquals(
-                "Error: vc_http_api claim not found in JWT",
+                "Error: shared_claims not found in JWT",
                 frontendParamsCaptor.getValue().get("sharedAttributes"));
     }
 
