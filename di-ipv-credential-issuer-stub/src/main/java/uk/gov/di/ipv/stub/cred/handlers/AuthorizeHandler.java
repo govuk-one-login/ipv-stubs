@@ -46,7 +46,7 @@ import java.util.UUID;
 
 public class AuthorizeHandler {
 
-    public static final String VC_HTTP_API_CLAIM = "vc_http_api";
+    public static final String SHARED_CLAIMS = "shared_claims";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
 
@@ -326,12 +326,12 @@ public class AuthorizeHandler {
                 JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
                 Map<String, Object> claims = claimsSet.getJSONObjectClaim(CLAIMS_CLAIM);
 
-                if (claims == null || claims.get(VC_HTTP_API_CLAIM) == null) {
+                if (claims == null || claims.get(SHARED_CLAIMS) == null) {
                     LOGGER.error("vc_http_api claim not found in JWT");
                     return "Error: vc_http_api claim not found in JWT";
                 }
 
-                sharedAttributesJson = gson.toJson(claims.get(VC_HTTP_API_CLAIM));
+                sharedAttributesJson = gson.toJson(claims.get(SHARED_CLAIMS));
             } catch (ParseException e) {
                 LOGGER.error("Failed to parse something: {}", e.getMessage());
                 sharedAttributesJson =
