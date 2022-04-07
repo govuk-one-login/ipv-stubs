@@ -59,7 +59,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CLAIMS_CLAIM;
-import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.VC_HTTP_API_CLAIM;
+import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 
 @ExtendWith(SystemStubsExtension.class)
 class AuthorizeHandlerTest {
@@ -112,7 +112,7 @@ class AuthorizeHandlerTest {
         Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
         queryParams.put(
                 RequestParamConstants.REDIRECT_URI,
-                new String[] {"https://not-registered.exanple.com"});
+                new String[] {"https://not-registered.example.com"});
         QueryParamsMap qpmWithoutRedirectUri = toQueryParamsMap(queryParams);
 
         when(mockRequest.queryMap()).thenReturn(qpmWithoutRedirectUri);
@@ -207,7 +207,7 @@ class AuthorizeHandlerTest {
         Map<String, Object> claims =
                 (Map<String, Object>) validClaimsSet().toJSONObject().get(CLAIMS_CLAIM);
         assertEquals(
-                gson.toJson(claims.get(VC_HTTP_API_CLAIM)),
+                gson.toJson(claims.get(SHARED_CLAIMS)),
                 frontendParamsCaptor.getValue().get("sharedAttributes"));
     }
 
@@ -442,7 +442,7 @@ class AuthorizeHandlerTest {
         vcHttpApiClaim.put("givenNames", Arrays.asList("Daniel", "Dan", "Danny"));
 
         return new JWTClaimsSet.Builder()
-                .claim(CLAIMS_CLAIM, Map.of(VC_HTTP_API_CLAIM, vcHttpApiClaim))
+                .claim(CLAIMS_CLAIM, Map.of(SHARED_CLAIMS, vcHttpApiClaim))
                 .build();
     }
 
