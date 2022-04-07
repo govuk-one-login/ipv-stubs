@@ -59,13 +59,11 @@ public class AuthorizeHandler {
     private static final String IS_ACTIVITY_TYPE_PARAM = "isActivityType";
     private static final String IS_FRAUD_TYPE_PARAM = "isFraudType";
     private static final String IS_VERIFICATION_TYPE_PARAM = "isVerificationType";
-    private static final String SHARED_ATTRIBUTES_PARAM = "sharedAttributes";
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    public static final String CLAIMS_CLAIM = "claims";
 
     private final AuthCodeService authCodeService;
     private final CredentialService credentialService;
@@ -112,7 +110,7 @@ public class AuthorizeHandler {
                     return null;
                 }
 
-                String sharedAttributeJson = getSharedAttributes(queryParamsMap);
+                String sharedClaimsJson = getSharedAttributes(queryParamsMap);
 
                 CriType criType = CredentialIssuerConfig.getCriType();
 
@@ -125,7 +123,7 @@ public class AuthorizeHandler {
                 frontendParams.put(IS_FRAUD_TYPE_PARAM, criType.equals(CriType.FRAUD_CRI_TYPE));
                 frontendParams.put(
                         IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
-                frontendParams.put(SHARED_ATTRIBUTES_PARAM, sharedAttributeJson);
+                frontendParams.put(SHARED_CLAIMS, sharedClaimsJson);
 
                 String error = request.attribute(ERROR_PARAM);
                 boolean hasError = error != null;
@@ -324,14 +322,14 @@ public class AuthorizeHandler {
                 }
 
                 JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
-                Map<String, Object> claims = claimsSet.getJSONObjectClaim(CLAIMS_CLAIM);
+                Map<String, Object> sharedClaims = claimsSet.getJSONObjectClaim(SHARED_CLAIMS);
 
-                if (claims == null || claims.get(SHARED_CLAIMS) == null) {
+                if (sharedClaims == null) {
                     LOGGER.error("shared_claims not found in JWT");
                     return "Error: shared_claims not found in JWT";
                 }
 
-                sharedAttributesJson = gson.toJson(claims.get(SHARED_CLAIMS));
+                sharedAttributesJson = gson.toJson(sharedClaims);
             } catch (ParseException e) {
                 LOGGER.error("Failed to parse something: {}", e.getMessage());
                 sharedAttributesJson =
