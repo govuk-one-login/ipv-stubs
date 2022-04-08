@@ -3,6 +3,7 @@ package uk.gov.di.ipv.stub.core.handlers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.id.State;
 import spark.Request;
@@ -24,16 +25,23 @@ import java.util.stream.Collectors;
 public class CoreStubHandler {
 
     private final Map<String, CredentialIssuer> stateSession = new HashMap<>();
+    private HandlerHelper handlerHelper;
     private RSAKey signingKey;
+
+    public CoreStubHandler(HandlerHelper handlerHelper, RSAKey signingKey) {
+        this.handlerHelper = handlerHelper;
+        this.signingKey = signingKey;
+    }
 
     public Route serveHomePage =
             (Request request, Response response) -> ViewHelper.render(null, "home.mustache");
+
     public Route showCredentialIssuer =
             (Request request, Response response) ->
                     ViewHelper.render(
                             Map.of("cris", CoreStubConfig.credentialIssuers),
                             "credential-issuers.mustache");
-    private HandlerHelper handlerHelper;
+
     public Route userSearch =
             (Request request, Response response) -> {
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
@@ -86,6 +94,7 @@ public class CoreStubHandler {
 
                 return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
             };
+
     public Route handleCredentialIssuerRequest =
             (Request request, Response response) -> {
                 var credentialIssuer =
@@ -101,10 +110,14 @@ public class CoreStubHandler {
                                     credentialIssuer.name()),
                             "user-search.mustache");
                 } else {
-                    String jwt = handlerHelper.createClaimsJWT(Map.of(), signingKey);
+                    SignedJWT jwt = handlerHelper.createClaimsJWT(Map.of(), signingKey);
                     State state = createNewState(credentialIssuer);
                     AuthorizationRequest authRequest =
-                            handlerHelper.createAuthorizationRequest(state, credentialIssuer, jwt);
+                            credentialIssuer.sendOAuthJAR()
+                                    ? handlerHelper.createAuthorizationJAR(
+                                            state, credentialIssuer, null, signingKey)
+                                    : handlerHelper.createAuthorizationRequest(
+                                            state, credentialIssuer, jwt);
                     response.redirect(authRequest.toURI().toString());
                     return null;
                 }
@@ -121,15 +134,14 @@ public class CoreStubHandler {
                 var jwt = handlerHelper.createClaimsJWT(claimIdentity, signingKey);
                 var state = createNewState(credentialIssuer);
                 var authRequest =
-                        handlerHelper.createAuthorizationRequest(state, credentialIssuer, jwt);
+                        credentialIssuer.sendOAuthJAR()
+                                ? handlerHelper.createAuthorizationJAR(
+                                        state, credentialIssuer, claimIdentity, signingKey)
+                                : handlerHelper.createAuthorizationRequest(
+                                        state, credentialIssuer, jwt);
                 response.redirect(authRequest.toURI().toString());
                 return null;
             };
-
-    public CoreStubHandler(HandlerHelper handlerHelper, RSAKey signingKey) {
-        this.handlerHelper = handlerHelper;
-        this.signingKey = signingKey;
-    }
 
     private State createNewState(CredentialIssuer credentialIssuer) {
         var state = new State();

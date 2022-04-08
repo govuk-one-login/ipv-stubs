@@ -35,6 +35,7 @@ import spark.utils.StringUtils;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
 import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
+import uk.gov.di.ipv.stub.core.config.uatuser.SharedClaims;
 
 import java.io.IOException;
 import java.net.URI;
@@ -45,21 +46,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class HandlerHelper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HandlerHelper.class);
     public static final String URN_UUID = "urn:uuid:";
     public static final String SHARED_CLAIMS = "shared_claims";
-    private final Logger logger = LoggerFactory.getLogger(HandlerHelper.class);
 
     public AuthorizationResponse getAuthorizationResponse(Request request) throws ParseException {
         var authorizationResponse =
                 AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
-            logger.error("Failed authorization code request: {}", error);
+            LOGGER.error("Failed authorization code request: {}", error);
             throw new RuntimeException("Failed authorization code request");
         }
         return authorizationResponse;
@@ -74,7 +76,7 @@ public class HandlerHelper {
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
         URI resolve = credentialIssuer.tokenUrl();
 
-        logger.info("token url is " + resolve);
+        LOGGER.info("token url is {}", resolve);
 
         AuthorizationCodeGrant authzGrant =
                 new AuthorizationCodeGrant(
@@ -96,7 +98,7 @@ public class HandlerHelper {
 
         if (tokenResponse instanceof TokenErrorResponse) {
             TokenErrorResponse errorResponse = tokenResponse.toErrorResponse();
-            logger.error("Failed to get token: " + errorResponse.getErrorObject());
+            LOGGER.error("Failed to get token: {}", errorResponse.getErrorObject());
             return null;
         }
 
@@ -107,7 +109,7 @@ public class HandlerHelper {
         try {
             return OIDCTokenResponseParser.parse(httpResponse);
         } catch (ParseException parseException) {
-            logger.error("Failed to parse token response");
+            LOGGER.error("Failed to parse token response");
             throw new RuntimeException("Failed to parse token response", parseException);
         }
     }
@@ -128,20 +130,66 @@ public class HandlerHelper {
         try {
             return httpRequest.send();
         } catch (IOException | SerializeException exception) {
-            logger.error("Failed to send a http request", exception);
+            LOGGER.error("Failed to send a http request", exception);
             throw new RuntimeException("Failed to send a http request", exception);
         }
     }
 
     public AuthorizationRequest createAuthorizationRequest(
-            State state, CredentialIssuer credentialIssuer, String jwt) {
+            State state, CredentialIssuer credentialIssuer, SignedJWT jwt) {
         return new AuthorizationRequest.Builder(
                         new ResponseType(ResponseType.Value.CODE),
                         new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID))
                 .state(state)
                 .scope(new Scope("openid"))
                 .redirectionURI(CoreStubConfig.CORE_STUB_REDIRECT_URL)
-                .customParameter("request", jwt)
+                .customParameter("request", jwt.serialize())
+                .endpointURI(credentialIssuer.authorizeUrl())
+                .build();
+    }
+
+    public AuthorizationRequest createAuthorizationJAR(
+            State state,
+            CredentialIssuer credentialIssuer,
+            SharedClaims sharedClaims,
+            RSAKey signingKey)
+            throws JOSEException {
+        Instant now = Instant.now();
+
+        ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
+        JWSHeader header =
+                new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(signingKey.getKeyID()).build();
+
+        JWTClaimsSet authClaimsSet =
+                new AuthorizationRequest.Builder(ResponseType.CODE, clientID)
+                        .redirectionURI(CoreStubConfig.CORE_STUB_REDIRECT_URL)
+                        .scope(new Scope("openid"))
+                        .state(state)
+                        .build()
+                        .toJWTClaimsSet();
+
+        JWTClaimsSet.Builder claimsSetBuilder =
+                new JWTClaimsSet.Builder(authClaimsSet)
+                        .audience(credentialIssuer.id())
+                        .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
+                        .issueTime(Date.from(now))
+                        .expirationTime(Date.from(now.plus(1L, ChronoUnit.HOURS)))
+                        .notBeforeTime(Date.from(now))
+                        .subject(getSubject());
+
+        if (Objects.nonNull(sharedClaims)) {
+            Map<String, Object> map = convertToMap(sharedClaims);
+            claimsSetBuilder.claim(SHARED_CLAIMS, map);
+        }
+
+        SignedJWT signedJWT = new SignedJWT(header, claimsSetBuilder.build());
+
+        // Sign the JAR with client's private RSA JWK
+        signedJWT.sign(new RSASSASigner(signingKey));
+
+        // Compose the final authorisation request, the minimal required query
+        // parameters are "request" and "client_id"
+        return new AuthorizationRequest.Builder(signedJWT, clientID)
                 .endpointURI(credentialIssuer.authorizeUrl())
                 .build();
     }
@@ -174,14 +222,12 @@ public class HandlerHelper {
                 .orElseThrow(() -> new IllegalStateException("unmatched rowNumber"));
     }
 
-    public String createClaimsJWT(Object identity, RSAKey signingPrivateKey) throws JOSEException {
+    public SignedJWT createClaimsJWT(Object identity, RSAKey signingPrivateKey)
+            throws JOSEException {
 
-        String subjectIdentifier = URN_UUID + UUID.randomUUID();
         Instant now = Instant.now();
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
-        Map<String, Object> map = objectMapper.convertValue(identity, Map.class);
+        Map<String, Object> map = convertToMap(identity);
 
         SignedJWT signedJWT =
                 new SignedJWT(
@@ -189,7 +235,7 @@ public class HandlerHelper {
                                 .keyID(signingPrivateKey.getKeyID())
                                 .build(),
                         new JWTClaimsSet.Builder()
-                                .subject(subjectIdentifier)
+                                .subject(getSubject())
                                 .audience(CoreStubConfig.CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI)
                                 .issueTime(Date.from(now))
                                 .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
@@ -200,6 +246,16 @@ public class HandlerHelper {
 
         signedJWT.sign(new RSASSASigner(signingPrivateKey));
 
-        return signedJWT.serialize();
+        return signedJWT;
+    }
+
+    private String getSubject() {
+        return URN_UUID + UUID.randomUUID();
+    }
+
+    private Map<String, Object> convertToMap(Object input) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+        return objectMapper.convertValue(input, Map.class);
     }
 }

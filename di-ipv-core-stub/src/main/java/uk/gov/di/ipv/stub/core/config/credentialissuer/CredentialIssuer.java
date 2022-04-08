@@ -8,4 +8,5 @@ public record CredentialIssuer(
         URI authorizeUrl,
         URI tokenUrl,
         URI credentialUrl,
-        boolean sendIdentityClaims) {}
+        boolean sendIdentityClaims,
+        boolean sendOAuthJAR) {}
