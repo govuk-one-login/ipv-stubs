@@ -245,14 +245,12 @@ public class AuthorizeHandler {
         Map<String, Object> gpg45Score = new HashMap<>();
         switch (criType) {
             case EVIDENCE_CRI_TYPE -> {
-                Map<String, Object> evidence = new HashMap<>();
-                evidence.put(
+                gpg45Score.put(
                         CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM,
                         Integer.parseInt(strengthValue));
-                evidence.put(
+                gpg45Score.put(
                         CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM,
                         Integer.parseInt(validityValue));
-                gpg45Score.put(criType.value, evidence);
             }
             case ACTIVITY_CRI_TYPE -> gpg45Score.put(
                     CredentialIssuerConfig.ACTIVITY_PARAM, Integer.parseInt(activityValue));
