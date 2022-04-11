@@ -57,6 +57,9 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDI
 
 public class IpvHandler {
 
+    private static final String CREDENTIALS_URL_PROPERTY =
+            "https://vocab.sign-in.service.gov.uk/v1/credentials";
+
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
     private final Map<String, Object> stateSession = new HashMap<>();
 
@@ -170,8 +173,11 @@ public class IpvHandler {
             throws ParseException, JsonSyntaxException, java.text.ParseException {
         List<Map<String, Object>> moustacheDataModel = new ArrayList<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        for (String key : credentials.keySet()) {
-            SignedJWT signedJWT = SignedJWT.parse(credentials.get(key).toString());
+
+        List<String> vcJwts = (List<String>) credentials.get(CREDENTIALS_URL_PROPERTY);
+
+        for (String vc : vcJwts) {
+            SignedJWT signedJWT = SignedJWT.parse(vc);
 
             JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
             Map<String, Object> claims = claimsSet.toJSONObject();
@@ -180,7 +186,7 @@ public class IpvHandler {
 
             Map<String, Object> criMap = new HashMap<>();
             criMap.put("VC", json);
-            criMap.put("criType", key);
+            criMap.put("criType", claims.get("iss"));
             moustacheDataModel.add(criMap);
         }
         return moustacheDataModel;
