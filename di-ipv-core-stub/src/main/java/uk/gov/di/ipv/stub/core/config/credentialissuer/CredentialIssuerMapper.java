@@ -13,7 +13,17 @@ public class CredentialIssuerMapper {
         URI credentialUrl = URI.create((String) map.get("credentialUrl"));
         boolean sendIdentityClaims = Boolean.TRUE.equals(map.get("sendIdentityClaims"));
         boolean sendOAuthJAR = Boolean.TRUE.equals(map.get("sendOAuthJAR"));
+        String expectedAlgo = (String) map.get("expectedAlgo");
+        String userInfoRequestMethod = (String) map.get("userInfoRequestMethod");
         return new CredentialIssuer(
-                id, name, authorizeUrl, tokenUrl, credentialUrl, sendIdentityClaims, sendOAuthJAR);
+                id,
+                name,
+                authorizeUrl,
+                tokenUrl,
+                credentialUrl,
+                sendIdentityClaims,
+                sendOAuthJAR,
+                expectedAlgo,
+                userInfoRequestMethod);
     }
 }

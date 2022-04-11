@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -50,6 +52,9 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static uk.gov.di.ipv.stub.core.handlers.CoreStubHandler.ES256;
+import static uk.gov.di.ipv.stub.core.handlers.CoreStubHandler.RS256;
+
 public class HandlerHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HandlerHelper.class);
@@ -70,7 +75,8 @@ public class HandlerHelper {
     public AccessToken exchangeCodeForToken(
             AuthorizationCode authorizationCode,
             CredentialIssuer credentialIssuer,
-            RSAKey signingPrivateKey)
+            RSAKey rsaPrivateKey,
+            ECKey ecPrivateKey)
             throws JOSEException {
 
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
@@ -82,14 +88,33 @@ public class HandlerHelper {
                 new AuthorizationCodeGrant(
                         authorizationCode, CoreStubConfig.CORE_STUB_REDIRECT_URL);
 
-        PrivateKeyJWT privateKeyJWT =
-                new PrivateKeyJWT(
-                        clientID,
-                        resolve,
-                        JWSAlgorithm.RS256,
-                        signingPrivateKey.toRSAPrivateKey(),
-                        signingPrivateKey.getKeyID(),
-                        null);
+        PrivateKeyJWT privateKeyJWT;
+        switch (credentialIssuer.expectedAlgo()) {
+            case RS256 -> {
+                privateKeyJWT =
+                        new PrivateKeyJWT(
+                                clientID,
+                                resolve,
+                                JWSAlgorithm.RS256,
+                                rsaPrivateKey.toRSAPrivateKey(),
+                                rsaPrivateKey.getKeyID(),
+                                null);
+            }
+            case ES256 -> {
+                privateKeyJWT =
+                        new PrivateKeyJWT(
+                                clientID,
+                                resolve,
+                                JWSAlgorithm.ES256,
+                                ecPrivateKey.toECPrivateKey(),
+                                ecPrivateKey.getKeyID(),
+                                null);
+            }
+            default -> throw new RuntimeException(
+                    String.format(
+                            "Signing algorithm not supported: %s",
+                            credentialIssuer.expectedAlgo()));
+        }
 
         TokenRequest tokenRequest = new TokenRequest(resolve, privateKeyJWT, authzGrant);
 
@@ -115,7 +140,13 @@ public class HandlerHelper {
     }
 
     public JSONObject getUserInfo(AccessToken accessToken, CredentialIssuer credentialIssuer) {
-        var userInfoRequest = new UserInfoRequest(credentialIssuer.credentialUrl(), accessToken);
+        // The CRIs userInfo endpoint should be post. Supporting GET for backwards compatability
+        HTTPRequest.Method method = HTTPRequest.Method.GET;
+        if (HTTPRequest.Method.POST.name().equals(credentialIssuer.userInfoRequestMethod())) {
+            method = HTTPRequest.Method.POST;
+        }
+        var userInfoRequest =
+                new UserInfoRequest(credentialIssuer.credentialUrl(), method, accessToken);
 
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest.toHTTPRequest());
 
@@ -222,7 +253,7 @@ public class HandlerHelper {
                 .orElseThrow(() -> new IllegalStateException("unmatched rowNumber"));
     }
 
-    public SignedJWT createClaimsJWT(Object identity, RSAKey signingPrivateKey)
+    public SignedJWT createRS256ClaimsJWT(Object identity, RSAKey signingPrivateKey)
             throws JOSEException {
 
         Instant now = Instant.now();
@@ -245,6 +276,36 @@ public class HandlerHelper {
                                 .build());
 
         signedJWT.sign(new RSASSASigner(signingPrivateKey));
+
+        return signedJWT;
+    }
+
+    public SignedJWT createES256ClaimsJWT(Object identity, ECKey signingPrivateKey)
+            throws JOSEException {
+
+        String subjectIdentifier = URN_UUID + UUID.randomUUID();
+        Instant now = Instant.now();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+        Map<String, Object> map = objectMapper.convertValue(identity, Map.class);
+
+        SignedJWT signedJWT =
+                new SignedJWT(
+                        new JWSHeader.Builder(JWSAlgorithm.ES256)
+                                .keyID(signingPrivateKey.getKeyID())
+                                .build(),
+                        new JWTClaimsSet.Builder()
+                                .subject(subjectIdentifier)
+                                .audience(CoreStubConfig.CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI)
+                                .issueTime(Date.from(now))
+                                .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
+                                .notBeforeTime(Date.from(now))
+                                .expirationTime(Date.from(now.plus(1, ChronoUnit.HOURS)))
+                                .claim(SHARED_CLAIMS, map)
+                                .build());
+
+        signedJWT.sign(new ECDSASigner(signingPrivateKey));
 
         return signedJWT;
     }

@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.stub.core;
 
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.RSAKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +12,14 @@ import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
 import uk.gov.di.ipv.stub.core.utils.ViewHelper;
 
 import java.io.ByteArrayInputStream;
+import java.security.KeyFactory;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.ECPrivateKey;
+import java.security.spec.EncodedKeySpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.text.ParseException;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Objects;
@@ -30,7 +38,7 @@ public class CoreStub {
 
     private void initRoutes() throws Exception {
         CoreStubHandler coreStubHandler =
-                new CoreStubHandler(new HandlerHelper(), getSigningKeystore());
+                new CoreStubHandler(new HandlerHelper(), getSigningKeystore(), getEcPrivateKey());
         Spark.get("/", coreStubHandler.serveHomePage);
         Spark.get("/credential-issuers", coreStubHandler.showCredentialIssuer);
         Spark.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
@@ -60,5 +68,16 @@ public class CoreStub {
                         keystore,
                         CoreStubConfig.CORE_STUB_KEYSTORE_ALIAS,
                         CoreStubConfig.CORE_STUB_KEYSTORE_PASSWORD.toCharArray()));
+    }
+
+    private ECKey getEcPrivateKey()
+            throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
+        EncodedKeySpec privateKeySpec =
+                new PKCS8EncodedKeySpec(
+                        Base64.getDecoder().decode(CoreStubConfig.CORE_STUB_EC_PRIVATE_KEY));
+        return new ECKey.Builder(ECKey.parse(CoreStubConfig.CORE_STUB_EC_PUBLIC_JWK))
+                .privateKey(
+                        (ECPrivateKey) KeyFactory.getInstance("EC").generatePrivate(privateKeySpec))
+                .build();
     }
 }
