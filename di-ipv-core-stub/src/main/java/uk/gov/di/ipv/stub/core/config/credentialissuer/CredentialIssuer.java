@@ -9,4 +9,6 @@ public record CredentialIssuer(
         URI tokenUrl,
         URI credentialUrl,
         boolean sendIdentityClaims,
-        boolean sendOAuthJAR) {}
+        boolean sendOAuthJAR,
+        String expectedAlgo,
+        String userInfoRequestMethod) {}

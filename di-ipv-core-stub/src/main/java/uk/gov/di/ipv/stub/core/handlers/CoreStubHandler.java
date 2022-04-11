@@ -2,6 +2,8 @@ package uk.gov.di.ipv.stub.core.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
@@ -24,13 +26,17 @@ import java.util.stream.Collectors;
 
 public class CoreStubHandler {
 
+    public static final String ES256 = "ES256";
+    public static final String RS256 = "RS256";
     private final Map<String, CredentialIssuer> stateSession = new HashMap<>();
     private HandlerHelper handlerHelper;
-    private RSAKey signingKey;
+    private RSAKey rsaSigningKey;
+    private ECKey ecSigningKey;
 
-    public CoreStubHandler(HandlerHelper handlerHelper, RSAKey signingKey) {
+    public CoreStubHandler(HandlerHelper handlerHelper, RSAKey rsaSigningKey, ECKey ecSigningKey) {
         this.handlerHelper = handlerHelper;
-        this.signingKey = signingKey;
+        this.rsaSigningKey = rsaSigningKey;
+        this.ecSigningKey = ecSigningKey;
     }
 
     public Route serveHomePage =
@@ -78,19 +84,18 @@ public class CoreStubHandler {
                 var authorizationCode =
                         authorizationResponse.toSuccessResponse().getAuthorizationCode();
                 var state = authorizationResponse.toSuccessResponse().getState();
-                var cri = stateSession.remove(state.getValue());
-                var credentialIssuer = handlerHelper.findCredentialIssuer(cri.id());
+                var credentialIssuer = stateSession.remove(state.getValue());
                 var accessToken =
                         handlerHelper.exchangeCodeForToken(
-                                authorizationCode, credentialIssuer, signingKey);
+                                authorizationCode, credentialIssuer, rsaSigningKey, ecSigningKey);
                 var userInfo = handlerHelper.getUserInfo(accessToken, credentialIssuer);
 
                 Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 Map jsonMap = gson.fromJson(userInfo.toJSONString(), Map.class);
                 Map<String, Object> moustacheDataModel = new HashMap<>();
                 moustacheDataModel.put("data", gson.toJson(jsonMap));
-                moustacheDataModel.put("cri", cri.id());
-                moustacheDataModel.put("criName", cri.name());
+                moustacheDataModel.put("cri", credentialIssuer.id());
+                moustacheDataModel.put("criName", credentialIssuer.name());
 
                 return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
             };
@@ -110,12 +115,12 @@ public class CoreStubHandler {
                                     credentialIssuer.name()),
                             "user-search.mustache");
                 } else {
-                    SignedJWT jwt = handlerHelper.createClaimsJWT(Map.of(), signingKey);
+                    SignedJWT jwt = createSignedClaimJwt(credentialIssuer, Map.of());
                     State state = createNewState(credentialIssuer);
                     AuthorizationRequest authRequest =
                             credentialIssuer.sendOAuthJAR()
                                     ? handlerHelper.createAuthorizationJAR(
-                                            state, credentialIssuer, null, signingKey)
+                                            state, credentialIssuer, null, rsaSigningKey)
                                     : handlerHelper.createAuthorizationRequest(
                                             state, credentialIssuer, jwt);
                     response.redirect(authRequest.toURI().toString());
@@ -131,12 +136,12 @@ public class CoreStubHandler {
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
                 var claimIdentity = new IdentityMapper().mapToSharedClaim(identity);
-                var jwt = handlerHelper.createClaimsJWT(claimIdentity, signingKey);
+                var jwt = createSignedClaimJwt(credentialIssuer, claimIdentity);
                 var state = createNewState(credentialIssuer);
                 var authRequest =
                         credentialIssuer.sendOAuthJAR()
                                 ? handlerHelper.createAuthorizationJAR(
-                                        state, credentialIssuer, claimIdentity, signingKey)
+                                        state, credentialIssuer, claimIdentity, rsaSigningKey)
                                 : handlerHelper.createAuthorizationRequest(
                                         state, credentialIssuer, jwt);
                 response.redirect(authRequest.toURI().toString());
@@ -147,5 +152,14 @@ public class CoreStubHandler {
         var state = new State();
         stateSession.put(state.getValue(), credentialIssuer);
         return state;
+    }
+
+    private SignedJWT createSignedClaimJwt(CredentialIssuer credentialIssuer, Object claims)
+            throws JOSEException {
+        return switch (credentialIssuer.expectedAlgo()) {
+            case RS256 -> handlerHelper.createRS256ClaimsJWT(claims, rsaSigningKey);
+            case ES256 -> handlerHelper.createES256ClaimsJWT(claims, ecSigningKey);
+            default -> throw new RuntimeException("Expected algorithm not supported");
+        };
     }
 }
