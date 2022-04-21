@@ -16,9 +16,11 @@ import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
 import java.util.Base64;
 import java.util.Map;
@@ -38,7 +40,9 @@ public class CoreStub {
 
     private void initRoutes() throws Exception {
         CoreStubHandler coreStubHandler =
-                new CoreStubHandler(new HandlerHelper(), getSigningKeystore(), getEcPrivateKey());
+                new CoreStubHandler(
+                        new HandlerHelper(
+                                getSigningKeystore(), getEcPrivateKey(), getEncryptionPublicKey()));
         Spark.get("/", coreStubHandler.serveHomePage);
         Spark.get("/credential-issuers", coreStubHandler.showCredentialIssuer);
         Spark.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
@@ -58,26 +62,33 @@ public class CoreStub {
 
     private RSAKey getSigningKeystore() throws Exception {
         KeyStore keystore = KeyStore.getInstance("pkcs12");
+        final char[] keyStorePassword = CoreStubConfig.CORE_STUB_KEYSTORE_PASSWORD.toCharArray();
         try (ByteArrayInputStream inputStream =
                 new ByteArrayInputStream(
                         Base64.getDecoder().decode(CoreStubConfig.CORE_STUB_KEYSTORE_BASE64))) {
-            keystore.load(inputStream, CoreStubConfig.CORE_STUB_KEYSTORE_PASSWORD.toCharArray());
+            keystore.load(inputStream, keyStorePassword);
         }
         return Objects.requireNonNull(
-                RSAKey.load(
-                        keystore,
-                        CoreStubConfig.CORE_STUB_KEYSTORE_ALIAS,
-                        CoreStubConfig.CORE_STUB_KEYSTORE_PASSWORD.toCharArray()));
+                RSAKey.load(keystore, CoreStubConfig.CORE_STUB_KEYSTORE_ALIAS, keyStorePassword));
     }
 
     private ECKey getEcPrivateKey()
             throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
         EncodedKeySpec privateKeySpec =
                 new PKCS8EncodedKeySpec(
-                        Base64.getDecoder().decode(CoreStubConfig.CORE_STUB_EC_PRIVATE_KEY));
-        return new ECKey.Builder(ECKey.parse(CoreStubConfig.CORE_STUB_EC_PUBLIC_JWK))
+                        Base64.getDecoder().decode(CoreStubConfig.CORE_STUB_SIGNING_PRIVATE_KEY));
+        return new ECKey.Builder(ECKey.parse(CoreStubConfig.CORE_STUB_SIGNING_PUBLIC_JWK))
                 .privateKey(
                         (ECPrivateKey) KeyFactory.getInstance("EC").generatePrivate(privateKeySpec))
                 .build();
+    }
+
+    private RSAPublicKey getEncryptionPublicKey()
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
+        byte[] encodedKeySpec =
+                Base64.getDecoder().decode(CoreStubConfig.CORE_STUB_ENCRYPTION_PUBLIC_KEY);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedKeySpec);
+        return (RSAPublicKey) keyFactory.generatePublic(keySpec);
     }
 }
