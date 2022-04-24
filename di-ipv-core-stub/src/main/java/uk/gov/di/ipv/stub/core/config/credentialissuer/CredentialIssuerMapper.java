@@ -11,6 +11,7 @@ public class CredentialIssuerMapper {
         URI authorizeUrl = URI.create((String) map.get("authorizeUrl"));
         URI tokenUrl = URI.create((String) map.get("tokenUrl"));
         URI credentialUrl = URI.create((String) map.get("credentialUrl"));
+        URI audience = URI.create((String) map.get("audience"));
         boolean sendIdentityClaims = Boolean.TRUE.equals(map.get("sendIdentityClaims"));
         boolean sendOAuthJAR = Boolean.TRUE.equals(map.get("sendOAuthJAR"));
         String expectedAlgo = (String) map.get("expectedAlgo");
@@ -21,6 +22,7 @@ public class CredentialIssuerMapper {
                 authorizeUrl,
                 tokenUrl,
                 credentialUrl,
+                audience,
                 sendIdentityClaims,
                 sendOAuthJAR,
                 expectedAlgo,
