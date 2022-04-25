@@ -43,15 +43,16 @@ public class CoreStubConfig {
             getConfigValue("CORE_STUB_CONFIG_FILE", "/app/config/cris-dev.yaml");
     public static final byte[] CORE_STUB_KEYSTORE_BASE64 =
             getConfigValue("CORE_STUB_KEYSTORE_BASE64", null).getBytes();
-    public static final String CORE_STUB_EC_PRIVATE_KEY =
-            getConfigValue("CORE_STUB_EC_PRIVATE_KEY", null);
-    public static final String CORE_STUB_EC_PUBLIC_JWK =
-            getConfigValue("CORE_STUB_EC_PUBLIC_JWK", null);
+    public static final String CORE_STUB_SIGNING_PRIVATE_KEY =
+            getConfigValue("CORE_STUB_SIGNING_PRIVATE_KEY", null);
+    public static final String CORE_STUB_SIGNING_PUBLIC_JWK =
+            getConfigValue("CORE_STUB_SIGNING_PUBLIC_JWK", null);
+    public static final String CORE_STUB_ENCRYPTION_PUBLIC_KEY =
+            getConfigValue("CORE_STUB_ENCRYPTION_PUBLIC_KEY", null);
     public static final String CORE_STUB_KEYSTORE_PASSWORD =
             getConfigValue("CORE_STUB_KEYSTORE_PASSWORD", null);
     public static final String CORE_STUB_KEYSTORE_ALIAS =
             getConfigValue("CORE_STUB_KEYSTORE_ALIAS", null);
-
     public static final String CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI =
             getConfigValue(
                     "CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI", "https://experian.cri.account.gov.uk");
