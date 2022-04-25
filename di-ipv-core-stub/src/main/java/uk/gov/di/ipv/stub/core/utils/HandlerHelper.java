@@ -183,7 +183,7 @@ public class HandlerHelper {
         }
     }
 
-    public JSONObject getUserInfo(AccessToken accessToken, CredentialIssuer credentialIssuer) {
+    public String getUserInfo(AccessToken accessToken, CredentialIssuer credentialIssuer) {
         // The CRIs userInfo endpoint should be post. Supporting GET for backwards compatability
         HTTPRequest.Method method = HTTPRequest.Method.GET;
         if (HTTPRequest.Method.POST.name().equals(credentialIssuer.userInfoRequestMethod())) {
@@ -194,11 +194,7 @@ public class HandlerHelper {
 
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest.toHTTPRequest());
 
-        try {
-            return userInfoHttpResponse.getContentAsJSONObject();
-        } catch (ParseException e) {
-            throw new RuntimeException("Failed to parse user info response to JSON");
-        }
+        return userInfoHttpResponse.getContent();
     }
 
     public HTTPResponse sendHttpRequest(HTTPRequest httpRequest) {

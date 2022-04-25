@@ -80,10 +80,8 @@ public class CoreStubHandler {
                         handlerHelper.exchangeCodeForToken(authorizationCode, credentialIssuer);
                 var userInfo = handlerHelper.getUserInfo(accessToken, credentialIssuer);
 
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                Map jsonMap = gson.fromJson(userInfo.toJSONString(), Map.class);
                 Map<String, Object> moustacheDataModel = new HashMap<>();
-                moustacheDataModel.put("data", gson.toJson(jsonMap));
+                moustacheDataModel.put("data", userInfo);
                 moustacheDataModel.put("cri", credentialIssuer.id());
                 moustacheDataModel.put("criName", credentialIssuer.name());
 
