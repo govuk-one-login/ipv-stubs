@@ -1,11 +1,11 @@
 FROM openjdk:17-jdk-slim AS build
 
 WORKDIR /home/gradle/src
-COPY src src
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle .
-
+RUN ./gradlew build --no-daemon
+COPY src src
 RUN ./gradlew build --no-daemon
 
 FROM openjdk:17-jdk-slim

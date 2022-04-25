@@ -11,8 +11,10 @@ public class CredentialIssuerMapper {
         URI authorizeUrl = URI.create((String) map.get("authorizeUrl"));
         URI tokenUrl = URI.create((String) map.get("tokenUrl"));
         URI credentialUrl = URI.create((String) map.get("credentialUrl"));
+        URI audience = URI.create((String) map.get("audience"));
         boolean sendIdentityClaims = Boolean.TRUE.equals(map.get("sendIdentityClaims"));
         boolean sendOAuthJAR = Boolean.TRUE.equals(map.get("sendOAuthJAR"));
+        boolean sendEncryptedOAuthJAR = Boolean.TRUE.equals(map.get("sendEncryptedOAuthJAR"));
         String expectedAlgo = (String) map.get("expectedAlgo");
         String userInfoRequestMethod = (String) map.get("userInfoRequestMethod");
         return new CredentialIssuer(
@@ -21,8 +23,10 @@ public class CredentialIssuerMapper {
                 authorizeUrl,
                 tokenUrl,
                 credentialUrl,
+                audience,
                 sendIdentityClaims,
                 sendOAuthJAR,
+                sendEncryptedOAuthJAR,
                 expectedAlgo,
                 userInfoRequestMethod);
     }

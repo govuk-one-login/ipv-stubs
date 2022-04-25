@@ -8,7 +8,9 @@ public record CredentialIssuer(
         URI authorizeUrl,
         URI tokenUrl,
         URI credentialUrl,
+        URI audience,
         boolean sendIdentityClaims,
         boolean sendOAuthJAR,
+        boolean sendEncryptedOAuthJAR,
         String expectedAlgo,
         String userInfoRequestMethod) {}

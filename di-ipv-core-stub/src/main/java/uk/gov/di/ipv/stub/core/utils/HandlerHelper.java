@@ -30,9 +30,11 @@ import com.nimbusds.oauth2.sdk.SerializeException;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.auth.JWTAuthenticationClaimsSet;
 import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
+import com.nimbusds.oauth2.sdk.id.Audience;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
@@ -128,9 +130,9 @@ public class HandlerHelper {
             throws JOSEException {
 
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
-        URI resolve = credentialIssuer.tokenUrl();
+        URI tokenURI = credentialIssuer.tokenUrl();
 
-        LOGGER.info("token url is {}", resolve);
+        LOGGER.info("token url is {}", tokenURI);
 
         AuthorizationCodeGrant authzGrant =
                 new AuthorizationCodeGrant(
@@ -139,15 +141,15 @@ public class HandlerHelper {
         PrivateKeyJWT privateKeyJWT =
                 switch (credentialIssuer.expectedAlgo()) {
                     case JWTSigner.RS256_ALGORITHM_NAME -> new PrivateKeyJWT(
-                            clientID,
-                            resolve,
+                            new JWTAuthenticationClaimsSet(
+                                    clientID, new Audience(credentialIssuer.audience())),
                             JWSAlgorithm.RS256,
                             this.rsaSigningKey.toRSAPrivateKey(),
                             this.rsaSigningKey.getKeyID(),
                             null);
                     case JWTSigner.ES256_ALGORITHM_NAME -> new PrivateKeyJWT(
-                            clientID,
-                            resolve,
+                            new JWTAuthenticationClaimsSet(
+                                    clientID, new Audience(credentialIssuer.audience())),
                             JWSAlgorithm.ES256,
                             this.ecSigningKey.toECPrivateKey(),
                             this.ecSigningKey.getKeyID(),
@@ -158,7 +160,7 @@ public class HandlerHelper {
                                     credentialIssuer.expectedAlgo()));
                 };
 
-        TokenRequest tokenRequest = new TokenRequest(resolve, privateKeyJWT, authzGrant);
+        TokenRequest tokenRequest = new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
 
         var httpTokenResponse = sendHttpRequest(tokenRequest.toHTTPRequest());
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
@@ -241,7 +243,7 @@ public class HandlerHelper {
 
         JWTClaimsSet.Builder claimsSetBuilder =
                 new JWTClaimsSet.Builder(authClaimsSet)
-                        .audience(credentialIssuer.id())
+                        .audience(credentialIssuer.audience().toString())
                         .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
                         .issueTime(Date.from(now))
                         .expirationTime(Date.from(now.plus(1L, ChronoUnit.HOURS)))
@@ -255,11 +257,13 @@ public class HandlerHelper {
 
         SignedJWT signedJWT = new SignedJWT(header, claimsSetBuilder.build());
         jwtSigner.signJWT(signedJWT);
-        JWT encryptedJWT = encryptJWT(signedJWT);
+
+        JWT outputJWT =
+                (credentialIssuer.sendEncryptedOAuthJAR()) ? encryptJWT(signedJWT) : signedJWT;
 
         // Compose the final authorisation request, the minimal required query
         // parameters are "request" and "client_id"
-        return new AuthorizationRequest.Builder(encryptedJWT, clientID)
+        return new AuthorizationRequest.Builder(outputJWT, clientID)
                 .endpointURI(credentialIssuer.authorizeUrl())
                 .build();
     }
@@ -292,13 +296,13 @@ public class HandlerHelper {
                 .orElseThrow(() -> new IllegalStateException("unmatched rowNumber"));
     }
 
-    public SignedJWT createSignedJWT(Object identity, String signingAlgorithm)
+    public SignedJWT createSignedJWT(Object identity, CredentialIssuer credentialIssuer)
             throws JOSEException {
         Instant now = Instant.now();
 
         Map<String, Object> map = convertToMap(identity);
 
-        JWSAlgorithm jwsSigningAlgorithm = JWSAlgorithm.parse(signingAlgorithm);
+        JWSAlgorithm jwsSigningAlgorithm = JWSAlgorithm.parse(credentialIssuer.expectedAlgo());
 
         JWTSigner jwtSigner = new JWTSigner(jwsSigningAlgorithm);
 
@@ -309,7 +313,7 @@ public class HandlerHelper {
                                 .build(),
                         new JWTClaimsSet.Builder()
                                 .subject(getSubject())
-                                .audience(CoreStubConfig.CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI)
+                                .audience(credentialIssuer.audience().toString())
                                 .issueTime(Date.from(now))
                                 .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
                                 .notBeforeTime(Date.from(now))

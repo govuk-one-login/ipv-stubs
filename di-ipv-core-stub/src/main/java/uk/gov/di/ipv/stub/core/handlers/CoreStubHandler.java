@@ -146,6 +146,6 @@ public class CoreStubHandler {
 
     private SignedJWT createSignedClaimJwt(CredentialIssuer credentialIssuer, Object claims)
             throws JOSEException {
-        return handlerHelper.createSignedJWT(claims, credentialIssuer.expectedAlgo());
+        return handlerHelper.createSignedJWT(claims, credentialIssuer);
     }
 }
