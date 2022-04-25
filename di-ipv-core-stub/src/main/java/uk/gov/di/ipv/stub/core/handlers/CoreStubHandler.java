@@ -1,5 +1,9 @@
 package uk.gov.di.ipv.stub.core.handlers;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
@@ -81,8 +85,12 @@ public class CoreStubHandler {
                                 .getJWTClaimsSet()
                                 .toString();
 
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                JsonElement je = JsonParser.parseString(userInfo);
+                String prettyPrintUserInfo = gson.toJson(je);
+
                 Map<String, Object> moustacheDataModel = new HashMap<>();
-                moustacheDataModel.put("data", userInfo);
+                moustacheDataModel.put("data", prettyPrintUserInfo);
                 moustacheDataModel.put("cri", credentialIssuer.id());
                 moustacheDataModel.put("criName", credentialIssuer.name());
 
