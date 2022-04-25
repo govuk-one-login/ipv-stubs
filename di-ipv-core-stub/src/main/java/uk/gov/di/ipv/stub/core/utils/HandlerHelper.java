@@ -257,11 +257,13 @@ public class HandlerHelper {
 
         SignedJWT signedJWT = new SignedJWT(header, claimsSetBuilder.build());
         jwtSigner.signJWT(signedJWT);
-        JWT encryptedJWT = encryptJWT(signedJWT);
+
+        JWT outputJWT =
+                (credentialIssuer.sendEncryptedOAuthJAR()) ? encryptJWT(signedJWT) : signedJWT;
 
         // Compose the final authorisation request, the minimal required query
         // parameters are "request" and "client_id"
-        return new AuthorizationRequest.Builder(encryptedJWT, clientID)
+        return new AuthorizationRequest.Builder(outputJWT, clientID)
                 .endpointURI(credentialIssuer.authorizeUrl())
                 .build();
     }
@@ -294,13 +296,13 @@ public class HandlerHelper {
                 .orElseThrow(() -> new IllegalStateException("unmatched rowNumber"));
     }
 
-    public SignedJWT createSignedJWT(Object identity, String signingAlgorithm)
+    public SignedJWT createSignedJWT(Object identity, CredentialIssuer credentialIssuer)
             throws JOSEException {
         Instant now = Instant.now();
 
         Map<String, Object> map = convertToMap(identity);
 
-        JWSAlgorithm jwsSigningAlgorithm = JWSAlgorithm.parse(signingAlgorithm);
+        JWSAlgorithm jwsSigningAlgorithm = JWSAlgorithm.parse(credentialIssuer.expectedAlgo());
 
         JWTSigner jwtSigner = new JWTSigner(jwsSigningAlgorithm);
 
@@ -311,7 +313,7 @@ public class HandlerHelper {
                                 .build(),
                         new JWTClaimsSet.Builder()
                                 .subject(getSubject())
-                                .audience(CoreStubConfig.CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI)
+                                .audience(credentialIssuer.audience().toString())
                                 .issueTime(Date.from(now))
                                 .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
                                 .notBeforeTime(Date.from(now))

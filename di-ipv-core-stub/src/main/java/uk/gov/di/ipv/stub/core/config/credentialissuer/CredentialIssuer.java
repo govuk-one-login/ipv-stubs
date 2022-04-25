@@ -11,5 +11,6 @@ public record CredentialIssuer(
         URI audience,
         boolean sendIdentityClaims,
         boolean sendOAuthJAR,
+        boolean sendEncryptedOAuthJAR,
         String expectedAlgo,
         String userInfoRequestMethod) {}
