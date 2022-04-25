@@ -76,7 +76,10 @@ public class CoreStubHandler {
                 var credentialIssuer = stateSession.remove(state.getValue());
                 var accessToken =
                         handlerHelper.exchangeCodeForToken(authorizationCode, credentialIssuer);
-                var userInfo = SignedJWT.parse(handlerHelper.getUserInfo(accessToken, credentialIssuer)).getJWTClaimsSet().toString();
+                var userInfo =
+                        SignedJWT.parse(handlerHelper.getUserInfo(accessToken, credentialIssuer))
+                                .getJWTClaimsSet()
+                                .toString();
 
                 Map<String, Object> moustacheDataModel = new HashMap<>();
                 moustacheDataModel.put("data", userInfo);
