@@ -17,6 +17,7 @@ public class CredentialIssuerMapper {
         boolean sendEncryptedOAuthJAR = Boolean.TRUE.equals(map.get("sendEncryptedOAuthJAR"));
         String expectedAlgo = (String) map.get("expectedAlgo");
         String userInfoRequestMethod = (String) map.get("userInfoRequestMethod");
+        String publicEncryptionJwkBase64 = (String) map.get("publicEncryptionJwkBase64");
         return new CredentialIssuer(
                 id,
                 name,
@@ -28,6 +29,7 @@ public class CredentialIssuerMapper {
                 sendOAuthJAR,
                 sendEncryptedOAuthJAR,
                 expectedAlgo,
-                userInfoRequestMethod);
+                userInfoRequestMethod,
+                publicEncryptionJwkBase64);
     }
 }
