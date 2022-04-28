@@ -153,43 +153,25 @@ class ValidatorTest {
 
     @Test
     void redirectUrlIsInvalidShouldReturnFalseForValidUrlWithOnlyOneRegistered() {
-        QueryParamsMap queryParams = mock(QueryParamsMap.class);
-        when(queryParams.value(RequestParamConstants.REDIRECT_URI))
-                .thenReturn("https://valid.example.com");
-        when(queryParams.value(RequestParamConstants.CLIENT_ID)).thenReturn("clientIdValid");
-
-        assertFalse(Validator.redirectUrlIsInvalid(queryParams));
+        assertFalse(Validator.redirectUrlIsInvalid("clientIdValid", "https://valid.example.com"));
     }
 
     @Test
     void redirectUrlValidationShouldAcceptARedirectUriWithAPaaSDomain() {
-        QueryParamsMap queryParams = mock(QueryParamsMap.class);
-        when(queryParams.value(RequestParamConstants.REDIRECT_URI))
-                .thenReturn("https://valid.london.cloudapps.digital");
 
-        assertFalse(Validator.redirectUrlIsInvalid(queryParams));
+        assertFalse(Validator.redirectUrlIsInvalid("clientIdValid", "https://valid.example.com"));
     }
 
     @Test
     void redirectUrlIsInvalidShouldReturnFalseForValidUrlWithMultipleRegistered() {
-        QueryParamsMap queryParams = mock(QueryParamsMap.class);
-        when(queryParams.value(RequestParamConstants.REDIRECT_URI))
-                .thenReturn("https://valid3.example.com");
-        when(queryParams.value(RequestParamConstants.CLIENT_ID))
-                .thenReturn("clientIdValidMultipleUri");
-
-        assertFalse(Validator.redirectUrlIsInvalid(queryParams));
+        assertFalse(
+                Validator.redirectUrlIsInvalid(
+                        "clientIdValidMultipleUri", "https://valid3.example.com"));
     }
 
     @Test
     void redirectUrlIsInvalidShouldReturnTrueForUnregisteredUrl() {
-        QueryParamsMap queryParams = mock(QueryParamsMap.class);
-        when(queryParams.value(RequestParamConstants.REDIRECT_URI))
-                .thenReturn("https://example.com");
-        when(queryParams.value(RequestParamConstants.CLIENT_ID))
-                .thenReturn("clientIdNonRegistered");
-
-        assertTrue(Validator.redirectUrlIsInvalid(queryParams));
+        assertTrue(Validator.redirectUrlIsInvalid("clientIdNonRegistered", "https://example.com"));
     }
 
     @Test
