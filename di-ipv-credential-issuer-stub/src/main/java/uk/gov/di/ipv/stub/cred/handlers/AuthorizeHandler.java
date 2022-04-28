@@ -183,7 +183,12 @@ public class AuthorizeHandler {
                     Credential credential = new Credential(combinedAttributeJson, gpgMap);
 
                     AuthorizationSuccessResponse successResponse =
-                            generateAuthCode(queryParamsMap, redirectUri);
+                            generateAuthCode(
+                                    signedJWT
+                                            .getJWTClaimsSet()
+                                            .getClaim(RequestParamConstants.STATE)
+                                            .toString(),
+                                    redirectUri);
                     persistData(
                             queryParamsMap,
                             successResponse.getAuthorizationCode(),
@@ -200,15 +205,14 @@ public class AuthorizeHandler {
                 return null;
             };
 
-    private AuthorizationSuccessResponse generateAuthCode(
-            QueryParamsMap queryParamsMap, String redirectUri) {
+    private AuthorizationSuccessResponse generateAuthCode(String state, String redirectUri) {
         AuthorizationCode authorizationCode = new AuthorizationCode();
 
         return new AuthorizationSuccessResponse(
                 URI.create(redirectUri),
                 authorizationCode,
                 null,
-                State.parse(queryParamsMap.value(RequestParamConstants.STATE)),
+                State.parse(state),
                 ResponseMode.QUERY);
     }
 
