@@ -12,15 +12,7 @@ import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
 import uk.gov.di.ipv.stub.core.utils.ViewHelper;
 
 import java.io.ByteArrayInputStream;
-import java.security.KeyFactory;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.ECPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.EncodedKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
 import java.util.Base64;
 import java.util.Map;
@@ -40,9 +32,7 @@ public class CoreStub {
 
     private void initRoutes() throws Exception {
         CoreStubHandler coreStubHandler =
-                new CoreStubHandler(
-                        new HandlerHelper(
-                                getSigningKeystore(), getEcPrivateKey(), getEncryptionPublicKey()));
+                new CoreStubHandler(new HandlerHelper(getSigningKeystore(), getEcPrivateKey()));
         Spark.get("/", coreStubHandler.serveHomePage);
         Spark.get("/credential-issuers", coreStubHandler.showCredentialIssuer);
         Spark.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
@@ -72,23 +62,10 @@ public class CoreStub {
                 RSAKey.load(keystore, CoreStubConfig.CORE_STUB_KEYSTORE_ALIAS, keyStorePassword));
     }
 
-    private ECKey getEcPrivateKey()
-            throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
-        EncodedKeySpec privateKeySpec =
-                new PKCS8EncodedKeySpec(
-                        Base64.getDecoder().decode(CoreStubConfig.CORE_STUB_SIGNING_PRIVATE_KEY));
-        return new ECKey.Builder(ECKey.parse(CoreStubConfig.CORE_STUB_SIGNING_PUBLIC_JWK))
-                .privateKey(
-                        (ECPrivateKey) KeyFactory.getInstance("EC").generatePrivate(privateKeySpec))
-                .build();
-    }
-
-    private RSAPublicKey getEncryptionPublicKey()
-            throws NoSuchAlgorithmException, InvalidKeySpecException {
-        byte[] encodedKeySpec =
-                Base64.getDecoder().decode(CoreStubConfig.CORE_STUB_ENCRYPTION_PUBLIC_KEY);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(encodedKeySpec);
-        return (RSAPublicKey) keyFactory.generatePublic(keySpec);
+    private ECKey getEcPrivateKey() throws ParseException {
+        return ECKey.parse(
+                new String(
+                        Base64.getDecoder()
+                                .decode(CoreStubConfig.CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64)));
     }
 }

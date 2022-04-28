@@ -51,11 +51,11 @@ import uk.gov.di.ipv.stub.core.config.uatuser.SharedClaims;
 
 import java.io.IOException;
 import java.net.URI;
-import java.security.interfaces.RSAPublicKey;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -100,15 +100,12 @@ public class HandlerHelper {
     public static final String SHARED_CLAIMS = "shared_claims";
 
     private final RSAKey rsaSigningKey;
-    private final RSAPublicKey publicRsaEncryptionKey;
     private final ECKey ecSigningKey;
     private final ObjectMapper objectMapper;
 
-    public HandlerHelper(
-            RSAKey rsaSigningKey, ECKey ecSigningKey, RSAPublicKey publicRsaEncryptionKey) {
+    public HandlerHelper(RSAKey rsaSigningKey, ECKey ecSigningKey) {
         this.rsaSigningKey = rsaSigningKey;
         this.ecSigningKey = ecSigningKey;
-        this.publicRsaEncryptionKey = publicRsaEncryptionKey;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
     }
@@ -254,7 +251,9 @@ public class HandlerHelper {
         jwtSigner.signJWT(signedJWT);
 
         JWT outputJWT =
-                (credentialIssuer.sendEncryptedOAuthJAR()) ? encryptJWT(signedJWT) : signedJWT;
+                (credentialIssuer.sendEncryptedOAuthJAR())
+                        ? encryptJWT(signedJWT, credentialIssuer)
+                        : signedJWT;
 
         // Compose the final authorisation request, the minimal required query
         // parameters are "request" and "client_id"
@@ -329,7 +328,7 @@ public class HandlerHelper {
         return this.objectMapper.convertValue(input, Map.class);
     }
 
-    private EncryptedJWT encryptJWT(SignedJWT signedJWT) {
+    private EncryptedJWT encryptJWT(SignedJWT signedJWT, CredentialIssuer credentialIssuer) {
         try {
             JWEObject jweObject =
                     new JWEObject(
@@ -338,11 +337,18 @@ public class HandlerHelper {
                                     .contentType("JWT")
                                     .build(),
                             new Payload(signedJWT));
-            jweObject.encrypt(new RSAEncrypter(this.publicRsaEncryptionKey));
+            jweObject.encrypt(new RSAEncrypter(getEncryptionPublicKey(credentialIssuer)));
 
             return EncryptedJWT.parse(jweObject.serialize());
         } catch (JOSEException | java.text.ParseException e) {
             throw new RuntimeException("JWT encryption failed", e);
         }
+    }
+
+    private RSAKey getEncryptionPublicKey(CredentialIssuer credentialIssuer)
+            throws java.text.ParseException {
+        return RSAKey.parse(
+                new String(
+                        Base64.getDecoder().decode(credentialIssuer.publicEncryptionJwkBase64())));
     }
 }

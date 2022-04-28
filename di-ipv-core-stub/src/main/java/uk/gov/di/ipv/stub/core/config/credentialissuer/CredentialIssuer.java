@@ -13,4 +13,5 @@ public record CredentialIssuer(
         boolean sendOAuthJAR,
         boolean sendEncryptedOAuthJAR,
         String expectedAlgo,
-        String userInfoRequestMethod) {}
+        String userInfoRequestMethod,
+        String publicEncryptionJwkBase64) {}

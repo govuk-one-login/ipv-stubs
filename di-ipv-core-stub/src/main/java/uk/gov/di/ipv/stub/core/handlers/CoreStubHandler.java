@@ -8,6 +8,8 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.id.State;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -25,6 +27,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class CoreStubHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CoreStubHandler.class);
+
     private final Map<String, CredentialIssuer> stateSession = new HashMap<>();
     private HandlerHelper handlerHelper;
 
@@ -80,6 +85,7 @@ public class CoreStubHandler {
                 var credentialIssuer = stateSession.remove(state.getValue());
                 var accessToken =
                         handlerHelper.exchangeCodeForToken(authorizationCode, credentialIssuer);
+                LOGGER.info("access token value: " + accessToken.getValue());
                 var userInfo =
                         SignedJWT.parse(handlerHelper.getUserInfo(accessToken, credentialIssuer))
                                 .getJWTClaimsSet()
