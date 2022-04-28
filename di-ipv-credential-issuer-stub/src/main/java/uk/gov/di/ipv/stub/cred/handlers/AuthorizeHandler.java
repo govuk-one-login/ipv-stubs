@@ -325,7 +325,8 @@ public class AuthorizeHandler {
                 return new ValidationResult(false, OAuth2Error.UNSUPPORTED_RESPONSE_TYPE);
             }
 
-            if (Validator.isNullBlankOrEmpty(jwtClaimsSet.getClaim("redirect_uri"))) {
+            if (Validator.isNullBlankOrEmpty(
+                    jwtClaimsSet.getClaim(RequestParamConstants.REDIRECT_URI))) {
                 return new ValidationResult(
                         false,
                         new ErrorObject(
@@ -345,7 +346,7 @@ public class AuthorizeHandler {
                                 HttpServletResponse.SC_BAD_REQUEST));
             }
 
-            if (Validator.isNullBlankOrEmpty(jwtClaimsSet.getClaim("iss"))) {
+            if (Validator.isNullBlankOrEmpty(jwtClaimsSet.getClaim(RequestParamConstants.ISSUER))) {
                 return new ValidationResult(
                         false,
                         new ErrorObject(
@@ -354,7 +355,8 @@ public class AuthorizeHandler {
                                 HttpServletResponse.SC_BAD_REQUEST));
             }
 
-            if (Validator.isNullBlankOrEmpty(jwtClaimsSet.getClaim("aud").toString())) {
+            if (Validator.isNullBlankOrEmpty(
+                    jwtClaimsSet.getClaim(RequestParamConstants.AUDIENCE).toString())) {
                 return new ValidationResult(
                         false,
                         new ErrorObject(
