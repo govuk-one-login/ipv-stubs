@@ -15,4 +15,6 @@ public class RequestParamConstants {
     public static final String VERIFICATION = "verification";
     public static final String CLIENT_ASSERTION_TYPE = "client_assertion_type";
     public static final String CLIENT_ASSERTION = "client_assertion";
+    public static final String ISSUER = "iss";
+    public static final String AUDIENCE = "aud";
 }

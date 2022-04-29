@@ -38,6 +38,10 @@ public class Validator {
         return Objects.isNull(value) || value.isEmpty() || value.isBlank();
     }
 
+    public static boolean isNullBlankOrEmpty(Object value) {
+        return Objects.isNull(value) || value.toString().isEmpty() || value.toString().isBlank();
+    }
+
     public static ValidationResult verifyGpg45(
             CriType criType,
             String strengthValue,
@@ -109,14 +113,7 @@ public class Validator {
         }
     }
 
-    public static boolean redirectUrlIsInvalid(QueryParamsMap queryParams) {
-        String redirectUri = queryParams.value(RequestParamConstants.REDIRECT_URI);
-        if (isRedirectUriPaasDomain(redirectUri)) {
-            return false;
-        }
-
-        String clientId = queryParams.value(RequestParamConstants.CLIENT_ID);
-
+    public static boolean redirectUrlIsInvalid(String clientId, String redirectUri) {
         ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientId);
         List<String> validRedirectUrls =
                 Arrays.asList(

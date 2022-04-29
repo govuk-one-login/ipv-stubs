@@ -52,6 +52,7 @@ public class AuthorizeHandler {
 
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String ERROR_CODE_INVALID_REDIRECT_URI = "invalid_request_redirect_uri";
+    private static final String ERROR_CODE_INVALID_REQUEST_JWT = "invalid_request_jwt";
 
     private static final String RESOURCE_ID_PARAM = "resourceId";
     private static final String JSON_PAYLOAD_PARAM = "jsonPayload";
@@ -90,18 +91,27 @@ public class AuthorizeHandler {
                     if (validationResult
                             .getError()
                             .getCode()
-                            .equals(ERROR_CODE_INVALID_REDIRECT_URI)) {
+                            .equals(ERROR_CODE_INVALID_REQUEST_JWT)) {
                         response.status(HttpServletResponse.SC_BAD_REQUEST);
                         return validationResult.getError().getDescription();
                     }
 
+                    SignedJWT signedJWT =
+                            SignedJWT.parse(queryParamsMap.value(RequestParamConstants.REQUEST));
+
                     AuthorizationErrorResponse errorResponse =
                             new AuthorizationErrorResponse(
                                     URI.create(
-                                            queryParamsMap.value(
-                                                    RequestParamConstants.REDIRECT_URI)),
+                                            signedJWT
+                                                    .getJWTClaimsSet()
+                                                    .getClaim(RequestParamConstants.REDIRECT_URI)
+                                                    .toString()),
                                     validationResult.getError(),
-                                    State.parse(queryParamsMap.value(RequestParamConstants.STATE)),
+                                    State.parse(
+                                            signedJWT
+                                                    .getJWTClaimsSet()
+                                                    .getClaim(RequestParamConstants.STATE)
+                                                    .toString()),
                                     ResponseMode.QUERY);
 
                     response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
@@ -141,6 +151,14 @@ public class AuthorizeHandler {
             (Request request, Response response) -> {
                 QueryParamsMap queryParamsMap = request.queryMap();
 
+                SignedJWT signedJWT =
+                        SignedJWT.parse(queryParamsMap.value(RequestParamConstants.REQUEST));
+                String redirectUri =
+                        signedJWT
+                                .getJWTClaimsSet()
+                                .getClaim(RequestParamConstants.REDIRECT_URI)
+                                .toString();
+
                 try {
                     Map<String, Object> attributesMap =
                             generateJsonPayload(queryParamsMap.value(JSON_PAYLOAD_PARAM));
@@ -164,35 +182,44 @@ public class AuthorizeHandler {
 
                     Credential credential = new Credential(combinedAttributeJson, gpgMap);
 
-                    AuthorizationSuccessResponse successResponse = generateAuthCode(queryParamsMap);
-
-                    persistData(queryParamsMap, successResponse.getAuthorizationCode(), credential);
+                    AuthorizationSuccessResponse successResponse =
+                            generateAuthCode(
+                                    signedJWT
+                                            .getJWTClaimsSet()
+                                            .getClaim(RequestParamConstants.STATE)
+                                            .toString(),
+                                    redirectUri);
+                    persistData(
+                            queryParamsMap,
+                            successResponse.getAuthorizationCode(),
+                            credential,
+                            redirectUri);
 
                     response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
                     response.redirect(successResponse.toURI().toString());
                 } catch (CriStubException e) {
                     AuthorizationErrorResponse errorResponse =
-                            generateErrorResponse(queryParamsMap, e);
+                            generateErrorResponse(e, redirectUri);
                     response.redirect(errorResponse.toURI().toString());
                 }
                 return null;
             };
 
-    private AuthorizationSuccessResponse generateAuthCode(QueryParamsMap queryParamsMap) {
+    private AuthorizationSuccessResponse generateAuthCode(String state, String redirectUri) {
         AuthorizationCode authorizationCode = new AuthorizationCode();
 
         return new AuthorizationSuccessResponse(
-                URI.create(queryParamsMap.value(RequestParamConstants.REDIRECT_URI)),
+                URI.create(redirectUri),
                 authorizationCode,
                 null,
-                State.parse(queryParamsMap.value(RequestParamConstants.STATE)),
+                State.parse(state),
                 ResponseMode.QUERY);
     }
 
     private AuthorizationErrorResponse generateErrorResponse(
-            QueryParamsMap queryParamsMap, CriStubException error) {
+            CriStubException error, String redirectUri) {
         return new AuthorizationErrorResponse(
-                URI.create(queryParamsMap.value(RequestParamConstants.REDIRECT_URI)),
+                URI.create(redirectUri),
                 new ErrorObject(error.getMessage(), error.getDescription()),
                 null,
                 new Issuer(CredentialIssuerConfig.NAME),
@@ -202,10 +229,10 @@ public class AuthorizeHandler {
     private void persistData(
             QueryParamsMap queryParamsMap,
             AuthorizationCode authorizationCode,
-            Credential credential) {
+            Credential credential,
+            String redirectUri) {
         String resourceId = queryParamsMap.value(RequestParamConstants.RESOURCE_ID);
-        String redirectUrl = queryParamsMap.value(RequestParamConstants.REDIRECT_URI);
-        this.authCodeService.persist(authorizationCode, resourceId, redirectUrl);
+        this.authCodeService.persist(authorizationCode, resourceId, redirectUri);
         this.credentialService.persist(credential, resourceId);
     }
 
@@ -261,38 +288,92 @@ public class AuthorizeHandler {
     }
 
     private ValidationResult validateQueryParams(QueryParamsMap queryParams) {
-        String responseTypeValue = queryParams.value(RequestParamConstants.RESPONSE_TYPE);
-        if (Validator.isNullBlankOrEmpty(responseTypeValue)
-                || !responseTypeValue.equals(ResponseType.Value.CODE.getValue())) {
-            return new ValidationResult(false, OAuth2Error.UNSUPPORTED_RESPONSE_TYPE);
-        }
-
         String clientIdValue = queryParams.value(RequestParamConstants.CLIENT_ID);
         if (Validator.isNullBlankOrEmpty(clientIdValue)
                 || CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
-        String redirectUrl = queryParams.value(RequestParamConstants.REDIRECT_URI);
-        if (Validator.isNullBlankOrEmpty(redirectUrl)) {
+        String request = queryParams.value(RequestParamConstants.REQUEST);
+        if (Validator.isNullBlankOrEmpty(request)) {
             return new ValidationResult(
                     false,
                     new ErrorObject(
-                            ERROR_CODE_INVALID_REDIRECT_URI,
-                            "redirect_uri param must be provided",
+                            ERROR_CODE_INVALID_REQUEST_JWT,
+                            "request param must be provided",
                             HttpServletResponse.SC_BAD_REQUEST));
         }
 
-        if (Validator.redirectUrlIsInvalid(queryParams)) {
-            return new ValidationResult(
-                    false,
-                    new ErrorObject(
-                            ERROR_CODE_INVALID_REDIRECT_URI,
-                            "redirect_uri param provided does not match any of the redirect_uri values configured",
-                            HttpServletResponse.SC_BAD_REQUEST));
-        }
+        ValidationResult validationResult = validateRequestClaims(queryParams);
+        if (validationResult != null) return validationResult;
 
         return ValidationResult.createValidResult();
+    }
+
+    private ValidationResult validateRequestClaims(QueryParamsMap queryParams) {
+
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(queryParams.value(RequestParamConstants.REQUEST));
+            JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+
+            if (Validator.isNullBlankOrEmpty(
+                            jwtClaimsSet.getClaim(RequestParamConstants.RESPONSE_TYPE))
+                    || !jwtClaimsSet
+                            .getClaim(RequestParamConstants.RESPONSE_TYPE)
+                            .toString()
+                            .equals(ResponseType.Value.CODE.getValue())) {
+                return new ValidationResult(false, OAuth2Error.UNSUPPORTED_RESPONSE_TYPE);
+            }
+
+            if (Validator.isNullBlankOrEmpty(
+                    jwtClaimsSet.getClaim(RequestParamConstants.REDIRECT_URI))) {
+                return new ValidationResult(
+                        false,
+                        new ErrorObject(
+                                ERROR_CODE_INVALID_REQUEST_JWT,
+                                "redirect_uri param must be provided",
+                                HttpServletResponse.SC_BAD_REQUEST));
+            }
+
+            if (Validator.redirectUrlIsInvalid(
+                    queryParams.value(RequestParamConstants.CLIENT_ID),
+                    jwtClaimsSet.getClaim(RequestParamConstants.REDIRECT_URI).toString())) {
+                return new ValidationResult(
+                        false,
+                        new ErrorObject(
+                                ERROR_CODE_INVALID_REQUEST_JWT,
+                                "redirect_uri param provided does not match any of the redirect_uri values configured",
+                                HttpServletResponse.SC_BAD_REQUEST));
+            }
+
+            if (Validator.isNullBlankOrEmpty(jwtClaimsSet.getClaim(RequestParamConstants.ISSUER))) {
+                return new ValidationResult(
+                        false,
+                        new ErrorObject(
+                                "invalid_issuer",
+                                "issuer param must be provided",
+                                HttpServletResponse.SC_BAD_REQUEST));
+            }
+
+            if (Validator.isNullBlankOrEmpty(
+                    jwtClaimsSet.getClaim(RequestParamConstants.AUDIENCE).toString())) {
+                return new ValidationResult(
+                        false,
+                        new ErrorObject(
+                                "invalid_issuer",
+                                "issuer param must be provided",
+                                HttpServletResponse.SC_BAD_REQUEST));
+            }
+
+        } catch (ParseException e) {
+            return new ValidationResult(
+                    false,
+                    new ErrorObject(
+                            "unable_to_parse_request_jwt",
+                            "unable to parse queryParams jwt into signed jwt object",
+                            HttpServletResponse.SC_BAD_REQUEST));
+        }
+        return null;
     }
 
     private String getSharedAttributes(QueryParamsMap queryParamsMap) {

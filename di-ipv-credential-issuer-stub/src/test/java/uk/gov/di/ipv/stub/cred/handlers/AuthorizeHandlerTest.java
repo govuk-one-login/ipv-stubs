@@ -10,7 +10,6 @@ import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
-import com.nimbusds.oauth2.sdk.ResponseType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,9 +37,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,6 +65,9 @@ import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 @ExtendWith(SystemStubsExtension.class)
 class AuthorizeHandlerTest {
 
+    public static final String VALID_RESPONSE_TYPE = "code";
+    public static final String INVALID_REDIRECT_URI = "invalid-redirect-uri";
+    public static final String INVALID_RESPONSE_TYPE = "cosssde";
     private Response mockResponse;
     private Request mockRequest;
     private ViewHelper mockViewHelper;
@@ -71,7 +76,7 @@ class AuthorizeHandlerTest {
     private CredentialService mockCredentialService;
 
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
-    private static final String TEST_REDIRECT_URI = "https://valid.example.com";
+    private static final String VALID_REDIRECT_URI = "https://valid.example.com";
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @SystemStub
@@ -108,13 +113,10 @@ class AuthorizeHandlerTest {
 
     @Test
     void doAuthorizeShouldReturn400WhenRedirectUriParamNotRegistered() throws Exception {
-        Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-        queryParams.put(
-                RequestParamConstants.REDIRECT_URI,
-                new String[] {"https://not-registered.example.com"});
-        QueryParamsMap qpmWithoutRedirectUri = toQueryParamsMap(queryParams);
+        Map<String, String[]> queryParams = invalidRedirectUriDoAuthorizeQueryParams();
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
 
-        when(mockRequest.queryMap()).thenReturn(qpmWithoutRedirectUri);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
         String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
 
@@ -126,36 +128,9 @@ class AuthorizeHandlerTest {
     }
 
     @Test
-    void doAuthorizeShouldReturn400WhenRedirectUriParamNotProvided() throws Exception {
-        Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-        queryParams.remove(RequestParamConstants.REDIRECT_URI);
-        QueryParamsMap qpmWithoutRedirectUri = toQueryParamsMap(queryParams);
-
-        when(mockRequest.queryMap()).thenReturn(qpmWithoutRedirectUri);
-
-        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-        assertEquals("redirect_uri param must be provided", result);
-        verify(mockViewHelper, never()).render(Collections.emptyMap(), "authorize.mustache");
-        verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
-    }
-
-    @Test
-    void doAuthorizeShouldReturn302WithErrorQueryParamsWhenResponseTypeParamNotProvided()
-            throws Exception {
-        Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-        queryParams.remove(RequestParamConstants.RESPONSE_TYPE);
-
-        invokeDoAuthorizeAndMakeAssertions(
-                queryParams,
-                createExpectedErrorQueryStringParams(OAuth2Error.UNSUPPORTED_RESPONSE_TYPE));
-    }
-
-    @Test
     void doAuthorizeShouldReturn302WithErrorQueryParamsWhenResponseTypeParamNotCode()
             throws Exception {
-        Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-        queryParams.put(RequestParamConstants.RESPONSE_TYPE, new String[] {"invalid-type"});
+        Map<String, String[]> queryParams = invalidResponseTypeDoAuthorizeQueryParams();
 
         invokeDoAuthorizeAndMakeAssertions(
                 queryParams,
@@ -204,90 +179,11 @@ class AuthorizeHandlerTest {
                         frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
 
         Map<String, Object> claims =
-                (Map<String, Object>) validClaimsSet().toJSONObject().get(SHARED_CLAIMS);
+                (Map<String, Object>)
+                        validRequestJWT(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI)
+                                .toJSONObject()
+                                .get(SHARED_CLAIMS);
         assertEquals(gson.toJson(claims), frontendParamsCaptor.getValue().get("shared_claims"));
-    }
-
-    @Test
-    void doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithInvalidRequestJWT()
-            throws Exception {
-        Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-        queryParams.put(
-                RequestParamConstants.REQUEST, new String[] {"invalid-shared-attributes-JWT"});
-        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-
-        String renderOutput = "rendered output";
-        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
-
-        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-        assertEquals(renderOutput, result);
-        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor =
-                ArgumentCaptor.forClass(Map.class);
-        verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
-        assertTrue(
-                Boolean.parseBoolean(
-                        frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
-        assertEquals(
-                "Error: failed to parse something: Invalid serialized unsecured/JWS/JWE object: Missing part delimiters",
-                frontendParamsCaptor.getValue().get("shared_claims"));
-    }
-
-    @Test
-    void
-            doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithRequestJWTMissingVcHttpApiClaim()
-                    throws Exception {
-        Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-        queryParams.put(
-                RequestParamConstants.REQUEST,
-                new String[] {
-                    signedRequestJwt(
-                                    new JWTClaimsSet.Builder()
-                                            .claim("NO_VC_HTTP_API_CLAIM", "nope")
-                                            .build())
-                            .serialize()
-                });
-        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-
-        String renderOutput = "rendered output";
-        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
-
-        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-        assertEquals(renderOutput, result);
-        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor =
-                ArgumentCaptor.forClass(Map.class);
-        verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
-        assertTrue(
-                Boolean.parseBoolean(
-                        frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
-        assertEquals(
-                "Error: shared_claims not found in JWT",
-                frontendParamsCaptor.getValue().get("shared_claims"));
-    }
-
-    @Test
-    void doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithMissingRequestJWT()
-            throws Exception {
-        Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-        queryParams.remove(RequestParamConstants.REQUEST);
-        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-
-        String renderOutput = "rendered output";
-        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
-
-        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-        assertEquals(renderOutput, result);
-        ArgumentCaptor<Map<String, String>> frontendParamsCaptor =
-                ArgumentCaptor.forClass(Map.class);
-        verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
-        assertEquals(
-                "Error: missing 'request' query parameter",
-                frontendParamsCaptor.getValue().get("shared_claims"));
     }
 
     @Test
@@ -295,7 +191,9 @@ class AuthorizeHandlerTest {
             doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWhenSignatureVerificationFails()
                     throws Exception {
         Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-        String signedJWT = signedRequestJwt(validClaimsSet()).serialize();
+        String signedJWT =
+                signedRequestJwt(validRequestJWT(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI))
+                        .serialize();
         String invalidSignatureJwt = signedJWT.substring(0, signedJWT.length() - 4) + "Nope";
         queryParams.put(RequestParamConstants.REQUEST, new String[] {invalidSignatureJwt});
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
@@ -328,7 +226,7 @@ class AuthorizeHandlerTest {
         assertNull(result);
         verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
         verify(mockAuthCodeService)
-                .persist(any(AuthorizationCode.class), anyString(), eq(TEST_REDIRECT_URI));
+                .persist(any(AuthorizationCode.class), anyString(), eq(VALID_REDIRECT_URI));
         verify(mockResponse).redirect(redirectUriCaptor.capture());
         assertNotNull(redirectUriCaptor.getValue());
     }
@@ -346,7 +244,7 @@ class AuthorizeHandlerTest {
 
         verify(mockResponse)
                 .redirect(
-                        TEST_REDIRECT_URI
+                        VALID_REDIRECT_URI
                                 + "?error=invalid_json&iss=Credential+Issuer+Stub&error_description=Unable+to+generate+valid+JSON+Payload");
     }
 
@@ -389,7 +287,7 @@ class AuthorizeHandlerTest {
         assertNull(result);
         verify(mockViewHelper, never()).render(Collections.emptyMap(), "authorize.mustache");
         verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
-        verify(mockResponse).redirect(TEST_REDIRECT_URI + expectedErrorCodeAndDescription);
+        verify(mockResponse).redirect(VALID_REDIRECT_URI + expectedErrorCodeAndDescription);
     }
 
     private ECPrivateKey getPrivateKey() throws InvalidKeySpecException, NoSuchAlgorithmException {
@@ -409,14 +307,36 @@ class AuthorizeHandlerTest {
     private Map<String, String[]> validDoAuthorizeQueryParams() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
-        queryParams.put(RequestParamConstants.REDIRECT_URI, new String[] {TEST_REDIRECT_URI});
-        queryParams.put(
-                RequestParamConstants.RESPONSE_TYPE,
-                new String[] {ResponseType.Value.CODE.getValue()});
-        queryParams.put(RequestParamConstants.STATE, new String[] {"test-state"});
         queryParams.put(
                 RequestParamConstants.REQUEST,
-                new String[] {signedRequestJwt(validClaimsSet()).serialize()});
+                new String[] {
+                    signedRequestJwt(validRequestJWT(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI))
+                            .serialize()
+                });
+        return queryParams;
+    }
+
+    private Map<String, String[]> invalidResponseTypeDoAuthorizeQueryParams() throws Exception {
+        Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(
+                RequestParamConstants.REQUEST,
+                new String[] {
+                    signedRequestJwt(validRequestJWT(INVALID_RESPONSE_TYPE, VALID_REDIRECT_URI))
+                            .serialize()
+                });
+        return queryParams;
+    }
+
+    private Map<String, String[]> invalidRedirectUriDoAuthorizeQueryParams() throws Exception {
+        Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(
+                RequestParamConstants.REQUEST,
+                new String[] {
+                    signedRequestJwt(validRequestJWT(VALID_RESPONSE_TYPE, INVALID_REDIRECT_URI))
+                            .serialize()
+                });
         return queryParams;
     }
 
@@ -432,13 +352,34 @@ class AuthorizeHandlerTest {
         return queryParams;
     }
 
-    private JWTClaimsSet validClaimsSet() {
-        Map<String, List<String>> sharedClaims = new LinkedHashMap<>();
-        sharedClaims.put("dateOfBirths", Arrays.asList("01/01/1980", "02/01/1980"));
-        sharedClaims.put("addresses", Collections.singletonList("123 random street, M13 7GE"));
-        sharedClaims.put("givenNames", Arrays.asList("Daniel", "Dan", "Danny"));
+    private JWTClaimsSet validRequestJWT(String responseType, String redirectUri) {
+        Instant instant = Instant.now();
 
-        return new JWTClaimsSet.Builder().claim(SHARED_CLAIMS, sharedClaims).build();
+        Map<String, Object> sharedClaims = new LinkedHashMap<>();
+        sharedClaims.put("addresses", Collections.singletonList("123 random street, M13 7GE"));
+        sharedClaims.put(
+                "names",
+                List.of(
+                        Map.of(
+                                "nameParts",
+                                Arrays.asList(
+                                        Map.of("value", "Daniel"),
+                                        Map.of("value", "Dan"),
+                                        Map.of("value", "Danny")))));
+        sharedClaims.put("birthDate", List.of(Map.of("value", "01/01/1980")));
+
+        return new JWTClaimsSet.Builder()
+                .issuer("issuer")
+                .audience("audience")
+                .subject("subject")
+                .claim("redirect_uri", redirectUri)
+                .claim("response_type", responseType)
+                .claim("state", "test-state")
+                .expirationTime(Date.from(instant.plus(1L, ChronoUnit.HOURS)))
+                .notBeforeTime(Date.from(instant))
+                .issueTime(Date.from(instant))
+                .claim(SHARED_CLAIMS, sharedClaims)
+                .build();
     }
 
     private SignedJWT signedRequestJwt(JWTClaimsSet claimsSet) throws Exception {
