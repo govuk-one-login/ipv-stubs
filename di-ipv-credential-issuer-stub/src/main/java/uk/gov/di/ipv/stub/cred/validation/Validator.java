@@ -115,6 +115,11 @@ public class Validator {
 
     public static boolean redirectUrlIsInvalid(String clientId, String redirectUri) {
         ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientId);
+
+        if (isRedirectUriPaasDomain(redirectUri)) {
+            return false;
+        }
+
         List<String> validRedirectUrls =
                 Arrays.asList(
                         clientConfig
