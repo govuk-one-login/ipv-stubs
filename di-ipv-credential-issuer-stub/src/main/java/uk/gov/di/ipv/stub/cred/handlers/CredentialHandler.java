@@ -1,7 +1,6 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
@@ -55,25 +54,13 @@ public class CredentialHandler {
                     return "Error: No body found in request";
                 }
 
-                String subject;
-                try {
-                    subject = PlainJWT.parse(request.body()).getJWTClaimsSet().getSubject();
-                } catch (java.text.ParseException e) {
-                    response.status(HttpServletResponse.SC_BAD_REQUEST);
-                    return "Error: Could not parse VC request JWT";
-                }
-                if (Validator.isNullBlankOrEmpty(subject)) {
-                    response.status(HttpServletResponse.SC_BAD_REQUEST);
-                    return "Error: Subject missing from VC request JWT";
-                }
-
                 String resourceId = tokenService.getPayload(accessTokenString);
                 Credential credential = credentialService.getCredential(resourceId);
 
                 String verifiableCredential;
                 try {
                     verifiableCredential =
-                            verifiableCredentialGenerator.generate(credential, subject).serialize();
+                            verifiableCredentialGenerator.generate(credential).serialize();
                 } catch (NoSuchAlgorithmException | InvalidKeySpecException | JOSEException e) {
                     response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     return String.format("Error: Unable to generate VC - '%s'", e.getMessage());

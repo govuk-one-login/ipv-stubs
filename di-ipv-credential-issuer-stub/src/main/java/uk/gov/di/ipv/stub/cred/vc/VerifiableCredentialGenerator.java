@@ -44,7 +44,7 @@ public class VerifiableCredentialGenerator {
 
     public static final String EC_ALGO = "EC";
 
-    public SignedJWT generate(Credential credential, String subject)
+    public SignedJWT generate(Credential credential)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
 
         Map<String, Object> vc = new LinkedHashMap<>();
@@ -77,7 +77,7 @@ public class VerifiableCredentialGenerator {
         // The schema is unclear on how this should be presented so just copying wholesale for now.
         vc.put(VC_EVIDENCE, List.of(credential.getEvidence()));
 
-        return generateAndSignVerifiableCredentialJwt(subject, vc);
+        return generateAndSignVerifiableCredentialJwt(credential.getUserId(), vc);
     }
 
     private boolean isPopulatedList(Map<String, Object> attributes, String attributeName) {
