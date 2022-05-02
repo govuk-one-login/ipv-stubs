@@ -158,6 +158,7 @@ public class AuthorizeHandler {
                                 .getJWTClaimsSet()
                                 .getClaim(RequestParamConstants.REDIRECT_URI)
                                 .toString();
+                String userId = signedJWT.getJWTClaimsSet().getSubject();
 
                 try {
                     Map<String, Object> attributesMap =
@@ -180,7 +181,7 @@ public class AuthorizeHandler {
                                     queryParamsMap.value(
                                             CredentialIssuerConfig.VERIFICATION_PARAM));
 
-                    Credential credential = new Credential(combinedAttributeJson, gpgMap);
+                    Credential credential = new Credential(combinedAttributeJson, gpgMap, userId);
 
                     AuthorizationSuccessResponse successResponse =
                             generateAuthCode(
