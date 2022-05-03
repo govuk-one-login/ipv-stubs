@@ -73,7 +73,8 @@ public class VerifiableCredentialGeneratorTest {
                         "type", "CriStubCheck",
                         "strength", 4,
                         "validity", 2);
-        Credential credential = new Credential(attributes, evidence);
+        String userId = "user-id";
+        Credential credential = new Credential(attributes, evidence, userId);
 
         SignedJWT verifiableCredential =
                 vcGenerator.generate(credential, "https://subject.example.com");
@@ -155,7 +156,8 @@ public class VerifiableCredentialGeneratorTest {
                         "type", "CriStubCheck",
                         "strength", 4,
                         "validity", 2);
-        Credential credential = new Credential(attributes, evidence);
+        String userId = "user-id";
+        Credential credential = new Credential(attributes, evidence, userId);
 
         SignedJWT verifiableCredential =
                 vcGenerator.generate(credential, "https://subject.example.com");

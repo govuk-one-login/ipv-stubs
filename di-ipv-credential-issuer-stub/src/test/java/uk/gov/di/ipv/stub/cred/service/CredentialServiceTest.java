@@ -20,7 +20,7 @@ public class CredentialServiceTest {
     @Test
     void shouldPersistAndGetPayload() {
         Credential credential =
-                new Credential(Map.of("an", "attribute"), Map.of("a", "gpg45Score"));
+                new Credential(Map.of("an", "attribute"), Map.of("a", "gpg45Score"), "user-id");
 
         credentialService.persist(credential, "1234");
 
