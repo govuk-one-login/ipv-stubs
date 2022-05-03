@@ -76,8 +76,7 @@ public class VerifiableCredentialGeneratorTest {
         String userId = "user-id";
         Credential credential = new Credential(attributes, evidence, userId);
 
-        SignedJWT verifiableCredential =
-                vcGenerator.generate(credential, "https://subject.example.com");
+        SignedJWT verifiableCredential = vcGenerator.generate(credential);
 
         KeyFactory kf = KeyFactory.getInstance(EC_ALGO);
         ECPublicKey ecPublicKey =
@@ -92,7 +91,7 @@ public class VerifiableCredentialGeneratorTest {
                 objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");
 
         assertEquals("https://issuer.example.com", claimsSetTree.path(ISSUER).asText());
-        assertEquals("https://subject.example.com", claimsSetTree.path(SUBJECT).asText());
+        assertEquals(userId, claimsSetTree.path(SUBJECT).asText());
         assertNotNull(claimsSetTree.path(NOT_BEFORE));
         assertEquals(
                 300,
@@ -159,8 +158,7 @@ public class VerifiableCredentialGeneratorTest {
         String userId = "user-id";
         Credential credential = new Credential(attributes, evidence, userId);
 
-        SignedJWT verifiableCredential =
-                vcGenerator.generate(credential, "https://subject.example.com");
+        SignedJWT verifiableCredential = vcGenerator.generate(credential);
 
         JsonNode claimsSetTree =
                 objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");

@@ -61,7 +61,7 @@ public class CredentialHandlerTest {
                 .thenReturn(UUID.randomUUID().toString());
         when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
         when(mockSignedJwt.serialize()).thenReturn("A.VERIFIABLE.CREDENTIAL");
-        when(mockVerifiableCredentialGenerator.generate(any(), any())).thenReturn(mockSignedJwt);
+        when(mockVerifiableCredentialGenerator.generate(any())).thenReturn(mockSignedJwt);
 
         Object response = resourceHandler.getResource.handle(mockRequest, mockResponse);
 
@@ -118,34 +118,6 @@ public class CredentialHandlerTest {
     }
 
     @Test
-    void shouldReturn400WhenJwtInRequestBodyCanNotBeParsed() throws Exception {
-        when(mockRequest.body()).thenReturn("NOTAJWT");
-        when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
-                .thenReturn(UUID.randomUUID().toString());
-        when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
-
-        String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
-
-        assertEquals("Error: Could not parse VC request JWT", result);
-        verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
-    }
-
-    @Test
-    void shouldReturn400WhenJwtInRequestBodyDoesNotContainSubjectClaim() throws Exception {
-        PlainJWT jwtWithoutSubject =
-                new PlainJWT(new JWTClaimsSet.Builder().claim("not a subject", "nope").build());
-        when(mockRequest.body()).thenReturn(jwtWithoutSubject.serialize());
-        when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
-                .thenReturn(UUID.randomUUID().toString());
-        when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
-
-        String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
-
-        assertEquals("Error: Subject missing from VC request JWT", result);
-        verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
-    }
-
-    @Test
     void shouldReturn500WhenErrorGeneratingVerifiableCredential() throws Exception {
         PlainJWT requestJWT =
                 new PlainJWT(
@@ -156,8 +128,7 @@ public class CredentialHandlerTest {
         when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
                 .thenReturn(UUID.randomUUID().toString());
         when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
-        when(mockVerifiableCredentialGenerator.generate(any(), any()))
-                .thenThrow(JOSEException.class);
+        when(mockVerifiableCredentialGenerator.generate(any())).thenThrow(JOSEException.class);
 
         String response = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
 
