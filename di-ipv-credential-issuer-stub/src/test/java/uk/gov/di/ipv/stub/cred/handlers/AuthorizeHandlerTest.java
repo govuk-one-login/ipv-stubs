@@ -2,9 +2,17 @@ package uk.gov.di.ipv.stub.cred.handlers;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.nimbusds.jose.EncryptionMethod;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWEHeader;
+import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.crypto.RSAEncrypter;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -30,11 +38,16 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.ByteArrayInputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
@@ -64,6 +77,9 @@ import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 
 @ExtendWith(SystemStubsExtension.class)
 class AuthorizeHandlerTest {
+
+    public static final String BASE64_ENCRYPTION_PUBLIC_CERT =
+            "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZEakNDQXZZQ0NRQ3JjK3ppU2ZNeUR6QU5CZ2txaGtpRzl3MEJBUXNGQURCSk1Rc3dDUVlEVlFRR0V3SkgKUWpFTk1Bc0dBMVVFQ0F3RVZHVnpkREVOTUFzR0ExVUVCd3dFVkdWemRERU5NQXNHQTFVRUNnd0VWRVZ6ZERFTgpNQXNHQTFVRUN3d0VWR1Z6ZERBZUZ3MHlNVEV5TWpNeE1EVTJNakZhRncweU1qRXlNak14TURVMk1qRmFNRWt4CkN6QUpCZ05WQkFZVEFrZENNUTB3Q3dZRFZRUUlEQVJVWlhOME1RMHdDd1lEVlFRSERBUlVaWE4wTVEwd0N3WUQKVlFRS0RBUlVSWE4wTVEwd0N3WURWUVFMREFSVVpYTjBNSUlDSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQWc4QQpNSUlDQ2dLQ0FnRUF3RnJkUzhFUUNLaUQxNXJ1UkE3SFd5T0doeVZ0TlphV3JYOUVGZWNJZTZPQWJCRHhHS2NQCkJLbVJVMDNud3g1THppRWhNL2NlNWw0a3lTazcybFgwYSt6ZTVkb2pqZkx6dFJZcGdiSTlEYUVwMy9GTEdyWkoKRmpPZCtwaU9JZ1lBQms0YTVNdlBuOVlWeEpzNlh2aVFOZThJZVN6Y2xMR1dNV0dXOFRFTnBaMWJwRkNxa2FiRQpTN0cvdUVNMGtkaGhnYVpnVXhpK1JZUUhQcWhtNk1PZGdScWJpeTIxUDBOSFRFVktyaWtZanZYZXdTQnFtZ0xVClBRaTg1ME9qczF3UGRZVFRoajVCT2JZd3o5aEpWbWJIVEhvUGgwSDRGZGphMW9wY1M1ZXRvSGtOWU95MzdTbzgKQ2tzVjZzNnVyN3pVcWE5RlRMTXJNVnZhN2pvRHRzV2JXSjhsM2pheS9PSEV3UlI5RFNvTHVhYlppK2tWekZGUwp2eGRDTU52VzJEMmNSdzNHWW1HMGk4cXMxMXRsalFMTEV0S2EyWXJBZERSRXlFUFlKR1NYSjJDUXhqbGRpMzYrCmlHYitzNkExWVNCNzRxYldkbVcxWktqcGFPZmtmclRBZ3FocUc5UURrd2hPSk5CblVDUTBpZVpGYXV3MUZJM04KS0c1WEZSMzdKR05EL1luTGxCS1gzVzNMSGVIY1hTYUphYzYxOHFHbzgxVFduVzA2MVMzTGRVRWcyWGJ0SXJPKworNEdlNDlJbXRSTUFrcmhUUjAzMXc3ZDVnVXJtZWxCcTNzaVBmUmFkYmJ2OUM1VENHOG4zVDM1VkpLNFcybEduCkl5WUFzc09wYWxyN1Q5TmVuTzUxcUJmK2gyTjVVWitTVDV0TkYwM2s5enpKdGZORDZEcUNySHNDQXdFQUFUQU4KQmdrcWhraUc5dzBCQVFzRkFBT0NBZ0VBQWNjblhwYUNJaVNzcG5oZ0tlTk9iSm9aaUJzSWNyTU4wVU1tSmVaagpSNkM2MHQzM1lEZDhXR2VhOW91WmVUZEFYOFIxYTlZOVFtV3JMMnpUTXIwbEwxdkRleXd0eUtjTFloVmFZaHUrCi9ibVFKTjJ5TnhWdU9ONkxtbkhBUFBFdjBtc3RWM1JuQXVxYlcvTm5DU0ZkUnFsSmlYT2hRLzlQUHJUUDZzck8KT2QwVHJ6VkE3RXlQT014TjJpSUdBcTJRemFBb3B6VDFVNmF4bnpHRmZ6aTZVSGlRYURSbGhuODhGUEpNT3JMUQpyS3NlUkk4MUtIaGptZG5uOFdlWC9BaGZWSk8wejZ2TU1xRGx5QmlSUmV3VmVQcjZTejl5T2RCQVZlNFUzSDdHCmdDV3p2akEzYkxjZEpobUw4dHQvVFpFcndMblFDd2Izc3pMODNSSDl0dXIzaWdwQnJoUzlWWnM4ZldyeWY0MDgKNnU0dWd3Y1luT0NpaGtwMk9ESjVtOThCbmdZem1wT2NDZW1KTkg3WkJ1SWhDVkNjRitCejlBbTlRSjJXdzdFZApTeGNDcFQxY0hSd29Fd0I5a01ORmtpYlkzbFJBQ3BtTmQ3SWpWUU5ZNTlmeFBBdGo4cFlSYWJGa2JhSUtkT2FwCkxySE1jbmRCTXpMYkk1bGl1a2hQUTlGLyt5QkMybVRRZ0MvVzU5dThraW4yQTFRbDJRWUNXQzFYVWFXaXFxRVUKbVQ5SjU5L0dKZ3hIT1pNSXB4OERDK0ZYRDZkbEF1bUJLZzcxZnpsdjdNb3dKWWFFcFJEUlJubjU0YnQ4UmpVRwpRREpBV1VseHluSlF0dCtqdmFNR0lSZ2M2RkdJcUVVV1VzUU9wUDEwNFg4dUtPQWNSTjlmMWNSSGxTeUErTUp5Cnd1UT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=";
 
     public static final String VALID_RESPONSE_TYPE = "code";
     public static final String INVALID_REDIRECT_URI = "invalid-redirect-uri";
@@ -138,29 +154,68 @@ class AuthorizeHandlerTest {
     }
 
     @Test
-    void doAuthorizeShouldReturn302WithErrorQueryParamsWhenClientIdParamNotProvided()
-            throws Exception {
+    void doAuthorizeShouldReturn400WithErrorMessageWhenClientIdParamNotProvided() throws Exception {
         Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
         queryParams.remove(RequestParamConstants.CLIENT_ID);
 
-        invokeDoAuthorizeAndMakeAssertions(
-                queryParams, createExpectedErrorQueryStringParams(OAuth2Error.INVALID_CLIENT));
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        assertEquals(result, "Error: Could not find client configuration details for: null");
+        verify(mockResponse).status(400);
     }
 
     @Test
-    void doAuthorizeShouldReturn302WithErrorQueryParamsWhenClientIdParamNotRegistered()
+    void doAuthorizeShouldReturn400WithErrorMessagesWhenClientIdParamNotRegistered()
             throws Exception {
         Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"not-registered"});
 
-        invokeDoAuthorizeAndMakeAssertions(
-                queryParams, createExpectedErrorQueryStringParams(OAuth2Error.INVALID_CLIENT));
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        assertEquals(
+                result, "Error: Could not find client configuration details for: not-registered");
+        verify(mockResponse).status(400);
     }
 
     @Test
     void doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithRequestJWT()
             throws Exception {
         QueryParamsMap queryParamsMap = toQueryParamsMap(validDoAuthorizeQueryParams());
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String renderOutput = "rendered output";
+        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
+
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        assertEquals(renderOutput, result);
+
+        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor =
+                ArgumentCaptor.forClass(Map.class);
+        verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
+
+        assertTrue(
+                Boolean.parseBoolean(
+                        frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
+
+        Map<String, Object> claims =
+                (Map<String, Object>)
+                        validRequestJWT(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI)
+                                .toJSONObject()
+                                .get(SHARED_CLAIMS);
+        assertEquals(gson.toJson(claims), frontendParamsCaptor.getValue().get("shared_claims"));
+    }
+
+    @Test
+    void doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithEncryptedRequestJWT()
+            throws Exception {
+        QueryParamsMap queryParamsMap = toQueryParamsMap(validEncryptedDoAuthorizeQueryParams());
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
         String renderOutput = "rendered output";
@@ -314,6 +369,38 @@ class AuthorizeHandlerTest {
                             .serialize()
                 });
         return queryParams;
+    }
+
+    private Map<String, String[]> validEncryptedDoAuthorizeQueryParams() throws Exception {
+        Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
+        queryParams.put(
+                RequestParamConstants.REQUEST,
+                new String[] {
+                    encryptedRequestJwt(
+                                    signedRequestJwt(
+                                            validRequestJWT(
+                                                    VALID_RESPONSE_TYPE, VALID_REDIRECT_URI)))
+                            .serialize()
+                });
+        return queryParams;
+    }
+
+    private JWEObject encryptedRequestJwt(SignedJWT validRequestJWT)
+            throws CertificateException, JOSEException {
+        JWEHeader header =
+                new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A128CBC_HS256)
+                        .type(new JOSEObjectType("JWE"))
+                        .build();
+        JWEObject jweObject = new JWEObject(header, new Payload(validRequestJWT.serialize()));
+        jweObject.encrypt(new RSAEncrypter((RSAPublicKey) getEncryptionPublicKey().getPublicKey()));
+        return jweObject;
+    }
+
+    private Certificate getEncryptionPublicKey() throws CertificateException {
+        byte[] binaryCertificate = Base64.getDecoder().decode(BASE64_ENCRYPTION_PUBLIC_CERT);
+        CertificateFactory factory = CertificateFactory.getInstance("X.509");
+        return factory.generateCertificate(new ByteArrayInputStream(binaryCertificate));
     }
 
     private Map<String, String[]> invalidResponseTypeDoAuthorizeQueryParams() throws Exception {
