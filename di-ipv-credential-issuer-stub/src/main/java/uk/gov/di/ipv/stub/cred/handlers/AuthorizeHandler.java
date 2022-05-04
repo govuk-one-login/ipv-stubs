@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWEObject;
+import com.nimbusds.jose.crypto.RSADecrypter;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -38,6 +40,9 @@ import uk.gov.di.ipv.stub.cred.validation.Validator;
 import javax.servlet.http.HttpServletResponse;
 
 import java.net.URI;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +56,6 @@ public class AuthorizeHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
 
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
-    private static final String ERROR_CODE_INVALID_REDIRECT_URI = "invalid_request_redirect_uri";
     private static final String ERROR_CODE_INVALID_REQUEST_JWT = "invalid_request_jwt";
 
     private static final String RESOURCE_ID_PARAM = "resourceId";
@@ -96,8 +100,20 @@ public class AuthorizeHandler {
                         return validationResult.getError().getDescription();
                     }
 
+                    String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
+                    String requestValue = queryParamsMap.value(RequestParamConstants.REQUEST);
+
+                    ClientConfig clientConfig =
+                            CredentialIssuerConfig.getClientConfig(clientIdValue);
+
+                    if (clientConfig == null) {
+                        response.status(HttpServletResponse.SC_BAD_REQUEST);
+                        return "Error: Could not find client configuration details for: "
+                                + clientIdValue;
+                    }
+
                     SignedJWT signedJWT =
-                            SignedJWT.parse(queryParamsMap.value(RequestParamConstants.REQUEST));
+                            getSignedJWT(requestValue, clientConfig.getEncryptionPrivateKey());
 
                     AuthorizationErrorResponse errorResponse =
                             new AuthorizationErrorResponse(
@@ -312,9 +328,14 @@ public class AuthorizeHandler {
     }
 
     private ValidationResult validateRequestClaims(QueryParamsMap queryParams) {
+        String clientIdValue = queryParams.value(RequestParamConstants.CLIENT_ID);
+        ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdValue);
 
         try {
-            SignedJWT signedJWT = SignedJWT.parse(queryParams.value(RequestParamConstants.REQUEST));
+            SignedJWT signedJWT =
+                    getSignedJWT(
+                            queryParams.value(RequestParamConstants.REQUEST),
+                            clientConfig.getEncryptionPrivateKey());
             JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
             if (Validator.isNullBlankOrEmpty(
@@ -337,7 +358,7 @@ public class AuthorizeHandler {
             }
 
             if (Validator.redirectUrlIsInvalid(
-                    queryParams.value(RequestParamConstants.CLIENT_ID),
+                    clientIdValue,
                     jwtClaimsSet.getClaim(RequestParamConstants.REDIRECT_URI).toString())) {
                 return new ValidationResult(
                         false,
@@ -366,7 +387,7 @@ public class AuthorizeHandler {
                                 HttpServletResponse.SC_BAD_REQUEST));
             }
 
-        } catch (ParseException e) {
+        } catch (ParseException | NoSuchAlgorithmException | InvalidKeySpecException e) {
             return new ValidationResult(
                     false,
                     new ErrorObject(
@@ -375,6 +396,19 @@ public class AuthorizeHandler {
                             HttpServletResponse.SC_BAD_REQUEST));
         }
         return null;
+    }
+
+    private SignedJWT getSignedJWT(String request, PrivateKey encryptionPrivateKey)
+            throws ParseException {
+        try {
+            JWEObject jweObject = getJweObject(request, encryptionPrivateKey);
+            return jweObject.getPayload().toSignedJWT();
+        } catch (ParseException
+                | NoSuchAlgorithmException
+                | InvalidKeySpecException
+                | JOSEException e) {
+            return SignedJWT.parse(request);
+        }
     }
 
     private String getSharedAttributes(QueryParamsMap queryParamsMap) {
@@ -394,7 +428,8 @@ public class AuthorizeHandler {
         String sharedAttributesJson;
         if (!Validator.isNullBlankOrEmpty(requestParam)) {
             try {
-                SignedJWT signedJWT = SignedJWT.parse(requestParam);
+                SignedJWT signedJWT =
+                        getSignedJWT(requestParam, clientConfig.getEncryptionPrivateKey());
 
                 if (!es256SignatureVerifier.valid(signedJWT, clientConfig.getSigningPublicJwk())) {
                     LOGGER.error("JWT signature is invalid");
@@ -418,10 +453,22 @@ public class AuthorizeHandler {
                 LOGGER.error("Failed to verify the signature of the JWT", e);
                 sharedAttributesJson =
                         "Error: failed to verify the signature of the shared attribute JWT";
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                LOGGER.error("Failed to decrypt the JWT", e);
+                sharedAttributesJson = "Error: Failed to decrypt the JWT";
             }
         } else {
             sharedAttributesJson = "Error: missing 'request' query parameter";
         }
         return sharedAttributesJson;
+    }
+
+    private JWEObject getJweObject(String requestParam, PrivateKey encryptionPrivateKey)
+            throws ParseException, NoSuchAlgorithmException, InvalidKeySpecException,
+                    JOSEException {
+        JWEObject encryptedJweObject = JWEObject.parse(requestParam);
+        RSADecrypter rsaDecrypter = new RSADecrypter(encryptionPrivateKey);
+        encryptedJweObject.decrypt(rsaDecrypter);
+        return encryptedJweObject;
     }
 }
