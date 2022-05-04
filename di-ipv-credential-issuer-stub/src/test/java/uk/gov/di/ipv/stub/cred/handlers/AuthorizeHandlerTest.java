@@ -163,7 +163,7 @@ class AuthorizeHandlerTest {
 
         String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
 
-        assertEquals(result, "Error: Could not find client configuration details for: null");
+        assertEquals("Error: Could not find client configuration details for: null", result);
         verify(mockResponse).status(400);
     }
 
@@ -179,7 +179,21 @@ class AuthorizeHandlerTest {
         String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
 
         assertEquals(
-                result, "Error: Could not find client configuration details for: not-registered");
+                "Error: Could not find client configuration details for: not-registered", result);
+        verify(mockResponse).status(400);
+    }
+
+    @Test
+    void doAuthorizeShouldReturn400WithErrorMessagesWhenRequestParamMissing() throws Exception {
+        Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
+        queryParams.remove(RequestParamConstants.REQUEST);
+
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        assertEquals("request param must be provided", result);
         verify(mockResponse).status(400);
     }
 
@@ -315,8 +329,8 @@ class AuthorizeHandlerTest {
         verify(mockCredentialService)
                 .persist(persistedCredential.capture(), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
         Map<String, Object> persistedAttributes = persistedCredential.getValue().getAttributes();
-        assertEquals(persistedAttributes.get("addresses"), List.of("123 random street, M13 7GE"));
-        assertEquals(persistedAttributes.get("test"), "test-value");
+        assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
+        assertEquals("test-value", persistedAttributes.get("test"));
     }
 
     private String createExpectedErrorQueryStringParams(ErrorObject error) {
