@@ -167,8 +167,19 @@ public class AuthorizeHandler {
             (Request request, Response response) -> {
                 QueryParamsMap queryParamsMap = request.queryMap();
 
+                String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
+                String requestValue = queryParamsMap.value(RequestParamConstants.REQUEST);
+
+                ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdValue);
+
+                if (clientConfig == null) {
+                    response.status(HttpServletResponse.SC_BAD_REQUEST);
+                    return "Error: Could not find client configuration details for: "
+                            + clientIdValue;
+                }
+
                 SignedJWT signedJWT =
-                        SignedJWT.parse(queryParamsMap.value(RequestParamConstants.REQUEST));
+                        getSignedJWT(requestValue, clientConfig.getEncryptionPrivateKey());
                 String redirectUri =
                         signedJWT
                                 .getJWTClaimsSet()
