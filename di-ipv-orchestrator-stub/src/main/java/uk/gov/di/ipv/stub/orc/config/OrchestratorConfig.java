@@ -20,6 +20,8 @@ public class OrchestratorConfig {
             getConfigValue("ORCHESTRATOR_CLIENT_SIGNING_KEY", "missing-key");
     public static final String ORCHESTRATOR_CLIENT_JWT_TTL =
             getConfigValue("ORCHESTRATOR_CLIENT_JWT_TTL", "900");
+    public static final String IPV_CORE_AUDIENCE =
+            getConfigValue("IPV_CORE_AUDIENCE", "https://build-di-ipv-cri-uk-passport-front.london.cloudapps.digital");
 
     private static String getConfigValue(String key, String defaultValue) {
         var envValue = System.getenv(key);

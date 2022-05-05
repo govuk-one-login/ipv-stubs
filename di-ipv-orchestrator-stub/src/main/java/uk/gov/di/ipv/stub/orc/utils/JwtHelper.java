@@ -21,6 +21,7 @@ import java.util.Base64;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_JWT_TTL;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_SIGNING_KEY;
@@ -48,9 +49,7 @@ public class JwtHelper {
         claimsBuilder.claim(JWTClaimNames.SUBJECT, ORCHESTRATOR_CLIENT_ID);
         claimsBuilder.claim(
                 JWTClaimNames.AUDIENCE,
-                URI.create(IPV_BACKCHANNEL_ENDPOINT)
-                        .resolve(IPV_BACKCHANNEL_TOKEN_PATH)
-                        .toString());
+                IPV_CORE_AUDIENCE);
 
         OffsetDateTime dateTime = OffsetDateTime.now();
         claimsBuilder.claim(
