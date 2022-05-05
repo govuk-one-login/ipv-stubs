@@ -10,7 +10,6 @@ import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
-import java.net.URI;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -19,8 +18,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.OffsetDateTime;
 import java.util.Base64;
 
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_JWT_TTL;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_SIGNING_KEY;
@@ -46,11 +44,7 @@ public class JwtHelper {
 
         claimsBuilder.claim(JWTClaimNames.ISSUER, ORCHESTRATOR_CLIENT_ID);
         claimsBuilder.claim(JWTClaimNames.SUBJECT, ORCHESTRATOR_CLIENT_ID);
-        claimsBuilder.claim(
-                JWTClaimNames.AUDIENCE,
-                URI.create(IPV_BACKCHANNEL_ENDPOINT)
-                        .resolve(IPV_BACKCHANNEL_TOKEN_PATH)
-                        .toString());
+        claimsBuilder.claim(JWTClaimNames.AUDIENCE, IPV_CORE_AUDIENCE);
 
         OffsetDateTime dateTime = OffsetDateTime.now();
         claimsBuilder.claim(
