@@ -180,16 +180,10 @@ public class HandlerHelper {
     }
 
     public String getUserInfo(AccessToken accessToken, CredentialIssuer credentialIssuer) {
-        // The CRIs userInfo endpoint should be post. Supporting GET for backwards compatability
-        HTTPRequest.Method method = HTTPRequest.Method.GET;
-        if (HTTPRequest.Method.POST.name().equals(credentialIssuer.userInfoRequestMethod())) {
-            method = HTTPRequest.Method.POST;
-        }
-        var userInfoRequest =
-                new UserInfoRequest(credentialIssuer.credentialUrl(), method, accessToken);
-
-        HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest.toHTTPRequest());
-
+        HTTPRequest userInfoRequest =
+                new HTTPRequest(HTTPRequest.Method.POST, credentialIssuer.credentialUrl());
+        userInfoRequest.setAuthorization(accessToken.toAuthorizationHeader());
+        HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest);
         return userInfoHttpResponse.getContent();
     }
 
