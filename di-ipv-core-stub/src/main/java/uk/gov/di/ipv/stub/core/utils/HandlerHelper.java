@@ -12,7 +12,6 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.crypto.RSAEncrypter;
-import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.EncryptedJWT;
@@ -39,7 +38,6 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
-import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
@@ -71,19 +69,9 @@ public class HandlerHelper {
         private final JWSSigner jwsSigner;
         private final String keyId;
 
-        JWTSigner(JWSAlgorithm signingAlgorithm) throws JOSEException {
-            switch (signingAlgorithm.getName()) {
-                case RS256_ALGORITHM_NAME -> {
-                    this.keyId = rsaSigningKey.getKeyID();
-                    this.jwsSigner = new RSASSASigner(rsaSigningKey);
-                }
-                case ES256_ALGORITHM_NAME -> {
-                    this.keyId = ecSigningKey.getKeyID();
-                    this.jwsSigner = new ECDSASigner(ecSigningKey);
-                }
-                default -> throw new IllegalArgumentException(
-                        "Unexpected signing algorithm encountered" + signingAlgorithm.getName());
-            }
+        JWTSigner() throws JOSEException {
+            this.keyId = ecSigningKey.getKeyID();
+            this.jwsSigner = new ECDSASigner(ecSigningKey);
         }
 
         void signJWT(SignedJWT jwtToSign) throws JOSEException {
@@ -99,12 +87,10 @@ public class HandlerHelper {
     public static final String URN_UUID = "urn:uuid:";
     public static final String SHARED_CLAIMS = "shared_claims";
 
-    private final RSAKey rsaSigningKey;
     private final ECKey ecSigningKey;
     private final ObjectMapper objectMapper;
 
-    public HandlerHelper(RSAKey rsaSigningKey, ECKey ecSigningKey) {
-        this.rsaSigningKey = rsaSigningKey;
+    public HandlerHelper(ECKey ecSigningKey) {
         this.ecSigningKey = ecSigningKey;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
@@ -135,26 +121,13 @@ public class HandlerHelper {
                         authorizationCode, CoreStubConfig.CORE_STUB_REDIRECT_URL);
 
         PrivateKeyJWT privateKeyJWT =
-                switch (credentialIssuer.expectedAlgo()) {
-                    case JWTSigner.RS256_ALGORITHM_NAME -> new PrivateKeyJWT(
-                            new JWTAuthenticationClaimsSet(
-                                    clientID, new Audience(credentialIssuer.audience())),
-                            JWSAlgorithm.RS256,
-                            this.rsaSigningKey.toRSAPrivateKey(),
-                            this.rsaSigningKey.getKeyID(),
-                            null);
-                    case JWTSigner.ES256_ALGORITHM_NAME -> new PrivateKeyJWT(
-                            new JWTAuthenticationClaimsSet(
-                                    clientID, new Audience(credentialIssuer.audience())),
-                            JWSAlgorithm.ES256,
-                            this.ecSigningKey.toECPrivateKey(),
-                            this.ecSigningKey.getKeyID(),
-                            null);
-                    default -> throw new IllegalArgumentException(
-                            String.format(
-                                    "Signing algorithm not supported: %s",
-                                    credentialIssuer.expectedAlgo()));
-                };
+                new PrivateKeyJWT(
+                        new JWTAuthenticationClaimsSet(
+                                clientID, new Audience(credentialIssuer.audience())),
+                        JWSAlgorithm.ES256,
+                        this.ecSigningKey.toECPrivateKey(),
+                        this.ecSigningKey.getKeyID(),
+                        null);
 
         TokenRequest tokenRequest = new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
 
@@ -196,26 +169,13 @@ public class HandlerHelper {
         }
     }
 
-    public AuthorizationRequest createAuthorizationRequest(
-            State state, CredentialIssuer credentialIssuer, SignedJWT jwt) {
-        return new AuthorizationRequest.Builder(
-                        new ResponseType(ResponseType.Value.CODE),
-                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID))
-                .state(state)
-                .scope(new Scope("openid"))
-                .redirectionURI(CoreStubConfig.CORE_STUB_REDIRECT_URL)
-                .customParameter("request", jwt.serialize())
-                .endpointURI(credentialIssuer.authorizeUrl())
-                .build();
-    }
-
     public AuthorizationRequest createAuthorizationJAR(
             State state, CredentialIssuer credentialIssuer, SharedClaims sharedClaims)
             throws JOSEException {
         Instant now = Instant.now();
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
         JWSAlgorithm signingAlgorithm = JWSAlgorithm.parse(credentialIssuer.expectedAlgo());
-        JWTSigner jwtSigner = new JWTSigner(signingAlgorithm);
+        JWTSigner jwtSigner = new JWTSigner();
         JWSHeader header =
                 new JWSHeader.Builder(signingAlgorithm).keyID(jwtSigner.getKeyId()).build();
 
@@ -244,14 +204,11 @@ public class HandlerHelper {
         SignedJWT signedJWT = new SignedJWT(header, claimsSetBuilder.build());
         jwtSigner.signJWT(signedJWT);
 
-        JWT outputJWT =
-                (credentialIssuer.sendEncryptedOAuthJAR())
-                        ? encryptJWT(signedJWT, credentialIssuer)
-                        : signedJWT;
+        JWT encryptedJWT = encryptJWT(signedJWT, credentialIssuer);
 
         // Compose the final authorisation request, the minimal required query
         // parameters are "request" and "client_id"
-        return new AuthorizationRequest.Builder(outputJWT, clientID)
+        return new AuthorizationRequest.Builder(encryptedJWT, clientID)
                 .endpointURI(credentialIssuer.authorizeUrl())
                 .build();
     }
@@ -292,7 +249,7 @@ public class HandlerHelper {
 
         JWSAlgorithm jwsSigningAlgorithm = JWSAlgorithm.parse(credentialIssuer.expectedAlgo());
 
-        JWTSigner jwtSigner = new JWTSigner(jwsSigningAlgorithm);
+        JWTSigner jwtSigner = new JWTSigner();
 
         SignedJWT signedJWT =
                 new SignedJWT(

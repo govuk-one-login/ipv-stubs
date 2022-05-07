@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -59,7 +58,8 @@ public class CoreStubConfig {
     }
 
     public static void initCRIS() throws IOException {
-        try (FileInputStream inputStream = new FileInputStream(CoreStubConfig.CORE_STUB_CONFIG_FILE)) {
+        try (FileInputStream inputStream =
+                new FileInputStream(CoreStubConfig.CORE_STUB_CONFIG_FILE)) {
             Map<String, Object> obj = new Yaml().load(inputStream);
             CredentialIssuerMapper mapper = new CredentialIssuerMapper();
             List<Map> cis = (List<Map>) obj.get("credentialIssuerConfigs");
