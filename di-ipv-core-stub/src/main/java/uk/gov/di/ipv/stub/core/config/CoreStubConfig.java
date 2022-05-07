@@ -41,15 +41,8 @@ public class CoreStubConfig {
             getConfigValue("CORE_STUB_USER_DATA_PATH", "config/experian-uat-users-large.zip");
     public static final String CORE_STUB_CONFIG_FILE =
             getConfigValue("CORE_STUB_CONFIG_FILE", "/app/config/cris-dev.yaml");
-    public static final byte[] CORE_STUB_KEYSTORE_BASE64 =
-            getConfigValue("CORE_STUB_KEYSTORE_BASE64", null).getBytes();
-
     public static final String CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64 =
             getConfigValue("CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64", null);
-    public static final String CORE_STUB_KEYSTORE_PASSWORD =
-            getConfigValue("CORE_STUB_KEYSTORE_PASSWORD", null);
-    public static final String CORE_STUB_KEYSTORE_ALIAS =
-            getConfigValue("CORE_STUB_KEYSTORE_ALIAS", null);
     public static final String CORE_STUB_JWT_ISS_CRI_URI =
             getConfigValue("CORE_STUB_JWT_ISS_CRI_URI", "ipv-core-stub");
 
@@ -66,12 +59,11 @@ public class CoreStubConfig {
     }
 
     public static void initCRIS() throws IOException {
-        String configFile = CoreStubConfig.CORE_STUB_CONFIG_FILE;
-        try (FileInputStream inputStream = new FileInputStream(configFile)) {
+        try (FileInputStream inputStream = new FileInputStream(CoreStubConfig.CORE_STUB_CONFIG_FILE)) {
             Map<String, Object> obj = new Yaml().load(inputStream);
             CredentialIssuerMapper mapper = new CredentialIssuerMapper();
             List<Map> cis = (List<Map>) obj.get("credentialIssuerConfigs");
-            credentialIssuers.addAll(cis.stream().map(mapper::map).collect(Collectors.toList()));
+            credentialIssuers.addAll(cis.stream().map(mapper::map).toList());
         }
     }
 
