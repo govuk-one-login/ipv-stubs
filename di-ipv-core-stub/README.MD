@@ -30,21 +30,15 @@ CORE_STUB_REDIRECT_URL               | The OAuth callback url | `http://localhos
 CORE_STUB_MAX_SEARCH_RESULTS   | Max search by name results | `200` |
 CORE_STUB_USER_DATA_PATH  | File path to Experian user data zip file | `/app/config/experian-uat-users-large.zip` |
 CORE_STUB_CONFIG_FILE  | File path to the credential issuer config | `/app/config/cris-dev.yaml` for Docker, `config/cris-dev.yaml` for PaaS|
-CORE_STUB_KEYSTORE_BASE64  | Base64 of p12 signing keystore ||
-CORE_STUB_KEYSTORE_PASSWORD  | password for the p12 signing keystore | `puppet` |
-CORE_STUB_KEYSTORE_ALIAS  | alias for key in the p12 signing keystore | `ipv-core-stub` |
 
 ## Running locally
 
-To run locally in a docker container, you can run the startup script.
+Update config in the `di-ipv-config` repository file `/di-ipv-core-stub/cris-local-dev.yaml`:
+* Update the `tokenUrl` and `credentialUrl` to refer to the relevant API gateway urls. These values should be available as exports from your Address API stack.
+* Get the EC signing public key from `https://${AddressApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/.well-known/jwks.json`, base64 this JWK, then set as the value for `publicEncryptionJwkBase64`. This value should be available as an export from your Address API stack.
 
-```shell
-./startup.sh
-```
-
-This will build the project with gradle in docker and run it.
-
-Configuration is set from the `../../di-ipv-config/stubs/di-ipv-core-stub` directory.
+Given a Docker installation on your dev environment, run:
+`./startup.sh`
 
 Once started, visit [http://localhost:8085/](http://localhost:8085/).
 
