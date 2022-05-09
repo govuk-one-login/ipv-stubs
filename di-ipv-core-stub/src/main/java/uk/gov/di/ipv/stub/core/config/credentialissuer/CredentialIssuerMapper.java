@@ -13,10 +13,6 @@ public class CredentialIssuerMapper {
         URI credentialUrl = URI.create((String) map.get("credentialUrl"));
         URI audience = URI.create((String) map.get("audience"));
         boolean sendIdentityClaims = Boolean.TRUE.equals(map.get("sendIdentityClaims"));
-        boolean sendOAuthJAR = Boolean.TRUE.equals(map.get("sendOAuthJAR"));
-        boolean sendEncryptedOAuthJAR = Boolean.TRUE.equals(map.get("sendEncryptedOAuthJAR"));
-        String expectedAlgo = (String) map.get("expectedAlgo");
-        String userInfoRequestMethod = (String) map.get("userInfoRequestMethod");
         String publicEncryptionJwkBase64 = (String) map.get("publicEncryptionJwkBase64");
         return new CredentialIssuer(
                 id,
@@ -26,10 +22,7 @@ public class CredentialIssuerMapper {
                 credentialUrl,
                 audience,
                 sendIdentityClaims,
-                sendOAuthJAR,
-                sendEncryptedOAuthJAR,
-                expectedAlgo,
-                userInfoRequestMethod,
+                "ES256",
                 publicEncryptionJwkBase64);
     }
 }

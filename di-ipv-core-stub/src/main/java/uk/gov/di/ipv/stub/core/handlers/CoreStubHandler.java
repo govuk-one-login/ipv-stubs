@@ -121,11 +121,7 @@ public class CoreStubHandler {
                     SignedJWT jwt = createSignedClaimJwt(credentialIssuer, Map.of());
                     State state = createNewState(credentialIssuer);
                     AuthorizationRequest authRequest =
-                            credentialIssuer.sendOAuthJAR()
-                                    ? handlerHelper.createAuthorizationJAR(
-                                            state, credentialIssuer, null)
-                                    : handlerHelper.createAuthorizationRequest(
-                                            state, credentialIssuer, jwt);
+                            handlerHelper.createAuthorizationJAR(state, credentialIssuer, null);
                     response.redirect(authRequest.toURI().toString());
                     return null;
                 }
@@ -142,11 +138,8 @@ public class CoreStubHandler {
                 var jwt = createSignedClaimJwt(credentialIssuer, claimIdentity);
                 var state = createNewState(credentialIssuer);
                 var authRequest =
-                        credentialIssuer.sendOAuthJAR()
-                                ? handlerHelper.createAuthorizationJAR(
-                                        state, credentialIssuer, claimIdentity)
-                                : handlerHelper.createAuthorizationRequest(
-                                        state, credentialIssuer, jwt);
+                        handlerHelper.createAuthorizationJAR(
+                                state, credentialIssuer, claimIdentity);
                 response.redirect(authRequest.toURI().toString());
                 return null;
             };
