@@ -3,7 +3,6 @@ package uk.gov.di.ipv.stub.orc.utils;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.crypto.RSAEncrypter;
-import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -31,23 +30,22 @@ public class JWTSigner {
 
     public JWTSigner() {}
 
-    public SignedJWT createSignedJWT() throws JOSEException, ParseException, InvalidKeySpecException, NoSuchAlgorithmException {
+    public SignedJWT createSignedJWT()
+            throws JOSEException, ParseException, InvalidKeySpecException,
+                    NoSuchAlgorithmException {
         Instant now = Instant.now();
 
         JWSAlgorithm jwsSigningAlgorithm = JWSAlgorithm.ES256;
 
         KeyFactory kf = KeyFactory.getInstance("EC");
         EncodedKeySpec privateKeySpec =
-                new PKCS8EncodedKeySpec(
-                        Base64.getDecoder().decode(ORCHESTRATOR_JAR_SIGNING_KEY));
+                new PKCS8EncodedKeySpec(Base64.getDecoder().decode(ORCHESTRATOR_JAR_SIGNING_KEY));
         ECPrivateKey privateKey = (ECPrivateKey) kf.generatePrivate(privateKeySpec);
-        ECDSASigner ecdsaSigner =
-                new ECDSASigner(privateKey);
+        ECDSASigner ecdsaSigner = new ECDSASigner(privateKey);
 
         SignedJWT signedJWT =
                 new SignedJWT(
-                        new JWSHeader.Builder(jwsSigningAlgorithm)
-                                .build(),
+                        new JWSHeader.Builder(jwsSigningAlgorithm).build(),
                         new JWTClaimsSet.Builder()
                                 .subject(getSubject())
                                 .audience(IPV_CORE_AUDIENCE)
