@@ -43,7 +43,9 @@ public class CoreStubConfig {
     public static final String CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64 =
             getConfigValue("CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64", null);
     public static final String CORE_STUB_JWT_ISS_CRI_URI =
-            getConfigValue("CORE_STUB_JWT_ISS_CRI_URI", "ipv-core-stub");
+            getConfigValue(
+                    "CORE_STUB_JWT_ISS_CRI_URI",
+                    "https://di-ipv-core-stub.london.cloudapps.digital");
 
     public static final List<Identity> identities = new ArrayList<>();
     public static final List<CredentialIssuer> credentialIssuers = new ArrayList<>();
