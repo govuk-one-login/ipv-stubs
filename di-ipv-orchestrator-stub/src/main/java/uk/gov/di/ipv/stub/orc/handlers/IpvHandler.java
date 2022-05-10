@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWEObject;
+import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -35,6 +37,7 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.orc.exceptions.OrchestratorStubException;
+import uk.gov.di.ipv.stub.orc.utils.JWTSigner;
 import uk.gov.di.ipv.stub.orc.utils.JwtHelper;
 import uk.gov.di.ipv.stub.orc.utils.ViewHelper;
 
@@ -72,6 +75,10 @@ public class IpvHandler {
                         journeyType.equals("debug")
                                 ? new URI(IPV_ENDPOINT).resolve("/oauth2/debug-authorize")
                                 : new URI(IPV_ENDPOINT).resolve("/oauth2/authorize");
+
+                JWTSigner jwtSigner = new JWTSigner();
+                SignedJWT signedJwt = jwtSigner.createSignedJWT();
+                JWEObject encryptedJwt = jwtSigner.encryptJWT(signedJwt);
                 var authRequest =
                         new AuthorizationRequest.Builder(
                                         new ResponseType(ResponseType.Value.CODE),
@@ -80,6 +87,7 @@ public class IpvHandler {
                                 .scope(new Scope("openid"))
                                 .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
                                 .endpointURI(journeyTypeEndpointURI)
+                                .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
                                 .build();
 
                 response.redirect(authRequest.toURI().toString());
