@@ -11,8 +11,11 @@ import com.nimbusds.oauth2.sdk.ResponseType;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
 import java.time.Instant;
@@ -28,20 +31,22 @@ public class JWTSigner {
 
     public JWTSigner() {}
 
-    public SignedJWT createSignedJWT() throws JOSEException, ParseException {
+    public SignedJWT createSignedJWT() throws JOSEException, ParseException, InvalidKeySpecException, NoSuchAlgorithmException {
         Instant now = Instant.now();
 
         JWSAlgorithm jwsSigningAlgorithm = JWSAlgorithm.ES256;
 
-        ECKey ecSigningKey =
-                ECKey.parse(new String(Base64.getDecoder().decode(ORCHESTRATOR_JAR_SIGNING_JWK)));
-
-        JWSSigner jwsSigner = new ECDSASigner(ecSigningKey);
+        KeyFactory kf = KeyFactory.getInstance("EC");
+        EncodedKeySpec privateKeySpec =
+                new PKCS8EncodedKeySpec(
+                        Base64.getDecoder().decode(ORCHESTRATOR_JAR_SIGNING_KEY));
+        ECPrivateKey privateKey = (ECPrivateKey) kf.generatePrivate(privateKeySpec);
+        ECDSASigner ecdsaSigner =
+                new ECDSASigner(privateKey);
 
         SignedJWT signedJWT =
                 new SignedJWT(
                         new JWSHeader.Builder(jwsSigningAlgorithm)
-                                .keyID(ecSigningKey.getKeyID())
                                 .build(),
                         new JWTClaimsSet.Builder()
                                 .subject(getSubject())
@@ -51,12 +56,12 @@ public class JWTSigner {
                                 .notBeforeTime(Date.from(now))
                                 .expirationTime(Date.from(now.plus(15, ChronoUnit.MINUTES)))
                                 .claim("client_id", ORCHESTRATOR_CLIENT_ID)
-                                .claim("response_type", ResponseType.Value.CODE)
+                                .claim("response_type", ResponseType.Value.CODE.toString())
                                 .claim("redirect_uri", ORCHESTRATOR_REDIRECT_URL)
-                                .claim("state", UUID.randomUUID())
+                                .claim("state", UUID.randomUUID().toString())
                                 .build());
 
-        signedJWT.sign(jwsSigner);
+        signedJWT.sign(ecdsaSigner);
         return signedJWT;
     }
 
