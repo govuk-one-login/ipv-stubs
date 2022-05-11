@@ -1,6 +1,13 @@
 package uk.gov.di.ipv.stub.orc.utils;
 
-import com.nimbusds.jose.*;
+import com.nimbusds.jose.EncryptionMethod;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWEAlgorithm;
+import com.nimbusds.jose.JWEHeader;
+import com.nimbusds.jose.JWEObject;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.crypto.RSAEncrypter;
 import com.nimbusds.jwt.EncryptedJWT;
@@ -16,14 +23,17 @@ import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.*;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ENCRYPTION_KEY;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_JAR_SIGNING_KEY;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
 
 public class JWTSigner {
     public static final String URN_UUID = "urn:uuid:";
@@ -31,8 +41,7 @@ public class JWTSigner {
     public JWTSigner() {}
 
     public SignedJWT createSignedJWT()
-            throws JOSEException, ParseException, InvalidKeySpecException,
-                    NoSuchAlgorithmException {
+            throws JOSEException, InvalidKeySpecException, NoSuchAlgorithmException {
         Instant now = Instant.now();
 
         JWSAlgorithm jwsSigningAlgorithm = JWSAlgorithm.ES256;
