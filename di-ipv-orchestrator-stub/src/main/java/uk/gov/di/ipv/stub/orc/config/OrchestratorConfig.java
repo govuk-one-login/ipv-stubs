@@ -16,8 +16,6 @@ public class OrchestratorConfig {
             getConfigValue("ORCHESTRATOR_CLIENT_ID", "di-ipv-orchestrator-stub");
     public static final String ORCHESTRATOR_REDIRECT_URL =
             getConfigValue("ORCHESTRATOR_REDIRECT_URL", "http://localhost:8083/callback");
-    public static final String ORCHESTRATOR_JAR_SIGNING_KEY =
-            getConfigValue("ORCHESTRATOR_JAR_SIGNING_KEY", "missing-jar-signing-key");
     public static final String ORCHESTRATOR_CLIENT_SIGNING_KEY =
             getConfigValue("ORCHESTRATOR_CLIENT_SIGNING_KEY", "missing-key");
     public static final String ORCHESTRATOR_CLIENT_ENCRYPTION_KEY =

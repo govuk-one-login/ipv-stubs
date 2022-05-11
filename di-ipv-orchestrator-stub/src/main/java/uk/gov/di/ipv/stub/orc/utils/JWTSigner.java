@@ -10,6 +10,7 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.crypto.RSAEncrypter;
+import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -22,7 +23,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
@@ -32,7 +32,7 @@ import java.util.UUID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ENCRYPTION_KEY;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_JAR_SIGNING_KEY;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_SIGNING_KEY;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
 
 public class JWTSigner {
@@ -48,7 +48,8 @@ public class JWTSigner {
 
         KeyFactory kf = KeyFactory.getInstance("EC");
         EncodedKeySpec privateKeySpec =
-                new PKCS8EncodedKeySpec(Base64.getDecoder().decode(ORCHESTRATOR_JAR_SIGNING_KEY));
+                new PKCS8EncodedKeySpec(
+                        Base64.getDecoder().decode(ORCHESTRATOR_CLIENT_SIGNING_KEY));
         ECPrivateKey privateKey = (ECPrivateKey) kf.generatePrivate(privateKeySpec);
         ECDSASigner ecdsaSigner = new ECDSASigner(privateKey);
 
@@ -97,15 +98,8 @@ public class JWTSigner {
     }
 
     private RSAPublicKey getEncryptionPublicKey()
-            throws java.text.ParseException, NoSuchAlgorithmException, InvalidKeySpecException {
-        RSAPublicKey publicKey =
-                (RSAPublicKey)
-                        KeyFactory.getInstance("RSA")
-                                .generatePublic(
-                                        new X509EncodedKeySpec(
-                                                Base64.getDecoder()
-                                                        .decode(
-                                                                ORCHESTRATOR_CLIENT_ENCRYPTION_KEY)));
-        return publicKey;
+            throws java.text.ParseException, NoSuchAlgorithmException, InvalidKeySpecException,
+                    JOSEException {
+        return RSAKey.parse(ORCHESTRATOR_CLIENT_ENCRYPTION_KEY).toRSAPublicKey();
     }
 }

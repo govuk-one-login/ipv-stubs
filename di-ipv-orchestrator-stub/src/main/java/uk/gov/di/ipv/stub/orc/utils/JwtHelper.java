@@ -5,7 +5,7 @@ import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -13,6 +13,8 @@ import com.nimbusds.jwt.SignedJWT;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
+import java.security.interfaces.ECPrivateKey;
+import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.OffsetDateTime;
@@ -27,7 +29,7 @@ public class JwtHelper {
 
     public static SignedJWT createSignedClientAuthJwt()
             throws JOSEException, InvalidKeySpecException, NoSuchAlgorithmException {
-        JWSSigner signer = new RSASSASigner(getPrivateKey());
+        JWSSigner signer = new ECDSASigner((ECPrivateKey) getPrivateKey());
         JWSHeader jwsHeader = generateHeader();
         JWTClaimsSet claimsSet = generateClaims();
         SignedJWT signedJWT = new SignedJWT(jwsHeader, claimsSet);
@@ -36,7 +38,7 @@ public class JwtHelper {
     }
 
     private static JWSHeader generateHeader() {
-        return new JWSHeader.Builder(JWSAlgorithm.RS256).type(JOSEObjectType.JWT).build();
+        return new JWSHeader.Builder(JWSAlgorithm.ES256).type(JOSEObjectType.JWT).build();
     }
 
     private static JWTClaimsSet generateClaims() {
@@ -57,8 +59,8 @@ public class JwtHelper {
     private static PrivateKey getPrivateKey()
             throws InvalidKeySpecException, NoSuchAlgorithmException {
         byte[] binaryKey = Base64.getDecoder().decode(ORCHESTRATOR_CLIENT_SIGNING_KEY);
-        KeyFactory factory = KeyFactory.getInstance("RSA");
-        PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(binaryKey);
+        KeyFactory factory = KeyFactory.getInstance("EC");
+        EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(binaryKey);
         return factory.generatePrivate(privateKeySpec);
     }
 }
