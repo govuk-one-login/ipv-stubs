@@ -18,8 +18,8 @@ public class OrchestratorConfig {
             getConfigValue("ORCHESTRATOR_REDIRECT_URL", "http://localhost:8083/callback");
     public static final String ORCHESTRATOR_CLIENT_SIGNING_KEY =
             getConfigValue("ORCHESTRATOR_CLIENT_SIGNING_KEY", "missing-key");
-    public static final String ORCHESTRATOR_CLIENT_ENCRYPTION_KEY =
-            getConfigValue("ORCHESTRATOR_CLIENT_ENCRYPTION_KEY", "missing-encryption-key");
+    public static final String ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY =
+            getConfigValue("ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY", "missing-encryption-key");
     public static final String ORCHESTRATOR_CLIENT_JWT_TTL =
             getConfigValue("ORCHESTRATOR_CLIENT_JWT_TTL", "900");
     public static final String IPV_CORE_AUDIENCE =
