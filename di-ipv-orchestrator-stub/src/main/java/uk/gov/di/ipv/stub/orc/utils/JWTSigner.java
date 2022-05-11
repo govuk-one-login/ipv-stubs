@@ -30,9 +30,9 @@ import java.util.Date;
 import java.util.UUID;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ENCRYPTION_KEY;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_SIGNING_KEY;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
 
 public class JWTSigner {
@@ -101,7 +101,8 @@ public class JWTSigner {
             throws java.text.ParseException, NoSuchAlgorithmException, InvalidKeySpecException,
                     JOSEException {
         return RSAKey.parse(
-                        new String(Base64.getDecoder().decode(ORCHESTRATOR_CLIENT_ENCRYPTION_KEY)))
+                        new String(
+                                Base64.getDecoder().decode(ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY)))
                 .toRSAPublicKey();
     }
 }
