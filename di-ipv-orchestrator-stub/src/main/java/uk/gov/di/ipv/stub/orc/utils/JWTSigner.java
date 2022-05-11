@@ -100,6 +100,8 @@ public class JWTSigner {
     private RSAPublicKey getEncryptionPublicKey()
             throws java.text.ParseException, NoSuchAlgorithmException, InvalidKeySpecException,
                     JOSEException {
-        return RSAKey.parse(ORCHESTRATOR_CLIENT_ENCRYPTION_KEY).toRSAPublicKey();
+        return RSAKey.parse(
+                        new String(Base64.getDecoder().decode(ORCHESTRATOR_CLIENT_ENCRYPTION_KEY)))
+                .toRSAPublicKey();
     }
 }
