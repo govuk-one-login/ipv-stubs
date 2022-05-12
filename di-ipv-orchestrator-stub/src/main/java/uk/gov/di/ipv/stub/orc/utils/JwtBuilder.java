@@ -63,6 +63,7 @@ public class JwtBuilder {
         return new JWTClaimsSet.Builder()
                 .subject(ORCHESTRATOR_CLIENT_ID)
                 .audience(IPV_CORE_AUDIENCE)
+                .issuer(ORCHESTRATOR_CLIENT_ID)
                 .expirationTime(generateExpirationTime(now))
                 .build();
     }
