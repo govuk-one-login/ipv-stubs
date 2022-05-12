@@ -42,7 +42,7 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDI
 public class JwtBuilder {
     public static final String URN_UUID = "urn:uuid:";
 
-    public static JWTClaimsSet buildAuthRequestClaims() {
+    public static JWTClaimsSet buildAuthorizationRequestClaims() {
         Instant now = Instant.now();
         return new JWTClaimsSet.Builder()
                 .subject(URN_UUID + UUID.randomUUID())
@@ -58,7 +58,7 @@ public class JwtBuilder {
                 .build();
     }
 
-    public static JWTClaimsSet buildClientAuthClaims() {
+    public static JWTClaimsSet buildClientAuthenticationClaims() {
         Instant now = Instant.now();
         return new JWTClaimsSet.Builder()
                 .subject(ORCHESTRATOR_CLIENT_ID)

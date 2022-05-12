@@ -37,7 +37,6 @@ import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.orc.exceptions.OrchestratorStubException;
 import uk.gov.di.ipv.stub.orc.utils.JwtBuilder;
-import uk.gov.di.ipv.stub.orc.utils.JwtHelper;
 import uk.gov.di.ipv.stub.orc.utils.ViewHelper;
 
 import java.io.IOException;
@@ -56,6 +55,7 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_U
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
+import static uk.gov.di.ipv.stub.orc.utils.JwtBuilder.buildClientAuthenticationClaims;
 
 public class IpvHandler {
 
@@ -75,7 +75,7 @@ public class IpvHandler {
                                 ? new URI(IPV_ENDPOINT).resolve("/oauth2/debug-authorize")
                                 : new URI(IPV_ENDPOINT).resolve("/oauth2/authorize");
 
-                JWTClaimsSet claims = JwtBuilder.buildAuthRequestClaims();
+                JWTClaimsSet claims = JwtBuilder.buildAuthorizationRequestClaims();
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
                 EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt);
                 var authRequest =
@@ -133,7 +133,8 @@ public class IpvHandler {
 
         SignedJWT signedClientJwt;
         try {
-            signedClientJwt = JwtHelper.createSignedClientAuthJwt();
+            JWTClaimsSet claims = buildClientAuthenticationClaims();
+            signedClientJwt = JwtBuilder.createSignedJwt(claims);
         } catch (JOSEException | InvalidKeySpecException | NoSuchAlgorithmException e) {
             logger.error("Failed to generate orch client JWT", e);
             throw new OrchestratorStubException("Failed to generate orch client JWT");
