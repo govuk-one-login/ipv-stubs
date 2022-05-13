@@ -27,6 +27,8 @@ public class Validator {
     private static final String INVALID_VERIFICATION_VALUES_ERROR_CODE = "1005";
 
     private static final String REDIRECT_URI_SEPARATOR = ",";
+    public static final String API_GATEWAY_CALLBACK_SUFFIX =
+            "execute-api.eu-west-2.amazonaws.com/credential-issuer/callback";
 
     private final AuthCodeService authCodeService;
 
@@ -116,7 +118,8 @@ public class Validator {
     public static boolean redirectUrlIsInvalid(String clientId, String redirectUri) {
         ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientId);
 
-        if (isRedirectUriPaasDomain(redirectUri)) {
+        if (isRedirectUriPaasDomain(redirectUri)
+                || isRedirectUriAmazonApiGatewayCallback(redirectUri)) {
             return false;
         }
 
@@ -142,6 +145,10 @@ public class Validator {
      */
     private static boolean isRedirectUriPaasDomain(String redirectUri) {
         return redirectUri != null && redirectUri.contains(PAAS_DOMAIN);
+    }
+
+    private static boolean isRedirectUriAmazonApiGatewayCallback(String redirectUri) {
+        return redirectUri != null && redirectUri.contains(API_GATEWAY_CALLBACK_SUFFIX);
     }
 
     public ValidationResult validateRedirectUrlsMatch(
