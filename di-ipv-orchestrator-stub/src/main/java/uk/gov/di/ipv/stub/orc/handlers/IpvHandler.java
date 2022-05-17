@@ -105,6 +105,10 @@ public class IpvHandler {
 
                     var userInfo = getUserInfo(accessToken);
 
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    String userInfoJson = gson.toJson(userInfo);
+                    moustacheDataModel.put("rawUserInfo", userInfoJson);
+
                     mustacheData = buildMustacheData(userInfo);
                     moustacheDataModel.put("data", mustacheData);
                 } catch (OrchestratorStubException | ParseException | JsonSyntaxException e) {
@@ -197,6 +201,7 @@ public class IpvHandler {
             criMap.put("criType", claims.get("iss"));
             moustacheDataModel.add(criMap);
         }
+
         return moustacheDataModel;
     }
 
