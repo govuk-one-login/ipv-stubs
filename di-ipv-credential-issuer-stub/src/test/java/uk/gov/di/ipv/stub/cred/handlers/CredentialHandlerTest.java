@@ -1,8 +1,6 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
@@ -51,12 +49,6 @@ public class CredentialHandlerTest {
 
     @Test
     public void shouldReturn201AndProtectedResourceWhenValidRequestReceived() throws Exception {
-        PlainJWT requestJWT =
-                new PlainJWT(
-                        new JWTClaimsSet.Builder()
-                                .claim("sub", "https://subject.example.com")
-                                .build());
-        when(mockRequest.body()).thenReturn(requestJWT.serialize());
         when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
                 .thenReturn(UUID.randomUUID().toString());
         when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
@@ -105,26 +97,7 @@ public class CredentialHandlerTest {
     }
 
     @Test
-    void shouldReturn400WhenRequestBodyIsMissing() throws Exception {
-        when(mockRequest.body()).thenReturn("");
-        when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
-                .thenReturn(UUID.randomUUID().toString());
-        when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
-
-        String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
-
-        assertEquals("Error: No body found in request", result);
-        verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
-    }
-
-    @Test
     void shouldReturn500WhenErrorGeneratingVerifiableCredential() throws Exception {
-        PlainJWT requestJWT =
-                new PlainJWT(
-                        new JWTClaimsSet.Builder()
-                                .claim("sub", "https://subject.example.com")
-                                .build());
-        when(mockRequest.body()).thenReturn(requestJWT.serialize());
         when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
                 .thenReturn(UUID.randomUUID().toString());
         when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
