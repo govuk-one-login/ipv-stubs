@@ -192,7 +192,11 @@ public class HandlerHelper {
                         .audience(credentialIssuer.audience().toString())
                         .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
                         .issueTime(Date.from(now))
-                        .expirationTime(Date.from(now.plus(Integer.parseInt(CoreStubConfig.MAX_JAR_TTL_MINS), ChronoUnit.MINUTES)))
+                        .expirationTime(
+                                Date.from(
+                                        now.plus(
+                                                Integer.parseInt(CoreStubConfig.MAX_JAR_TTL_MINS),
+                                                ChronoUnit.MINUTES)))
                         .notBeforeTime(Date.from(now))
                         .subject(getSubject());
 
