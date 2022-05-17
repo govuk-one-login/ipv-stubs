@@ -6,11 +6,17 @@ public class Credential {
     private final Map<String, Object> attributes;
     private final Map<String, Object> evidence;
     private final String userId;
+    private final String clientId;
 
-    public Credential(Map<String, Object> attributes, Map<String, Object> evidence, String userId) {
+    public Credential(
+            Map<String, Object> attributes,
+            Map<String, Object> evidence,
+            String userId,
+            String clientId) {
         this.attributes = attributes;
         this.evidence = evidence;
         this.userId = userId;
+        this.clientId = clientId;
     }
 
     public Map<String, Object> getAttributes() {
@@ -23,5 +29,9 @@ public class Credential {
 
     public String getUserId() {
         return userId;
+    }
+
+    public String getClientId() {
+        return clientId;
     }
 }

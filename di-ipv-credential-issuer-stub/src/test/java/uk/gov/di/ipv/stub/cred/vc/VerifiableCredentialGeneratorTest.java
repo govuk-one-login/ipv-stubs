@@ -7,6 +7,7 @@ import com.nimbusds.jwt.SignedJWT;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.di.ipv.stub.cred.domain.Credential;
+import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.nimbusds.jwt.JWTClaimNames.AUDIENCE;
 import static com.nimbusds.jwt.JWTClaimNames.EXPIRATION_TIME;
 import static com.nimbusds.jwt.JWTClaimNames.ISSUER;
 import static com.nimbusds.jwt.JWTClaimNames.NOT_BEFORE;
@@ -53,7 +55,12 @@ public class VerifiableCredentialGeneratorTest {
     @SystemStub
     private final EnvironmentVariables environmentVariables =
             new EnvironmentVariables(
-                    "VC_ISSUER", "https://issuer.example.com", "VC_SIGNING_KEY", EC_PRIVATE_KEY_1);
+                    "VC_ISSUER",
+                    "https://issuer.example.com",
+                    "VC_SIGNING_KEY",
+                    EC_PRIVATE_KEY_1,
+                    "CLIENT_CONFIG",
+                    TestFixtures.CLIENT_CONFIG);
 
     @Test
     void shouldGenerateASignedVerifiableCredential() throws Exception {
@@ -74,7 +81,7 @@ public class VerifiableCredentialGeneratorTest {
                         "strength", 4,
                         "validity", 2);
         String userId = "user-id";
-        Credential credential = new Credential(attributes, evidence, userId);
+        Credential credential = new Credential(attributes, evidence, userId, "clientIdValid");
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 
@@ -90,6 +97,7 @@ public class VerifiableCredentialGeneratorTest {
         JsonNode claimsSetTree =
                 objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");
 
+        assertEquals("https://example.com/audience", claimsSetTree.path(AUDIENCE).asText());
         assertEquals("https://issuer.example.com", claimsSetTree.path(ISSUER).asText());
         assertEquals(userId, claimsSetTree.path(SUBJECT).asText());
         assertNotNull(claimsSetTree.path(NOT_BEFORE));
@@ -156,7 +164,7 @@ public class VerifiableCredentialGeneratorTest {
                         "strength", 4,
                         "validity", 2);
         String userId = "user-id";
-        Credential credential = new Credential(attributes, evidence, userId);
+        Credential credential = new Credential(attributes, evidence, userId, "clientIdValid");
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 

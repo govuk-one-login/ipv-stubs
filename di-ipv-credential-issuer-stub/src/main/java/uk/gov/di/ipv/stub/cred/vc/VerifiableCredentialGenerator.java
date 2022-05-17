@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.nimbusds.jwt.JWTClaimNames.AUDIENCE;
 import static com.nimbusds.jwt.JWTClaimNames.EXPIRATION_TIME;
 import static com.nimbusds.jwt.JWTClaimNames.ISSUER;
 import static com.nimbusds.jwt.JWTClaimNames.NOT_BEFORE;
@@ -77,7 +78,7 @@ public class VerifiableCredentialGenerator {
         // The schema is unclear on how this should be presented so just copying wholesale for now.
         vc.put(VC_EVIDENCE, List.of(credential.getEvidence()));
 
-        return generateAndSignVerifiableCredentialJwt(credential.getUserId(), vc);
+        return generateAndSignVerifiableCredentialJwt(credential, vc);
     }
 
     private boolean isPopulatedList(Map<String, Object> attributes, String attributeName) {
@@ -91,13 +92,18 @@ public class VerifiableCredentialGenerator {
         }
     }
 
-    private SignedJWT generateAndSignVerifiableCredentialJwt(String subject, Map<String, Object> vc)
+    private SignedJWT generateAndSignVerifiableCredentialJwt(
+            Credential credential, Map<String, Object> vc)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         Instant now = Instant.now();
         JWTClaimsSet claimsSet =
                 new JWTClaimsSet.Builder()
-                        .claim(SUBJECT, subject)
+                        .claim(SUBJECT, credential.getUserId())
                         .claim(ISSUER, CredentialIssuerConfig.getVerifiableCredentialIssuer())
+                        .claim(
+                                AUDIENCE,
+                                CredentialIssuerConfig.getClientConfig(credential.getClientId())
+                                        .getAudienceForVcJwt())
                         .claim(NOT_BEFORE, now.getEpochSecond())
                         .claim(
                                 EXPIRATION_TIME,
