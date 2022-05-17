@@ -12,6 +12,7 @@ public class ClientConfig {
     private String signingPublicJwk;
     private Map<String, String> jwtAuthentication;
     private String base64EncryptionPrivateKey;
+    private String audienceForVcJwt;
 
     public String getSigningPublicJwk() {
         return signingPublicJwk;
@@ -39,5 +40,13 @@ public class ClientConfig {
 
     public void setEncryptionPrivateKey(String encryptionPrivateKey) {
         this.base64EncryptionPrivateKey = base64EncryptionPrivateKey;
+    }
+
+    public String getAudienceForVcJwt() {
+        return audienceForVcJwt;
+    }
+
+    public void setAudienceForVcJwt(String audienceForVcJwt) {
+        this.audienceForVcJwt = audienceForVcJwt;
     }
 }

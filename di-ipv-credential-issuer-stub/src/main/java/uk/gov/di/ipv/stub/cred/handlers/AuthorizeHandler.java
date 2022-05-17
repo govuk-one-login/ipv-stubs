@@ -208,7 +208,8 @@ public class AuthorizeHandler {
                                     queryParamsMap.value(
                                             CredentialIssuerConfig.VERIFICATION_PARAM));
 
-                    Credential credential = new Credential(combinedAttributeJson, gpgMap, userId);
+                    Credential credential =
+                            new Credential(combinedAttributeJson, gpgMap, userId, clientIdValue);
 
                     AuthorizationSuccessResponse successResponse =
                             generateAuthCode(
