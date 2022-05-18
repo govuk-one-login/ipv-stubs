@@ -157,6 +157,9 @@ public class Validator {
 
     public ValidationResult validateRedirectUrlsMatch(
             String redirectUrlFromAuthEndpoint, String redirectUrlFromTokenEndpoint) {
+        LOGGER.info("Validating the client redirect url");
+        LOGGER.info("Original redirect url from auth endpoint: {}", redirectUrlFromAuthEndpoint);
+        LOGGER.info("New redirect url from token endpoint: {}", redirectUrlFromTokenEndpoint);
         if (Validator.isNullBlankOrEmpty(redirectUrlFromAuthEndpoint)
                 && Validator.isNullBlankOrEmpty(redirectUrlFromTokenEndpoint)) {
             return ValidationResult.createValidResult();
@@ -199,14 +202,17 @@ public class Validator {
 
         String authCodeValue = requestParams.value(RequestParamConstants.AUTH_CODE);
         if (Validator.isNullBlankOrEmpty(authCodeValue)) {
+            LOGGER.error("Missing authorization code");
             return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
         }
         if (Objects.isNull(this.authCodeService.getPayload(authCodeValue))) {
+            LOGGER.error("Invalid authorization code provided");
             return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
         }
 
         String redirectUriValue = requestParams.value(RequestParamConstants.REDIRECT_URI);
         if (Validator.isNullBlankOrEmpty(redirectUriValue)) {
+            LOGGER.error("Missing authorization code");
             return new ValidationResult(false, OAuth2Error.INVALID_REQUEST);
         }
 
