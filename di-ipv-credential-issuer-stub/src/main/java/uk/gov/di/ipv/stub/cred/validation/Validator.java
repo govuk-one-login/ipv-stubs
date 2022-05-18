@@ -118,6 +118,8 @@ public class Validator {
     public static boolean redirectUrlIsInvalid(String clientId, String redirectUri) {
         ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientId);
 
+        LOGGER.info("Validating client redirect uri: {}", redirectUri);
+
         if (isRedirectUriPaasDomain(redirectUri)
                 || isRedirectUriAmazonApiGatewayCallback(redirectUri)) {
             return false;
@@ -129,6 +131,8 @@ public class Validator {
                                 .getJwtAuthentication()
                                 .get("validRedirectUrls")
                                 .split(REDIRECT_URI_SEPARATOR));
+
+        validRedirectUrls.forEach(url -> LOGGER.info("Configured redirect url: {}", url));
         return !validRedirectUrls.contains(redirectUri);
     }
 
