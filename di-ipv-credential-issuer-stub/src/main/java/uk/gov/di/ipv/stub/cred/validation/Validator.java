@@ -203,11 +203,15 @@ public class Validator {
         String authCodeValue = requestParams.value(RequestParamConstants.AUTH_CODE);
         if (Validator.isNullBlankOrEmpty(authCodeValue)) {
             LOGGER.error("Missing authorization code");
-            return new ValidationResult(false, OAuth2Error.INVALID_GRANT.setDescription("Missing authorization code"));
+            return new ValidationResult(
+                    false, OAuth2Error.INVALID_GRANT.setDescription("Missing authorization code"));
         }
         if (Objects.isNull(this.authCodeService.getPayload(authCodeValue))) {
             LOGGER.error("Invalid authorization code provided");
-            return new ValidationResult(false, OAuth2Error.INVALID_GRANT.setDescription("Invalid authorization code provided"));
+            return new ValidationResult(
+                    false,
+                    OAuth2Error.INVALID_GRANT.setDescription(
+                            "Invalid authorization code provided"));
         }
 
         String redirectUriValue = requestParams.value(RequestParamConstants.REDIRECT_URI);
