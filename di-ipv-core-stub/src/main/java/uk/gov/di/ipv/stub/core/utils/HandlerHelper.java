@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.stub.core.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEAlgorithm;
@@ -92,7 +93,7 @@ public class HandlerHelper {
 
     public HandlerHelper(ECKey ecSigningKey) {
         this.ecSigningKey = ecSigningKey;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         this.objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
     }
 

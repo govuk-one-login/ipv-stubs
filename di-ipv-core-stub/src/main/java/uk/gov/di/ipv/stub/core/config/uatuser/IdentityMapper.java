@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.stub.core.config.uatuser;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -81,6 +82,17 @@ public class IdentityMapper {
                                 List.of(
                                         new NameParts(GIVEN_NAME, identity.name().firstName()),
                                         new NameParts(FAMILY_NAME, identity.name().surname())))),
-                List.of(new DateOfBirth(identity.findDateOfBirth().getDOB())));
+                List.of(new DateOfBirth(identity.findDateOfBirth().getDOB())),
+                List.of(
+                        new CanonicalAddress(
+                                identity.UKAddress().street1(),
+                                null,
+                                identity.UKAddress().street2(),
+                                identity.UKAddress().townCity(),
+                                identity.UKAddress().postCode(),
+                                // default / arbitrary value assigned for now as
+                                // the validFrom date is not available in test data
+                                LocalDate.of(2021, 1, 1),
+                                null)));
     }
 }

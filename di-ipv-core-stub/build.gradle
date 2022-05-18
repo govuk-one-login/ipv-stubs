@@ -19,7 +19,8 @@ dependencies {
 			"com.google.code.gson:gson:2.8.9",
 			"org.slf4j:slf4j-simple:1.7.33",
 			"org.yaml:snakeyaml:1.30",
-			"com.fasterxml.jackson.core:jackson-databind:2.13.0"
+			"com.fasterxml.jackson.core:jackson-databind:2.13.3",
+			"com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
 }
