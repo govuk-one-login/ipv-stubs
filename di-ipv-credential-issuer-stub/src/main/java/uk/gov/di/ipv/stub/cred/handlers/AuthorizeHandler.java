@@ -33,6 +33,7 @@ import uk.gov.di.ipv.stub.cred.error.CriStubException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.utils.ES256SignatureVerifier;
+import uk.gov.di.ipv.stub.cred.utils.RequestedErrorResponseHelper;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -69,6 +70,8 @@ public class AuthorizeHandler {
     private static final String CRI_NAME_PARAM = "cri-name";
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final RequestedErrorResponseHelper requestedErrorResponseHelper =
+            new RequestedErrorResponseHelper();
 
     private final AuthCodeService authCodeService;
     private final CredentialService credentialService;
@@ -166,6 +169,12 @@ public class AuthorizeHandler {
     public Route generateResponse =
             (Request request, Response response) -> {
                 QueryParamsMap queryParamsMap = request.queryMap();
+
+                AuthorizationErrorResponse authErrorResponse =
+                        requestedErrorResponseHelper.getRequestedAuthErrorResponse(queryParamsMap);
+                if (authErrorResponse != null) {
+                    response.redirect(authErrorResponse.toURI().toString());
+                }
 
                 String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
                 String requestValue = queryParamsMap.value(RequestParamConstants.REQUEST);

@@ -375,6 +375,8 @@ class AuthorizeHandlerTest {
 
     private Map<String, String[]> validDoAuthorizeQueryParams() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_RESPONSE, new String[] {"none"});
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
         queryParams.put(
                 RequestParamConstants.REQUEST,
@@ -387,6 +389,8 @@ class AuthorizeHandlerTest {
 
     private Map<String, String[]> validEncryptedDoAuthorizeQueryParams() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_RESPONSE, new String[] {"none"});
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
         queryParams.put(
                 RequestParamConstants.REQUEST,
@@ -419,6 +423,8 @@ class AuthorizeHandlerTest {
 
     private Map<String, String[]> invalidResponseTypeDoAuthorizeQueryParams() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_RESPONSE, new String[] {"none"});
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
         queryParams.put(
                 RequestParamConstants.REQUEST,
@@ -431,6 +437,8 @@ class AuthorizeHandlerTest {
 
     private Map<String, String[]> invalidRedirectUriDoAuthorizeQueryParams() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_RESPONSE, new String[] {"none"});
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
         queryParams.put(
                 RequestParamConstants.REQUEST,

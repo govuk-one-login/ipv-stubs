@@ -179,6 +179,46 @@
                     <input class="govuk-input govuk-input--width-2" id="verification" name="verification" type="number" min="0" max="5" step="1">
                 </div>
             {{/isVerificationType}}
+
+            <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                    <h1 class="govuk-fieldset__heading">
+                        OAuth error to return
+                    </h1>
+                </legend>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="requested_oauth_error_response">
+                        OAuth error response
+                    </label>
+                    <select class="govuk-select" id="requested_oauth_error_response" name="requested_oauth_error_response">
+                        <option value="none" selected>Do not trigger an error response</option>
+
+                        <option value="auth_invalid_request">Authorization Response - invalid_request</option>
+                        <option value="auth_unauthorized_client">Authorization Response - unauthorized_client</option>
+                        <option value="auth_access_denied">Authorization Response - access_denied</option>
+                        <option value="auth_unsupported_response_type">Authorization Response - unsupported_response_type</option>
+                        <option value="auth_invalid_scope">Authorization Response - invalid_scope</option>
+                        <option value="auth_server_error">Authorization Response - server_error</option>
+                        <option value="auth_temporarily_unavailable">Authorization Response - temporarily_unavailable</option>
+
+                        <option value="token_invalid_request">Access Token Response - invalid_request</option>
+                        <option value="token_unauthorized_client">Access Token Response - unauthorized_client</option>
+                        <option value="token_access_denied">Access Token Response - access_denied</option>
+                        <option value="token_unsupported_response_type">Access Token Response - unsupported_response_type</option>
+                        <option value="token_invalid_scope">Access Token Response - invalid_scope</option>
+                        <option value="token_server_error">Access Token Response - server_error</option>
+                        <option value="token_temporarily_unavailable">Access Token Response - temporarily_unavailable</option>
+                    </select>                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="requested_oauth_error_description">
+                        OAuth error description
+                    </label>
+                    <input class="govuk-input" id="requested_oauth_error_description" name="requested_oauth_error_description" type="text" value="This error was triggered manually in the stub CRI">
+                </div>
+            </fieldset>
+
             <input type="hidden" name="resourceId" value="{{resourceId}}">
             <input class="govuk-button" data-module="govuk-button" type="submit" name="submit" value="Submit data and generate auth code">
         </form>  
