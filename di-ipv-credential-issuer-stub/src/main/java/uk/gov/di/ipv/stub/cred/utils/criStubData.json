@@ -1,0 +1,334 @@
+{
+  "data": [
+    {
+      "criType": "ukPassport",
+      "label": "Mary Watson (Valid) Passport",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
+          }
+        ],
+        "passportNumber": "824159121",
+        "passportExpiryDate": "2030-01-01"
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Mary Watson Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "221B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud (Stub)",
+      "label": "Mary Watson (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "221B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "KBV (Stub)",
+      "label": "Mary Watson (Valid) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "221B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "ukPassport",
+      "label": "James Moriarty (Invalid) Passport",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "James",
+                "type": "GivenName"
+              },
+              {
+                "value": "Moriarty",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1939-10-09"
+          }
+        ],
+        "passportNumber": "532114382",
+        "passportExpiryDate": "2030-01-01"
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "James Moriarty (Invalid) Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "111B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 1XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud (Stub)",
+      "label": "James Moriarty (Invalid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "James",
+                "type": "GivenName"
+              },
+              {
+                "value": "Moriarty",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1939-10-09"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "111B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 1XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "KBV (Stub)",
+      "label": "James Moriarty (Invalid) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "James",
+                "type": "GivenName"
+              },
+              {
+                "value": "Moriarty",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1939-10-09"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "111B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 1XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "ukPassport",
+      "label": "Decerqueira Kenneth (Valid Experian) Passport",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Decerqueira",
+                "type": "GivenName"
+              },
+              {
+                "value": "Kenneth",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1959-08-23"
+          }
+        ],
+        "passportNumber": "321654987",
+        "passportExpiryDate": "2030-01-01"
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Decerqueira Kenneth (Valid Experian) Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "333B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW3 3XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud (Stub)",
+      "label": "Decerqueira Kenneth (Valid Experian) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Decerqueira",
+                "type": "GivenName"
+              },
+              {
+                "value": "Kenneth",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1959-08-23"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "333B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW3 3XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "KBV (Stub)",
+      "label": "Decerqueira Kenneth (Valid Experian) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Decerqueira",
+                "type": "GivenName"
+              },
+              {
+                "value": "Kenneth",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1959-08-23"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "333B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW3 3XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    }
+  ]
+}

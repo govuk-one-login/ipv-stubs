@@ -7,6 +7,8 @@ import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.crypto.RSADecrypter;
+import com.nimbusds.jose.shaded.json.JSONObject;
+import com.nimbusds.jose.shaded.json.parser.JSONParser;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -39,6 +41,8 @@ import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -52,6 +56,8 @@ import java.util.UUID;
 public class AuthorizeHandler {
 
     public static final String SHARED_CLAIMS = "shared_claims";
+
+    public static final String CRI_STUB_DATA = "cri_stub_data";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
 
@@ -138,6 +144,8 @@ public class AuthorizeHandler {
 
                 String sharedClaimsJson = getSharedAttributes(queryParamsMap);
 
+                Object criStubData = getCriStubData();
+
                 CriType criType = CredentialIssuerConfig.getCriType();
 
                 Map<String, Object> frontendParams = new HashMap<>();
@@ -150,6 +158,7 @@ public class AuthorizeHandler {
                 frontendParams.put(
                         IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
                 frontendParams.put(SHARED_CLAIMS, sharedClaimsJson);
+                frontendParams.put(CRI_STUB_DATA, criStubData);
 
                 String error = request.attribute(ERROR_PARAM);
                 boolean hasError = error != null;
@@ -421,6 +430,18 @@ public class AuthorizeHandler {
                 | JOSEException e) {
             return SignedJWT.parse(request);
         }
+    }
+
+    private Object getCriStubData()
+            throws FileNotFoundException, com.nimbusds.jose.shaded.json.parser.ParseException {
+        Object ob =
+                new JSONParser()
+                        .parse(
+                                new FileReader(
+                                        "src/main/java/uk/gov/di/ipv/stub/cred/utils/criStubData.json"));
+        JSONObject js = (JSONObject) ob;
+
+        return js.get("data");
     }
 
     private String getSharedAttributes(QueryParamsMap queryParamsMap) {
