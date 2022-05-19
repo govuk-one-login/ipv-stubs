@@ -16,11 +16,14 @@ public class CredentialIssuerConfig {
 
     public static String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
 
-    public static final String EVIDENCE_STRENGTH_PARAM = "strength";
-    public static final String EVIDENCE_VALIDITY_PARAM = "validity";
-    public static final String ACTIVITY_PARAM = "activity";
-    public static final String FRAUD_PARAM = "fraud";
-    public static final String VERIFICATION_PARAM = "verification";
+    public static final String EVIDENCE_TYPE_PARAM = "type";
+    public static final String EVIDENCE_TYPE_IDENTITY_CHECK = "IdentityCheck";
+    public static final String EVIDENCE_TXN_PARAM = "txn";
+    public static final String EVIDENCE_STRENGTH_PARAM = "strengthScore";
+    public static final String EVIDENCE_VALIDITY_PARAM = "validityScore";
+    public static final String ACTIVITY_PARAM = "activityHistoryScore";
+    public static final String FRAUD_PARAM = "identityFraudScore";
+    public static final String VERIFICATION_PARAM = "verificationScore";
 
     public static Map<String, ClientConfig> CLIENT_CONFIGS;
 

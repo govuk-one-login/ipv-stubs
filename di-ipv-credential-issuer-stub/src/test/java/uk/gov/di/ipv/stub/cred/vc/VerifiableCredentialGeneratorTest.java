@@ -34,15 +34,12 @@ import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PUBLIC_KEY_1;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_ADDRESS;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_BIRTH_DATE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_NAME;
-import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.DI_CONTEXT;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.IDENTITY_CHECK_CREDENTIAL_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_CLAIM;
-import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_CONTEXT;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_CREDENTIAL_SUBJECT;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_EVIDENCE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VERIFIABLE_CREDENTIAL_TYPE;
-import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.W3_BASE_CONTEXT;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator.EC_ALGO;
 
 @ExtendWith(SystemStubsExtension.class)
@@ -77,9 +74,14 @@ public class VerifiableCredentialGeneratorTest {
 
         Map<String, Object> evidence =
                 Map.of(
-                        "type", "CriStubCheck",
-                        "strength", 4,
-                        "validity", 2);
+                        "type",
+                        "CriStubCheck",
+                        "txn",
+                        "some-uuid",
+                        "strengthScore",
+                        4,
+                        "validityScore",
+                        2);
         String userId = "user-id";
         Credential credential = new Credential(attributes, evidence, userId, "clientIdValid");
 
@@ -107,9 +109,6 @@ public class VerifiableCredentialGeneratorTest {
                         - claimsSetTree.path(NOT_BEFORE).asLong());
 
         JsonNode vcClaimTree = claimsSetTree.path(VC_CLAIM);
-        assertEquals(W3_BASE_CONTEXT, vcClaimTree.path(VC_CONTEXT).path(0).asText());
-        assertEquals(DI_CONTEXT, vcClaimTree.path(VC_CONTEXT).path(1).asText());
-
         assertEquals(VERIFIABLE_CREDENTIAL_TYPE, vcClaimTree.path(VC_TYPE).path(0).asText());
         assertEquals(IDENTITY_CHECK_CREDENTIAL_TYPE, vcClaimTree.path(VC_TYPE).path(1).asText());
 
@@ -148,8 +147,9 @@ public class VerifiableCredentialGeneratorTest {
 
         JsonNode evidenceTree = vcClaimTree.path(VC_EVIDENCE);
         assertEquals("CriStubCheck", evidenceTree.path(0).path("type").asText());
-        assertEquals(4, evidenceTree.path(0).path("strength").asInt());
-        assertEquals(2, evidenceTree.path(0).path("validity").asInt());
+        assertEquals("some-uuid", evidenceTree.path(0).path("txn").asText());
+        assertEquals(4, evidenceTree.path(0).path("strengthScore").asInt());
+        assertEquals(2, evidenceTree.path(0).path("validityScore").asInt());
     }
 
     @Test

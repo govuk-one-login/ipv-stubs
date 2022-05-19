@@ -31,15 +31,12 @@ import static com.nimbusds.jwt.JWTClaimNames.SUBJECT;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_ADDRESS;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_BIRTH_DATE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_NAME;
-import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.DI_CONTEXT;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.IDENTITY_CHECK_CREDENTIAL_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_CLAIM;
-import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_CONTEXT;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_CREDENTIAL_SUBJECT;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_EVIDENCE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VERIFIABLE_CREDENTIAL_TYPE;
-import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.W3_BASE_CONTEXT;
 
 public class VerifiableCredentialGenerator {
 
@@ -49,7 +46,6 @@ public class VerifiableCredentialGenerator {
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
 
         Map<String, Object> vc = new LinkedHashMap<>();
-        vc.put(VC_CONTEXT, new String[] {W3_BASE_CONTEXT, DI_CONTEXT});
         vc.put(VC_TYPE, new String[] {VERIFIABLE_CREDENTIAL_TYPE, IDENTITY_CHECK_CREDENTIAL_TYPE});
 
         Map<String, Object> credentialSubject = new LinkedHashMap<>();

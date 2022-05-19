@@ -329,8 +329,13 @@ class AuthorizeHandlerTest {
         verify(mockCredentialService)
                 .persist(persistedCredential.capture(), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
         Map<String, Object> persistedAttributes = persistedCredential.getValue().getAttributes();
+        Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
         assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
         assertEquals("test-value", persistedAttributes.get("test"));
+        assertEquals("IdentityCheck", persistedEvidence.get("type"));
+        assertNotNull(persistedEvidence.get("txn"));
+        assertNotNull(persistedEvidence.get("strengthScore"));
+        assertNotNull(persistedEvidence.get("validityScore"));
     }
 
     private String createExpectedErrorQueryStringParams(ErrorObject error) {

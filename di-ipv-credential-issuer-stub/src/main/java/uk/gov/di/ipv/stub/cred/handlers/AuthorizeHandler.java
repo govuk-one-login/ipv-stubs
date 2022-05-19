@@ -297,6 +297,10 @@ public class AuthorizeHandler {
         }
 
         Map<String, Object> gpg45Score = new HashMap<>();
+        gpg45Score.put(
+                CredentialIssuerConfig.EVIDENCE_TYPE_PARAM,
+                CredentialIssuerConfig.EVIDENCE_TYPE_IDENTITY_CHECK);
+        gpg45Score.put(CredentialIssuerConfig.EVIDENCE_TXN_PARAM, UUID.randomUUID().toString());
         switch (criType) {
             case EVIDENCE_CRI_TYPE -> {
                 gpg45Score.put(
