@@ -7,4 +7,5 @@ import java.util.List;
 public record SharedClaims(
         @JsonProperty("@context") List<String> context,
         @JsonProperty("name") List<Name> name,
-        @JsonProperty("birthDate") List<DateOfBirth> birthDate) {}
+        @JsonProperty("birthDate") List<DateOfBirth> birthDate,
+        @JsonProperty("address") List<CanonicalAddress> addresses) {}
