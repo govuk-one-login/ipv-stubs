@@ -183,33 +183,46 @@
             <fieldset class="govuk-fieldset">
                 <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
                     <h1 class="govuk-fieldset__heading">
-                        OAuth error to return
+                        Force an OAuth error response
                     </h1>
                 </legend>
 
                 <div class="govuk-form-group">
-                    <label class="govuk-label" for="requested_oauth_error_response">
-                        OAuth error response
+                    <label class="govuk-label" for="requested_oauth_error_endpoint">
+                        Endpoint to return the error from
                     </label>
-                    <select class="govuk-select" id="requested_oauth_error_response" name="requested_oauth_error_response">
-                        <option value="none" selected>Do not trigger an error response</option>
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="endpoint" name="requested_oauth_error_endpoint" type="radio" value="auth">
+                            <label class="govuk-label govuk-radios__label" for="requested_oauth_error_endpoint">
+                                Authorization
+                            </label>
+                        </div>
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="requested_oauth_error_endpoint_2" name="requested_oauth_error_endpoint" type="radio" value="token">
+                            <label class="govuk-label govuk-radios__label" for="requested_oauth_error_endpoint_2">
+                                Access Token
+                            </label>
+                        </div>
+                    </div>
+                </div>
 
-                        <option value="auth_invalid_request">Authorization Response - invalid_request</option>
-                        <option value="auth_unauthorized_client">Authorization Response - unauthorized_client</option>
-                        <option value="auth_access_denied">Authorization Response - access_denied</option>
-                        <option value="auth_unsupported_response_type">Authorization Response - unsupported_response_type</option>
-                        <option value="auth_invalid_scope">Authorization Response - invalid_scope</option>
-                        <option value="auth_server_error">Authorization Response - server_error</option>
-                        <option value="auth_temporarily_unavailable">Authorization Response - temporarily_unavailable</option>
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="requested_oauth_error">
+                        OAuth error
+                    </label>
+                    <select class="govuk-select" id="requested_oauth_error" name="requested_oauth_error">
+                        <option value="none" selected>none</option>
 
-                        <option value="token_invalid_request">Access Token Response - invalid_request</option>
-                        <option value="token_unauthorized_client">Access Token Response - unauthorized_client</option>
-                        <option value="token_access_denied">Access Token Response - access_denied</option>
-                        <option value="token_unsupported_response_type">Access Token Response - unsupported_response_type</option>
-                        <option value="token_invalid_scope">Access Token Response - invalid_scope</option>
-                        <option value="token_server_error">Access Token Response - server_error</option>
-                        <option value="token_temporarily_unavailable">Access Token Response - temporarily_unavailable</option>
-                    </select>                </div>
+                        <option value="invalid_request">invalid_request</option>
+                        <option value="unauthorized_client">unauthorized_client</option>
+                        <option value="access_denied">access_denied</option>
+                        <option value="unsupported_response_type">unsupported_response_type</option>
+                        <option value="invalid_scope">invalid_scope</option>
+                        <option value="server_error">server_error</option>
+                        <option value="temporarily_unavailable">temporarily_unavailable</option>
+                    </select>
+                </div>
 
                 <div class="govuk-form-group">
                     <label class="govuk-label" for="requested_oauth_error_description">

@@ -17,7 +17,8 @@ public class RequestParamConstants {
     public static final String CLIENT_ASSERTION = "client_assertion";
     public static final String ISSUER = "iss";
     public static final String AUDIENCE = "aud";
-    public static final String REQUESTED_OAUTH_ERROR_RESPONSE = "requested_oauth_error_response";
+    public static final String REQUESTED_OAUTH_ERROR = "requested_oauth_error";
+    public static final String REQUESTED_OAUTH_ERROR_ENDPOINT = "requested_oauth_error_endpoint";
     public static final String REQUESTED_OAUTH_ERROR_DESCRIPTION =
             "requested_oauth_error_description";
 }

@@ -1,4 +1,4 @@
-package uk.gov.di.ipv.stub.cred.utils;
+package uk.gov.di.ipv.stub.cred.service;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEObject;
@@ -7,6 +7,7 @@ import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationErrorResponse;
 import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.ResponseMode;
+import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
 import spark.QueryParamsMap;
@@ -19,20 +20,45 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class RequestedErrorResponseHelper {
+public class RequestedErrorResponseService {
+    public static final String AUTH = "auth";
+    public static final String TOKEN = "token";
+    public static final String NONE = "none";
 
-    public static final String AUTH_PREFIX = "auth_";
+    private final Map<String, Map<String, String>> errorResponsesRequested;
+
+    public RequestedErrorResponseService() {
+        this.errorResponsesRequested = new ConcurrentHashMap<>();
+    }
+
+    public void persist(String authCode, QueryParamsMap queryParamsMap) {
+        Map<String, String> parmsValuesMap = new HashMap<>();
+        parmsValuesMap.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR,
+                queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR));
+        parmsValuesMap.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT,
+                queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT));
+        parmsValuesMap.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
+                queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION));
+
+        errorResponsesRequested.put(authCode, parmsValuesMap);
+    }
 
     public AuthorizationErrorResponse getRequestedAuthErrorResponse(QueryParamsMap queryParamsMap)
             throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
-        String requestedOauthErrorResponse =
-                queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR_RESPONSE);
-        String requestedOauthErrorDescription =
+        String endpoint =
+                queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT);
+        String error = queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR);
+        String description =
                 queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION);
 
-        if (requestedOauthErrorResponse != null
-                && requestedOauthErrorResponse.startsWith(AUTH_PREFIX)) {
+        if (AUTH.equals(endpoint) && !NONE.equals(error)) {
             String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
             ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdValue);
 
@@ -48,12 +74,29 @@ public class RequestedErrorResponseHelper {
 
             return new AuthorizationErrorResponse(
                     URI.create(redirectUri),
-                    new ErrorObject(
-                            requestedOauthErrorResponse.substring(AUTH_PREFIX.length()),
-                            requestedOauthErrorDescription),
+                    new ErrorObject(error, description),
                     (state == null || state.isEmpty()) ? null : new State(state),
                     new Issuer(CredentialIssuerConfig.NAME),
                     ResponseMode.QUERY);
+        }
+        return null;
+    }
+
+    public TokenErrorResponse getRequestedAccessTokenErrorResponse(String authCode) {
+        Map<String, String> requestedErrorResponse = errorResponsesRequested.get(authCode);
+        if (requestedErrorResponse != null) {
+            String error = requestedErrorResponse.get(RequestParamConstants.REQUESTED_OAUTH_ERROR);
+            String endpoint =
+                    requestedErrorResponse.get(
+                            RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT);
+
+            if ((TOKEN.equals(endpoint)) && (!NONE.equals(error))) {
+                return new TokenErrorResponse(
+                        new ErrorObject(
+                                error,
+                                requestedErrorResponse.get(
+                                        RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION)));
+            }
         }
         return null;
     }

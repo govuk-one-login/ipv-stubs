@@ -30,6 +30,7 @@ import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
+import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
@@ -90,6 +91,8 @@ class AuthorizeHandlerTest {
     private AuthorizeHandler authorizeHandler;
     private AuthCodeService mockAuthCodeService;
     private CredentialService mockCredentialService;
+    private RequestedErrorResponseService requestedErrorResponseService =
+            new RequestedErrorResponseService();
 
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String VALID_REDIRECT_URI = "https://valid.example.com";
@@ -110,7 +113,11 @@ class AuthorizeHandlerTest {
         mockCredentialService = mock(CredentialService.class);
 
         authorizeHandler =
-                new AuthorizeHandler(mockViewHelper, mockAuthCodeService, mockCredentialService);
+                new AuthorizeHandler(
+                        mockViewHelper,
+                        mockAuthCodeService,
+                        mockCredentialService,
+                        requestedErrorResponseService);
     }
 
     @Test
@@ -333,6 +340,28 @@ class AuthorizeHandlerTest {
         assertEquals("test-value", persistedAttributes.get("test"));
     }
 
+    @Test
+    void generateResponseShouldRedirectWithRequestedOAuthErrorResponse() throws Exception {
+        Map<String, String[]> queryParams = validGenerateResponseQueryParams();
+        queryParams.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"invalid_request"});
+        queryParams.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, new String[] {"auth"});
+        queryParams.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
+                new String[] {"An error description"});
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+
+        verify(mockResponse)
+                .redirect(
+                        VALID_REDIRECT_URI
+                                + "?error=invalid_request&iss=Credential+Issuer+Stub&error_description=An+error+description");
+    }
+
     private String createExpectedErrorQueryStringParams(ErrorObject error) {
         return createExpectedErrorQueryStringParams(error.getCode(), error.getDescription());
     }
@@ -375,8 +404,7 @@ class AuthorizeHandlerTest {
 
     private Map<String, String[]> validDoAuthorizeQueryParams() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(
-                RequestParamConstants.REQUESTED_OAUTH_ERROR_RESPONSE, new String[] {"none"});
+        queryParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"none"});
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
         queryParams.put(
                 RequestParamConstants.REQUEST,
@@ -389,8 +417,7 @@ class AuthorizeHandlerTest {
 
     private Map<String, String[]> validEncryptedDoAuthorizeQueryParams() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(
-                RequestParamConstants.REQUESTED_OAUTH_ERROR_RESPONSE, new String[] {"none"});
+        queryParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"none"});
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
         queryParams.put(
                 RequestParamConstants.REQUEST,
@@ -423,8 +450,7 @@ class AuthorizeHandlerTest {
 
     private Map<String, String[]> invalidResponseTypeDoAuthorizeQueryParams() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(
-                RequestParamConstants.REQUESTED_OAUTH_ERROR_RESPONSE, new String[] {"none"});
+        queryParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"none"});
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
         queryParams.put(
                 RequestParamConstants.REQUEST,
@@ -437,8 +463,7 @@ class AuthorizeHandlerTest {
 
     private Map<String, String[]> invalidRedirectUriDoAuthorizeQueryParams() throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(
-                RequestParamConstants.REQUESTED_OAUTH_ERROR_RESPONSE, new String[] {"none"});
+        queryParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"none"});
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
         queryParams.put(
                 RequestParamConstants.REQUEST,

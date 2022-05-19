@@ -32,8 +32,8 @@ import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.error.CriStubException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
+import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.utils.ES256SignatureVerifier;
-import uk.gov.di.ipv.stub.cred.utils.RequestedErrorResponseHelper;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -70,22 +70,23 @@ public class AuthorizeHandler {
     private static final String CRI_NAME_PARAM = "cri-name";
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private static final RequestedErrorResponseHelper requestedErrorResponseHelper =
-            new RequestedErrorResponseHelper();
 
     private final AuthCodeService authCodeService;
     private final CredentialService credentialService;
+    private final RequestedErrorResponseService requestedErrorResponseService;
     private final ES256SignatureVerifier es256SignatureVerifier = new ES256SignatureVerifier();
     private ViewHelper viewHelper;
 
     public AuthorizeHandler(
             ViewHelper viewHelper,
             AuthCodeService authCodeService,
-            CredentialService credentialService) {
+            CredentialService credentialService,
+            RequestedErrorResponseService requestedErrorResponseService) {
         Objects.requireNonNull(viewHelper);
         this.viewHelper = viewHelper;
         this.authCodeService = authCodeService;
         this.credentialService = credentialService;
+        this.requestedErrorResponseService = requestedErrorResponseService;
     }
 
     public Route doAuthorize =
@@ -170,10 +171,11 @@ public class AuthorizeHandler {
             (Request request, Response response) -> {
                 QueryParamsMap queryParamsMap = request.queryMap();
 
-                AuthorizationErrorResponse authErrorResponse =
-                        requestedErrorResponseHelper.getRequestedAuthErrorResponse(queryParamsMap);
-                if (authErrorResponse != null) {
-                    response.redirect(authErrorResponse.toURI().toString());
+                AuthorizationErrorResponse requestedAuthErrorResponse =
+                        handleRequestedError(queryParamsMap);
+                if (requestedAuthErrorResponse != null) {
+                    response.redirect(requestedAuthErrorResponse.toURI().toString());
+                    return null;
                 }
 
                 String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
@@ -272,6 +274,7 @@ public class AuthorizeHandler {
         String resourceId = queryParamsMap.value(RequestParamConstants.RESOURCE_ID);
         this.authCodeService.persist(authorizationCode, resourceId, redirectUri);
         this.credentialService.persist(credential, resourceId);
+        this.requestedErrorResponseService.persist(authorizationCode.getValue(), queryParamsMap);
     }
 
     private Map<String, Object> generateJsonPayload(String payload) throws CriStubException {
@@ -491,5 +494,10 @@ public class AuthorizeHandler {
         RSADecrypter rsaDecrypter = new RSADecrypter(encryptionPrivateKey);
         encryptedJweObject.decrypt(rsaDecrypter);
         return encryptedJweObject;
+    }
+
+    private AuthorizationErrorResponse handleRequestedError(QueryParamsMap queryParamsMap)
+            throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
+        return requestedErrorResponseService.getRequestedAuthErrorResponse(queryParamsMap);
     }
 }
