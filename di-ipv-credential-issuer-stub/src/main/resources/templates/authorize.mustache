@@ -126,14 +126,14 @@
                         <label class="govuk-label" for="strength">
                             Strength
                         </label>
-                        <input class="govuk-input govuk-input--width-2" id="strength" name="strength" type="number" min="0" max="5" step="1">
+                        <input class="govuk-input govuk-input--width-2" id="strength" name="strengthScore" type="number" min="0" max="5" step="1">
                     </div>
 
                     <div class="govuk-form-group">
                         <label class="govuk-label" for="validity">
                             Validity
                         </label>
-                        <input class="govuk-input govuk-input--width-2" id="validity" name="validity" type="number" min="0" max="5" step="1">
+                        <input class="govuk-input govuk-input--width-2" id="validity" name="validityScore" type="number" min="0" max="5" step="1">
                     </div>
                 </fieldset>
             {{/isEvidenceType}}
@@ -148,7 +148,7 @@
                     <label class="govuk-label" for="activity">
                         Activity
                     </label>
-                    <input class="govuk-input govuk-input--width-2" id="activity" name="activity" type="number" min="0" max="5" step="1">
+                    <input class="govuk-input govuk-input--width-2" id="activity" name="activityHistoryScore" type="number" min="0" max="5" step="1">
                 </div>
             {{/isActivityType}}
 
@@ -162,7 +162,7 @@
                     <label class="govuk-label" for="fraud">
                         Fraud
                     </label>
-                    <input class="govuk-input govuk-input--width-2" id="fraud" name="fraud" type="number" min="0" max="5" step="1">
+                    <input class="govuk-input govuk-input--width-2" id="fraud" name="identityFraudScore" type="number" min="0" max="5" step="1">
                 </div>
             {{/isFraudType}}
 
@@ -176,7 +176,7 @@
                     <label class="govuk-label" for="verification">
                         Verification
                     </label>
-                    <input class="govuk-input govuk-input--width-2" id="verification" name="verification" type="number" min="0" max="5" step="1">
+                    <input class="govuk-input govuk-input--width-2" id="verification" name="verificationScore" type="number" min="0" max="5" step="1">
                 </div>
             {{/isVerificationType}}
             <input type="hidden" name="resourceId" value="{{resourceId}}">
