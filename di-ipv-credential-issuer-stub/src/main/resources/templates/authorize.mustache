@@ -187,6 +187,59 @@
                     <input class="govuk-input govuk-input--width-2" id="verification" name="verificationScore" type="number" min="0" max="5" step="1">
                 </div>
             {{/isVerificationType}}
+
+            <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                    <h1 class="govuk-fieldset__heading">
+                        Force an OAuth error response
+                    </h1>
+                </legend>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="requested_oauth_error_endpoint">
+                        Endpoint to return the error from
+                    </label>
+                    <div class="govuk-radios" data-module="govuk-radios">
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="endpoint" name="requested_oauth_error_endpoint" type="radio" value="auth">
+                            <label class="govuk-label govuk-radios__label" for="requested_oauth_error_endpoint">
+                                Authorization
+                            </label>
+                        </div>
+                        <div class="govuk-radios__item">
+                            <input class="govuk-radios__input" id="requested_oauth_error_endpoint_2" name="requested_oauth_error_endpoint" type="radio" value="token">
+                            <label class="govuk-label govuk-radios__label" for="requested_oauth_error_endpoint_2">
+                                Access Token
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="requested_oauth_error">
+                        OAuth error
+                    </label>
+                    <select class="govuk-select" id="requested_oauth_error" name="requested_oauth_error">
+                        <option value="none" selected>none</option>
+
+                        <option value="invalid_request">invalid_request</option>
+                        <option value="unauthorized_client">unauthorized_client</option>
+                        <option value="access_denied">access_denied</option>
+                        <option value="unsupported_response_type">unsupported_response_type</option>
+                        <option value="invalid_scope">invalid_scope</option>
+                        <option value="server_error">server_error</option>
+                        <option value="temporarily_unavailable">temporarily_unavailable</option>
+                    </select>
+                </div>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="requested_oauth_error_description">
+                        OAuth error description
+                    </label>
+                    <input class="govuk-input" id="requested_oauth_error_description" name="requested_oauth_error_description" type="text" value="This error was triggered manually in the stub CRI">
+                </div>
+            </fieldset>
+
             <input type="hidden" name="resourceId" value="{{resourceId}}">
             <input class="govuk-button" data-module="govuk-button" type="submit" name="submit" value="Submit data and generate auth code">
         </form>  

@@ -15,4 +15,4 @@ fi
 cp -r $CONFIG_DIR config
 
 docker build -t ipv-core-stub .
-docker run -p 8085:8085 --env-file ${CONFIG_DIR}/.env ipv-core-stub
+docker run -p 8085:8085 -p 8087:8087 --env-file ${CONFIG_DIR}/.env ipv-core-stub

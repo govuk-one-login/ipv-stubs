@@ -6,6 +6,7 @@ import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.oauth2.sdk.token.Tokens;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
@@ -17,6 +18,7 @@ import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
+import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -34,22 +36,32 @@ public class TokenHandler {
     private AuthCodeService authCodeService;
     private Validator validator;
     private ClientJwtVerifier clientJwtVerifier;
+    private final RequestedErrorResponseService requestedErrorResponseService;
 
     public TokenHandler(
             AuthCodeService authCodeService,
             TokenService tokenService,
             Validator validator,
-            ClientJwtVerifier clientJwtVerifier) {
+            ClientJwtVerifier clientJwtVerifier,
+            RequestedErrorResponseService requestedErrorResponseService) {
         this.authCodeService = authCodeService;
         this.tokenService = tokenService;
         this.validator = validator;
         this.clientJwtVerifier = clientJwtVerifier;
+        this.requestedErrorResponseService = requestedErrorResponseService;
     }
 
     public Route issueAccessToken =
             (Request request, Response response) -> {
                 QueryParamsMap requestParams = request.queryMap();
                 response.type(RESPONSE_TYPE);
+
+                TokenErrorResponse requestedTokenErrorResponse =
+                        handleRequestedError(requestParams.value(RequestParamConstants.AUTH_CODE));
+                if (requestedTokenErrorResponse != null) {
+                    response.status(HttpStatus.BAD_REQUEST_400);
+                    return requestedTokenErrorResponse.toJSONObject().toJSONString();
+                }
 
                 ValidationResult validationResult = validator.validateTokenRequest(requestParams);
                 if (!validationResult.isValid()) {
@@ -112,4 +124,11 @@ public class TokenHandler {
                 response.status(HttpServletResponse.SC_OK);
                 return tokenResponse.toJSONObject().toJSONString();
             };
+
+    private TokenErrorResponse handleRequestedError(String authCode) {
+        if (authCode == null) {
+            return null;
+        }
+        return requestedErrorResponseService.getRequestedAccessTokenErrorResponse(authCode);
+    }
 }

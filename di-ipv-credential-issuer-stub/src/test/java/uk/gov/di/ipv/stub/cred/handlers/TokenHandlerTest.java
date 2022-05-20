@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -23,6 +24,7 @@ import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
+import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -63,6 +65,11 @@ public class TokenHandlerTest {
     @Mock private AuthCodeService mockAuthCodeService;
     @Mock private Validator mockValidator;
     @Mock private ClientJwtVerifier mockJwtAuthenticationService;
+
+    @Spy
+    private RequestedErrorResponseService requestedErrorResponseService =
+            new RequestedErrorResponseService();
+
     @InjectMocks private TokenHandler tokenHandler;
 
     @SystemStub
@@ -280,6 +287,35 @@ public class TokenHandlerTest {
 
         assertEquals(INVALID_GRANT_CODE, resultantErrorObject.getCode());
         assertEquals("Invalid grant", resultantErrorObject.getDescription());
+    }
+
+    @Test
+    void shouldReturn400WithRequestedOAuthError() throws Exception {
+        HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
+
+        Map<String, String[]> queryParams = new HashMap<>();
+        queryParams.put(RequestParamConstants.AUTH_CODE, new String[] {"anAuthCode"});
+        queryParams.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"access_denied"});
+        queryParams.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, new String[] {"token"});
+        queryParams.put(
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
+                new String[] {"an error description"});
+        when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
+
+        QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        requestedErrorResponseService.persist("anAuthCode", queryParamsMap);
+
+        String errorResponse =
+                (String) tokenHandler.issueAccessToken.handle(mockRequest, mockResponse);
+
+        assertEquals(
+                "{\"error_description\":\"an error description\",\"error\":\"access_denied\"}",
+                errorResponse);
+        verify(mockResponse).status(HTTPResponse.SC_BAD_REQUEST);
     }
 
     private ErrorObject createErrorFromResult(int responseStatusCode, String result)
