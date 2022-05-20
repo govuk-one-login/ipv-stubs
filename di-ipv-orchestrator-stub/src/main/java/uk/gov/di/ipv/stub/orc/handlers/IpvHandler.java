@@ -60,7 +60,7 @@ import static uk.gov.di.ipv.stub.orc.utils.JwtBuilder.buildClientAuthenticationC
 public class IpvHandler {
 
     private static final String CREDENTIALS_URL_PROPERTY =
-            "https://vocab.sign-in.service.gov.uk/v1/credentials";
+            "https://vocab.account.gov.uk/v1/credentialJWT";
 
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
     private final Map<String, Object> stateSession = new HashMap<>();
