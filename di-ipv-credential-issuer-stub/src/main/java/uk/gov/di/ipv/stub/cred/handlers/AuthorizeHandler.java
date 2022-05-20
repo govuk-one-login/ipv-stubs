@@ -41,8 +41,7 @@ import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -52,6 +51,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+
+import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
 
 public class AuthorizeHandler {
 
@@ -437,13 +438,14 @@ public class AuthorizeHandler {
     }
 
     private Object getCriStubData()
-            throws FileNotFoundException, com.nimbusds.jose.shaded.json.parser.ParseException {
-        Object ob =
-                new JSONParser()
-                        .parse(
-                                new FileReader(
-                                        "src/main/java/uk/gov/di/ipv/stub/cred/utils/criStubData.json"));
-        JSONObject js = (JSONObject) ob;
+            throws UnsupportedEncodingException,
+                    com.nimbusds.jose.shaded.json.parser.ParseException {
+        JSONObject js =
+                (JSONObject)
+                        new JSONParser(MODE_JSON_SIMPLE)
+                                .parse(
+                                        AuthorizeHandler.class.getResourceAsStream(
+                                                "/data/criStubData.json"));
 
         return js.get("data");
     }
