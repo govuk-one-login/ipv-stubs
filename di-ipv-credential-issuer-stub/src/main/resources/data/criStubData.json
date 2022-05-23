@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "criType": "ukPassport",
+      "criType": "UK Passport (Stub)",
       "label": "Mary Watson (Valid) Passport",
       "payload": {
         "name": [
@@ -77,7 +77,7 @@
       }
     },
     {
-      "criType": "KBV (Stub)",
+      "criType": "Knowledge Based Verification (Stub)",
       "label": "Mary Watson (Valid) KBV",
       "payload": {
         "name": [
@@ -153,7 +153,7 @@
       }
     },
     {
-      "criType": "Fraud (Stub)",
+      "criType": "Fraud Check (Stub)",
       "label": "James Moriarty (Invalid) Fraud",
       "payload": {
         "name": [
@@ -221,7 +221,7 @@
       }
     },
     {
-      "criType": "ukPassport",
+      "criType": "UK Passport (Stub)",
       "label": "Decerqueira Kenneth (Valid Experian) Passport",
       "payload": {
         "name": [
@@ -263,7 +263,7 @@
       }
     },
     {
-      "criType": "Fraud (Stub)",
+      "criType": "Fraud Check (Stub)",
       "label": "Decerqueira Kenneth (Valid Experian) Fraud",
       "payload": {
         "name": [
@@ -297,7 +297,7 @@
       }
     },
     {
-      "criType": "KBV (Stub)",
+      "criType": "Knowledge Based Verification (Stub)",
       "label": "Decerqueira Kenneth (Valid Experian) KBV",
       "payload": {
         "name": [
