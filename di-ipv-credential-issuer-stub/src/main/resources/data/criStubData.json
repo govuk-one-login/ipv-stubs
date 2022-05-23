@@ -43,7 +43,7 @@
       }
     },
     {
-      "criType": "Fraud (Stub)",
+      "criType": "Fraud Check (Stub)",
       "label": "Mary Watson (Valid) Fraud",
       "payload": {
         "name": [
@@ -111,7 +111,7 @@
       }
     },
     {
-      "criType": "ukPassport",
+      "criType": "UK Passport (Stub)",
       "label": "James Moriarty (Invalid) Passport",
       "payload": {
         "name": [
@@ -187,7 +187,7 @@
       }
     },
     {
-      "criType": "KBV (Stub)",
+      "criType": "Knowledge Based Verification (Stub)",
       "label": "James Moriarty (Invalid) KBV",
       "payload": {
         "name": [
