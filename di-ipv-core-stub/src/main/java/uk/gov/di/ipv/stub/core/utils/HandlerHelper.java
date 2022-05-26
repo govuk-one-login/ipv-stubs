@@ -87,6 +87,7 @@ public class HandlerHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(HandlerHelper.class);
     public static final String URN_UUID = "urn:uuid:";
     public static final String SHARED_CLAIMS = "shared_claims";
+    public static final String UNKNOWN_ENV_VAR = "unknown";
     public static final String API_KEY_HEADER = "x-api-key";
 
     private final ECKey ecSigningKey;
@@ -135,7 +136,7 @@ public class HandlerHelper {
 
         HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
         String apiKey = CoreStubConfig.PASSPORT_PRIVATE_API_KEY;
-        if (apiKey != null) {
+        if (!apiKey.equals(UNKNOWN_ENV_VAR)) {
             LOGGER.info(
                     "Found api key and sending it in token request to cri: {}",
                     credentialIssuer.id());
@@ -168,7 +169,7 @@ public class HandlerHelper {
                 new HTTPRequest(HTTPRequest.Method.POST, credentialIssuer.credentialUrl());
 
         String apiKey = CoreStubConfig.PASSPORT_PRIVATE_API_KEY;
-        if (apiKey != null) {
+        if (!apiKey.equals(UNKNOWN_ENV_VAR)) {
             LOGGER.info(
                     "Found api key and sending it in credential request to cri: {}",
                     credentialIssuer.id());
