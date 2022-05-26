@@ -87,6 +87,7 @@ public class HandlerHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(HandlerHelper.class);
     public static final String URN_UUID = "urn:uuid:";
     public static final String SHARED_CLAIMS = "shared_claims";
+    public static final String API_KEY_HEADER = "x-api-key";
 
     private final ECKey ecSigningKey;
     private final ObjectMapper objectMapper;
@@ -132,7 +133,16 @@ public class HandlerHelper {
 
         TokenRequest tokenRequest = new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
 
-        var httpTokenResponse = sendHttpRequest(tokenRequest.toHTTPRequest());
+        HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
+        String apiKey = CoreStubConfig.PASSPORT_PRIVATE_API_KEY;
+        if (apiKey != null) {
+            LOGGER.info(
+                    "Found api key and sending it in token request to cri: {}",
+                    credentialIssuer.id());
+            httpRequest.setHeader(API_KEY_HEADER, apiKey);
+        }
+
+        var httpTokenResponse = sendHttpRequest(httpRequest);
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
 
         if (tokenResponse instanceof TokenErrorResponse) {
@@ -156,6 +166,15 @@ public class HandlerHelper {
     public String getUserInfo(AccessToken accessToken, CredentialIssuer credentialIssuer) {
         HTTPRequest userInfoRequest =
                 new HTTPRequest(HTTPRequest.Method.POST, credentialIssuer.credentialUrl());
+
+        String apiKey = CoreStubConfig.PASSPORT_PRIVATE_API_KEY;
+        if (apiKey != null) {
+            LOGGER.info(
+                    "Found api key and sending it in credential request to cri: {}",
+                    credentialIssuer.id());
+            userInfoRequest.setHeader(API_KEY_HEADER, apiKey);
+        }
+
         userInfoRequest.setAuthorization(accessToken.toAuthorizationHeader());
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest);
         return userInfoHttpResponse.getContent();
