@@ -47,6 +47,8 @@ public class CoreStubConfig {
                     "CORE_STUB_JWT_ISS_CRI_URI",
                     "https://di-ipv-core-stub.london.cloudapps.digital");
     public static final String MAX_JAR_TTL_MINS = getConfigValue("MAX_JAR_TTL_MINS", "60");
+    public static final String PASSPORT_PRIVATE_API_KEY =
+            getConfigValue("PASSPORT_PRIVATE_API_KEY", null);
 
     public static final List<Identity> identities = new ArrayList<>();
     public static final List<CredentialIssuer> credentialIssuers = new ArrayList<>();
