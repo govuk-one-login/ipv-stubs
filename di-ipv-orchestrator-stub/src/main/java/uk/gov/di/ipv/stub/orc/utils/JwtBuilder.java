@@ -41,19 +41,31 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDI
 
 public class JwtBuilder {
     public static final String URN_UUID = "urn:uuid:";
+    public static final String INVALID_AUDIENCE = "invalid-audience";
+    public static final String INVALID_REDIRECT_URI = "http://example.com";
 
-    public static JWTClaimsSet buildAuthorizationRequestClaims() {
+    public static JWTClaimsSet buildAuthorizationRequestClaims(String errorType) {
+        String audience = IPV_CORE_AUDIENCE;
+        String redirectUri = ORCHESTRATOR_REDIRECT_URL;
+        if (errorType != null) {
+            if (errorType.equals("recoverable")) {
+                audience = INVALID_AUDIENCE;
+            } else {
+                redirectUri = INVALID_REDIRECT_URI;
+            }
+        }
+
         Instant now = Instant.now();
         return new JWTClaimsSet.Builder()
                 .subject(URN_UUID + UUID.randomUUID())
-                .audience(IPV_CORE_AUDIENCE)
+                .audience(audience)
                 .issueTime(Date.from(now))
                 .issuer(ORCHESTRATOR_CLIENT_ID)
                 .notBeforeTime(Date.from(now))
                 .expirationTime(generateExpirationTime(now))
                 .claim("client_id", ORCHESTRATOR_CLIENT_ID)
                 .claim("response_type", ResponseType.Value.CODE.toString())
-                .claim("redirect_uri", ORCHESTRATOR_REDIRECT_URL)
+                .claim("redirect_uri", redirectUri)
                 .claim("state", UUID.randomUUID().toString())
                 .build();
     }

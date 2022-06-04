@@ -61,6 +61,15 @@
             <input type="hidden" name="journeyType" value="full" />
             <input class="govuk-button" data-module="govuk-button" type="submit" value="Full journey route">
         </form>
+        <form action="/authorize">
+            <label class="govuk-label" for="error">Choose an error type:</label>
+            <select class="govuk-select" name="error" id="error">
+                <option value="recoverable">Recoverable</option>
+                <option value="non-recoverable">Non-Recoverable</option>
+            </select>
+            <input type="hidden" name="journeyType" value="full" />
+            <input class="govuk-button" data-module="govuk-button" type="submit" value="Error journey route">
+        </form>
     </main>
 </div>
 

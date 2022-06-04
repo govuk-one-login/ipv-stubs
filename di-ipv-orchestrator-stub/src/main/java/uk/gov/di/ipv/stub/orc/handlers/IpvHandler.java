@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import uk.gov.di.ipv.stub.orc.exceptions.OauthException;
 import uk.gov.di.ipv.stub.orc.exceptions.OrchestratorStubException;
 import uk.gov.di.ipv.stub.orc.utils.JwtBuilder;
 import uk.gov.di.ipv.stub.orc.utils.ViewHelper;
@@ -75,7 +76,9 @@ public class IpvHandler {
                                 ? new URI(IPV_ENDPOINT).resolve("/oauth2/debug-authorize")
                                 : new URI(IPV_ENDPOINT).resolve("/oauth2/authorize");
 
-                JWTClaimsSet claims = JwtBuilder.buildAuthorizationRequestClaims();
+                String errorType = request.queryMap().get("error").value();
+
+                JWTClaimsSet claims = JwtBuilder.buildAuthorizationRequestClaims(errorType);
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
                 EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt);
                 var authRequest =
@@ -95,12 +98,11 @@ public class IpvHandler {
 
     public Route doCallback =
             (Request request, Response response) -> {
-                var authorizationCode = getAuthorizationCode(request);
-
                 List<Map<String, Object>> mustacheData = new ArrayList<>();
                 Map<String, Object> moustacheDataModel = new HashMap<>();
-
                 try {
+                    var authorizationCode = getAuthorizationCode(request);
+
                     var accessToken = exchangeCodeForToken(authorizationCode);
 
                     var userInfo = getUserInfo(accessToken);
@@ -112,19 +114,31 @@ public class IpvHandler {
                     mustacheData = buildMustacheData(userInfo);
                     moustacheDataModel.put("data", mustacheData);
                 } catch (OrchestratorStubException | ParseException | JsonSyntaxException e) {
-                    moustacheDataModel.put("error", e.getMessage());
+                    List<Map<String, Object>> errorObject =
+                            List.of(Map.of("error_message", e.getMessage()));
+                    moustacheDataModel.put("error", errorObject);
+                } catch (OauthException e) {
+                    List<Map<String, Object>> errorObject =
+                            List.of(
+                                    Map.of(
+                                            "error",
+                                            e.getErrorObject().getCode(),
+                                            "error_description",
+                                            e.getErrorObject().getDescription()));
+                    moustacheDataModel.put("error", errorObject);
                 }
 
                 return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
             };
 
-    private AuthorizationCode getAuthorizationCode(Request request) throws ParseException {
+    private AuthorizationCode getAuthorizationCode(Request request)
+            throws ParseException, OauthException {
         var authorizationResponse =
                 AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
             logger.error("Failed authorization code request: {}", error);
-            throw new RuntimeException("Failed authorization code request");
+            throw new OauthException(error);
         }
 
         return authorizationResponse.toSuccessResponse().getAuthorizationCode();
