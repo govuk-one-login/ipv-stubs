@@ -142,6 +142,11 @@ public class HandlerHelper {
                     "Found api key and sending it in token request to cri: {}",
                     credentialIssuer.id());
             httpRequest.setHeader(API_KEY_HEADER, apiKey);
+        } else {
+            LOGGER.warn(
+                    "Did not find api key for env var {}, not setting api key header {} in token request",
+                    credentialIssuer.apiKeyEnvVar(),
+                    API_KEY_HEADER);
         }
 
         var httpTokenResponse = sendHttpRequest(httpRequest);
@@ -178,7 +183,7 @@ public class HandlerHelper {
             userInfoRequest.setHeader(API_KEY_HEADER, apiKey);
         } else {
             LOGGER.warn(
-                    "Did not find api key for env var {}, not setting api key header {}",
+                    "Did not find api key for env var {}, not setting api key header {} in credential request",
                     credentialIssuer.apiKeyEnvVar(),
                     API_KEY_HEADER);
         }
