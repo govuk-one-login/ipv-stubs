@@ -11,4 +11,5 @@ public record CredentialIssuer(
         URI audience,
         boolean sendIdentityClaims,
         String expectedAlgo,
-        String publicEncryptionJwkBase64) {}
+        String publicEncryptionJwkBase64,
+        String apiKeyEnvVar) {}

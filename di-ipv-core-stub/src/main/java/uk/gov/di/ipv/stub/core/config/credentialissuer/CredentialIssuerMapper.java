@@ -14,6 +14,7 @@ public class CredentialIssuerMapper {
         URI audience = URI.create((String) map.get("audience"));
         boolean sendIdentityClaims = Boolean.TRUE.equals(map.get("sendIdentityClaims"));
         String publicEncryptionJwkBase64 = (String) map.get("publicEncryptionJwkBase64");
+        String apiKeyEnvVar = (String) map.get("apiKeyEnvVar");
         return new CredentialIssuer(
                 id,
                 name,
@@ -23,6 +24,7 @@ public class CredentialIssuerMapper {
                 audience,
                 sendIdentityClaims,
                 "ES256",
-                publicEncryptionJwkBase64);
+                publicEncryptionJwkBase64,
+                apiKeyEnvVar);
     }
 }
