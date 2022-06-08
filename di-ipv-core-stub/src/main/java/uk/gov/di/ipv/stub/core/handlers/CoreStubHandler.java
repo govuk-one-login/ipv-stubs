@@ -20,8 +20,16 @@ import uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper;
 import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
 import uk.gov.di.ipv.stub.core.utils.ViewHelper;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -32,9 +40,42 @@ public class CoreStubHandler {
 
     private final Map<String, CredentialIssuer> stateSession = new HashMap<>();
     private HandlerHelper handlerHelper;
+    private Map<String, String> questionsMap = new HashMap<>();
 
     public CoreStubHandler(HandlerHelper handlerHelper) {
         this.handlerHelper = handlerHelper;
+
+        setQuestions();
+    }
+
+    private void setQuestions()  {
+        List<List<String>> records = new ArrayList<>();
+        InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("questions.csv");
+        try (        BufferedReader br = new BufferedReader(
+                new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+                records.add(Arrays.asList(values));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (records.size() != 2) {
+            throw new IllegalStateException("expected questions.csv to contain 2 rows");
+        }
+
+        List<String> qids = records.get(0);
+        List<String> questions = records.get(1);
+        if (qids.size() != questions.size()) {
+            throw new IllegalStateException("questions.csv question ids and answer sizes don't match: %d to %d".formatted(qids.size(), questions.size()));
+        }
+
+        for (int i = 0; i < qids.size(); i++) {
+            questionsMap.put(qids.get(i).toUpperCase(), questions.get(i));
+        }
+        LOGGER.info("✅  set %d questions".formatted(questionsMap.size()));
     }
 
     public Route serveHomePage =
@@ -143,6 +184,29 @@ public class CoreStubHandler {
                 response.redirect(authRequest.toURI().toString());
                 return null;
             };
+
+    public Route answers =
+            (Request request, Response response) -> {
+                var name = Objects.requireNonNull(request.queryParams("name"));
+                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                var rowNumber = Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
+                var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
+                var questionAndAnswers = new IdentityMapper().mapToQuestionAnswers(identity, questionsMap);
+
+                return ViewHelper.render(
+                        Map.of(
+                                "name",
+                                name,
+                                "cri",
+                                credentialIssuerId,
+                                "identity",
+                                identity,
+                                "questionAndAnswers",
+                                questionAndAnswers),
+                        "answers.mustache");
+
+            };
+
 
     private State createNewState(CredentialIssuer credentialIssuer) {
         var state = new State();

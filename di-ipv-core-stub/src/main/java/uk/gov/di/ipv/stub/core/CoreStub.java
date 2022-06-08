@@ -34,6 +34,7 @@ public class CoreStub {
         Spark.get("/authorize", coreStubHandler.authorize);
         Spark.get("/user-search", coreStubHandler.userSearch);
         Spark.get("/callback", coreStubHandler.doCallback);
+        Spark.get("/answers", coreStubHandler.answers);
         Spark.exception(Exception.class, exceptionHandler());
     }
 
