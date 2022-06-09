@@ -2,7 +2,6 @@ package uk.gov.di.ipv.stub.core.config.uatuser;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -97,9 +96,15 @@ public class IdentityMapper {
                                 null)));
     }
 
-    public List<QuestionAndAnswer> mapToQuestionAnswers(Identity identity, Map<String, String> questionsMap) {
+    public List<QuestionAndAnswer> mapToQuestionAnswers(
+            Identity identity, Map<String, String> questionsMap) {
         return identity.questions().questions().stream()
-                .map(q -> new QuestionAndAnswer(q.questionId().toUpperCase(), questionsMap.get(q.questionId().toUpperCase()), q.answer().answer()))
+                .map(
+                        q ->
+                                new QuestionAndAnswer(
+                                        q.questionId().toUpperCase(),
+                                        questionsMap.get(q.questionId().toUpperCase()),
+                                        q.answer().answer()))
                 .collect(toList());
     }
 }

@@ -48,11 +48,13 @@ public class CoreStubHandler {
         setQuestions();
     }
 
-    private void setQuestions()  {
+    private void setQuestions() {
         List<List<String>> records = new ArrayList<>();
-        InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream("questions.csv");
-        try (        BufferedReader br = new BufferedReader(
-                new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8))) {
+        InputStream resourceAsStream =
+                getClass().getClassLoader().getResourceAsStream("questions.csv");
+        try (BufferedReader br =
+                new BufferedReader(
+                        new InputStreamReader(resourceAsStream, StandardCharsets.UTF_8))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
@@ -69,7 +71,9 @@ public class CoreStubHandler {
         List<String> qids = records.get(0);
         List<String> questions = records.get(1);
         if (qids.size() != questions.size()) {
-            throw new IllegalStateException("questions.csv question ids and answer sizes don't match: %d to %d".formatted(qids.size(), questions.size()));
+            throw new IllegalStateException(
+                    "questions.csv question ids and answer sizes don't match: %d to %d"
+                            .formatted(qids.size(), questions.size()));
         }
 
         for (int i = 0; i < qids.size(); i++) {
@@ -189,9 +193,11 @@ public class CoreStubHandler {
             (Request request, Response response) -> {
                 var name = Objects.requireNonNull(request.queryParams("name"));
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
-                var rowNumber = Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
+                var rowNumber =
+                        Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
-                var questionAndAnswers = new IdentityMapper().mapToQuestionAnswers(identity, questionsMap);
+                var questionAndAnswers =
+                        new IdentityMapper().mapToQuestionAnswers(identity, questionsMap);
 
                 return ViewHelper.render(
                         Map.of(
@@ -204,9 +210,7 @@ public class CoreStubHandler {
                                 "questionAndAnswers",
                                 questionAndAnswers),
                         "answers.mustache");
-
             };
-
 
     private State createNewState(CredentialIssuer credentialIssuer) {
         var state = new State();
