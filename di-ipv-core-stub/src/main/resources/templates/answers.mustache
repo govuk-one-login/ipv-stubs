@@ -50,42 +50,35 @@
 
 <div class="govuk-width-container ">
     <main class="govuk-main-wrapper>" id="main-content" role="main">
-        <a href="/credential-issuer?cri={{cri}}" class="govuk-back-link">Back</a>
+        <a href="/user-search?cri={{cri}}&name={{name}}" class="govuk-back-link">Back</a>
         <div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
             <h2 class="govuk-heading-xl">
-                Experian UAT user search results
+                Answers to KBV Questions
             </h2>
         </div>
-
-
         <table class="govuk-table">
-            <caption class="govuk-table__caption govuk-table__caption--m">Search Results</caption>
+            <caption class="govuk-table__caption govuk-table__caption--m">{{identity.name.firstLastName}}</caption>
             <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header">User</th>
-                <th scope="col" class="govuk-table__header">Action</th>
-                <th scope="col" class="govuk-table__header">Number of questions</th>
+                <th scope="col" class="govuk-table__header">Question ID</th>
+                <th scope="col" class="govuk-table__header">Question</th>
+                <th scope="col" class="govuk-table__header">Answer</th>
             </tr>
             </thead>
             <tbody class="govuk-table__body">
-            {{#identities}}
+            {{#questionAndAnswers}}
                 <tr class="govuk-table__row">
-                    <th scope="row" class="govuk-table__header">{{name}}</th>
-                    <td class="govuk-table__cell">
-                        <p>
-                            <a href="/authorize?cri={{cri}}&rowNumber={{rowNumber}}">Go to {{criName}}</a>
-                        </p>
-                        <p>
-                            <a href="/answers?cri={{cri}}&rowNumber={{rowNumber}}&name={{name}}">View KBV Answers</a>
-                        </p>
-                    </td>
-                    <td class="govuk-table__cell">{{numQuestions}}</td>
+                    <th scope="row" class="govuk-table__header">{{questionId}}</th>
+                    <td class="govuk-table__cell">{{questionText}}</td>
+                    <td class="govuk-table__cell">{{answer}}</td>
                 </tr>
-            {{/identities}}
+            {{/questionAndAnswers}}
             </tbody>
         </table>
+
     </main>
 </div>
+
 
 <footer class="govuk-footer " role="contentinfo">
     <div class="govuk-width-container ">

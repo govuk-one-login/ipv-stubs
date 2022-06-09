@@ -95,4 +95,16 @@ public class IdentityMapper {
                                 LocalDate.of(2021, 1, 1),
                                 null)));
     }
+
+    public List<QuestionAndAnswer> mapToQuestionAnswers(
+            Identity identity, Map<String, String> questionsMap) {
+        return identity.questions().questions().stream()
+                .map(
+                        q ->
+                                new QuestionAndAnswer(
+                                        q.questionId().toUpperCase(),
+                                        questionsMap.get(q.questionId().toUpperCase()),
+                                        q.answer().answer()))
+                .collect(toList());
+    }
 }
