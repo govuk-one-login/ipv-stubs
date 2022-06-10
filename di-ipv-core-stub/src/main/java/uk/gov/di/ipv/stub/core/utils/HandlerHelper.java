@@ -111,7 +111,7 @@ public class HandlerHelper {
     }
 
     public AccessToken exchangeCodeForToken(
-            AuthorizationCode authorizationCode, CredentialIssuer credentialIssuer)
+            AuthorizationCode authorizationCode, CredentialIssuer credentialIssuer, State state)
             throws JOSEException {
 
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
@@ -149,6 +149,8 @@ public class HandlerHelper {
                     API_KEY_HEADER);
         }
 
+        LOGGER.info(
+                "🤞 sending OAuth token request for state {} to {}", state, httpRequest.getURL());
         var httpTokenResponse = sendHttpRequest(httpRequest);
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
 
@@ -170,7 +172,8 @@ public class HandlerHelper {
         }
     }
 
-    public String getUserInfo(AccessToken accessToken, CredentialIssuer credentialIssuer) {
+    public String getUserInfo(
+            AccessToken accessToken, CredentialIssuer credentialIssuer, State state) {
         HTTPRequest userInfoRequest =
                 new HTTPRequest(HTTPRequest.Method.POST, credentialIssuer.credentialUrl());
 
@@ -189,6 +192,10 @@ public class HandlerHelper {
         }
 
         userInfoRequest.setAuthorization(accessToken.toAuthorizationHeader());
+        LOGGER.info(
+                "🎁 sending OAuth credential issue for state {} to {}",
+                state,
+                userInfoRequest.getURL());
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest);
         return userInfoHttpResponse.getContent();
     }

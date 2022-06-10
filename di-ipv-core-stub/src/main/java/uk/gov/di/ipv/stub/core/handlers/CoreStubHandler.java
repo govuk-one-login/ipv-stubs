@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.id.State;
@@ -127,12 +126,16 @@ public class CoreStubHandler {
                 var authorizationCode =
                         authorizationResponse.toSuccessResponse().getAuthorizationCode();
                 var state = authorizationResponse.toSuccessResponse().getState();
+                LOGGER.info("👈 received callback for state {}", state);
                 var credentialIssuer = stateSession.remove(state.getValue());
                 var accessToken =
-                        handlerHelper.exchangeCodeForToken(authorizationCode, credentialIssuer);
+                        handlerHelper.exchangeCodeForToken(
+                                authorizationCode, credentialIssuer, state);
                 LOGGER.info("access token value: " + accessToken.getValue());
                 var userInfo =
-                        SignedJWT.parse(handlerHelper.getUserInfo(accessToken, credentialIssuer))
+                        SignedJWT.parse(
+                                        handlerHelper.getUserInfo(
+                                                accessToken, credentialIssuer, state))
                                 .getJWTClaimsSet()
                                 .toString();
 
@@ -163,10 +166,10 @@ public class CoreStubHandler {
                                     credentialIssuer.name()),
                             "user-search.mustache");
                 } else {
-                    SignedJWT jwt = createSignedClaimJwt(credentialIssuer, Map.of());
                     State state = createNewState(credentialIssuer);
                     AuthorizationRequest authRequest =
                             handlerHelper.createAuthorizationJAR(state, credentialIssuer, null);
+                    LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);
                     response.redirect(authRequest.toURI().toString());
                     return null;
                 }
@@ -180,11 +183,11 @@ public class CoreStubHandler {
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
                 var claimIdentity = new IdentityMapper().mapToSharedClaim(identity);
-                var jwt = createSignedClaimJwt(credentialIssuer, claimIdentity);
                 var state = createNewState(credentialIssuer);
                 var authRequest =
                         handlerHelper.createAuthorizationJAR(
                                 state, credentialIssuer, claimIdentity);
+                LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);
                 response.redirect(authRequest.toURI().toString());
                 return null;
             };
@@ -216,10 +219,5 @@ public class CoreStubHandler {
         var state = new State();
         stateSession.put(state.getValue(), credentialIssuer);
         return state;
-    }
-
-    private SignedJWT createSignedClaimJwt(CredentialIssuer credentialIssuer, Object claims)
-            throws JOSEException {
-        return handlerHelper.createSignedJWT(claims, credentialIssuer);
     }
 }
