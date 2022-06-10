@@ -43,6 +43,7 @@ public class IdentityMapper {
         UKAddress address =
                 new UKAddress(
                         houseNo,
+                        map.get("houseName"),
                         map.get("street"),
                         map.get("district"),
                         map.get("posttown"),
@@ -85,9 +86,9 @@ public class IdentityMapper {
                 List.of(new DateOfBirth(identity.findDateOfBirth().getDOB())),
                 List.of(
                         new CanonicalAddress(
-                                identity.UKAddress().street1(),
-                                null,
-                                identity.UKAddress().street2(),
+                                identity.UKAddress().buildingNumber(),
+                                identity.UKAddress().buildingName(),
+                                identity.UKAddress().street(),
                                 identity.UKAddress().townCity(),
                                 identity.UKAddress().postCode(),
                                 // default / arbitrary value assigned for now as
