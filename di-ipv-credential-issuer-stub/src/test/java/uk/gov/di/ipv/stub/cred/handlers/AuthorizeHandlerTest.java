@@ -62,6 +62,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -339,6 +340,7 @@ class AuthorizeHandlerTest {
         Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
         assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
         assertEquals("test-value", persistedAttributes.get("test"));
+        assertArrayEquals(new String[] {"A01", "D03"}, (String[]) persistedEvidence.get("ci"));
         assertEquals("IdentityCheck", persistedEvidence.get("type"));
         assertNotNull(persistedEvidence.get("txn"));
         assertNotNull(persistedEvidence.get("strengthScore"));
@@ -488,6 +490,8 @@ class AuthorizeHandlerTest {
                 new String[] {"26c6ad15-a595-4e13-9497-f7c891fabe1d"});
         queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, new String[] {"2"});
         queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[] {"3"});
+        queryParams.put(
+                CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, new String[] {"A01,D03"});
         return queryParams;
     }
 

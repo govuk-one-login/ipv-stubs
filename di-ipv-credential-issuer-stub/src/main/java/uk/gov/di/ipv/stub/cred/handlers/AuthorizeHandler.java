@@ -229,6 +229,14 @@ public class AuthorizeHandler {
                                     queryParamsMap.value(
                                             CredentialIssuerConfig.VERIFICATION_PARAM));
 
+                    String ciString =
+                            queryParamsMap.value(
+                                    CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM);
+                    if (!ciString.trim().isEmpty()) {
+                        String[] ciList = ciString.split(",");
+                        gpgMap.put(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, ciList);
+                    }
+
                     Credential credential =
                             new Credential(combinedAttributeJson, gpgMap, userId, clientIdValue);
 
