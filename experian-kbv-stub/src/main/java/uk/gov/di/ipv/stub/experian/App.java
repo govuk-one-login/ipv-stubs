@@ -11,7 +11,7 @@ public class App {
     }
 
     public App() throws JAXBException {
-        Spark.port(Integer.parseInt(Config.CORE_STUB_PORT));
+        Spark.port(Integer.parseInt(Config.PORT));
 
         Handler handler = new Handler();
 

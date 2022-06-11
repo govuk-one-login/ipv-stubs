@@ -4,10 +4,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class Config {
-    public static final String CORE_STUB_PORT = getConfigValue("CORE_STUB_PORT", "8090");
+    public static final String PORT = getConfigValue("PORT", "8080");
 
     private static String getConfigValue(String key, String defaultValue) {
-        return Optional.ofNullable(System.getenv(Objects.requireNonNull(key, "no key")))
+        return Optional.ofNullable(
+                        System.getenv(Objects.requireNonNull(key, "no env var specified")))
                 .orElse(Objects.requireNonNull(defaultValue, "no default value"));
     }
 }
