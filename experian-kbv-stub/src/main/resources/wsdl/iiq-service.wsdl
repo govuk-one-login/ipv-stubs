@@ -1,0 +1,1206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+                  xmlns:tns="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  targetNamespace="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService">
+    <wsdl:types>
+        <s:schema elementFormDefault="qualified"
+                  targetNamespace="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService">
+            <s:element name="ABN">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="aBNRequest" type="tns:ABNRequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="ABNRequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Control">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="URN" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AuthRefNo" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="DateTime" type="tns:DateTime"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="TestDatabase" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ClientAccountNo" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ClientBranchNo" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="OperatorID" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Parameters" type="tns:Parameters"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="DateTime">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Date" type="tns:Date"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Time" type="tns:Time"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Date">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="CCYY" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="MM" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="DD" type="s:int"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Time">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="Hours" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="Minutes" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="Seconds" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="Millisecond" type="s:int"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Parameters">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="OneShotAuthentication" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="StoreCaseData" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="ABNResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="ABNResult" type="tns:ABNResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="ABNResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Results" type="tns:Results"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Results">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Outcome" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AuthenticationResult" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Questions" type="tns:ResultsQuestions"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Alerts" type="tns:ArrayOfAlerts"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NextTransId" type="tns:ArrayOfString"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="CaseFoundFlag" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ConfirmationCode" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ResultsQuestions">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="Asked" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="Correct" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="Incorrect" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="Skipped" type="s:int"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ArrayOfAlerts">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="Alerts" nillable="true" type="tns:Alerts"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Alerts">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Code" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Text" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ArrayOfString">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="string" nillable="true" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Error">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="ErrorCode" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Message" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="RTQ">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="rTQRequest" type="tns:RTQRequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="RTQRequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Responses" type="tns:Responses"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Responses">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="Response" type="tns:Response"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Response">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="QuestionID" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AnswerGiven" type="s:string"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="CustResponseFlag" nillable="true" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="AnswerActionFlag" type="tns:AnswerActionFlag"/>
+                </s:sequence>
+            </s:complexType>
+            <s:simpleType name="AnswerActionFlag">
+                <s:restriction base="s:string">
+                    <s:enumeration value=""/>
+                    <s:enumeration value="A"/>
+                    <s:enumeration value="U"/>
+                    <s:enumeration value="D"/>
+                </s:restriction>
+            </s:simpleType>
+            <s:element name="RTQResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="RTQResult" type="tns:RTQResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="RTQResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Questions" type="tns:Questions"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Results" type="tns:Results"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Questions">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="Question" type="tns:Question"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="SkipsRemaining" nillable="true" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="SkipWarning" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Question">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="QuestionID" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Text" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Tooltip" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AnswerFormat" type="tns:AnswerFormat"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AnswerHeldFlag" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="AnswerFormat">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Identifier" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="FieldType" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="AnswerList" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="SAA">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="sAARequest" type="tns:SAARequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="SAARequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Applicant" type="tns:Applicant"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicationData" type="tns:ApplicationData"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="LocationDetails" type="tns:LocationDetails"/>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="Residency" type="tns:Residency"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ThirdPartyData" type="tns:ThirdPartyData"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AdditionalStrategyFields"
+                               type="tns:AdditionalStrategyFields"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Applicant">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicantIdentifier" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Name" type="tns:ApplicantName"/>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="Alias" type="tns:ApplicantAlias"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Gender" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="DateOfBirth" type="tns:ApplicantDateOfBirth"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="FormattedName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="FormattedDOB" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Age" type="tns:ApplicantAge"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="CVPPersonID" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ClientPersonID" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ApplicantName">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Title" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Forename" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="MiddleName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Surname" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Suffix" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ApplicantAlias">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Title" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Forename" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="MiddleName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Surname" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Suffix" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Source" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Gender" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ApplicantDateOfBirth">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="CCYY" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="MM" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="DD" type="s:int"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ApplicantAge">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="Years" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="Months" type="s:int"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ApplicationData">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicationType" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Channel" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Product" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="SearchConsent" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="SystemLocked" type="tns:SystemLocked"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ExcludeQuestionCategories"
+                               type="tns:ArrayOfExcludeQuestionCategories"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicantException" type="tns:ApplicantException"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="SystemLocked">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="Indicator" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LockDate" type="tns:Date"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ExpiryDate" type="tns:Date"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ArrayOfExcludeQuestionCategories">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="ExcludeQuestionCategories" nillable="true"
+                               type="tns:ExcludeQuestionCategories"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ExcludeQuestionCategories">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="CurrentAddress" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="PreviousAddress" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Alias" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Mortgage" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Loan" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="CurrentAccount" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="CreditCard" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="MobilePhone" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="StoreCard" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="JointAccounts" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ClosedAccounts" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="PersonalDetails" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="RecentApplicationsForCredit" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="BankDetails" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="DirectorInformation" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ONSBirthDetails" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="CitizenCardDetails" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="VotersRoll" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Utility" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Insurance" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="HomeCredit" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ChargeCard" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="BuyToLetMortgage" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Communications" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="EntertainmesntServices" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ApplicantException">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="ExceptionFlag" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="messageCode" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="LocationDetails">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="LocationIdentifier" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="UKLocation" type="tns:LocationDetailsUKLocation"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="BFPOLocation" type="tns:LocationDetailsBFPOLocation"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="OverseasLocation"
+                               type="tns:LocationDetailsOverseasLocation"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="RMC" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="RegionNumber" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="CVPLocationID" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ClientLocationID" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="MultiLineLocation"
+                               type="tns:LocationDetailsMultiLineLocation"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="FormattedLocation" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="LocationDetailsUKLocation">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Flat" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="HouseName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="HouseNumber" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Street" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Street2" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="District" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="District2" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="PostTown" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="County" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Postcode" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="POBox" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Country" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="SharedLetterbox" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="LocationDetailsBFPOLocation">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine1" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine2" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine3" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine4" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine5" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine6" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Postcode" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="LocationDetailsOverseasLocation">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine1" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine2" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine3" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine4" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine5" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine6" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="LocationDetailsMultiLineLocation">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine1" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine2" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine3" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine4" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine5" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationLine6" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Residency">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="ApplicantIdentifier" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="LocationIdentifier" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationCode" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="TimeAt" type="tns:ResidencyTimeAt"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ResidencyDateFrom"
+                               type="tns:ResidencyResidencyDateFrom"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ResidencyDateTo" type="tns:ResidencyResidencyDateTo"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="TruvueID" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="SearchFlag" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="VRConfirmation" type="tns:ResidencyVRConfirmation"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="CVPResidencyID" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ClientResidencyID" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ResidencyTimeAt">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="Years" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="Months" type="s:int"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ResidencyResidencyDateFrom">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="CCYY" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="MM" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="DD" type="s:int"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ResidencyResidencyDateTo">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="CCYY" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="MM" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="DD" type="s:int"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ResidencyVRConfirmation">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Confirmed" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Surname" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Forename" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="YrsERSP" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="YrsERSF" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ThirdPartyData">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="OutcomeCode" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="OptOut" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="TransientAssocs" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="HHOAllowed" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="OptOutValidCutOff" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="AdditionalStrategyFields">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Spare1" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Spare2" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Spare3" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Spare4" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Spare5" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="SAAResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="SAAResult" type="tns:SAAResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="SAAResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Questions" type="tns:Questions"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Results" type="tns:Results"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="ASA">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="aSARequest" type="tns:ASARequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="ASARequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Responses" type="tns:Responses"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="ASAResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="ASAResult" type="tns:ASAResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="ASAResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Results" type="tns:Results"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="CMS">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="cMSRequest" type="tns:CMSRequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="CMSRequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="CMSResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="CMSResult" type="tns:CMSResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="CMSResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Applicant" type="tns:Applicant"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicationData" type="tns:ApplicationData"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="CaseHistory" type="tns:ArrayOfCaseHistory"/>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="LocationDetails" type="tns:LocationDetails"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Results" type="tns:Results"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Questions" type="tns:Questions"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ArrayOfCaseHistory">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="CaseHistory" nillable="true"
+                               type="tns:CaseHistory"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="CaseHistory">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="DateOfAuth" type="tns:Date"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="TimeOfAuth" type="tns:Time"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="OperatorID" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Decision" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Channel" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Product" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Questions" type="tns:ResultsQuestions"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ERN" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="IAT">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="iATRequest" type="tns:IATRequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="IATRequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Applicant" type="tns:Applicant"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="LocationDetails" type="tns:LocationDetails"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Residency" type="tns:Residency"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ThirdPartyData" type="tns:ThirdPartyData"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="IATResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="IATResult" type="tns:IATResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="IATResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Address" type="tns:LocationDetails"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="MultipleLocations"
+                               type="tns:ArrayOfMultipleLocations"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="CheckDetails" type="tns:CheckDetails"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Results" type="tns:Results"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ArrayOfMultipleLocations">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="MultipleLocations" nillable="true"
+                               type="tns:MultipleLocations"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="MultipleLocations">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="LocationIdentifier" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="UKLocation" type="tns:LocationDetailsUKLocation"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="CheckDetails">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="LocationIdentifier" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="FlatCheck" type="tns:CheckStatus"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="HouseNameCheck" type="tns:CheckStatus"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="HouseNumberCheck" type="tns:CheckStatus"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="StreetCheck" type="tns:CheckStatus"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="DistrictCheck" type="tns:CheckStatus"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="TownCheck" type="tns:CheckStatus"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="CountyCheck" type="tns:CheckStatus"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="PostcodeCheck" type="tns:CheckStatus"/>
+                </s:sequence>
+            </s:complexType>
+            <s:simpleType name="CheckStatus">
+                <s:restriction base="s:string">
+                    <s:enumeration value="A"/>
+                    <s:enumeration value="E"/>
+                    <s:enumeration value="R"/>
+                    <s:enumeration value="C"/>
+                    <s:enumeration value=""/>
+                </s:restriction>
+            </s:simpleType>
+            <s:element name="EFR">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="efrRequest" type="tns:EFRRequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="EFRRequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="EFRResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="EFRResult" type="tns:EFRResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="EFRResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicationData" type="tns:ApplicationData"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="EFU">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="efuRequest" type="tns:EFURequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="EFURequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicationData" type="tns:ApplicationData"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="EFUResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="EFUResult" type="tns:EFUResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="EFUResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicationData" type="tns:ApplicationData"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Results" type="tns:Results"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="VAR">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="varRequest" type="tns:VARRequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="VARRequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportData" type="tns:Report"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Report">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportType" type="s:string"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="isReportTodays" type="s:boolean"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="isReportLatest" type="s:boolean"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Reports" type="tns:ArrayOfReports"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ArrayOfReports">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="Reports" nillable="true" type="tns:Reports"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="Reports">
+                <s:sequence>
+                    <s:element minOccurs="1" maxOccurs="1" name="CreationOn" type="s:dateTime"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportTitle" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportURL" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportType" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="VARResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="VARResult" type="tns:VARResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="VARResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportData" type="tns:Report"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="VIR">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="virRequest" type="tns:VIRRequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="VIRRequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportDetailData" type="tns:ReportDetailData"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ReportDetailData">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportDetails" type="tns:ArrayOfReportDetails"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportType" type="s:string"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="CreatedOn" type="s:dateTime"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ArrayOfReportDetails">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="ReportDetails" nillable="true"
+                               type="tns:ReportDetails"/>
+                </s:sequence>
+            </s:complexType>
+            <s:complexType name="ReportDetails">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="ClientName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AccountNumber" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="BranchNumber" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="OperatorId" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportId" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportDate" type="s:dateTime"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="StrategyName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="TierName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ChannelName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="TotalNumberOfTransactions" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AuthPercent" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NotAuthPercent" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="UnableAuthPercent" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AbandonedPercent" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="HeldTypeFlag" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="URNNumber" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="FlagType" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NoFlagType" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="CreationDate" type="s:dateTime"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="QuestionId" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="QuestionType" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Tolerance" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AnswerFormatName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NumberAnswerHeld" type="s:int"/>
+                    <s:element minOccurs="1" maxOccurs="1" name="NoOfTimesAnswered" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NumberCorrectPercent" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NumberInCorrectPercent" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NumberSkippedPercent" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="WrongByAvg" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NumberOfAuthenticated" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NumberOfNotAuthenticated" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NumberOfUnableAuthenticate" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NumberOfAbandoned" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicationDate" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicationTime" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ClientConsent" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Title" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="FirstName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="MiddleName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Surname" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="DateOfBirth" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Sex" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="FlatNumber" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="HouseName" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="HouseNumber" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Street" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="District" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Town" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="County" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="PostCode" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NoQuestionAsked" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NoQuestionCorrect" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NoQuestionInCorrect" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="NoQuestionSkipped" type="s:int"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Decision" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ERNNumber" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Product" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="QuestionTypes" type="s:string"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="AlertsGenerated" type="s:string"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="VIRResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="VIRResult" type="tns:VIRResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="VIRResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ReportDetailData" type="tns:ReportDetailData"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="CAA">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="cAARequest" type="tns:CAARequest"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="CAARequest">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Applicant" type="tns:Applicant"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ApplicationData" type="tns:ApplicationData"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="LocationDetails" type="tns:LocationDetails"/>
+                    <s:element minOccurs="0" maxOccurs="unbounded" name="Residency" type="tns:Residency"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="ThirdPartyData" type="tns:ThirdPartyData"/>
+                </s:sequence>
+            </s:complexType>
+            <s:element name="CAAResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="CAAResult" type="tns:CAAResponse"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:complexType name="CAAResponse">
+                <s:sequence>
+                    <s:element minOccurs="0" maxOccurs="1" name="Control" type="tns:Control"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Error" type="tns:Error"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Questions" type="tns:Questions"/>
+                    <s:element minOccurs="0" maxOccurs="1" name="Results" type="tns:Results"/>
+                </s:sequence>
+            </s:complexType>
+        </s:schema>
+    </wsdl:types>
+    <wsdl:message name="ABNSoapIn">
+        <wsdl:part name="parameters" element="tns:ABN"/>
+    </wsdl:message>
+    <wsdl:message name="ABNSoapOut">
+        <wsdl:part name="parameters" element="tns:ABNResponse"/>
+    </wsdl:message>
+    <wsdl:message name="RTQSoapIn">
+        <wsdl:part name="parameters" element="tns:RTQ"/>
+    </wsdl:message>
+    <wsdl:message name="RTQSoapOut">
+        <wsdl:part name="parameters" element="tns:RTQResponse"/>
+    </wsdl:message>
+    <wsdl:message name="SAASoapIn">
+        <wsdl:part name="parameters" element="tns:SAA"/>
+    </wsdl:message>
+    <wsdl:message name="SAASoapOut">
+        <wsdl:part name="parameters" element="tns:SAAResponse"/>
+    </wsdl:message>
+    <wsdl:message name="ASASoapIn">
+        <wsdl:part name="parameters" element="tns:ASA"/>
+    </wsdl:message>
+    <wsdl:message name="ASASoapOut">
+        <wsdl:part name="parameters" element="tns:ASAResponse"/>
+    </wsdl:message>
+    <wsdl:message name="CMSSoapIn">
+        <wsdl:part name="parameters" element="tns:CMS"/>
+    </wsdl:message>
+    <wsdl:message name="CMSSoapOut">
+        <wsdl:part name="parameters" element="tns:CMSResponse"/>
+    </wsdl:message>
+    <wsdl:message name="IATSoapIn">
+        <wsdl:part name="parameters" element="tns:IAT"/>
+    </wsdl:message>
+    <wsdl:message name="IATSoapOut">
+        <wsdl:part name="parameters" element="tns:IATResponse"/>
+    </wsdl:message>
+    <wsdl:message name="EFRSoapIn">
+        <wsdl:part name="parameters" element="tns:EFR"/>
+    </wsdl:message>
+    <wsdl:message name="EFRSoapOut">
+        <wsdl:part name="parameters" element="tns:EFRResponse"/>
+    </wsdl:message>
+    <wsdl:message name="EFUSoapIn">
+        <wsdl:part name="parameters" element="tns:EFU"/>
+    </wsdl:message>
+    <wsdl:message name="EFUSoapOut">
+        <wsdl:part name="parameters" element="tns:EFUResponse"/>
+    </wsdl:message>
+    <wsdl:message name="VARSoapIn">
+        <wsdl:part name="parameters" element="tns:VAR"/>
+    </wsdl:message>
+    <wsdl:message name="VARSoapOut">
+        <wsdl:part name="parameters" element="tns:VARResponse"/>
+    </wsdl:message>
+    <wsdl:message name="VIRSoapIn">
+        <wsdl:part name="parameters" element="tns:VIR"/>
+    </wsdl:message>
+    <wsdl:message name="VIRSoapOut">
+        <wsdl:part name="parameters" element="tns:VIRResponse"/>
+    </wsdl:message>
+    <wsdl:message name="CAASoapIn">
+        <wsdl:part name="parameters" element="tns:CAA"/>
+    </wsdl:message>
+    <wsdl:message name="CAASoapOut">
+        <wsdl:part name="parameters" element="tns:CAAResponse"/>
+    </wsdl:message>
+    <wsdl:portType name="IdentityIQWebServiceSoap">
+        <wsdl:operation name="ABN">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Abandon</wsdl:documentation>
+            <wsdl:input message="tns:ABNSoapIn"/>
+            <wsdl:output message="tns:ABNSoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="RTQ">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Respond to Questions</wsdl:documentation>
+            <wsdl:input message="tns:RTQSoapIn"/>
+            <wsdl:output message="tns:RTQSoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="SAA">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Start Authentication Attempt
+            </wsdl:documentation>
+            <wsdl:input message="tns:SAASoapIn"/>
+            <wsdl:output message="tns:SAASoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="ASA">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Amend Security Answers
+            </wsdl:documentation>
+            <wsdl:input message="tns:ASASoapIn"/>
+            <wsdl:output message="tns:ASASoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="CMS">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Case Management Summary
+            </wsdl:documentation>
+            <wsdl:input message="tns:CMSSoapIn"/>
+            <wsdl:output message="tns:CMSSoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="IAT">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">IAT</wsdl:documentation>
+            <wsdl:input message="tns:IATSoapIn"/>
+            <wsdl:output message="tns:IATSoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="EFR">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Exception Flag Retrieve
+            </wsdl:documentation>
+            <wsdl:input message="tns:EFRSoapIn"/>
+            <wsdl:output message="tns:EFRSoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="EFU">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Exception Flag Update</wsdl:documentation>
+            <wsdl:input message="tns:EFUSoapIn"/>
+            <wsdl:output message="tns:EFUSoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="VAR">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">View Available Reports
+            </wsdl:documentation>
+            <wsdl:input message="tns:VARSoapIn"/>
+            <wsdl:output message="tns:VARSoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="VIR">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">View Individual Reports
+            </wsdl:documentation>
+            <wsdl:input message="tns:VIRSoapIn"/>
+            <wsdl:output message="tns:VIRSoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="CAA">
+            <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Continue Authentication Attempt
+            </wsdl:documentation>
+            <wsdl:input message="tns:CAASoapIn"/>
+            <wsdl:output message="tns:CAASoapOut"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="IdentityIQWebServiceSoap" type="tns:IdentityIQWebServiceSoap">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="ABN">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/ABN"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="RTQ">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/RTQ"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="SAA">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/SAA"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="ASA">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/ASA"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="CMS">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/CMS"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="IAT">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/IAT"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="EFR">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/EFR"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="EFU">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/EFU"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="VAR">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/VAR"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="VIR">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/VIR"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="CAA">
+            <soap:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/CAA"
+                            style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:binding name="IdentityIQWebServiceSoap12" type="tns:IdentityIQWebServiceSoap">
+        <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="ABN">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/ABN"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="RTQ">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/RTQ"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="SAA">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/SAA"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="ASA">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/ASA"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="CMS">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/CMS"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="IAT">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/IAT"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="EFR">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/EFR"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="EFU">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/EFU"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="VAR">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/VAR"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="VIR">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/VIR"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="CAA">
+            <soap12:operation soapAction="http://schema.uk.experian.com/Experian/IdentityIQ/Services/WebService/CAA"
+                              style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="IdentityIQWebService">
+        <wsdl:port name="IdentityIQWebServiceSoap" binding="tns:IdentityIQWebServiceSoap">
+            <soap:address
+                    location="https://identityiq.uat.xml.uk.experian.com/IdentityIQWebService/IdentityIQWebService.asmx"/>
+        </wsdl:port>
+        <wsdl:port name="IdentityIQWebServiceSoap12" binding="tns:IdentityIQWebServiceSoap12">
+            <soap12:address
+                    location="https://identityiq.uat.xml.uk.experian.com/IdentityIQWebService/IdentityIQWebService.asmx"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>
