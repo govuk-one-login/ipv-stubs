@@ -13,6 +13,7 @@ import com.experian.uk.schema.experian.identityiq.services.webservice.ResultsQue
 import com.experian.uk.schema.experian.identityiq.services.webservice.SAARequest;
 import com.experian.uk.schema.experian.identityiq.services.webservice.SAAResponse;
 import com.experian.uk.schema.experian.identityiq.services.webservice.SAAResponse2;
+import com.experian.uk.wasp.STSResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
@@ -37,12 +38,14 @@ public class Handler {
     private Marshaller saaResponseMarshaller;
     private Unmarshaller rtqUnmarshaller;
     private Marshaller rtqResponseMarshaller;
+    private Marshaller tokenResponseMarshaller;
 
     protected Handler() throws JAXBException {
         saaUnmarshaller = JAXBContext.newInstance(SAARequest.class).createUnmarshaller();
         saaResponseMarshaller = JAXBContext.newInstance(SAAResponse.class).createMarshaller();
         rtqUnmarshaller = JAXBContext.newInstance(RTQRequest.class).createUnmarshaller();
         rtqResponseMarshaller = JAXBContext.newInstance(RTQResponse.class).createMarshaller();
+        tokenResponseMarshaller = JAXBContext.newInstance(STSResponse.class).createMarshaller();
     }
 
     protected Route root = (Request request, Response response) -> "ok";
@@ -50,10 +53,24 @@ public class Handler {
     protected Route tokenRequest =
             (Request request, Response response) -> {
                 Set<String> headers = request.headers();
-                headers.forEach(h -> LOGGER.info(request.headers(h)));
+                headers.forEach(h -> LOGGER.info(h  + "=" + request.headers(h)));
                 String body = request.body();
                 LOGGER.info("body is " + body);
-                return "a token";
+                STSResponse stsResponse = new STSResponse();
+                stsResponse.setSTSResult("stub-token-" + System.currentTimeMillis());
+                StringWriter sw = new StringWriter();
+                tokenResponseMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+                tokenResponseMarshaller.marshal(stsResponse, sw);
+                response.header("Content-Type", "application/soap+xml");
+
+                String s = sw.toString();
+                String top = "<?xml version=\"1.0\"?>" +
+                        "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">" +
+                        "<soap:Body>";
+                String foot = "</soap:Body></soap:Envelope>";
+                String resp = top + s + foot;
+                LOGGER.info("STS soap response is:"  + resp);
+                return resp;
             };
 
     protected Route responseToQuestions =

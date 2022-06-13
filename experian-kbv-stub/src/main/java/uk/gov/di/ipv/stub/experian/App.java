@@ -17,7 +17,7 @@ public class App {
 
         Spark.get("/", handler.root);
         Spark.get("/health", handler.root);
-        Spark.get("/wasp-token", handler.tokenRequest);
+        Spark.post("/wasp-token", handler.tokenRequest);
         Spark.post("/saa", "application/soap+xml", handler.startAuthenticationAttempt);
         Spark.post("/rtq", "application/soap+xml", handler.responseToQuestions);
     }
