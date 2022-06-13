@@ -81,7 +81,9 @@ public class VerifiableCredentialGeneratorTest {
                         "strengthScore",
                         4,
                         "validityScore",
-                        2);
+                        2,
+                        "ci",
+                        new String[] {"A01", "D03"});
         String userId = "user-id";
         Credential credential = new Credential(attributes, evidence, userId, "clientIdValid");
 
@@ -150,6 +152,8 @@ public class VerifiableCredentialGeneratorTest {
         assertEquals("some-uuid", evidenceTree.path(0).path("txn").asText());
         assertEquals(4, evidenceTree.path(0).path("strengthScore").asInt());
         assertEquals(2, evidenceTree.path(0).path("validityScore").asInt());
+        assertEquals("A01", evidenceTree.path(0).path("ci").path(0).asText());
+        assertEquals("D03", evidenceTree.path(0).path("ci").path(1).asText());
     }
 
     @Test

@@ -24,6 +24,7 @@ public class CredentialIssuerConfig {
     public static final String ACTIVITY_PARAM = "activityHistoryScore";
     public static final String FRAUD_PARAM = "identityFraudScore";
     public static final String VERIFICATION_PARAM = "verificationScore";
+    public static final String EVIDENCE_CONTRAINDICATOR_PARAM = "ci";
 
     public static Map<String, ClientConfig> CLIENT_CONFIGS;
 
