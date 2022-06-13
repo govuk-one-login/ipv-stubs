@@ -10,6 +10,7 @@ import com.experian.uk.schema.experian.identityiq.services.webservice.RTQRespons
 import com.experian.uk.schema.experian.identityiq.services.webservice.RTQResponse2;
 import com.experian.uk.schema.experian.identityiq.services.webservice.Results;
 import com.experian.uk.schema.experian.identityiq.services.webservice.ResultsQuestions;
+import com.experian.uk.schema.experian.identityiq.services.webservice.SAA;
 import com.experian.uk.schema.experian.identityiq.services.webservice.SAARequest;
 import com.experian.uk.schema.experian.identityiq.services.webservice.SAAResponse;
 import com.experian.uk.schema.experian.identityiq.services.webservice.SAAResponse2;
@@ -17,6 +18,9 @@ import com.experian.uk.wasp.LoginWithCertificateResponse;
 import com.experian.uk.wasp.STSResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -25,9 +29,15 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.soap.SOAPEnvelope;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -42,7 +52,7 @@ public class Handler {
     private Marshaller tokenResponseMarshaller;
 
     protected Handler() throws JAXBException {
-        saaUnmarshaller = JAXBContext.newInstance(SAARequest.class).createUnmarshaller();
+        saaUnmarshaller = JAXBContext.newInstance(SAA.class).createUnmarshaller();
         saaResponseMarshaller = JAXBContext.newInstance(SAAResponse.class).createMarshaller();
         rtqUnmarshaller = JAXBContext.newInstance(RTQRequest.class).createUnmarshaller();
         rtqResponseMarshaller = JAXBContext.newInstance(RTQResponse.class).createMarshaller();
@@ -122,9 +132,19 @@ public class Handler {
             (Request request, Response response) -> {
                 String body = request.body();
                 LOGGER.info("startAuthenticationAttempt body: " + body);
-                StringReader reader = new StringReader(body);
-                SAARequest saaRequest = (SAARequest) saaUnmarshaller.unmarshal(reader);
-                Control control = saaRequest.getControl();
+
+                InputStream stream = new ByteArrayInputStream(body.getBytes(StandardCharsets.UTF_8));
+
+                DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                Document doc = dBuilder.parse(stream);
+
+                NodeList saa = doc.getElementsByTagName("SAA");
+                Node item = saa.item(0);
+
+                SAA saaObject = (SAA) saaUnmarshaller.unmarshal(item);
+
+                Control control = saaObject.getSAARequest().getControl();
                 control.setAuthRefNo(UUID.randomUUID().toString());
                 if (control.getURN() == null) {
                     control.setURN(UUID.randomUUID().toString());
