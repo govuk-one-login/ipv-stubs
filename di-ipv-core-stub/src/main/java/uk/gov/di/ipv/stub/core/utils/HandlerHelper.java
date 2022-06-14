@@ -135,12 +135,18 @@ public class HandlerHelper {
         TokenRequest tokenRequest = new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
 
         HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
-        String apiKey = CoreStubConfig.PASSPORT_PRIVATE_API_KEY;
+        String apiKey =
+                CoreStubConfig.getConfigValue(credentialIssuer.apiKeyEnvVar(), UNKNOWN_ENV_VAR);
         if (!apiKey.equals(UNKNOWN_ENV_VAR)) {
             LOGGER.info(
                     "Found api key and sending it in token request to cri: {}",
                     credentialIssuer.id());
             httpRequest.setHeader(API_KEY_HEADER, apiKey);
+        } else {
+            LOGGER.warn(
+                    "Did not find api key for env var {}, not setting api key header {} in token request",
+                    credentialIssuer.apiKeyEnvVar(),
+                    API_KEY_HEADER);
         }
 
         var httpTokenResponse = sendHttpRequest(httpRequest);
@@ -168,12 +174,18 @@ public class HandlerHelper {
         HTTPRequest userInfoRequest =
                 new HTTPRequest(HTTPRequest.Method.POST, credentialIssuer.credentialUrl());
 
-        String apiKey = CoreStubConfig.PASSPORT_PRIVATE_API_KEY;
+        String apiKey =
+                CoreStubConfig.getConfigValue(credentialIssuer.apiKeyEnvVar(), UNKNOWN_ENV_VAR);
         if (!apiKey.equals(UNKNOWN_ENV_VAR)) {
             LOGGER.info(
                     "Found api key and sending it in credential request to cri: {}",
                     credentialIssuer.id());
             userInfoRequest.setHeader(API_KEY_HEADER, apiKey);
+        } else {
+            LOGGER.warn(
+                    "Did not find api key for env var {}, not setting api key header {} in credential request",
+                    credentialIssuer.apiKeyEnvVar(),
+                    API_KEY_HEADER);
         }
 
         userInfoRequest.setAuthorization(accessToken.toAuthorizationHeader());
