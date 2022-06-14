@@ -491,7 +491,7 @@ class AuthorizeHandlerTest {
         queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, new String[] {"2"});
         queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[] {"3"});
         queryParams.put(
-                CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, new String[] {"A01,D03"});
+                CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, new String[] {"A01, D03"});
         return queryParams;
     }
 
