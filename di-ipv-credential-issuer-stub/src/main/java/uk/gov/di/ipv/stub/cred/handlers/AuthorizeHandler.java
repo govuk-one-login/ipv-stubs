@@ -230,9 +230,10 @@ public class AuthorizeHandler {
                                             CredentialIssuerConfig.VERIFICATION_PARAM));
 
                     String ciString =
-                            queryParamsMap.value(
-                                    CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM);
-                    if (!ciString.trim().isEmpty()) {
+                            queryParamsMap
+                                    .value(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM)
+                                    .replaceAll("\\s", "");
+                    if (!ciString.isEmpty()) {
                         String[] ciList = ciString.split(",");
                         gpgMap.put(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, ciList);
                     }
