@@ -23,8 +23,12 @@
             "value": "1932-02-25"
           }
         ],
-        "passportNumber": "824159121",
-        "passportExpiryDate": "2030-01-01"
+        "passport": [
+          {
+            "documentNumber": "824159121",
+            "expiryDate": "2030-01-01"
+          }
+        ]
       }
     },
     {
@@ -133,8 +137,12 @@
             "value": "1939-10-09"
           }
         ],
-        "passportNumber": "532114382",
-        "passportExpiryDate": "2030-01-01"
+        "passport": [
+          {
+            "documentNumber": "532114382",
+            "expiryDate": "2030-01-01"
+          }
+        ]
       }
     },
     {
@@ -222,17 +230,17 @@
     },
     {
       "criType": "UK Passport (Stub)",
-      "label": "Decerqueira Kenneth (Valid Experian) Passport",
+      "label": "Kenneth Decerqueira (Valid Experian) Passport",
       "payload": {
         "name": [
           {
             "nameParts": [
               {
-                "value": "Decerqueira",
+                "value": "Kenneth",
                 "type": "GivenName"
               },
               {
-                "value": "Kenneth",
+                "value": "Decerqueira",
                 "type": "FamilyName"
               }
             ]
@@ -240,41 +248,47 @@
         ],
         "birthDate": [
           {
-            "value": "1959-08-23"
+            "value": "1964-11-07"
           }
         ],
-        "passportNumber": "321654987",
-        "passportExpiryDate": "2030-01-01"
+        "passport": [
+          {
+            "documentNumber": "321654987",
+            "expiryDate": "2030-01-01"
+          }
+        ]
       }
     },
     {
       "criType": "Address (Stub)",
-      "label": "Decerqueira Kenneth (Valid Experian) Address",
+      "label": "Kenneth Decerqueira (Valid Experian) Address",
       "payload": {
         "address": [
           {
-            "buildingName": "333B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW3 3XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
           }
         ]
       }
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Decerqueira Kenneth (Valid Experian) Fraud",
+      "label": "Kenneth Decerqueira (Valid Experian) Fraud",
       "payload": {
         "name": [
           {
             "nameParts": [
               {
-                "value": "Decerqueira",
+                "value": "Kenneth",
                 "type": "GivenName"
               },
               {
-                "value": "Kenneth",
+                "value": "Decerqueira",
                 "type": "FamilyName"
               }
             ]
@@ -282,33 +296,35 @@
         ],
         "birthDate": [
           {
-            "value": "1959-08-23"
+            "value": "1964-11-07"
           }
         ],
         "address": [
           {
-            "buildingName": "333B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW3 3XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
           }
         ]
       }
     },
     {
       "criType": "Knowledge Based Verification (Stub)",
-      "label": "Decerqueira Kenneth (Valid Experian) KBV",
+      "label": "Kenneth Decerqueira (Valid Experian) KBV",
       "payload": {
         "name": [
           {
             "nameParts": [
               {
-                "value": "Decerqueira",
+                "value": "Kenneth",
                 "type": "GivenName"
               },
               {
-                "value": "Kenneth",
+                "value": "Decerqueira",
                 "type": "FamilyName"
               }
             ]
@@ -316,16 +332,18 @@
         ],
         "birthDate": [
           {
-            "value": "1959-08-23"
+            "value": "1964-11-07"
           }
         ],
         "address": [
           {
-            "buildingName": "333B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW3 3XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
           }
         ]
       }
