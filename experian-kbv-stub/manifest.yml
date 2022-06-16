@@ -1,0 +1,11 @@
+---
+applications:
+  - name: experian-kbv-stub
+    path: build/distributions/experian-kbv-stub.zip
+    memory: 256M
+    buildpack: java_buildpack
+    command: cd experian-kbv-stub && bin/experian-kbv-stub
+    env:
+      JAVA_HOME: "../.java-buildpack/open_jdk_jre"
+      JBP_CONFIG_OPEN_JDK_JRE: "{ jre: { version: 17.+}, memory_calculator: {stack_threads: 200}}"
+      JAVA_OPTS: "-Xss200k -XX:ReservedCodeCacheSize=50M -XX:MaxMetaspaceSize=100M"
