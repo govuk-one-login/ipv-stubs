@@ -3,6 +3,7 @@ package uk.gov.di.ipv.stub.experian;
 import com.experian.uk.schema.experian.identityiq.services.webservice.AnswerFormat;
 import com.experian.uk.schema.experian.identityiq.services.webservice.ArrayOfString;
 import com.experian.uk.schema.experian.identityiq.services.webservice.Control;
+import com.experian.uk.schema.experian.identityiq.services.webservice.Error;
 import com.experian.uk.schema.experian.identityiq.services.webservice.Question;
 import com.experian.uk.schema.experian.identityiq.services.webservice.Questions;
 import com.experian.uk.schema.experian.identityiq.services.webservice.RTQ;
@@ -41,6 +42,11 @@ import java.util.UUID;
 public class Handler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Handler.class);
+    public static final String AUTHENTICATION_UNSUCCESSFUL = "Authentication Unsuccessful";
+    public static final String AUTHENTICATION_SUCCESSFUL = "Authentication successful – capture SQ";
+    public static final String AUTHENTICATED = "Authenticated";
+    public static final String NOT_AUTHENTICATED = "Not Authenticated";
+    public static final String UNABLE_TO_AUTHENTICATE = "Unable to Authenticate";
     private final String soapHeader =
             "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
                     + "<soap:Body>";
@@ -98,9 +104,7 @@ public class Handler {
         AnswerFormat answerFormat = new AnswerFormat();
         answerFormat.setIdentifier("A00004");
         answerFormat.setFieldType("G");
-        answerFormat
-                .getAnswerList()
-                .addAll(Arrays.asList("Correct 1", "Incorrect 1", "Error now 1"));
+        answerFormat.getAnswerList().addAll(Arrays.asList("Correct 1", "Incorrect 1"));
         question.setAnswerFormat(answerFormat);
         return question;
     }
@@ -111,9 +115,7 @@ public class Handler {
         question.setText("Question 2");
         question.setTooltip("Question 2 Tooltip");
         AnswerFormat answerFormat = new AnswerFormat();
-        answerFormat
-                .getAnswerList()
-                .addAll(Arrays.asList("Correct 2", "Incorrect 2", "Error now 2"));
+        answerFormat.getAnswerList().addAll(Arrays.asList("Correct 2", "Incorrect 2", "Error now"));
         answerFormat.setFieldType("G");
         answerFormat.setIdentifier("A00007");
         question.setAnswerFormat(answerFormat);
@@ -180,22 +182,53 @@ public class Handler {
 
     private void stubRTQ(StringWriter sw, Document bodyDoc) throws JAXBException {
         RTQ rtqRequest = (RTQ) rtqUnmarshaller.unmarshal(bodyDoc);
-
         RTQResponse rtqResponse = new RTQResponse();
         RTQResponse2 result = new RTQResponse2();
-        result.setControl(rtqRequest.getRTQRequest().getControl());
         Results results = new Results();
-        results.setOutcome("Authentication successful – capture SQ");
-        results.setAuthenticationResult("Authenticated");
         ArrayOfString arrayOfString = new ArrayOfString();
         arrayOfString.getString().addAll(List.of("END"));
         results.setNextTransId(arrayOfString);
+        result.setControl(rtqRequest.getRTQRequest().getControl());
 
-        ResultsQuestions resultsQuestions = new ResultsQuestions();
-        resultsQuestions.setAsked(2);
-        resultsQuestions.setCorrect(2);
-        resultsQuestions.setIncorrect(0);
-        results.setQuestions(resultsQuestions);
+        // check if Error was chosen
+        boolean simulateExperianError =
+                rtqRequest.getRTQRequest().getResponses().getResponse().stream()
+                        .anyMatch(item -> item.getAnswerGiven().startsWith("Error"));
+
+        if (simulateExperianError) {
+            Error error = new Error();
+            error.setErrorCode("1024");
+            error.setMessage(UNABLE_TO_AUTHENTICATE);
+            result.setError(error);
+            rtqResponse.setRTQResult(result);
+            rtqResponseMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+            rtqResponseMarshaller.marshal(rtqResponse, sw);
+            return;
+        }
+
+        // check if Correct Answer was chosen
+        boolean correctAnswerNotSelected =
+                rtqRequest.getRTQRequest().getResponses().getResponse().stream()
+                        .anyMatch(item -> item.getAnswerGiven().startsWith("Incorrect"));
+
+        if (correctAnswerNotSelected) {
+            results.setOutcome(AUTHENTICATION_UNSUCCESSFUL);
+            results.setAuthenticationResult(NOT_AUTHENTICATED);
+            ResultsQuestions resultsQuestions = new ResultsQuestions();
+            resultsQuestions.setAsked(2);
+            resultsQuestions.setCorrect(1);
+            resultsQuestions.setIncorrect(1);
+            results.setQuestions(resultsQuestions);
+        } else {
+            results.setOutcome(AUTHENTICATION_SUCCESSFUL);
+            results.setAuthenticationResult(AUTHENTICATED);
+            ResultsQuestions resultsQuestions = new ResultsQuestions();
+            resultsQuestions.setAsked(2);
+            resultsQuestions.setCorrect(2);
+            resultsQuestions.setIncorrect(0);
+            results.setQuestions(resultsQuestions);
+        }
+
         result.setResults(results);
 
         rtqResponse.setRTQResult(result);
