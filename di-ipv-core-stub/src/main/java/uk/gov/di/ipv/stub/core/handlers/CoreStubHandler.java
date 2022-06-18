@@ -4,18 +4,25 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.id.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
 import uk.gov.di.ipv.stub.core.config.uatuser.DisplayIdentity;
+import uk.gov.di.ipv.stub.core.config.uatuser.FindDateOfBirth;
+import uk.gov.di.ipv.stub.core.config.uatuser.FullName;
+import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
 import uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper;
+import uk.gov.di.ipv.stub.core.config.uatuser.SharedClaims;
+import uk.gov.di.ipv.stub.core.config.uatuser.UKAddress;
 import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
 import uk.gov.di.ipv.stub.core.utils.ViewHelper;
 
@@ -24,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -31,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class CoreStubHandler {
@@ -166,11 +175,7 @@ public class CoreStubHandler {
                                     credentialIssuer.name()),
                             "user-search.mustache");
                 } else {
-                    State state = createNewState(credentialIssuer);
-                    AuthorizationRequest authRequest =
-                            handlerHelper.createAuthorizationJAR(state, credentialIssuer, null);
-                    LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);
-                    response.redirect(authRequest.toURI().toString());
+                    sendAuthorizationRequest(response, credentialIssuer, null);
                     return null;
                 }
             };
@@ -183,12 +188,7 @@ public class CoreStubHandler {
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
                 var claimIdentity = new IdentityMapper().mapToSharedClaim(identity);
-                var state = createNewState(credentialIssuer);
-                var authRequest =
-                        handlerHelper.createAuthorizationJAR(
-                                state, credentialIssuer, claimIdentity);
-                LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);
-                response.redirect(authRequest.toURI().toString());
+                sendAuthorizationRequest(response, credentialIssuer, claimIdentity);
                 return null;
             };
 
@@ -214,6 +214,69 @@ public class CoreStubHandler {
                                 questionAndAnswers),
                         "answers.mustache");
             };
+
+    public Route updateUser =
+            (Request request, Response response) -> {
+                var credentialIssuer =
+                        handlerHelper.findCredentialIssuer(
+                                Objects.requireNonNull(request.queryParams("cri")));
+                QueryParamsMap queryParamsMap = request.queryMap();
+                var identityOnRecord = fetchOrCreateIdentity(queryParamsMap.value("rowNumber"));
+                IdentityMapper identityMapper = new IdentityMapper();
+                var identity = identityMapper.mapFormToIdentity(identityOnRecord, queryParamsMap);
+                SharedClaims sharedClaims = identityMapper.mapToSharedClaim(identity);
+                sendAuthorizationRequest(response, credentialIssuer, sharedClaims);
+                return null;
+            };
+
+    private void sendAuthorizationRequest(
+            Response response, CredentialIssuer credentialIssuer, SharedClaims sharedClaims)
+            throws JOSEException {
+        State state = createNewState(credentialIssuer);
+        AuthorizationRequest authRequest =
+                handlerHelper.createAuthorizationJAR(state, credentialIssuer, sharedClaims);
+        LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);
+        response.redirect(authRequest.toURI().toString());
+    }
+
+    public Route editUser =
+            (Request request, Response response) -> {
+                var credentialIssuerId =
+                        Objects.requireNonNull(request.queryParams("cri"), "cri required");
+                var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
+                String rowNumber = request.queryParams("rowNumber");
+                Identity identity = fetchOrCreateIdentity(rowNumber);
+
+                return ViewHelper.render(
+                        Map.of(
+                                "cri",
+                                credentialIssuerId,
+                                "criName",
+                                credentialIssuer.name(),
+                                "identity",
+                                identity,
+                                "rowNumber",
+                                Optional.ofNullable(rowNumber).orElse("0")),
+                        "edit-user.mustache");
+            };
+
+    private Identity fetchOrCreateIdentity(String rowNumber) {
+        if (rowNumber != null && !rowNumber.isBlank() && !rowNumber.equals("0")) {
+            return handlerHelper.findIdentityByRowNumber(Integer.valueOf(rowNumber));
+        } else {
+            return createNewIdentity();
+        }
+    }
+
+    private Identity createNewIdentity() {
+        Identity identity;
+        UKAddress ukAddress = new UKAddress(null, null, null, null, null, null, true);
+        FullName fullName = new FullName(null, null);
+        Instant dob = Instant.ofEpochSecond(0);
+        identity =
+                new Identity(0, "", "", ukAddress, new FindDateOfBirth(dob, dob), fullName, null);
+        return identity;
+    }
 
     private State createNewState(CredentialIssuer credentialIssuer) {
         var state = new State();

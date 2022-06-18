@@ -33,6 +33,8 @@ public class CoreStub {
         Spark.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
         Spark.get("/authorize", coreStubHandler.authorize);
         Spark.get("/user-search", coreStubHandler.userSearch);
+        Spark.get("/edit-user", coreStubHandler.editUser);
+        Spark.post("/edit-user", coreStubHandler.updateUser);
         Spark.get("/callback", coreStubHandler.doCallback);
         Spark.get("/answers", coreStubHandler.answers);
         Spark.exception(Exception.class, exceptionHandler());

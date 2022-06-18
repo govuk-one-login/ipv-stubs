@@ -53,38 +53,139 @@
         <a href="/credential-issuers" class="govuk-back-link">Back</a>
         <div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
             <h2 class="govuk-heading-xl">
-                User for {{criName}}
+                Edit User
             </h2>
+
         </div>
 
-        <div class="govuk-!-padding-bottom-9">
-            <legend class="govuk-fieldset__legend govuk-label">
-                <a href="/edit-user?cri={{cri}}">New User</a>
-            </legend>
-        </div>
-
-        <legend class="govuk-fieldset__legend govuk-label">Search for user in <a
-                href="https://docs.google.com/spreadsheets/d/1IHyLsoJiYg3AiXIu3Z8mxlP0B4H_GQxd/edit?usp=sharing&ouid=117865885140971042449&rtpof=true&sd=true">
-            Experian UAT test users sheet</a></legend>
-        <form action="/user-search">
+        <form action="/edit-user" method="post">
             <input type="hidden" name="cri" value="{{cri}}">
-            <div class="govuk-form-group">
-                <input class="govuk-input govuk-input--width-20" id="name" name="name" type="text">
-                <button class="govuk-button" data-module="govuk-button">Search</button>
-            </div>
-        </form>
+            <input type="hidden" name="rowNumber" value="{{rowNumber}}">
 
-        <legend class="govuk-fieldset__legend govuk-label">Row Number in <a
-                href="https://docs.google.com/spreadsheets/d/1IHyLsoJiYg3AiXIu3Z8mxlP0B4H_GQxd/edit?usp=sharing&ouid=117865885140971042449&rtpof=true&sd=true">
-            Experian UAT test users sheet</a></legend>
-        <form action="/authorize">
-            <input type="hidden" name="cri" value="{{cri}}">
+            <p class="govuk-body-m">User data that you update will not be saved.</p>
 
             <div class="govuk-form-group">
-                <input class="govuk-input govuk-input--width-3" id="rowNumber" name="rowNumber" type="text"
-                       placeholder="3">
-                <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
+                <label class="govuk-label" for="firstName">First name</label>
+                <input class="govuk-input" id="firstName" name="firstName" type="text"
+                       value="{{identity.name.firstName}}">
             </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="surname">Last name</label>
+                <input class="govuk-input" id="surname" name="surname" type="text" value="{{identity.name.surname}}">
+            </div>
+
+            <div class="govuk-form-group">
+                <fieldset class="govuk-fieldset" role="group" aria-describedby="dateOfBirth-hint"
+                          id="dateOfBirth-fieldset">
+
+                    <legend class="govuk-fieldset__legend govuk-label">Date of birth</legend>
+
+
+                    <div id="dateOfBirth-hint" class="govuk-hint">
+                        For example, 24 9 1973
+                    </div>
+
+                    <div class="govuk-date-input" id="dateOfBirth">
+
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="dateOfBirth-day">
+                                    Day
+                                </label>
+
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                                       id="dateOfBirth-day" name="dateOfBirth-day" type="text" pattern="[0-9]*"
+                                       inputmode="numeric" maxlength="2" value="{{identity.findDateOfBirth.day}}">
+
+                            </div>
+                        </div>
+
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="dateOfBirth-month">
+                                    Month
+                                </label>
+
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                                       id="dateOfBirth-month" name="dateOfBirth-month" type="text" pattern="[0-9]*"
+                                       inputmode="numeric" maxlength="2" value="{{identity.findDateOfBirth.month}}">
+
+                            </div>
+                        </div>
+
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="dateOfBirth-year">
+                                    Year
+                                </label>
+
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-4"
+                                       id="dateOfBirth-year" name="dateOfBirth-year" type="text" pattern="[0-9]*"
+                                       inputmode="numeric" maxlength="4" value="{{identity.findDateOfBirth.year}}">
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </fieldset>
+
+
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" id="buildingNumber-label" for="buildingNumber">
+                    House number
+                </label>
+
+                <input class="govuk-input govuk-input--width-5" id="buildingNumber" name="buildingNumber"
+                       type="text" aria-required="false" maxlength="10" value="{{identity.UKAddress.buildingNumber}}">
+
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" id="buildingName-label" for="buildingName">
+                    House name
+                </label>
+
+                <input class="govuk-input govuk-input--width-20" id="buildingName" name="buildingName"
+                       type="text" aria-required="false" maxlength="50" value="{{identity.UKAddress.buildingName}}">
+
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" id="street-label" for="street">
+                    Street name
+                </label>
+
+                <input class="govuk-input govuk-input--width-20" id="street" name="street"
+                       type="text" maxlength="60" value="{{identity.UKAddress.street}}">
+            </div>
+
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" id="townCity-label" for="townCity">
+                    Town or city
+                </label>
+
+                <input class="govuk-input govuk-input--width-20" id="townCity" name="townCity" type="text"
+                       maxlength="60" value="{{identity.UKAddress.townCity}}">
+
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label" id="postCode-label" for="postCode">
+                    Post code
+                </label>
+
+                <input class="govuk-input govuk-input--width-20" id="postCode" name="postCode" type="text"
+                       maxlength="60" value="{{identity.UKAddress.postCode}}">
+
+            </div>
+
+            <button class="govuk-button button" data-module="govuk-button">Go to {{criName}}</button>
+
         </form>
 
     </main>

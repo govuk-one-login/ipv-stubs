@@ -1,7 +1,10 @@
 package uk.gov.di.ipv.stub.core.config.uatuser;
 
+import spark.QueryParamsMap;
+
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -107,5 +110,37 @@ public class IdentityMapper {
                                         questionsMap.get(q.questionId().toUpperCase()),
                                         q.answer().answer()))
                 .collect(toList());
+    }
+
+    public Identity mapFormToIdentity(Identity identityOnRecord, QueryParamsMap userData) {
+
+        UKAddress ukAddress =
+                new UKAddress(
+                        userData.value("buildingNumber"),
+                        userData.value("buildingName"),
+                        userData.value("street"),
+                        null,
+                        userData.value("townCity"),
+                        userData.value("postCode"),
+                        true);
+
+        String dobString =
+                userData.value("dateOfBirth-year")
+                        + "-"
+                        + userData.value("dateOfBirth-month")
+                        + "-"
+                        + userData.value("dateOfBirth-day");
+        LocalDate dob = LocalDate.parse(dobString);
+        Instant instant = dob.atStartOfDay(ZoneId.systemDefault()).toInstant();
+        FindDateOfBirth findDateOfBirth = new FindDateOfBirth(instant, instant);
+        FullName fullName = new FullName(userData.value("firstName"), userData.value("surname"));
+        return new Identity(
+                identityOnRecord.rowNumber(),
+                identityOnRecord.accountNumber(),
+                identityOnRecord.ctdbDatabase(),
+                ukAddress,
+                findDateOfBirth,
+                fullName,
+                identityOnRecord.questions());
     }
 }
