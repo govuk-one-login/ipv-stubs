@@ -105,7 +105,7 @@ public class HandlerHelper {
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
             LOGGER.error("Failed authorization code request: {}", error);
-            throw new RuntimeException("Failed authorization code request");
+            throw new RuntimeException(error.getDescription());
         }
         return authorizationResponse;
     }
