@@ -18,7 +18,7 @@ public record FindDateOfBirth(Instant dateOfBirth, Instant dateOfEntryOnCtdb) {
     }
 
     public int month() {
-        return getCalendar().get(Calendar.MONTH);
+        return getCalendar().get(Calendar.MONTH) + 1;
     }
 
     public int day() {
