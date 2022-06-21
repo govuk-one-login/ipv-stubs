@@ -148,12 +148,15 @@ public class CoreStubHandler {
                                 .getJWTClaimsSet()
                                 .toString();
 
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                JsonElement je = JsonParser.parseString(userInfo);
-                String prettyPrintUserInfo = gson.toJson(je);
+                String data = "{\"result\": \"hidden\"}";
+                if (CoreStubConfig.CORE_STUB_SHOW_VC) {
+                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                    JsonElement je = JsonParser.parseString(userInfo);
+                    data = gson.toJson(je);
+                }
 
                 Map<String, Object> moustacheDataModel = new HashMap<>();
-                moustacheDataModel.put("data", prettyPrintUserInfo);
+                moustacheDataModel.put("data", data);
                 moustacheDataModel.put("cri", credentialIssuer.id());
                 moustacheDataModel.put("criName", credentialIssuer.name());
 
