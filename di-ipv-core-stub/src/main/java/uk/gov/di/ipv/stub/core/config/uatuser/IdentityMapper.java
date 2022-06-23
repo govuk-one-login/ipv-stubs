@@ -76,7 +76,8 @@ public class IdentityMapper {
                 identity.questions().numQuestionsTotal());
     }
 
-    public SharedClaims mapToSharedClaim(Identity identity) {
+    public SharedClaims mapToSharedClaim(Identity identity, boolean agedDOB) {
+        FindDateOfBirth dateOfBirth = identity.findDateOfBirth();
         return new SharedClaims(
                 List.of(
                         "https://www.w3.org/2018/credentials/v1",
@@ -86,7 +87,7 @@ public class IdentityMapper {
                                 List.of(
                                         new NameParts(GIVEN_NAME, identity.name().firstName()),
                                         new NameParts(FAMILY_NAME, identity.name().surname())))),
-                List.of(new DateOfBirth(identity.findDateOfBirth().getDOB())),
+                List.of(new DateOfBirth(agedDOB ? dateOfBirth.getAgedDOB() : dateOfBirth.getDOB())),
                 List.of(
                         new CanonicalAddress(
                                 identity.UKAddress().buildingNumber(),
@@ -124,13 +125,11 @@ public class IdentityMapper {
                         userData.value("postCode"),
                         true);
 
-        String dobString =
-                userData.value("dateOfBirth-year")
-                        + "-"
-                        + userData.value("dateOfBirth-month")
-                        + "-"
-                        + userData.value("dateOfBirth-day");
-        LocalDate dob = LocalDate.parse(dobString);
+        int year = Integer.parseInt(userData.value("dateOfBirth-year"));
+        int month = Integer.parseInt(userData.value("dateOfBirth-month"));
+        int dayOfMonth = Integer.parseInt(userData.value("dateOfBirth-day"));
+
+        LocalDate dob = LocalDate.of(year, month, dayOfMonth);
         Instant instant = dob.atStartOfDay(ZoneId.systemDefault()).toInstant();
         FindDateOfBirth findDateOfBirth = new FindDateOfBirth(instant, instant);
         FullName fullName = new FullName(userData.value("firstName"), userData.value("surname"));

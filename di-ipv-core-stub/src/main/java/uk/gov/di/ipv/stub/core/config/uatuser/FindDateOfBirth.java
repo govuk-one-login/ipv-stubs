@@ -8,6 +8,10 @@ import java.util.Date;
 public record FindDateOfBirth(Instant dateOfBirth, Instant dateOfEntryOnCtdb) {
 
     public Date getDOB() {
+        return Date.from(dateOfBirth);
+    }
+
+    public Date getAgedDOB() {
         long diff = ChronoUnit.SECONDS.between(dateOfEntryOnCtdb, Instant.now());
         Instant aged = dateOfBirth.plus(diff, ChronoUnit.SECONDS);
         return Date.from(aged);

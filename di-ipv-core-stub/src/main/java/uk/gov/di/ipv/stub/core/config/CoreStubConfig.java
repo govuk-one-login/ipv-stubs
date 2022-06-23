@@ -46,6 +46,8 @@ public class CoreStubConfig {
             getConfigValue(
                     "CORE_STUB_JWT_ISS_CRI_URI",
                     "https://di-ipv-core-stub.london.cloudapps.digital");
+    public static final boolean CORE_STUB_CONFIG_AGED_DOB =
+            Boolean.parseBoolean(getConfigValue("CORE_STUB_CONFIG_AGED_DOB", "true"));
     public static final String MAX_JAR_TTL_MINS = getConfigValue("MAX_JAR_TTL_MINS", "60");
 
     public static final boolean CORE_STUB_SHOW_VC =

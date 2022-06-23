@@ -190,7 +190,10 @@ public class CoreStubHandler {
                         Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
-                var claimIdentity = new IdentityMapper().mapToSharedClaim(identity);
+                var claimIdentity =
+                        new IdentityMapper()
+                                .mapToSharedClaim(
+                                        identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
                 sendAuthorizationRequest(request, response, credentialIssuer, claimIdentity);
                 return null;
             };
@@ -227,7 +230,9 @@ public class CoreStubHandler {
                 var identityOnRecord = fetchOrCreateIdentity(queryParamsMap.value("rowNumber"));
                 IdentityMapper identityMapper = new IdentityMapper();
                 var identity = identityMapper.mapFormToIdentity(identityOnRecord, queryParamsMap);
-                SharedClaims sharedClaims = identityMapper.mapToSharedClaim(identity);
+                SharedClaims sharedClaims =
+                        identityMapper.mapToSharedClaim(
+                                identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
                 sendAuthorizationRequest(request, response, credentialIssuer, sharedClaims);
                 return null;
             };
