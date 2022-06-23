@@ -178,7 +178,7 @@ public class CoreStubHandler {
                                     credentialIssuer.name()),
                             "user-search.mustache");
                 } else {
-                    sendAuthorizationRequest(response, credentialIssuer, null);
+                    sendAuthorizationRequest(request, response, credentialIssuer, null);
                     return null;
                 }
             };
@@ -191,7 +191,7 @@ public class CoreStubHandler {
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
                 var claimIdentity = new IdentityMapper().mapToSharedClaim(identity);
-                sendAuthorizationRequest(response, credentialIssuer, claimIdentity);
+                sendAuthorizationRequest(request, response, credentialIssuer, claimIdentity);
                 return null;
             };
 
@@ -228,14 +228,18 @@ public class CoreStubHandler {
                 IdentityMapper identityMapper = new IdentityMapper();
                 var identity = identityMapper.mapFormToIdentity(identityOnRecord, queryParamsMap);
                 SharedClaims sharedClaims = identityMapper.mapToSharedClaim(identity);
-                sendAuthorizationRequest(response, credentialIssuer, sharedClaims);
+                sendAuthorizationRequest(request, response, credentialIssuer, sharedClaims);
                 return null;
             };
 
     private void sendAuthorizationRequest(
-            Response response, CredentialIssuer credentialIssuer, SharedClaims sharedClaims)
+            Request request,
+            Response response,
+            CredentialIssuer credentialIssuer,
+            SharedClaims sharedClaims)
             throws JOSEException {
         State state = createNewState(credentialIssuer);
+        request.session().attribute("state", state);
         AuthorizationRequest authRequest =
                 handlerHelper.createAuthorizationJAR(state, credentialIssuer, sharedClaims);
         LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);

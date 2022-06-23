@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.stub.core.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nimbusds.jose.EncryptionMethod;
@@ -21,6 +22,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
+import com.nimbusds.oauth2.sdk.AuthorizationErrorResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.AuthorizationResponse;
 import com.nimbusds.oauth2.sdk.ParseException;
@@ -64,8 +66,6 @@ import java.util.stream.Collectors;
 
 public class HandlerHelper {
     private class JWTSigner {
-        private static final String RS256_ALGORITHM_NAME = "RS256";
-        private static final String ES256_ALGORITHM_NAME = "ES256";
 
         private final JWSSigner jwsSigner;
         private final String keyId;
@@ -99,13 +99,22 @@ public class HandlerHelper {
         this.objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
     }
 
-    public AuthorizationResponse getAuthorizationResponse(Request request) throws ParseException {
+    public AuthorizationResponse getAuthorizationResponse(Request request)
+            throws ParseException, JsonProcessingException {
         var authorizationResponse =
                 AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
-            LOGGER.error("Failed authorization code request: {}", error);
-            throw new RuntimeException(error.getDescription());
+            State state = request.session().attribute("state");
+            AuthorizationErrorResponse authorizationErrorResponse =
+                    new AuthorizationErrorResponse(
+                            CoreStubConfig.CORE_STUB_REDIRECT_URL, error, state, null);
+            request.session().removeAttribute("state");
+            var errorResponse =
+                    objectMapper
+                            .writerWithDefaultPrettyPrinter()
+                            .writeValueAsString(authorizationErrorResponse);
+            throw new IllegalStateException(errorResponse);
         }
         return authorizationResponse;
     }
