@@ -76,7 +76,8 @@ public class IdentityMapper {
                 identity.questions().numQuestionsTotal());
     }
 
-    public SharedClaims mapToSharedClaim(Identity identity) {
+    public SharedClaims mapToSharedClaim(Identity identity, boolean agedDOB) {
+        FindDateOfBirth dateOfBirth = identity.findDateOfBirth();
         return new SharedClaims(
                 List.of(
                         "https://www.w3.org/2018/credentials/v1",
@@ -86,7 +87,7 @@ public class IdentityMapper {
                                 List.of(
                                         new NameParts(GIVEN_NAME, identity.name().firstName()),
                                         new NameParts(FAMILY_NAME, identity.name().surname())))),
-                List.of(new DateOfBirth(identity.findDateOfBirth().getDOB())),
+                List.of(new DateOfBirth(agedDOB ? dateOfBirth.getAgedDOB() : dateOfBirth.getDOB())),
                 List.of(
                         new CanonicalAddress(
                                 identity.UKAddress().buildingNumber(),
