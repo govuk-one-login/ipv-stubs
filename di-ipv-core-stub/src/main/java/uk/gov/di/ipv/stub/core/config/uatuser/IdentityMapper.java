@@ -124,13 +124,11 @@ public class IdentityMapper {
                         userData.value("postCode"),
                         true);
 
-        String dobString =
-                userData.value("dateOfBirth-year")
-                        + "-"
-                        + userData.value("dateOfBirth-month")
-                        + "-"
-                        + userData.value("dateOfBirth-day");
-        LocalDate dob = LocalDate.parse(dobString);
+        int year = Integer.parseInt(userData.value("dateOfBirth-year"));
+        int month = Integer.parseInt(userData.value("dateOfBirth-month"));
+        int dayOfMonth = Integer.parseInt(userData.value("dateOfBirth-day"));
+
+        LocalDate dob = LocalDate.of(year, month, dayOfMonth);
         Instant instant = dob.atStartOfDay(ZoneId.systemDefault()).toInstant();
         FindDateOfBirth findDateOfBirth = new FindDateOfBirth(instant, instant);
         FullName fullName = new FullName(userData.value("firstName"), userData.value("surname"));
