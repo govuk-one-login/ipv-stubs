@@ -3,6 +3,7 @@ package uk.gov.di.ipv.stub.experian;
 import com.experian.uk.schema.experian.identityiq.services.webservice.AnswerFormat;
 import com.experian.uk.schema.experian.identityiq.services.webservice.ArrayOfString;
 import com.experian.uk.schema.experian.identityiq.services.webservice.Control;
+import com.experian.uk.schema.experian.identityiq.services.webservice.Error;
 import com.experian.uk.schema.experian.identityiq.services.webservice.Question;
 import com.experian.uk.schema.experian.identityiq.services.webservice.Questions;
 import com.experian.uk.schema.experian.identityiq.services.webservice.RTQ;
@@ -32,6 +33,7 @@ import javax.xml.soap.MimeHeaders;
 import javax.xml.soap.SOAPMessage;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -41,24 +43,34 @@ import java.util.UUID;
 public class Handler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Handler.class);
+    private static final String AUTHENTICATION_UNSUCCESSFUL = "Authentication Unsuccessful";
+    private static final String AUTHENTICATION_SUCCESSFUL =
+            "Authentication successful – capture SQ";
+    private static final String AUTHENTICATED = "Authenticated";
+    private static final String NOT_AUTHENTICATED = "Not Authenticated";
+    private static final String UNABLE_TO_AUTHENTICATE = "Unable to Authenticate";
+    private static final String USER_DATA_INCORRECT = "User data incorrect";
     private final String soapHeader =
             "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
                     + "<soap:Body>";
     private final String soapFooter = "</soap:Body></soap:Envelope>";
 
-    private Unmarshaller saaUnmarshaller;
-    private Marshaller saaResponseMarshaller;
-    private Unmarshaller rtqUnmarshaller;
-    private Marshaller rtqResponseMarshaller;
-    private Marshaller tokenResponseMarshaller;
+    private final Unmarshaller saaUnmarshaller;
+    private final Marshaller saaResponseMarshaller;
+    private final Unmarshaller rtqUnmarshaller;
+    private final Marshaller rtqResponseMarshaller;
+    private final Marshaller tokenResponseMarshaller;
 
     protected Handler() throws JAXBException {
         saaUnmarshaller = JAXBContext.newInstance(SAA.class).createUnmarshaller();
         saaResponseMarshaller = JAXBContext.newInstance(SAAResponse.class).createMarshaller();
+        saaResponseMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
         rtqUnmarshaller = JAXBContext.newInstance(RTQ.class).createUnmarshaller();
         rtqResponseMarshaller = JAXBContext.newInstance(RTQResponse.class).createMarshaller();
+        rtqResponseMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
         tokenResponseMarshaller =
                 JAXBContext.newInstance(LoginWithCertificateResponse.class).createMarshaller();
+        tokenResponseMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
     }
 
     protected Route root = (Request request, Response response) -> "ok";
@@ -80,15 +92,21 @@ public class Handler {
                 loginWithCertificateResponse.setLoginWithCertificateResult(
                         "stub-token-" + System.currentTimeMillis());
 
-                StringWriter sw = new StringWriter();
-                tokenResponseMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
-                tokenResponseMarshaller.marshal(loginWithCertificateResponse, sw);
+                String body = marshallToken(loginWithCertificateResponse);
                 response.header("Content-Type", "application/soap+xml");
 
-                String resp = soapHeader + sw + soapFooter;
+                String resp = soapHeader + body + soapFooter;
                 LOGGER.info("tokenRequest response is:" + resp);
                 return resp;
             };
+
+    private String marshallToken(LoginWithCertificateResponse loginWithCertificateResponse)
+            throws JAXBException, IOException {
+        try (StringWriter sw = new StringWriter()) {
+            tokenResponseMarshaller.marshal(loginWithCertificateResponse, sw);
+            return sw.toString();
+        }
+    }
 
     private Question getQuestion1() {
         Question question = new Question();
@@ -98,9 +116,7 @@ public class Handler {
         AnswerFormat answerFormat = new AnswerFormat();
         answerFormat.setIdentifier("A00004");
         answerFormat.setFieldType("G");
-        answerFormat
-                .getAnswerList()
-                .addAll(Arrays.asList("Correct 1", "Incorrect 1", "Error now 1"));
+        answerFormat.getAnswerList().addAll(Arrays.asList("Correct 1", "Incorrect 1"));
         question.setAnswerFormat(answerFormat);
         return question;
     }
@@ -113,7 +129,7 @@ public class Handler {
         AnswerFormat answerFormat = new AnswerFormat();
         answerFormat
                 .getAnswerList()
-                .addAll(Arrays.asList("Correct 2", "Incorrect 2", "Error now 2"));
+                .addAll(Arrays.asList("Correct 2", "Incorrect 2", USER_DATA_INCORRECT));
         answerFormat.setFieldType("G");
         answerFormat.setIdentifier("A00007");
         question.setAnswerFormat(answerFormat);
@@ -174,32 +190,59 @@ public class Handler {
         saaResult.setResults(results);
 
         saaResponse.setSAAResult(saaResult);
-        saaResponseMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+
         saaResponseMarshaller.marshal(saaResponse, sw);
     }
 
     private void stubRTQ(StringWriter sw, Document bodyDoc) throws JAXBException {
         RTQ rtqRequest = (RTQ) rtqUnmarshaller.unmarshal(bodyDoc);
-
         RTQResponse rtqResponse = new RTQResponse();
         RTQResponse2 result = new RTQResponse2();
-        result.setControl(rtqRequest.getRTQRequest().getControl());
         Results results = new Results();
-        results.setOutcome("Authentication successful – capture SQ");
-        results.setAuthenticationResult("Authenticated");
         ArrayOfString arrayOfString = new ArrayOfString();
         arrayOfString.getString().addAll(List.of("END"));
         results.setNextTransId(arrayOfString);
+        result.setControl(rtqRequest.getRTQRequest().getControl());
+
+        // check if Error was chosen
+        boolean simulateExperianError =
+                rtqRequest.getRTQRequest().getResponses().getResponse().stream()
+                        .anyMatch(item -> item.getAnswerGiven().startsWith(USER_DATA_INCORRECT));
+
+        if (simulateExperianError) {
+            Error error = new Error();
+            error.setErrorCode("1024");
+            error.setMessage(UNABLE_TO_AUTHENTICATE);
+            result.setError(error);
+            rtqResponse.setRTQResult(result);
+
+            rtqResponseMarshaller.marshal(rtqResponse, sw);
+            return;
+        }
+
+        // check if Correct Answer was chosen
+        boolean correctAnswerNotSelected =
+                rtqRequest.getRTQRequest().getResponses().getResponse().stream()
+                        .anyMatch(item -> item.getAnswerGiven().startsWith("Incorrect"));
 
         ResultsQuestions resultsQuestions = new ResultsQuestions();
+        if (correctAnswerNotSelected) {
+            results.setOutcome(AUTHENTICATION_UNSUCCESSFUL);
+            results.setAuthenticationResult(NOT_AUTHENTICATED);
+            resultsQuestions.setCorrect(1);
+            resultsQuestions.setIncorrect(1);
+        } else {
+            results.setOutcome(AUTHENTICATION_SUCCESSFUL);
+            results.setAuthenticationResult(AUTHENTICATED);
+            resultsQuestions.setCorrect(2);
+            resultsQuestions.setIncorrect(0);
+        }
         resultsQuestions.setAsked(2);
-        resultsQuestions.setCorrect(2);
-        resultsQuestions.setIncorrect(0);
         results.setQuestions(resultsQuestions);
         result.setResults(results);
 
         rtqResponse.setRTQResult(result);
-        rtqResponseMarshaller.setProperty(Marshaller.JAXB_FRAGMENT, Boolean.TRUE);
+
         rtqResponseMarshaller.marshal(rtqResponse, sw);
     }
 }
