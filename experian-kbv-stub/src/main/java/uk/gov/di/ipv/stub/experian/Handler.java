@@ -30,7 +30,11 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.soap.MessageFactory;
 import javax.xml.soap.MimeHeaders;
+import javax.xml.soap.SOAPException;
+import javax.xml.soap.SOAPFactory;
+import javax.xml.soap.SOAPFault;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.ws.soap.SOAPFaultException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -50,6 +54,7 @@ public class Handler {
     private static final String NOT_AUTHENTICATED = "Not Authenticated";
     private static final String UNABLE_TO_AUTHENTICATE = "Unable to Authenticate";
     private static final String USER_DATA_INCORRECT = "User data incorrect";
+    private static final String EXPERIAN_ERROR = "Experian SOAP Fault";
     private final String soapHeader =
             "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
                     + "<soap:Body>";
@@ -129,7 +134,9 @@ public class Handler {
         AnswerFormat answerFormat = new AnswerFormat();
         answerFormat
                 .getAnswerList()
-                .addAll(Arrays.asList("Correct 2", "Incorrect 2", USER_DATA_INCORRECT));
+                .addAll(
+                        Arrays.asList(
+                                "Correct 2", "Incorrect 2", USER_DATA_INCORRECT, EXPERIAN_ERROR));
         answerFormat.setFieldType("G");
         answerFormat.setIdentifier("A00007");
         question.setAnswerFormat(answerFormat);
@@ -204,12 +211,17 @@ public class Handler {
         results.setNextTransId(arrayOfString);
         result.setControl(rtqRequest.getRTQRequest().getControl());
 
-        // check if Error was chosen
         boolean simulateExperianError =
                 rtqRequest.getRTQRequest().getResponses().getResponse().stream()
-                        .anyMatch(item -> item.getAnswerGiven().startsWith(USER_DATA_INCORRECT));
-
+                        .anyMatch(item -> item.getAnswerGiven().startsWith(EXPERIAN_ERROR));
         if (simulateExperianError) {
+            throwSOAPFaultException("A general SoapFault has occurred at the Experian IIQ Stub.");
+        }
+
+        boolean simulateUserDataIncorrectError =
+                rtqRequest.getRTQRequest().getResponses().getResponse().stream()
+                        .anyMatch(item -> item.getAnswerGiven().startsWith(USER_DATA_INCORRECT));
+        if (simulateUserDataIncorrectError) {
             Error error = new Error();
             error.setErrorCode("1024");
             error.setMessage(UNABLE_TO_AUTHENTICATE);
@@ -244,5 +256,17 @@ public class Handler {
         rtqResponse.setRTQResult(result);
 
         rtqResponseMarshaller.marshal(rtqResponse, sw);
+    }
+
+    private void throwSOAPFaultException(String faultString) {
+        SOAPFault soapFault;
+        try {
+            SOAPFactory soapFactory = SOAPFactory.newInstance();
+            soapFault = soapFactory.createFault();
+            soapFault.setFaultString(faultString);
+        } catch (SOAPException e) {
+            throw new RuntimeException("SOAP error");
+        }
+        throw new SOAPFaultException(soapFault);
     }
 }
