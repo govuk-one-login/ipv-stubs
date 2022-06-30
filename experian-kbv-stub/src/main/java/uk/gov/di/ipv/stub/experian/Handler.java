@@ -182,16 +182,32 @@ public class Handler {
 
         SAAResponse saaResponse = new SAAResponse();
         SAAResponse2 saaResult = new SAAResponse2();
-
+        Results results = new Results();
+        ArrayOfString nextTransId = new ArrayOfString();
         saaResult.setControl(control);
+
+        if (saaObject
+                        .getSAARequest()
+                        .getApplicant()
+                        .getName()
+                        .getForename()
+                        .equalsIgnoreCase("SUZIE")
+                && saaObject
+                        .getSAARequest()
+                        .getApplicant()
+                        .getName()
+                        .getSurname()
+                        .equalsIgnoreCase("SHREEVE")) {
+            simulateThinFileResult(sw, saaResponse, saaResult, results, nextTransId);
+            return;
+        }
+
         Questions questions = new Questions();
         List<Question> questionList = questions.getQuestion();
         questionList.add(getQuestion1());
         questionList.add(getQuestion2());
         saaResult.setQuestions(questions);
-        Results results = new Results();
         results.setOutcome("Authentication Questions returned");
-        ArrayOfString nextTransId = new ArrayOfString();
         nextTransId.getString().add("RTQ");
         results.setNextTransId(nextTransId);
         saaResult.setResults(results);
@@ -199,6 +215,24 @@ public class Handler {
         saaResponse.setSAAResult(saaResult);
 
         saaResponseMarshaller.marshal(saaResponse, sw);
+    }
+
+    private void simulateThinFileResult(
+            StringWriter sw,
+            SAAResponse saaResponse,
+            SAAResponse2 saaResult,
+            Results results,
+            ArrayOfString nextTransId)
+            throws JAXBException {
+        results.setOutcome("Insufficient Questions (Unable to Authenticate)");
+        results.setAuthenticationResult(UNABLE_TO_AUTHENTICATE);
+        nextTransId.getString().add("END");
+        results.setNextTransId(nextTransId);
+        saaResult.setResults(results);
+        saaResponse.setSAAResult(saaResult);
+
+        saaResponseMarshaller.marshal(saaResponse, sw);
+        return;
     }
 
     private void stubRTQ(StringWriter sw, Document bodyDoc) throws JAXBException {
