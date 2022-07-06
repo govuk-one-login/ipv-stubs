@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 set -eu
 ./gradlew
-cf push
+cf push -f ./dev-manifest.yml
