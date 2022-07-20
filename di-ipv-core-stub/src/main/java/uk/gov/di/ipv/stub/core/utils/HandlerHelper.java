@@ -85,7 +85,6 @@ public class HandlerHelper {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HandlerHelper.class);
-    public static final String URN_UUID = "urn:uuid:";
     public static final String SHARED_CLAIMS = "shared_claims";
     public static final String UNKNOWN_ENV_VAR = "unknown";
     public static final String API_KEY_HEADER = "x-api-key";
@@ -325,7 +324,8 @@ public class HandlerHelper {
     }
 
     private String getSubject() {
-        return URN_UUID + UUID.randomUUID();
+        // for more info, see di architecture RFC: 0027-subject-identifier-format.md
+        return "urn:fdc:gov.uk:2022:" + UUID.randomUUID();
     }
 
     private Map<String, Object> convertToMap(Object input) {
