@@ -92,10 +92,13 @@ public class InMemoryDataStore {
     }
 
     private void setRuleId(String ci, String... Ucode) {
-        List<Rule> Rules = experianResponses.get(ci)
-                .getClientResponsePayload()
-                .getDecisionElements()
-                .get(0).getRules();
+        List<Rule> Rules =
+                experianResponses
+                        .get(ci)
+                        .getClientResponsePayload()
+                        .getDecisionElements()
+                        .get(0)
+                        .getRules();
         Rules.get(0).setRuleId(Ucode[0]);
 
         if (Ucode.length > 1) {
