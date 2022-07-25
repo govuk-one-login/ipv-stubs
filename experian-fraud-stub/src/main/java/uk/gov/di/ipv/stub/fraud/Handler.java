@@ -9,7 +9,6 @@ import spark.Route;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.request.*;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.response.IdentityVerificationResponse;
 
-import java.io.*;
 import java.util.*;
 
 public class Handler {
@@ -38,9 +37,9 @@ public class Handler {
                 List<Address> requestAddress = requestContact.getAddresses();
 
                 IdentityVerificationResponse experianResponse =
-                        inMemoryDataStore.getOrElse(
+                        inMemoryDataStore.getResponseOrElse(
                                 requestNames.get(0).getSurName().toUpperCase(),
-                                inMemoryDataStore.get("AUTH1"));
+                                inMemoryDataStore.getResponse("AUTH1"));
                 LOGGER.debug("Stubbed experian response = " + experianResponse);
 
                 Random randGen = new Random();
@@ -61,7 +60,7 @@ public class Handler {
                 responseContactPerson.setNames(requestNames);
                 responseContactPerson.getPersonDetails().setDateOfBirth(requestDob);
 
-                if (requestNames.get(0).getSurName().toUpperCase().equals("SERVER_FAILURE")) {
+                if (requestNames.get(0).getSurName().equalsIgnoreCase("SERVER_FAILURE")) {
                     response.status(503);
                     return "";
                 } else {
@@ -69,5 +68,53 @@ public class Handler {
                     response.status(200);
                     return mapper.writeValueAsString(experianResponse);
                 }
+            };
+
+    protected Route stubPut =
+            (Request request, Response response) -> {
+                LOGGER.info("tokenRequest body: " + request.body());
+
+                IdentityVerificationResponse experianResponse =
+                        mapper.readValue(request.body(), IdentityVerificationResponse.class);
+                inMemoryDataStore.addResponse(
+                        experianResponse
+                                .getOriginalRequestData()
+                                .getContacts()
+                                .get(0)
+                                .getPerson()
+                                .getNames()
+                                .get(0)
+                                .getSurName()
+                                .toUpperCase(),
+                        experianResponse);
+
+                IdentityVerificationRequest fraudRequest = new IdentityVerificationRequest();
+                Payload payload = new Payload();
+                payload.setContacts(experianResponse.getOriginalRequestData().getContacts());
+                fraudRequest.setPayload(payload);
+                return mapper.writeValueAsString(fraudRequest);
+            };
+
+    protected Route stubDelete =
+            (Request request, Response response) -> {
+                LOGGER.info("tokenRequest body: " + request.body());
+
+                IdentityVerificationRequest fraudRequest =
+                        mapper.readValue(request.body(), IdentityVerificationRequest.class);
+
+                String id =
+                        fraudRequest
+                                .getPayload()
+                                .getContacts()
+                                .get(0)
+                                .getPerson()
+                                .getNames()
+                                .get(0)
+                                .getSurName();
+
+                boolean responseRemoved = inMemoryDataStore.removeResponse(id.toUpperCase());
+                return responseRemoved
+                        ? String.format("%s removed", id)
+                        : String.format("%s does not exist", id);
             };
 }

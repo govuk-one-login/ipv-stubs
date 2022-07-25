@@ -16,5 +16,8 @@ public class App {
         Spark.get("/", handler.root);
         Spark.get("/fraud-request", handler.root);
         Spark.post("/DefaultRequestListener", handler.tokenRequest);
+
+        Spark.put("/put-fraud-response", handler.stubPut);
+        Spark.delete("/delete-fraud-response", handler.stubDelete);
     }
 }

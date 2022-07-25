@@ -15,80 +15,66 @@ import static uk.gov.di.ipv.stub.fraud.Util.mapFileToObject;
 public class InMemoryDataStore {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryDataStore.class);
-    private HashMap<String, IdentityVerificationResponse> experianResponses = new HashMap<>();
+    private final HashMap<String, IdentityVerificationResponse> experianResponses = new HashMap<>();
 
     public InMemoryDataStore(ObjectMapper mapper) {
         init();
     }
 
-    public IdentityVerificationResponse get(final String id) {
+    public IdentityVerificationResponse getResponse(final String id) {
         return experianResponses.get(id);
     }
 
-    public IdentityVerificationResponse getOrElse(
+    public IdentityVerificationResponse getResponseOrElse(
             final String id, final IdentityVerificationResponse alt) {
         return experianResponses.getOrDefault(id, alt);
     }
 
-    public void put(
+    public void addResponse(
             final String id, final IdentityVerificationResponse identityVerificationResponse) {
         experianResponses.put(id, identityVerificationResponse);
     }
 
+    public void addResponse(final String id, final String identityVerificationResponse) {
+        experianResponses.put(
+                id,
+                mapFileToObject(
+                        getResourceAsStream(identityVerificationResponse),
+                        IdentityVerificationResponse.class));
+    }
+
+    public boolean removeResponse(final String id) {
+        IdentityVerificationResponse response = experianResponses.get(id);
+        if (response != null) {
+            experianResponses.remove(id);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private void init() {
-        experianResponses.put(
-                "AUTH1",
-                mapFileToObject(
-                        getResourceAsStream("/GenericResponse/fraud-ex--auth1.json"),
-                        IdentityVerificationResponse.class));
-        experianResponses.put(
-                "AUTH2",
-                mapFileToObject(
-                        getResourceAsStream("/GenericResponse/fraud-ex--auth2.json"),
-                        IdentityVerificationResponse.class));
-        experianResponses.put(
-                "NOAUTH",
-                mapFileToObject(
-                        getResourceAsStream("/GenericResponse/fraud-ex--noauth.json"),
-                        IdentityVerificationResponse.class));
-        experianResponses.put(
-                "REFER",
-                mapFileToObject(
-                        getResourceAsStream("/GenericResponse/fraud-ex--refer.json"),
-                        IdentityVerificationResponse.class));
+        addResponse("AUTH1", "/GenericResponse/fraud-ex--auth1.json");
+        addResponse("AUTH2", "/GenericResponse/fraud-ex--auth2.json");
+        addResponse("NOAUTH", "/GenericResponse/fraud-ex--noauth.json");
+        addResponse("REFER", "/GenericResponse/fraud-ex--refer.json");
 
-        experianResponses.put(
-                "FARRELL",
-                mapFileToObject(
-                        getResourceAsStream("/SpecificResponse/fraud-ex-a01-farrell.json"),
-                        IdentityVerificationResponse.class));
-        experianResponses.put(
-                "ARKIL",
-                mapFileToObject(
-                        getResourceAsStream("/SpecificResponse/fraud-ex-n01-arkil.json"),
-                        IdentityVerificationResponse.class));
-        experianResponses.put(
-                "GILT",
-                mapFileToObject(
-                        getResourceAsStream("/SpecificResponse/fraud-ex-t02-gilt.json"),
-                        IdentityVerificationResponse.class));
-        experianResponses.put(
-                "KENNEDY",
-                mapFileToObject(
-                        getResourceAsStream("/SpecificResponse/fraud-ex-t03-kennedy.json"),
-                        IdentityVerificationResponse.class));
+        addResponse("FARRELL", "/SpecificResponse/fraud-ex-ci1-farrell.json");
+        addResponse("ARKIL", "/SpecificResponse/fraud-ex-ci1-arkil.json");
+        addResponse("GILT", "/SpecificResponse/fraud-ex-ci2-gilt.json");
+        addResponse("KENNEDY", "/SpecificResponse/fraud-ex-ci3-kennedy.json");
 
-        experianResponses.put("A01", experianResponses.get("REFER"));
-        experianResponses.put("N01", experianResponses.get("REFER"));
-        experianResponses.put("T02", experianResponses.get("REFER"));
-        experianResponses.put("T03", experianResponses.get("REFER"));
-        experianResponses.put("T05", experianResponses.get("REFER"));
+        addResponse("CI1", experianResponses.get("REFER"));
+        addResponse("CI2", experianResponses.get("REFER"));
+        addResponse("CI3", experianResponses.get("REFER"));
+        addResponse("CI4", experianResponses.get("REFER"));
+        addResponse("CI5", experianResponses.get("REFER"));
 
-        setRuleId("A01", "U150");
-        setRuleId("N01", "U007", "U156", "U018");
-        setRuleId("T02", "U001", "U141");
-        setRuleId("T03", "U142", "U143", "U144", "U145", "U146", "U147", "U163");
-        setRuleId("T05", "U160", "U161");
+        setRuleId("CI1", "U150");
+        setRuleId("CI2", "U007", "U156", "U018");
+        setRuleId("CI3", "U001", "U141");
+        setRuleId("CI4", "U142", "U143", "U144", "U145", "U146", "U147", "U163");
+        setRuleId("CI5", "U160", "U161");
     }
 
     private void setRuleId(String ci, String... Ucode) {
