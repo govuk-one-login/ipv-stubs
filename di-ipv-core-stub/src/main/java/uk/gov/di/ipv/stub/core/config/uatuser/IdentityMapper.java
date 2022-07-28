@@ -189,10 +189,9 @@ public class IdentityMapper {
                         secondaryAddress.postCode(),
                         secondaryAddress.townCity(),
                         secondaryAddress.county(),
-                        secondaryAddress.validFrom(),
-                        secondaryAddress.validFrom(),
-                        secondaryAddress.validUntil())
-                .allMatch(Objects::isNull)) {
+                        secondaryAddress.validFrom() != null ? secondaryAddress.validFrom().toString() : null,
+                        secondaryAddress.validUntil() != null ? secondaryAddress.validUntil().toString() : null)
+                .allMatch(StringUtils::isBlank)) {
             addresses.add(secondaryAddress);
         }
 
