@@ -1,5 +1,7 @@
 package uk.gov.di.ipv.stub.core.config.uatuser;
 
+import java.time.LocalDate;
+
 public record UKAddress(
         String buildingNumber,
         String buildingName,
@@ -7,4 +9,5 @@ public record UKAddress(
         String county,
         String townCity,
         String postCode,
-        boolean currentAddress) {}
+        LocalDate validFrom,
+        LocalDate validUntil) {}

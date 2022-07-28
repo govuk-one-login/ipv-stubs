@@ -1,12 +1,16 @@
 package uk.gov.di.ipv.stub.core.config.uatuser;
 
 import spark.QueryParamsMap;
+import spark.utils.StringUtils;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
@@ -43,6 +47,7 @@ public class IdentityMapper {
             houseNo = (String) hn;
         }
 
+        LocalDate addressValidFrom = LocalDate.of(2021, 1, 1);
         UKAddress address =
                 new UKAddress(
                         houseNo,
@@ -51,7 +56,8 @@ public class IdentityMapper {
                         map.get("district"),
                         map.get("posttown"),
                         map.get("postcode"),
-                        true);
+                        addressValidFrom,
+                        null);
 
         Instant dob = Instant.parse(map.get("dob"));
         Instant dateOfEntryOnCtdb = Instant.parse(map.get("dateOfEntryOnCtdb"));
@@ -63,7 +69,7 @@ public class IdentityMapper {
                 rowNumber,
                 map.get("accountNumber"),
                 map.get("ctdbDatabase"),
-                address,
+                List.of(address),
                 dateOfBirth,
                 name,
                 questions);
@@ -78,6 +84,33 @@ public class IdentityMapper {
 
     public SharedClaims mapToSharedClaim(Identity identity, boolean agedDOB) {
         FindDateOfBirth dateOfBirth = identity.findDateOfBirth();
+
+        AtomicInteger mapIteration = new AtomicInteger();
+        List<CanonicalAddress> canonicalAddresses =
+                identity.addresses().stream()
+                        .map(
+                                address -> {
+                                    LocalDate validFrom = address.validFrom();
+                                    if (mapIteration.get() == 0) {
+                                        validFrom =
+                                                address.validFrom() != null
+                                                        ? address.validFrom()
+                                                        : LocalDate.of(2021, 1, 1);
+                                    }
+                                    mapIteration.getAndIncrement();
+                                    return new CanonicalAddress(
+                                            address.buildingNumber(),
+                                            address.buildingName(),
+                                            address.street(),
+                                            address.townCity(),
+                                            address.postCode(),
+                                            // default / arbitrary value assigned for now as
+                                            // the validFrom date is not available in test data
+                                            validFrom,
+                                            address.validUntil());
+                                })
+                        .collect(toList());
+
         return new SharedClaims(
                 List.of(
                         "https://www.w3.org/2018/credentials/v1",
@@ -88,17 +121,7 @@ public class IdentityMapper {
                                         new NameParts(GIVEN_NAME, identity.name().firstName()),
                                         new NameParts(FAMILY_NAME, identity.name().surname())))),
                 List.of(new DateOfBirth(agedDOB ? dateOfBirth.getAgedDOB() : dateOfBirth.getDOB())),
-                List.of(
-                        new CanonicalAddress(
-                                identity.UKAddress().buildingNumber(),
-                                identity.UKAddress().buildingName(),
-                                identity.UKAddress().street(),
-                                identity.UKAddress().townCity(),
-                                identity.UKAddress().postCode(),
-                                // default / arbitrary value assigned for now as
-                                // the validFrom date is not available in test data
-                                LocalDate.of(2021, 1, 1),
-                                null)));
+                canonicalAddresses);
     }
 
     public List<QuestionAndAnswer> mapToQuestionAnswers(
@@ -113,33 +136,92 @@ public class IdentityMapper {
                 .collect(toList());
     }
 
-    public Identity mapFormToIdentity(Identity identityOnRecord, QueryParamsMap userData) {
+    public Identity mapFormToIdentity(Identity identityOnRecord, QueryParamsMap formData) {
+        List<UKAddress> addresses = new ArrayList<>();
 
-        UKAddress ukAddress =
+        LocalDate primaryAddressValidFrom =
+                getLocalDate(formData, "validFromYear", "validFromMonth", "validFromDay");
+
+        LocalDate primaryAddressValidUntil =
+                getLocalDate(formData, "validUntilYear", "validUntilMonth", "validUntilDay");
+
+        UKAddress primaryAddress =
                 new UKAddress(
-                        userData.value("buildingNumber"),
-                        userData.value("buildingName"),
-                        userData.value("street"),
+                        formData.value("buildingNumber"),
+                        formData.value("buildingName"),
+                        formData.value("street"),
                         null,
-                        userData.value("townCity"),
-                        userData.value("postCode"),
-                        true);
+                        formData.value("townCity"),
+                        formData.value("postCode"),
+                        primaryAddressValidFrom,
+                        primaryAddressValidUntil);
+        addresses.add(primaryAddress);
 
-        int year = Integer.parseInt(userData.value("dateOfBirth-year"));
-        int month = Integer.parseInt(userData.value("dateOfBirth-month"));
-        int dayOfMonth = Integer.parseInt(userData.value("dateOfBirth-day"));
+        LocalDate secondaryAddressValidFrom =
+                getLocalDate(
+                        formData,
+                        "SecondaryUKAddress.validFromYear",
+                        "SecondaryUKAddress.validFromMonth",
+                        "SecondaryUKAddress.validFromDay");
 
-        LocalDate dob = LocalDate.of(year, month, dayOfMonth);
+        LocalDate secondaryAddressValidUntil =
+                getLocalDate(
+                        formData,
+                        "SecondaryUKAddress.validUntilYear",
+                        "SecondaryUKAddress.validUntilMonth",
+                        "SecondaryUKAddress.validUntilDay");
+
+        UKAddress secondaryAddress =
+                new UKAddress(
+                        formData.value("SecondaryUKAddress.buildingNumber"),
+                        formData.value("SecondaryUKAddress.buildingName"),
+                        formData.value("SecondaryUKAddress.street"),
+                        null,
+                        formData.value("SecondaryUKAddress.townCity"),
+                        formData.value("SecondaryUKAddress.postCode"),
+                        secondaryAddressValidFrom,
+                        secondaryAddressValidUntil);
+        if (!Stream.of(
+                        secondaryAddress.street(),
+                        secondaryAddress.buildingName(),
+                        secondaryAddress.buildingNumber(),
+                        secondaryAddress.postCode(),
+                        secondaryAddress.townCity(),
+                        secondaryAddress.county(),
+                        secondaryAddress.validFrom() != null
+                                ? secondaryAddress.validFrom().toString()
+                                : null,
+                        secondaryAddress.validUntil() != null
+                                ? secondaryAddress.validUntil().toString()
+                                : null)
+                .allMatch(StringUtils::isBlank)) {
+            addresses.add(secondaryAddress);
+        }
+
+        LocalDate dob =
+                getLocalDate(formData, "dateOfBirth-year", "dateOfBirth-month", "dateOfBirth-day");
         Instant instant = dob.atStartOfDay(ZoneId.systemDefault()).toInstant();
         FindDateOfBirth findDateOfBirth = new FindDateOfBirth(instant, instant);
-        FullName fullName = new FullName(userData.value("firstName"), userData.value("surname"));
+        FullName fullName = new FullName(formData.value("firstName"), formData.value("surname"));
         return new Identity(
                 identityOnRecord.rowNumber(),
                 identityOnRecord.accountNumber(),
                 identityOnRecord.ctdbDatabase(),
-                ukAddress,
+                addresses,
                 findDateOfBirth,
                 fullName,
                 identityOnRecord.questions());
+    }
+
+    private LocalDate getLocalDate(QueryParamsMap userData, String year, String month, String day) {
+        if (!Stream.of(userData.value(year), userData.value(month), userData.value(day))
+                .allMatch(StringUtils::isBlank)) {
+
+            return LocalDate.of(
+                    Integer.parseInt(userData.value(year)),
+                    Integer.parseInt(userData.value(month)),
+                    Integer.parseInt(userData.value(day)));
+        }
+        return null;
     }
 }

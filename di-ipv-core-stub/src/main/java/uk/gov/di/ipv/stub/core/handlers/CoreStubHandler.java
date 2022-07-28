@@ -282,11 +282,18 @@ public class CoreStubHandler {
 
     private Identity createNewIdentity() {
         Identity identity;
-        UKAddress ukAddress = new UKAddress(null, null, null, null, null, null, true);
+        UKAddress ukAddress = new UKAddress(null, null, null, null, null, null, null, null);
         FullName fullName = new FullName(null, null);
         Instant dob = Instant.ofEpochSecond(0);
         identity =
-                new Identity(0, "", "", ukAddress, new FindDateOfBirth(dob, dob), fullName, null);
+                new Identity(
+                        0,
+                        "",
+                        "",
+                        List.of(ukAddress),
+                        new FindDateOfBirth(dob, dob),
+                        fullName,
+                        null);
         return identity;
     }
 

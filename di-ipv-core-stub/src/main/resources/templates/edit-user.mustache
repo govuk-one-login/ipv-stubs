@@ -184,6 +184,236 @@
 
             </div>
 
+            <div class="govuk-date-input" id="validFrom">
+
+                <div class="govuk-date-input__item">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label govuk-date-input__label" for="validFromDay">
+                            Day
+                        </label>
+
+                        <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                               id="validFromDay" name="validFromDay" type="text" pattern="[0-9]*"
+                               inputmode="numeric" maxlength="2" value="{{identity.UKAddress.validFrom.day}}">
+
+                    </div>
+                </div>
+
+                <div class="govuk-date-input__item">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label govuk-date-input__label" for="validFromMonth">
+                            Month
+                        </label>
+
+                        <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                               id="validFromMonth" name="validFromMonth" type="text" pattern="[0-9]*"
+                               inputmode="numeric" maxlength="2" value="{{identity.UKAddress.validFrom.month}}">
+
+                    </div>
+                </div>
+
+                <div class="govuk-date-input__item">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label govuk-date-input__label" for="validFromYear">
+                            Year
+                        </label>
+
+                        <input class="govuk-input govuk-date-input__input govuk-input--width-4"
+                               id="validFromYear" name="validFromYear" type="text" pattern="[0-9]*"
+                               inputmode="numeric" maxlength="4" value="{{identity.UKAddress.validFrom.year}}">
+
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="govuk-date-input" id="validUntil">
+
+                <div class="govuk-date-input__item">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label govuk-date-input__label" for="validUntilDay">
+                            Day
+                        </label>
+
+                        <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                               id="validUntilDay" name="validUntilDay" type="text" pattern="[0-9]*"
+                               inputmode="numeric" maxlength="2" value="{{identity.UKAddress.validFrom.day}}">
+
+                    </div>
+                </div>
+
+                <div class="govuk-date-input__item">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label govuk-date-input__label" for="validUntilMonth">
+                            Month
+                        </label>
+
+                        <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                               id="validUntilMonth" name="validUntilMonth" type="text" pattern="[0-9]*"
+                               inputmode="numeric" maxlength="2" value="{{identity.UKAddress.validFrom.month}}">
+
+                    </div>
+                </div>
+
+                <div class="govuk-date-input__item">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label govuk-date-input__label" for="validUntilYear">
+                            Year
+                        </label>
+
+                        <input class="govuk-input govuk-date-input__input govuk-input--width-4"
+                               id="validUntilYear" name="validUntilYear" type="text" pattern="[0-9]*"
+                               inputmode="numeric" maxlength="4" value="{{identity.UKAddress.validFrom.year}}">
+
+                    </div>
+                </div>
+
+            </div>
+
+            <details class="govuk-details" data-module="govuk-details">
+                <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                  Second address
+                </span>
+                </summary>
+                <div class="govuk-details__text">
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" id="buildingNumber-label" for="SecondaryUKAddress.buildingNumber">
+                            House number
+                        </label>
+
+                        <input class="govuk-input govuk-input--width-5" id="SecondaryUKAddress.buildingNumber" name="SecondaryUKAddress.buildingNumber"
+                               type="text" aria-required="false" maxlength="10" value="{{identity.SecondaryUKAddress.buildingNumber}}">
+
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" id="buildingName-label" for="SecondaryUKAddress.buildingName">
+                            House name
+                        </label>
+
+                        <input class="govuk-input govuk-input--width-20" id="SecondaryUKAddress.buildingName" name="SecondaryUKAddress.buildingName"
+                               type="text" aria-required="false" maxlength="50" value="{{identity.SecondaryUKAddress.buildingName}}">
+
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" id="street-label" for="SecondaryUKAddress.street">
+                            Street name
+                        </label>
+
+                        <input class="govuk-input govuk-input--width-20" id="SecondaryUKAddress.street" name="SecondaryUKAddress.street"
+                               type="text" maxlength="60" value="{{identity.SecondaryUKAddress.street}}">
+                    </div>
+
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" id="townCity-label" for="SecondaryUKAddress.townCity">
+                            Town or city
+                        </label>
+
+                        <input class="govuk-input govuk-input--width-20" id="SecondaryUKAddress.townCity" name="SecondaryUKAddress.townCity" type="text"
+                               maxlength="60" value="{{identity.SecondaryUKAddress.townCity}}">
+
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" id="postCode-label" for="SecondaryUKAddress.postCode">
+                            Post code
+                        </label>
+
+                        <input class="govuk-input govuk-input--width-20" id="SecondaryUKAddress.postCode" name="SecondaryUKAddress.postCode" type="text"
+                               maxlength="60" value="{{identity.SecondaryUKAddress.postCode}}">
+
+                    </div>
+
+                    <div class="govuk-date-input" id="SecondaryUKAddress.validFrom">
+
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="SecondaryUKAddress.validFromDay">
+                                    Day
+                                </label>
+
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                                       id="SecondaryUKAddress.validFromDay" name="SecondaryUKAddress.validFromDay" type="text" pattern="[0-9]*"
+                                       inputmode="numeric" maxlength="2" value="{{identity.SecondaryUKAddress.validFrom.day}}">
+
+                            </div>
+                        </div>
+
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="SecondaryUKAddress.validFromMonth">
+                                    Month
+                                </label>
+
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                                       id="SecondaryUKAddress.validFromMonth" name="SecondaryUKAddress.validFromMonth" type="text" pattern="[0-9]*"
+                                       inputmode="numeric" maxlength="2" value="{{identity.SecondaryUKAddress.validFrom.month}}">
+
+                            </div>
+                        </div>
+
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="SecondaryUKAddress.validFromYear">
+                                    Year
+                                </label>
+
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-4"
+                                       id="SecondaryUKAddress.validFromYear" name="SecondaryUKAddress.validFromYear" type="text" pattern="[0-9]*"
+                                       inputmode="numeric" maxlength="4" value="{{identity.secondaryUKAddress.validFrom.year}}">
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="govuk-date-input" id="validUntil">
+
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="SecondaryUKAddress.validUntilDay">
+                                    Day
+                                </label>
+
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                                       id="SecondaryUKAddress.validUntilDay" name="SecondaryUKAddress.validUntilDay" type="text" pattern="[0-9]*"
+                                       inputmode="numeric" maxlength="2" value="{{identity.SecondaryUKAddress.validUntil.day}}">
+
+                            </div>
+                        </div>
+
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="SecondaryUKAddress.validUntilMonth">
+                                    Month
+                                </label>
+
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                                       id="SecondaryUKAddress.validUntilMonth" name="SecondaryUKAddress.validUntilMonth" type="text" pattern="[0-9]*"
+                                       inputmode="numeric" maxlength="2" value="{{identity.SecondaryUKAddress.validUntil.month}}">
+
+                            </div>
+                        </div>
+
+                        <div class="govuk-date-input__item">
+                            <div class="govuk-form-group">
+                                <label class="govuk-label govuk-date-input__label" for="SecondaryUKAddress.validUntilYear">
+                                    Year
+                                </label>
+
+                                <input class="govuk-input govuk-date-input__input govuk-input--width-4"
+                                       id="SecondaryUKAddress.validUntilYear" name="SecondaryUKAddress.validUntilYear" type="text" pattern="[0-9]*"
+                                       inputmode="numeric" maxlength="4" value="{{identity.SecondaryUKAddress.validUntil.year}}">
+
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </details>
             <button class="govuk-button button" data-module="govuk-button">Go to {{criName}}</button>
 
         </form>
