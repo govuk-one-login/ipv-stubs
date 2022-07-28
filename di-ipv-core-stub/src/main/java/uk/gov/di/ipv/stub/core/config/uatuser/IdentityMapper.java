@@ -9,7 +9,6 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -189,8 +188,12 @@ public class IdentityMapper {
                         secondaryAddress.postCode(),
                         secondaryAddress.townCity(),
                         secondaryAddress.county(),
-                        secondaryAddress.validFrom() != null ? secondaryAddress.validFrom().toString() : null,
-                        secondaryAddress.validUntil() != null ? secondaryAddress.validUntil().toString() : null)
+                        secondaryAddress.validFrom() != null
+                                ? secondaryAddress.validFrom().toString()
+                                : null,
+                        secondaryAddress.validUntil() != null
+                                ? secondaryAddress.validUntil().toString()
+                                : null)
                 .allMatch(StringUtils::isBlank)) {
             addresses.add(secondaryAddress);
         }
