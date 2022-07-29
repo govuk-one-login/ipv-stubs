@@ -140,7 +140,7 @@
                 </label>
 
                 <input class="govuk-input govuk-input--width-5" id="buildingNumber" name="buildingNumber"
-                       type="text" aria-required="false" maxlength="10" value="{{identity.UKAddress.buildingNumber}}">
+                       type="text" aria-required="false" maxlength="10" value="{{addressMap.0.buildingNumber}}">
 
             </div>
 
@@ -150,7 +150,7 @@
                 </label>
 
                 <input class="govuk-input govuk-input--width-20" id="buildingName" name="buildingName"
-                       type="text" aria-required="false" maxlength="50" value="{{identity.UKAddress.buildingName}}">
+                       type="text" aria-required="false" maxlength="50" value="{{addressMap.0.buildingName}}">
 
             </div>
 
@@ -160,7 +160,7 @@
                 </label>
 
                 <input class="govuk-input govuk-input--width-20" id="street" name="street"
-                       type="text" maxlength="60" value="{{identity.UKAddress.street}}">
+                       type="text" maxlength="60" value="{{addressMap.0.street}}">
             </div>
 
 
@@ -170,7 +170,7 @@
                 </label>
 
                 <input class="govuk-input govuk-input--width-20" id="townCity" name="townCity" type="text"
-                       maxlength="60" value="{{identity.UKAddress.townCity}}">
+                       maxlength="60" value="{{addressMap.0.townCity}}">
 
             </div>
 
@@ -180,7 +180,7 @@
                 </label>
 
                 <input class="govuk-input govuk-input--width-20" id="postCode" name="postCode" type="text"
-                       maxlength="60" value="{{identity.UKAddress.postCode}}">
+                       maxlength="60" value="{{addressMap.0.postCode}}">
 
             </div>
 
@@ -194,8 +194,7 @@
 
                         <input class="govuk-input govuk-date-input__input govuk-input--width-2"
                                id="validFromDay" name="validFromDay" type="text" pattern="[0-9]*"
-                               inputmode="numeric" maxlength="2" value="{{identity.UKAddress.validFrom.day}}">
-
+                               inputmode="numeric" maxlength="2" value="{{addressMap.0.validFrom.dayOfMonth}}">
                     </div>
                 </div>
 
@@ -207,7 +206,7 @@
 
                         <input class="govuk-input govuk-date-input__input govuk-input--width-2"
                                id="validFromMonth" name="validFromMonth" type="text" pattern="[0-9]*"
-                               inputmode="numeric" maxlength="2" value="{{identity.UKAddress.validFrom.month}}">
+                               inputmode="numeric" maxlength="2" value="{{addressMap.0.validFrom.getMonth.getValue}}">
 
                     </div>
                 </div>
@@ -220,7 +219,7 @@
 
                         <input class="govuk-input govuk-date-input__input govuk-input--width-4"
                                id="validFromYear" name="validFromYear" type="text" pattern="[0-9]*"
-                               inputmode="numeric" maxlength="4" value="{{identity.UKAddress.validFrom.year}}">
+                               inputmode="numeric" maxlength="4" value="{{addressMap.0.validFrom.year}}">
 
                     </div>
                 </div>
@@ -237,7 +236,7 @@
 
                         <input class="govuk-input govuk-date-input__input govuk-input--width-2"
                                id="validUntilDay" name="validUntilDay" type="text" pattern="[0-9]*"
-                               inputmode="numeric" maxlength="2" value="{{identity.UKAddress.validFrom.day}}">
+                               inputmode="numeric" maxlength="2" value="{{addressMap.0.validUntil.dayOfMonth}}">
 
                     </div>
                 </div>
@@ -250,7 +249,7 @@
 
                         <input class="govuk-input govuk-date-input__input govuk-input--width-2"
                                id="validUntilMonth" name="validUntilMonth" type="text" pattern="[0-9]*"
-                               inputmode="numeric" maxlength="2" value="{{identity.UKAddress.validFrom.month}}">
+                               inputmode="numeric" maxlength="2" value="{{addressMap.0.validUntil.getMonth.getValue}}">
 
                     </div>
                 </div>
@@ -263,7 +262,7 @@
 
                         <input class="govuk-input govuk-date-input__input govuk-input--width-4"
                                id="validUntilYear" name="validUntilYear" type="text" pattern="[0-9]*"
-                               inputmode="numeric" maxlength="4" value="{{identity.UKAddress.validFrom.year}}">
+                               inputmode="numeric" maxlength="4" value="{{addressMap.0.validUntil.year}}">
 
                     </div>
                 </div>
@@ -283,7 +282,7 @@
                         </label>
 
                         <input class="govuk-input govuk-input--width-5" id="SecondaryUKAddress.buildingNumber" name="SecondaryUKAddress.buildingNumber"
-                               type="text" aria-required="false" maxlength="10" value="{{identity.SecondaryUKAddress.buildingNumber}}">
+                               type="text" aria-required="false" maxlength="10" value="{{addressMap.1.buildingNumber}}">
 
                     </div>
 
@@ -293,7 +292,7 @@
                         </label>
 
                         <input class="govuk-input govuk-input--width-20" id="SecondaryUKAddress.buildingName" name="SecondaryUKAddress.buildingName"
-                               type="text" aria-required="false" maxlength="50" value="{{identity.SecondaryUKAddress.buildingName}}">
+                               type="text" aria-required="false" maxlength="50" value="{{addressMap.1.buildingName}}">
 
                     </div>
 
@@ -303,7 +302,7 @@
                         </label>
 
                         <input class="govuk-input govuk-input--width-20" id="SecondaryUKAddress.street" name="SecondaryUKAddress.street"
-                               type="text" maxlength="60" value="{{identity.SecondaryUKAddress.street}}">
+                               type="text" maxlength="60" value="{{addressMap.1.street}}">
                     </div>
 
 
@@ -313,7 +312,7 @@
                         </label>
 
                         <input class="govuk-input govuk-input--width-20" id="SecondaryUKAddress.townCity" name="SecondaryUKAddress.townCity" type="text"
-                               maxlength="60" value="{{identity.SecondaryUKAddress.townCity}}">
+                               maxlength="60" value="{{addressMap.1.townCity}}">
 
                     </div>
 
@@ -323,7 +322,7 @@
                         </label>
 
                         <input class="govuk-input govuk-input--width-20" id="SecondaryUKAddress.postCode" name="SecondaryUKAddress.postCode" type="text"
-                               maxlength="60" value="{{identity.SecondaryUKAddress.postCode}}">
+                               maxlength="60" value="{{addressMap.1.postCode}}">
 
                     </div>
 
@@ -337,7 +336,7 @@
 
                                 <input class="govuk-input govuk-date-input__input govuk-input--width-2"
                                        id="SecondaryUKAddress.validFromDay" name="SecondaryUKAddress.validFromDay" type="text" pattern="[0-9]*"
-                                       inputmode="numeric" maxlength="2" value="{{identity.SecondaryUKAddress.validFrom.day}}">
+                                       inputmode="numeric" maxlength="2" value="{{addressMap.1.validFrom.dayOfMonth}}">
 
                             </div>
                         </div>
@@ -350,7 +349,7 @@
 
                                 <input class="govuk-input govuk-date-input__input govuk-input--width-2"
                                        id="SecondaryUKAddress.validFromMonth" name="SecondaryUKAddress.validFromMonth" type="text" pattern="[0-9]*"
-                                       inputmode="numeric" maxlength="2" value="{{identity.SecondaryUKAddress.validFrom.month}}">
+                                       inputmode="numeric" maxlength="2" value="{{addressMap.1.validFrom.getMonth.getValue}}">
 
                             </div>
                         </div>
@@ -363,7 +362,7 @@
 
                                 <input class="govuk-input govuk-date-input__input govuk-input--width-4"
                                        id="SecondaryUKAddress.validFromYear" name="SecondaryUKAddress.validFromYear" type="text" pattern="[0-9]*"
-                                       inputmode="numeric" maxlength="4" value="{{identity.secondaryUKAddress.validFrom.year}}">
+                                       inputmode="numeric" maxlength="4" value="{{addressMap.1.validFrom.year}}">
 
                             </div>
                         </div>
@@ -380,7 +379,7 @@
 
                                 <input class="govuk-input govuk-date-input__input govuk-input--width-2"
                                        id="SecondaryUKAddress.validUntilDay" name="SecondaryUKAddress.validUntilDay" type="text" pattern="[0-9]*"
-                                       inputmode="numeric" maxlength="2" value="{{identity.SecondaryUKAddress.validUntil.day}}">
+                                       inputmode="numeric" maxlength="2" value="{{addressMap.1.validUntil.dayOfMonth}}">
 
                             </div>
                         </div>
@@ -393,7 +392,7 @@
 
                                 <input class="govuk-input govuk-date-input__input govuk-input--width-2"
                                        id="SecondaryUKAddress.validUntilMonth" name="SecondaryUKAddress.validUntilMonth" type="text" pattern="[0-9]*"
-                                       inputmode="numeric" maxlength="2" value="{{identity.SecondaryUKAddress.validUntil.month}}">
+                                       inputmode="numeric" maxlength="2" value="{{addressMap.1.validUntil.getMonth.getValue}}">
 
                             </div>
                         </div>
@@ -406,7 +405,7 @@
 
                                 <input class="govuk-input govuk-date-input__input govuk-input--width-4"
                                        id="SecondaryUKAddress.validUntilYear" name="SecondaryUKAddress.validUntilYear" type="text" pattern="[0-9]*"
-                                       inputmode="numeric" maxlength="4" value="{{identity.SecondaryUKAddress.validUntil.year}}">
+                                       inputmode="numeric" maxlength="4" value="{{addressMap.1.validUntil.year}}">
 
                             </div>
                         </div>
