@@ -260,8 +260,8 @@ public class CoreStubHandler {
                 Identity identity = fetchOrCreateIdentity(rowNumber);
 
                 Map<String, UKAddress> addressMap = new HashMap<>();
-                for (int i = 0; i< identity.addresses().size(); i++) {
-                    addressMap.put(""+i, identity.addresses().get(i));
+                for (int i = 0; i < identity.addresses().size(); i++) {
+                    addressMap.put("" + i, identity.addresses().get(i));
                 }
                 return ViewHelper.render(
                         Map.of(
