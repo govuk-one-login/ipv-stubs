@@ -259,6 +259,10 @@ public class CoreStubHandler {
                 String rowNumber = request.queryParams("rowNumber");
                 Identity identity = fetchOrCreateIdentity(rowNumber);
 
+                Map<String, UKAddress> addressMap = new HashMap<>();
+                for (int i = 0; i < identity.addresses().size(); i++) {
+                    addressMap.put("" + i, identity.addresses().get(i));
+                }
                 return ViewHelper.render(
                         Map.of(
                                 "cri",
@@ -267,6 +271,8 @@ public class CoreStubHandler {
                                 credentialIssuer.name(),
                                 "identity",
                                 identity,
+                                "addressMap",
+                                addressMap,
                                 "rowNumber",
                                 Optional.ofNullable(rowNumber).orElse("0")),
                         "edit-user.mustache");
