@@ -1,0 +1,37 @@
+plugins {
+	id "idea"
+	id "application"
+	id "java"
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation "com.sparkjava:spark-core:2.9.3"
+	implementation 'org.javassist:javassist:3.25.0-GA'
+	implementation 'org.slf4j:slf4j-simple:1.7.21'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.13.3'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
+	implementation 'org.apache.commons:commons-lang3:3.12.0'
+
+	testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs = ['src/main/java']
+		}
+	}
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+	mainClassName = "uk.gov.di.ipv.stub.fraud.App"
+}
+
+defaultTasks 'clean', 'build'
