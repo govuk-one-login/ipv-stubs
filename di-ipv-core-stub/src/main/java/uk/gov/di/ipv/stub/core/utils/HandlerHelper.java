@@ -86,6 +86,8 @@ public class HandlerHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HandlerHelper.class);
     public static final String SHARED_CLAIMS = "shared_claims";
+    private static final String PERSISTENT_SESSION_ID = "persistent_session_id";
+    private static final String CLIENT_SESSION_ID = "govuk_signin_journey_id";
     public static final String UNKNOWN_ENV_VAR = "unknown";
     public static final String API_KEY_HEADER = "x-api-key";
 
@@ -246,7 +248,9 @@ public class HandlerHelper {
                                                 Integer.parseInt(CoreStubConfig.MAX_JAR_TTL_MINS),
                                                 ChronoUnit.MINUTES)))
                         .notBeforeTime(Date.from(now))
-                        .subject(getSubject());
+                        .subject(getSubject())
+                        .claim(PERSISTENT_SESSION_ID, UUID.randomUUID().toString())
+                        .claim(CLIENT_SESSION_ID, UUID.randomUUID().toString());
 
         if (Objects.nonNull(sharedClaims)) {
             Map<String, Object> map = convertToMap(sharedClaims);
