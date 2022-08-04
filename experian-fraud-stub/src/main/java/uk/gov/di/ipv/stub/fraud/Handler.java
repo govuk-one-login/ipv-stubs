@@ -89,8 +89,11 @@ public class Handler {
                         experianResponse);
 
                 IdentityVerificationRequest fraudRequest = new IdentityVerificationRequest();
+                Header header = new Header();
                 Payload payload = new Payload();
+                header.setRequestType(experianResponse.getResponseHeader().getRequestType());
                 payload.setContacts(experianResponse.getOriginalRequestData().getContacts());
+                fraudRequest.setHeader(header);
                 fraudRequest.setPayload(payload);
                 return mapper.writeValueAsString(fraudRequest);
             };
