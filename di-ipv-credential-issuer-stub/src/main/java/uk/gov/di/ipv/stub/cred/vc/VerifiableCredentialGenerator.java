@@ -8,6 +8,7 @@ import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
+import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.domain.Credential;
 
 import java.security.KeyFactory;
@@ -28,6 +29,7 @@ import static com.nimbusds.jwt.JWTClaimNames.EXPIRATION_TIME;
 import static com.nimbusds.jwt.JWTClaimNames.ISSUER;
 import static com.nimbusds.jwt.JWTClaimNames.NOT_BEFORE;
 import static com.nimbusds.jwt.JWTClaimNames.SUBJECT;
+import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_ADDRESS;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_BIRTH_DATE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_NAME;
@@ -71,8 +73,11 @@ public class VerifiableCredentialGenerator {
         // Copy any remaining attributes in. The JSON manually entered into the stub.
         credentialSubject.putAll(attributes);
         vc.put(VC_CREDENTIAL_SUBJECT, credentialSubject);
-        // The schema is unclear on how this should be presented so just copying wholesale for now.
-        vc.put(VC_EVIDENCE, List.of(credential.getEvidence()));
+
+        // VCs from user asserted CRI types, like address, should not contain an evidence attribute
+        if (getCriType() != CriType.USER_ASSERTED_CRI_TYPE) {
+            vc.put(VC_EVIDENCE, List.of(credential.getEvidence()));
+        }
 
         return generateAndSignVerifiableCredentialJwt(credential, vc);
     }
