@@ -55,6 +55,7 @@ import java.util.UUID;
 
 import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
+import static uk.gov.di.ipv.stub.cred.config.CriType.USER_ASSERTED_CRI_TYPE;
 
 public class AuthorizeHandler {
 
@@ -321,6 +322,12 @@ public class AuthorizeHandler {
             String fraudValue,
             String verificationValue)
             throws CriStubException {
+
+        if (criType.equals(USER_ASSERTED_CRI_TYPE)) {
+            // VCs from user asserted CRIs, like address, do not have GPG45 scores
+            return null;
+        }
+
         ValidationResult validationResult =
                 Validator.verifyGpg45(
                         criType,
