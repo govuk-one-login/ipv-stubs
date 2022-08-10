@@ -1,45 +1,6 @@
 #!/usr/bin/env bash
 set -eu
 docker build -t experian-fraud-stub \
---build-arg CI1=$CI1 \
---build-arg CI2=$CI2 \
---build-arg CI3=$CI3 \
---build-arg CI4=$CI4 \
---build-arg CI5=$CI5 \
---build-arg P1=$P1 \
---build-arg P2=$P2 \
---build-arg P3=$P3 \
---build-arg P4=$P4 \
---build-arg P5=$P5 \
---build-arg P6=$P6 \
---build-arg P7=$P7 \
---build-arg P8=$P8 \
---build-arg P9=$P9 \
---build-arg P10=$P10 \
---build-arg P11=$P11 \
---build-arg P12=$P12 \
---build-arg P13=$P13 \
---build-arg P14=$P14 \
---build-arg P15=$P15 \
---build-arg P16=$P16 \
---build-arg P17=$P17 \
---build-arg P18=$P18 \
---build-arg P19=$P19 \
---build-arg P20=$P20 \
---build-arg P21=$P21 \
---build-arg P22=$P22 \
---build-arg P23=$P23 \
---build-arg P24=$P24 \
---build-arg P25=$P25 \
---build-arg P26=$P26 \
---build-arg P27=$P27 \
---build-arg P28=$P28 \
---build-arg P29=$P29 \
---build-arg P30=$P30 \
---build-arg P31=$P31 \
---build-arg P32=$P32 \
---build-arg P33=$P33 \
---build-arg P34=$P34 \
---build-arg P35=$P35 \
---build-arg P36=$P36 .
+--build-arg CONTIND=$CONTIND \
+--build-arg PEPS=$PEPS.
 docker run -p 8080:8080 experian-fraud-stub
