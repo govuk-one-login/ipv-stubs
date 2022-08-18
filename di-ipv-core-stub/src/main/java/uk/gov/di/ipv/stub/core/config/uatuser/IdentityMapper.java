@@ -201,7 +201,9 @@ public class IdentityMapper {
         LocalDate dob =
                 getLocalDate(formData, "dateOfBirth-year", "dateOfBirth-month", "dateOfBirth-day");
         Instant instant = dob.atStartOfDay(ZoneId.systemDefault()).toInstant();
-        FindDateOfBirth findDateOfBirth = new FindDateOfBirth(instant, instant);
+        FindDateOfBirth findDateOfBirth =
+                new FindDateOfBirth(
+                        instant, LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
         FullName fullName = new FullName(formData.value("firstName"), formData.value("surname"));
         return new Identity(
                 identityOnRecord.rowNumber(),
