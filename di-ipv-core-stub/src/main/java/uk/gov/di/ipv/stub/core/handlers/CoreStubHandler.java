@@ -5,8 +5,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
+import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -242,13 +245,22 @@ public class CoreStubHandler {
             Response response,
             CredentialIssuer credentialIssuer,
             SharedClaims sharedClaims)
-            throws JOSEException {
+            throws JOSEException, java.text.ParseException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
         AuthorizationRequest authRequest =
                 handlerHelper.createAuthorizationJAR(state, credentialIssuer, sharedClaims);
         LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);
         response.redirect(authRequest.toURI().toString());
+    }
+
+    private AuthorizationRequest createBackendAuthorizationRequest(
+            CredentialIssuer credentialIssuer, JWTClaimsSet claimsSet)
+            throws JOSEException, java.text.ParseException {
+        AuthorizationRequest authRequest =
+                handlerHelper.createBackEndAuthorizationJAR(credentialIssuer, claimsSet);
+        LOGGER.info("🚀 Created AuthorizationRequest for state {}", claimsSet.getClaim("state"));
+        return authRequest;
     }
 
     public Route editUser =
@@ -277,6 +289,87 @@ public class CoreStubHandler {
                                 Optional.ofNullable(rowNumber).orElse("0")),
                         "edit-user.mustache");
             };
+
+    public Route backendGenerateInitialClaimsSet =
+            (Request request, Response response) -> {
+                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                var rowNumber =
+                        Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
+                var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
+                var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
+                var claimIdentity =
+                        new IdentityMapper()
+                                .mapToSharedClaim(
+                                        identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
+
+                State state = createNewState(credentialIssuer);
+                LOGGER.info("Created State {} for {}", state.toJSONString(), credentialIssuerId);
+
+                // ClaimSets can go direct to JSON
+                response.type("application/json");
+                return handlerHelper.createJWTClaimsSets(
+                        state,
+                        credentialIssuer,
+                        claimIdentity,
+                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID));
+            };
+
+    public Route createBackendSessionRequest =
+            (Request request, Response response) -> {
+                LOGGER.info("CreateBackendSessionRequest Start");
+                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
+
+                // The JSON data will have urls that will be escaped.
+                LOGGER.info("Getting request body");
+                var escapedData = Objects.requireNonNull(request.body(), "UTF-8");
+                String data = escapedData.replace("\\", "");
+
+                LOGGER.info("Parsing Request data to JWTClaimsSet {}", data);
+                JWTClaimsSet claimsSet = JWTClaimsSet.parse(new Payload(data).toJSONObject());
+                LOGGER.info("JWTClaimsSet Parsed!");
+
+                AuthorizationRequest authorizationRequest =
+                        createBackendAuthorizationRequest(credentialIssuer, claimsSet);
+
+                // This uri can be pasted into a browser and Journey continued in the frontend.
+                LOGGER.info("Auth URI {}", authorizationRequest.toURI());
+
+                LOGGER.info("CreateBackendSessionRequest Complete");
+                response.type("application/json");
+                return createBackendSessionRequestJSONReply(authorizationRequest);
+            };
+
+    private String createBackendSessionRequestJSONReply(AuthorizationRequest authorizationRequest) {
+        // Splits the QueryString from the Auth URI.  Turning the list of parameters
+        // (key1=value1&key2=value2 etc...) into a json object.
+        String queryParams = authorizationRequest.toQueryString();
+        String[] queryKVPairs = queryParams.split("&");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        for (int qp = 0; qp < queryKVPairs.length; qp++) {
+
+            String[] paramKV = queryKVPairs[qp].split("=");
+
+            sb.append('"');
+            sb.append(paramKV[0]);
+            sb.append('"');
+
+            sb.append(':');
+
+            sb.append('"');
+            sb.append(paramKV[1]);
+            sb.append('"');
+
+            if (qp < (queryKVPairs.length - 1)) {
+                sb.append(',');
+            }
+        }
+        sb.append('}');
+
+        return sb.toString();
+    }
 
     private Identity fetchOrCreateIdentity(String rowNumber) {
         if (rowNumber != null && !rowNumber.isBlank() && !rowNumber.equals("0")) {
