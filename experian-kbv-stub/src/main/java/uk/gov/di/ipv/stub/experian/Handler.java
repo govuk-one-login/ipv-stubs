@@ -276,7 +276,7 @@ public class Handler {
             results.setOutcome(AUTHENTICATION_UNSUCCESSFUL);
             results.setAuthenticationResult(NOT_AUTHENTICATED);
             resultsQuestions.setCorrect(1);
-            resultsQuestions.setIncorrect(1);
+            resultsQuestions.setIncorrect(2); // required to trigger the contra-indicator V03
         } else {
             results.setOutcome(AUTHENTICATION_SUCCESSFUL);
             results.setAuthenticationResult(AUTHENTICATED);
