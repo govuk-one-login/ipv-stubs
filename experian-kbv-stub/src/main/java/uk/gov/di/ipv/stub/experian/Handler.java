@@ -55,6 +55,7 @@ public class Handler {
     private static final String UNABLE_TO_AUTHENTICATE = "Unable to Authenticate";
     private static final String USER_DATA_INCORRECT = "User data incorrect";
     private static final String EXPERIAN_ERROR = "Experian SOAP Fault";
+    private static final String NO_FURTHER_QUESTIONS = "Insufficient additional questions";
     private final String soapHeader =
             "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">"
                     + "<soap:Body>";
@@ -83,15 +84,6 @@ public class Handler {
     protected Route tokenRequest =
             (Request request, Response response) -> {
                 LOGGER.info("tokenRequest body: " + request.body());
-                /**
-                 * <?xml version="1.0" encoding="utf-8"?> <soap:Envelope
-                 * xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                 * xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                 * xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"> <soap:Body>
-                 * <LoginWithCertificateResponse xmlns="http://www.uk.experian.com/WASP/">
-                 * <LoginWithCertificateResult>string</LoginWithCertificateResult>
-                 * </LoginWithCertificateResponse> </soap:Body> </soap:Envelope>
-                 */
                 LoginWithCertificateResponse loginWithCertificateResponse =
                         new LoginWithCertificateResponse();
                 loginWithCertificateResponse.setLoginWithCertificateResult(
@@ -136,7 +128,11 @@ public class Handler {
                 .getAnswerList()
                 .addAll(
                         Arrays.asList(
-                                "Correct 2", "Incorrect 2", USER_DATA_INCORRECT, EXPERIAN_ERROR));
+                                "Correct 2",
+                                "Incorrect 2",
+                                USER_DATA_INCORRECT,
+                                EXPERIAN_ERROR,
+                                NO_FURTHER_QUESTIONS));
         answerFormat.setFieldType("G");
         answerFormat.setIdentifier("A00007");
         question.setAnswerFormat(answerFormat);
@@ -235,27 +231,43 @@ public class Handler {
         return;
     }
 
+    private void simulateThinFileResult(
+            StringWriter sw,
+            RTQResponse response,
+            RTQResponse2 result,
+            Results results,
+            ArrayOfString nextTransId)
+            throws JAXBException {
+        results.setOutcome("Insufficient Questions (Unable to Authenticate)");
+        results.setAuthenticationResult(UNABLE_TO_AUTHENTICATE);
+        nextTransId.getString().add("END");
+        results.setNextTransId(nextTransId);
+        result.setResults(results);
+        ResultsQuestions resultsQuestions = new ResultsQuestions();
+        resultsQuestions.setAsked(3);
+        resultsQuestions.setCorrect(1);
+        resultsQuestions.setIncorrect(2);
+        results.setQuestions(resultsQuestions);
+        response.setRTQResult(result);
+        rtqResponseMarshaller.marshal(response, sw);
+        return;
+    }
+
     private void stubRTQ(StringWriter sw, Document bodyDoc) throws JAXBException {
         RTQ rtqRequest = (RTQ) rtqUnmarshaller.unmarshal(bodyDoc);
         RTQResponse rtqResponse = new RTQResponse();
         RTQResponse2 result = new RTQResponse2();
         Results results = new Results();
-        ArrayOfString arrayOfString = new ArrayOfString();
-        arrayOfString.getString().addAll(List.of("END"));
-        results.setNextTransId(arrayOfString);
+        ArrayOfString nextTransId = new ArrayOfString();
+        nextTransId.getString().addAll(List.of("END"));
+        results.setNextTransId(nextTransId);
         result.setControl(rtqRequest.getRTQRequest().getControl());
 
-        boolean simulateExperianError =
-                rtqRequest.getRTQRequest().getResponses().getResponse().stream()
-                        .anyMatch(item -> item.getAnswerGiven().startsWith(EXPERIAN_ERROR));
-        if (simulateExperianError) {
+        if (hasAnswer(rtqRequest, EXPERIAN_ERROR)) {
             throwSOAPFaultException("A general SoapFault has occurred at the Experian IIQ Stub.");
         }
 
-        boolean simulateUserDataIncorrectError =
-                rtqRequest.getRTQRequest().getResponses().getResponse().stream()
-                        .anyMatch(item -> item.getAnswerGiven().startsWith(USER_DATA_INCORRECT));
-        if (simulateUserDataIncorrectError) {
+        if (hasAnswer(rtqRequest, USER_DATA_INCORRECT)) {
             Error error = new Error();
             error.setErrorCode("1024");
             error.setMessage(UNABLE_TO_AUTHENTICATE);
@@ -266,13 +278,15 @@ public class Handler {
             return;
         }
 
+        if (hasAnswer(rtqRequest, NO_FURTHER_QUESTIONS)) {
+            simulateThinFileResult(sw, rtqResponse, result, results, nextTransId);
+            return;
+        }
+
         // check if Correct Answer was chosen
-        boolean correctAnswerNotSelected =
-                rtqRequest.getRTQRequest().getResponses().getResponse().stream()
-                        .anyMatch(item -> item.getAnswerGiven().startsWith("Incorrect"));
 
         ResultsQuestions resultsQuestions = new ResultsQuestions();
-        if (correctAnswerNotSelected) {
+        if (hasAnswer(rtqRequest, "Incorrect")) {
             results.setOutcome(AUTHENTICATION_UNSUCCESSFUL);
             results.setAuthenticationResult(NOT_AUTHENTICATED);
             resultsQuestions.setCorrect(1);
@@ -290,6 +304,11 @@ public class Handler {
         rtqResponse.setRTQResult(result);
 
         rtqResponseMarshaller.marshal(rtqResponse, sw);
+    }
+
+    private boolean hasAnswer(RTQ rtqRequest, String answerToTest) {
+        return rtqRequest.getRTQRequest().getResponses().getResponse().stream()
+                .anyMatch(item -> item.getAnswerGiven().startsWith(answerToTest));
     }
 
     private void throwSOAPFaultException(String faultString) {
