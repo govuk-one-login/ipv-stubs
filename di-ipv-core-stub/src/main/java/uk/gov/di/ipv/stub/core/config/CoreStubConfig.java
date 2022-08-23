@@ -53,6 +53,9 @@ public class CoreStubConfig {
     public static final boolean CORE_STUB_SHOW_VC =
             Boolean.parseBoolean(getConfigValue("CORE_STUB_SHOW_VC", "true"));
 
+    public static final boolean CORE_STUB_ENABLE_BACKEND_ROUTES =
+            Boolean.parseBoolean(getConfigValue("CORE_STUB_ENABLE_BACKEND_ROUTES", "true"));
+
     public static final List<Identity> identities = new ArrayList<>();
     public static final List<CredentialIssuer> credentialIssuers = new ArrayList<>();
 

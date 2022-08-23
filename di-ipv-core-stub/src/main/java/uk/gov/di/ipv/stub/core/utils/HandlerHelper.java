@@ -221,13 +221,53 @@ public class HandlerHelper {
 
     public AuthorizationRequest createAuthorizationJAR(
             State state, CredentialIssuer credentialIssuer, SharedClaims sharedClaims)
-            throws JOSEException {
-        Instant now = Instant.now();
+            throws JOSEException, java.text.ParseException {
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
+        JWTClaimsSet claimsSet =
+                createJWTClaimsSets(state, credentialIssuer, sharedClaims, clientID);
+
+        // The only difference (frontend/backend) are the ClaimSets are created above for the
+        // frontend and clientID is already set in the backend ClaimSet
+        return createBackEndAuthorizationJAR(credentialIssuer, claimsSet);
+    }
+
+    public AuthorizationRequest createBackEndAuthorizationJAR(
+            CredentialIssuer credentialIssuer, JWTClaimsSet claimsSet)
+            throws java.text.ParseException, JOSEException {
+
+        SignedJWT signedJWT = createSignedJWT(credentialIssuer, claimsSet);
+
+        JWT encryptedJWT = encryptJWT(signedJWT, credentialIssuer);
+
+        // Compose the final authorisation request, the minimal required query
+        // parameters are "request" and "client_id"
+        return new AuthorizationRequest.Builder(
+                        encryptedJWT, new ClientID(claimsSet.getStringClaim("client_id")))
+                .endpointURI(credentialIssuer.authorizeUrl())
+                .build();
+    }
+
+    private SignedJWT createSignedJWT(CredentialIssuer credentialIssuer, JWTClaimsSet claimSets)
+            throws JOSEException {
         JWSAlgorithm signingAlgorithm = JWSAlgorithm.parse(credentialIssuer.expectedAlgo());
         JWTSigner jwtSigner = new JWTSigner();
         JWSHeader header =
                 new JWSHeader.Builder(signingAlgorithm).keyID(jwtSigner.getKeyId()).build();
+
+        SignedJWT signedJWT = new SignedJWT(header, claimSets);
+
+        jwtSigner.signJWT(signedJWT);
+
+        return signedJWT;
+    }
+
+    public JWTClaimsSet createJWTClaimsSets(
+            State state,
+            CredentialIssuer credentialIssuer,
+            SharedClaims sharedClaims,
+            ClientID clientID) {
+
+        Instant now = Instant.now();
 
         JWTClaimsSet authClaimsSet =
                 new AuthorizationRequest.Builder(ResponseType.CODE, clientID)
@@ -257,16 +297,7 @@ public class HandlerHelper {
             claimsSetBuilder.claim(SHARED_CLAIMS, map);
         }
 
-        SignedJWT signedJWT = new SignedJWT(header, claimsSetBuilder.build());
-        jwtSigner.signJWT(signedJWT);
-
-        JWT encryptedJWT = encryptJWT(signedJWT, credentialIssuer);
-
-        // Compose the final authorisation request, the minimal required query
-        // parameters are "request" and "client_id"
-        return new AuthorizationRequest.Builder(encryptedJWT, clientID)
-                .endpointURI(credentialIssuer.authorizeUrl())
-                .build();
+        return claimsSetBuilder.build();
     }
 
     public CredentialIssuer findCredentialIssuer(String credentialIssuerId) {
@@ -336,7 +367,7 @@ public class HandlerHelper {
         return this.objectMapper.convertValue(input, Map.class);
     }
 
-    private EncryptedJWT encryptJWT(SignedJWT signedJWT, CredentialIssuer credentialIssuer) {
+    public EncryptedJWT encryptJWT(SignedJWT signedJWT, CredentialIssuer credentialIssuer) {
         try {
             JWEObject jweObject =
                     new JWEObject(

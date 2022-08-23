@@ -37,7 +37,22 @@ public class CoreStub {
         Spark.post("/edit-user", coreStubHandler.updateUser);
         Spark.get("/callback", coreStubHandler.doCallback);
         Spark.get("/answers", coreStubHandler.answers);
+        setupBackendRoutes(coreStubHandler);
         Spark.exception(Exception.class, exceptionHandler());
+    }
+
+    private void setupBackendRoutes(CoreStubHandler coreStubHandler) {
+        if (!CoreStubConfig.CORE_STUB_ENABLE_BACKEND_ROUTES) {
+            LOGGER.info("BackendRoutes Disabled.");
+            return;
+        }
+
+        LOGGER.warn("BackendRoutes Enabled.");
+
+        Spark.get(
+                "/backend/generateInitialClaimsSet",
+                coreStubHandler.backendGenerateInitialClaimsSet);
+        Spark.post("/backend/createSessionRequest", coreStubHandler.createBackendSessionRequest);
     }
 
     private ExceptionHandler exceptionHandler() {
