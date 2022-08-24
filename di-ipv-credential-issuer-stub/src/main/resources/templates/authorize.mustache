@@ -146,6 +146,37 @@
                 </fieldset>
             {{/isEvidenceType}}
 
+            {{#isDocCheckingType}}
+                <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                        <h1 class="govuk-fieldset__heading">
+                            GPG45 Evidence
+                        </h1>
+                    </legend>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="strength">
+                            Strength
+                        </label>
+                        <input class="govuk-input govuk-input--width-2" id="strength" name="strengthScore" type="number" min="0" max="5" step="1">
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="validity">
+                            Validity
+                        </label>
+                        <input class="govuk-input govuk-input--width-2" id="validity" name="validityScore" type="number" min="0" max="5" step="1">
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="validity">
+                            Biometric Verification Process Level
+                        </label>
+                        <input class="govuk-input govuk-input--width-2" id="validity" name="biometricVerificationScore" type="number" min="0" max="5" step="1">
+                    </div>
+                </fieldset>
+            {{/isDocCheckingType}}
+
             {{#isActivityType}}
                 <div class="govuk-form-group">
                     <h1 class="govuk-label-wrapper">
