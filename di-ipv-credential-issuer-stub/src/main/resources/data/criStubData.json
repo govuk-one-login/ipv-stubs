@@ -347,40 +347,6 @@
           }
         ]
       }
-    },
-    {
-      "criType": "DOC Checking App (Stub)",
-      "label": "Joe Shmoe (Valid) Driving Licence",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Joe Shmoe",
-                "type": "GivenName"
-              },
-              {
-                "value": "Doe The Ball",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1985-02-08"
-          }
-        ],
-        "drivingPermit": [
-          {
-            "personalNumber": "DOE99802085J99FG",
-            "expiryDate": "2023-01-18",
-            "issueNumber": null,
-            "issuedBy": null,
-            "issueDate": null
-          }
-        ]
-      }
     }
   ]
 }
