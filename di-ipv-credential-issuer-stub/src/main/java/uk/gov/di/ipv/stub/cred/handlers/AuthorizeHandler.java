@@ -21,6 +21,7 @@ import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
@@ -48,7 +49,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -74,6 +77,7 @@ public class AuthorizeHandler {
     private static final String IS_ACTIVITY_TYPE_PARAM = "isActivityType";
     private static final String IS_FRAUD_TYPE_PARAM = "isFraudType";
     private static final String IS_VERIFICATION_TYPE_PARAM = "isVerificationType";
+    private static final String IS_DOC_CHECKING_TYPE_PARAM = "isDocCheckingType";
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
@@ -163,6 +167,8 @@ public class AuthorizeHandler {
                 frontendParams.put(IS_FRAUD_TYPE_PARAM, criType.equals(CriType.FRAUD_CRI_TYPE));
                 frontendParams.put(
                         IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
+                frontendParams.put(
+                        IS_DOC_CHECKING_TYPE_PARAM, criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE));
                 if (!criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
                     frontendParams.put(SHARED_CLAIMS, getSharedAttributes(queryParamsMap));
                 }
@@ -235,8 +241,9 @@ public class AuthorizeHandler {
                                             CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM),
                                     queryParamsMap.value(CredentialIssuerConfig.ACTIVITY_PARAM),
                                     queryParamsMap.value(CredentialIssuerConfig.FRAUD_PARAM),
+                                    queryParamsMap.value(CredentialIssuerConfig.VERIFICATION_PARAM),
                                     queryParamsMap.value(
-                                            CredentialIssuerConfig.VERIFICATION_PARAM));
+                                            CredentialIssuerConfig.BIOMETRICK_VERIFICATION_PARAM));
 
                     String ciString =
                             queryParamsMap
@@ -320,7 +327,8 @@ public class AuthorizeHandler {
             String validityValue,
             String activityValue,
             String fraudValue,
-            String verificationValue)
+            String verificationValue,
+            String biometricVerificationValue)
             throws CriStubException {
 
         if (criType.equals(USER_ASSERTED_CRI_TYPE)) {
@@ -362,6 +370,34 @@ public class AuthorizeHandler {
                     CredentialIssuerConfig.FRAUD_PARAM, Integer.parseInt(fraudValue));
             case VERIFICATION_CRI_TYPE -> gpg45Score.put(
                     CredentialIssuerConfig.VERIFICATION_PARAM, Integer.parseInt(verificationValue));
+            case DOC_CHECK_APP_CRI_TYPE -> {
+                int strengthNum =
+                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(strengthValue) : 3;
+                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, strengthNum);
+                int validityNum =
+                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
+                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, validityNum);
+
+                List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
+                checkDetailsValue.add(Map.of("checkMethod", "vri"));
+                int biometricVerificationNum =
+                        StringUtils.isNotBlank(biometricVerificationValue)
+                                ? Integer.parseInt(biometricVerificationValue)
+                                : 2;
+                checkDetailsValue.add(
+                        Map.of(
+                                "checkMethod",
+                                "bvr",
+                                "biometricVerificationProcessLevel",
+                                biometricVerificationNum));
+
+                if (validityNum < 2) {
+                    gpg45Score.put(
+                            CredentialIssuerConfig.FAILED_CHECK_DETAILS_PARAM, checkDetailsValue);
+                } else {
+                    gpg45Score.put(CredentialIssuerConfig.CHECK_DETAILS_PARAM, checkDetailsValue);
+                }
+            }
         }
         return gpg45Score;
     }
