@@ -21,6 +21,7 @@ import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
@@ -370,20 +371,25 @@ public class AuthorizeHandler {
             case VERIFICATION_CRI_TYPE -> gpg45Score.put(
                     CredentialIssuerConfig.VERIFICATION_PARAM, Integer.parseInt(verificationValue));
             case DOC_CHECK_APP_CRI_TYPE -> {
-                gpg45Score.put(
-                        CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM,
-                        Integer.parseInt(strengthValue));
-                int validityNum = Integer.parseInt(validityValue);
+                int strengthNum =
+                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(strengthValue) : 3;
+                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, strengthNum);
+                int validityNum =
+                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
                 gpg45Score.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, validityNum);
 
                 List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
                 checkDetailsValue.add(Map.of("checkMethod", "vri"));
+                int biometricVerificationNum =
+                        StringUtils.isNotBlank(biometricVerificationValue)
+                                ? Integer.parseInt(biometricVerificationValue)
+                                : 2;
                 checkDetailsValue.add(
                         Map.of(
                                 "checkMethod",
                                 "bvr",
                                 "biometricVerificationProcessLevel",
-                                biometricVerificationValue));
+                                biometricVerificationNum));
 
                 if (validityNum < 2) {
                     gpg45Score.put(
