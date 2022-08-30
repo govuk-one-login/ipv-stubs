@@ -30,13 +30,21 @@ public class Handler {
 
                 IdentityVerificationRequest fraudRequest =
                         mapper.readValue(request.body(), IdentityVerificationRequest.class);
+                String requestApplicationType = fraudRequest.getPayload().getApplication().getType();
+
+                ProductDetails requestProductDetails = new ProductDetails();
 
                 Contact requestContact = fraudRequest.getPayload().getContacts().get(0);
                 String requestDob = requestContact.getPerson().getPersonDetails().getDateOfBirth();
                 List<Name> requestNames = requestContact.getPerson().getNames();
                 List<Address> requestAddress = requestContact.getAddresses();
 
-                IdentityVerificationResponse experianResponse =
+                if (requestApplicationType != null)
+                {
+                    requestProductDetails = fraudRequest.getPayload().getApplication().getProductDetails();
+                }
+
+                    IdentityVerificationResponse experianResponse =
                         inMemoryDataStore.getResponseOrElse(
                                 requestNames.get(0).getSurName().toUpperCase(),
                                 inMemoryDataStore.getResponse("AUTH1"));
@@ -55,12 +63,20 @@ public class Handler {
                         experianResponse.getOriginalRequestData().getContacts().get(0);
                 Person responseContactPerson = responseContact.getPerson();
 
+                Application responseApplication = experianResponse.getOriginalRequestData().getApplication();
+                ProductDetails responseProductDetails = responseApplication.getProductDetails();
                 responseContact.setAddresses(requestAddress);
 
                 responseContactPerson.setNames(requestNames);
                 responseContactPerson.getPersonDetails().setDateOfBirth(requestDob);
 
-                if (requestNames.get(0).getSurName().equalsIgnoreCase("SERVER_FAILURE")) {
+                if (requestApplicationType != null)
+                {
+                    responseApplication.setType(requestApplicationType);
+                    responseProductDetails.setProductCode(requestProductDetails.getProductCode());
+                }
+
+                    if (requestNames.get(0).getSurName().equalsIgnoreCase("SERVER_FAILURE")) {
                     response.status(503);
                     return "";
                 } else {
@@ -88,13 +104,22 @@ public class Handler {
                                 .toUpperCase(),
                         experianResponse);
 
+                String applicationType = experianResponse.getOriginalRequestData().getApplication().getType();
+                ProductDetails productDetails = experianResponse.getOriginalRequestData().getApplication().getProductDetails();
+
                 IdentityVerificationRequest fraudRequest = new IdentityVerificationRequest();
                 Header header = new Header();
                 Payload payload = new Payload();
                 header.setRequestType(experianResponse.getResponseHeader().getRequestType());
                 payload.setContacts(experianResponse.getOriginalRequestData().getContacts());
+                if (applicationType != null) {
+                    payload.getApplication().setType(applicationType);
+                    payload.getApplication().setProductDetails(productDetails);
+                }
+
                 fraudRequest.setHeader(header);
                 fraudRequest.setPayload(payload);
+
                 return mapper.writeValueAsString(fraudRequest);
             };
 

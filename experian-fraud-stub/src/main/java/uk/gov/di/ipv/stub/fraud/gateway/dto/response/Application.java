@@ -1,7 +1,9 @@
-package uk.gov.di.ipv.stub.fraud.gateway.dto.request;
+package uk.gov.di.ipv.stub.fraud.gateway.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import uk.gov.di.ipv.stub.fraud.gateway.dto.request.Applicant;
+import uk.gov.di.ipv.stub.fraud.gateway.dto.request.ProductDetails;
 
 import java.util.ArrayList;
 import java.util.List;

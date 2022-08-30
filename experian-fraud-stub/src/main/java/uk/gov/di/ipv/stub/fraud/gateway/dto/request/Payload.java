@@ -17,6 +17,9 @@ public class Payload {
     @JsonProperty("source")
     private String source;
 
+    @JsonProperty("control")
+    private String control;
+
     public List<Contact> getContacts() {
         return contacts;
     }
@@ -39,5 +42,13 @@ public class Payload {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public String getControl() {
+        return control;
+    }
+
+    public void setControl(String control) {
+        this.control = control;
     }
 }
