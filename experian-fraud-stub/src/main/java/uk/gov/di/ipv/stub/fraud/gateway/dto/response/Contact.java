@@ -5,11 +5,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.request.Address;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.request.Person;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Contact {
+public class Contact implements Serializable {
 
     @JsonProperty("id")
     private String id;

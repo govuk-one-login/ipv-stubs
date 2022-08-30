@@ -9,8 +9,8 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Person implements Serializable {
-    @JsonProperty("pepsSanctionsFlag")
-    private String pepsSanctionsFlag;
+
+    private String typeOfPerson;
 
     @JsonProperty("personIdentifier")
     private String personIdentifier;
@@ -45,11 +45,11 @@ public class Person implements Serializable {
         this.names = names;
     }
 
-    public String getPepsSanctionsFlag() {
-        return pepsSanctionsFlag;
+    public String getTypeOfPerson() {
+        return typeOfPerson;
     }
 
-    public void setPepsSanctionsFlag(String pepsSanctionsFlag) {
-        this.pepsSanctionsFlag = pepsSanctionsFlag;
+    public void setTypeOfPerson(String typeOfPerson) {
+        this.typeOfPerson = typeOfPerson;
     }
 }
