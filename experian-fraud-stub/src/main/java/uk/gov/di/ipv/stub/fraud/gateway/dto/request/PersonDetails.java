@@ -11,6 +11,26 @@ public class PersonDetails implements Serializable {
     @JsonProperty("dateOfBirth")
     private String dateOfBirth;
 
+    private String pepsSanctionsFlag;
+
+    private String yearOfBirth;
+
+    public String getPepsSanctionsFlag() {
+        return pepsSanctionsFlag;
+    }
+
+    public void setPepsSanctionsFlag(String pepsSanctionsFlag) {
+        this.pepsSanctionsFlag = pepsSanctionsFlag;
+    }
+
+    public String getYearOfBirth() {
+        return yearOfBirth;
+    }
+
+    public void setYearOfBirth(String yearOfBirth) {
+        this.yearOfBirth = yearOfBirth;
+    }
+
     public String getDateOfBirth() {
         return dateOfBirth;
     }

@@ -40,6 +40,21 @@ public class Handler {
                         inMemoryDataStore.getResponseOrElse(
                                 requestNames.get(0).getSurName().toUpperCase(),
                                 inMemoryDataStore.getResponse("AUTH1"));
+
+                if (experianResponse
+                        .getResponseHeader()
+                        .getRequestType()
+                        .equals("PepSanctions01")) {
+                    experianResponse = inMemoryDataStore.getResponse("AUTH1");
+                }
+
+                if (fraudRequest.getHeader().getRequestType().equals("PepSanctions01")) {
+                    experianResponse =
+                            inMemoryDataStore.getResponseOrElse(
+                                    requestNames.get(0).getSurName().toUpperCase(),
+                                    inMemoryDataStore.getResponse("PEPS-NO-RULE"));
+                }
+
                 LOGGER.debug("Stubbed experian response = " + experianResponse);
 
                 Random randGen = new Random();
@@ -93,8 +108,10 @@ public class Handler {
                 Payload payload = new Payload();
                 header.setRequestType(experianResponse.getResponseHeader().getRequestType());
                 payload.setContacts(experianResponse.getOriginalRequestData().getContacts());
+
                 fraudRequest.setHeader(header);
                 fraudRequest.setPayload(payload);
+
                 return mapper.writeValueAsString(fraudRequest);
             };
 

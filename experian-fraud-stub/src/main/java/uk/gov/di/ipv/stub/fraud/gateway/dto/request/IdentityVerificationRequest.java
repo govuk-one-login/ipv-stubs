@@ -1,8 +1,12 @@
 package uk.gov.di.ipv.stub.fraud.gateway.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class IdentityVerificationRequest {
+import java.io.Serializable;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class IdentityVerificationRequest implements Serializable {
     @JsonProperty private Header header;
     @JsonProperty private Payload payload;
 

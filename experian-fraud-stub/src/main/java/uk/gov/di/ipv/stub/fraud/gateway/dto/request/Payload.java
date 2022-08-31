@@ -3,11 +3,12 @@ package uk.gov.di.ipv.stub.fraud.gateway.dto.request;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Payload {
+public class Payload implements Serializable {
     @JsonProperty("contacts")
     private List<Contact> contacts = new ArrayList<>();
 
@@ -16,6 +17,9 @@ public class Payload {
 
     @JsonProperty("source")
     private String source;
+
+    @JsonProperty("control")
+    private String control;
 
     public List<Contact> getContacts() {
         return contacts;
@@ -39,5 +43,13 @@ public class Payload {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public String getControl() {
+        return control;
+    }
+
+    public void setControl(String control) {
+        this.control = control;
     }
 }

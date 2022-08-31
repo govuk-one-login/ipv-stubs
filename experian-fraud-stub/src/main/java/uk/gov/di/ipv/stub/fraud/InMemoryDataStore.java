@@ -60,15 +60,13 @@ public class InMemoryDataStore {
         addResponse("AUTH2", "/GenericResponse/fraud-ex--auth2.json");
         addResponse("NOAUTH", "/GenericResponse/fraud-ex--no-auth.json");
         addResponse("REFER", "/GenericResponse/fraud-ex--refer.json");
-        addResponse("PEPS", "/GenericResponse/fraud-ex--peps.json");
+        addResponse("PEPS-NO-RULE", "/GenericResponse/fraud-ex--peps1-no-rule.json");
+        addResponse("PEPS", "/GenericResponse/fraud-ex--peps1-rule.json");
 
         addResponse("FARRELL", "/SpecificResponse/fraud-ex-ci1-farrell.json");
         addResponse("ARKIL", "/SpecificResponse/fraud-ex-ci1-arkil.json");
         addResponse("GILT", "/SpecificResponse/fraud-ex-ci2-gilt.json");
         addResponse("KENNEDY", "/SpecificResponse/fraud-ex-ci3-kennedy.json");
-
-        addResponse("BABBAGE", "/SpecificResponse/fraud-ex-pep1-babbage.json");
-        addResponse("LOVELACE", "/SpecificResponse/fraud-ex-pep2-lovelace.json");
 
         for (Map.Entry<String, String[]> ci : Config.ciMap.entrySet()) {
             addResponse(ci.getKey(), SerializationUtils.clone(experianResponses.get("REFER")));
