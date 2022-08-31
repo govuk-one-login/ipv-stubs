@@ -16,7 +16,7 @@ import java.util.List;
         value = {"otherData"})
 public class OriginalRequestData implements Serializable {
     @JsonProperty("application")
-private Application application = new Application();
+    private Application application = new Application();
 
     @JsonProperty("contacts")
     private List<Contact> contacts = new ArrayList<>();

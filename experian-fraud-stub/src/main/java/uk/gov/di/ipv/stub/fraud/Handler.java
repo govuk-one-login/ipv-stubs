@@ -36,15 +36,15 @@ public class Handler {
                 List<Name> requestNames = requestContact.getPerson().getNames();
                 List<Address> requestAddress = requestContact.getAddresses();
 
-
-                IdentityVerificationResponse experianResponse = inMemoryDataStore.getResponseOrElse(
-                        requestNames.get(0).getSurName().toUpperCase(),
-                        inMemoryDataStore.getResponse("AUTH1"));
+                IdentityVerificationResponse experianResponse =
+                        inMemoryDataStore.getResponseOrElse(
+                                requestNames.get(0).getSurName().toUpperCase(),
+                                inMemoryDataStore.getResponse("AUTH1"));
                 if (fraudRequest.getHeader().getRequestType().equals("PepSanctions01")) {
-                    experianResponse = inMemoryDataStore.getResponseOrElse(
-                            requestNames.get(0).getSurName().toUpperCase(),
-                            inMemoryDataStore.getResponse("PEPS-NO-RULE"));
-
+                    experianResponse =
+                            inMemoryDataStore.getResponseOrElse(
+                                    requestNames.get(0).getSurName().toUpperCase(),
+                                    inMemoryDataStore.getResponse("PEPS-NO-RULE"));
                 }
 
                 LOGGER.debug("Stubbed experian response = " + experianResponse);
@@ -66,7 +66,6 @@ public class Handler {
 
                 responseContactPerson.setNames(requestNames);
                 responseContactPerson.getPersonDetails().setDateOfBirth(requestDob);
-
 
                 if (requestNames.get(0).getSurName().equalsIgnoreCase("SERVER_FAILURE")) {
                     response.status(503);
