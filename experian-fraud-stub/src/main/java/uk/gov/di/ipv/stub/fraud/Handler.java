@@ -40,6 +40,14 @@ public class Handler {
                         inMemoryDataStore.getResponseOrElse(
                                 requestNames.get(0).getSurName().toUpperCase(),
                                 inMemoryDataStore.getResponse("AUTH1"));
+
+                if (experianResponse
+                        .getResponseHeader()
+                        .getRequestType()
+                        .equals("PepSanctions01")) {
+                    experianResponse = inMemoryDataStore.getResponse("AUTH1");
+                }
+
                 if (fraudRequest.getHeader().getRequestType().equals("PepSanctions01")) {
                     experianResponse =
                             inMemoryDataStore.getResponseOrElse(
