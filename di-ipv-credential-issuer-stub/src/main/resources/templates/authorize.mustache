@@ -169,10 +169,17 @@
                     </div>
 
                     <div class="govuk-form-group">
-                        <label class="govuk-label" for="validity">
+                        <label class="govuk-label" for="activityHistory">
+                            Activity History
+                        </label>
+                        <input class="govuk-input govuk-input--width-2" id="activityHistory" name="activityHistoryScore" type="number" min="0" max="5" step="1">
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="verification">
                             Biometric Verification Process Level
                         </label>
-                        <input class="govuk-input govuk-input--width-2" id="validity" name="biometricVerificationScore" type="number" min="0" max="5" step="1">
+                        <input class="govuk-input govuk-input--width-2" id="verification" name="biometricVerificationScore" type="number" min="0" max="5" step="1">
                     </div>
                 </fieldset>
             {{/isDocCheckingType}}

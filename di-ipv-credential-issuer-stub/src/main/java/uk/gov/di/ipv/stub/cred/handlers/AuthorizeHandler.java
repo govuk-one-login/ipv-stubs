@@ -378,6 +378,10 @@ public class AuthorizeHandler {
                         StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
                 gpg45Score.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, validityNum);
 
+                int activityHistoryNum =
+                        StringUtils.isNotBlank(activityValue) ? Integer.parseInt(activityValue) : 1;
+                gpg45Score.put(CredentialIssuerConfig.ACTIVITY_PARAM, activityHistoryNum);
+
                 List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
                 checkDetailsValue.add(Map.of("checkMethod", "vri"));
                 int biometricVerificationNum =
