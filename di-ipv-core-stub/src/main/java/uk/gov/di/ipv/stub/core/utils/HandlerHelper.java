@@ -207,6 +207,7 @@ public class HandlerHelper {
                 state,
                 userInfoRequest.getURL());
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest);
+        LOGGER.debug("UserInfoHttpResponse : {}", userInfoHttpResponse.getContent());
         return userInfoHttpResponse.getContent();
     }
 
