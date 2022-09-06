@@ -44,7 +44,7 @@ public class JwtBuilder {
     public static final String INVALID_AUDIENCE = "invalid-audience";
     public static final String INVALID_REDIRECT_URI = "http://example.com";
 
-    public static JWTClaimsSet buildAuthorizationRequestClaims(String errorType) {
+    public static JWTClaimsSet buildAuthorizationRequestClaims(String userId, String errorType) {
         String audience = IPV_CORE_AUDIENCE;
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
         if (errorType != null) {
@@ -57,7 +57,7 @@ public class JwtBuilder {
 
         Instant now = Instant.now();
         return new JWTClaimsSet.Builder()
-                .subject(URN_UUID + UUID.randomUUID())
+                .subject(userId)
                 .audience(audience)
                 .issueTime(Date.from(now))
                 .issuer(ORCHESTRATOR_CLIENT_ID)

@@ -26,6 +26,7 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.oauth2.sdk.util.StringUtils;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
@@ -49,6 +50,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
@@ -56,6 +58,7 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_U
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
+import static uk.gov.di.ipv.stub.orc.utils.JwtBuilder.URN_UUID;
 import static uk.gov.di.ipv.stub.orc.utils.JwtBuilder.buildClientAuthenticationClaims;
 
 public class IpvHandler {
@@ -78,7 +81,12 @@ public class IpvHandler {
 
                 String errorType = request.queryMap().get("error").value();
 
-                JWTClaimsSet claims = JwtBuilder.buildAuthorizationRequestClaims(errorType);
+                String userIdSelectValue = request.queryMap().get("userIdSelect").value();
+                String userIdTextValue = request.queryMap().get("userIdText").value();
+
+                String userId = getUserIdValue(userIdSelectValue, userIdTextValue);
+
+                JWTClaimsSet claims = JwtBuilder.buildAuthorizationRequestClaims(userId, errorType);
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
                 EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt);
                 var authRequest =
@@ -244,5 +252,17 @@ public class IpvHandler {
             logger.error("Failed to parse user info response");
             throw new RuntimeException("Failed to parse user info response", parseException);
         }
+    }
+
+    private String getUserIdValue(String userIdSelectValue, String userIdTextValue) {
+        if (StringUtils.isNotBlank(userIdTextValue)) {
+            return userIdTextValue;
+        }
+
+        if (StringUtils.isNotBlank(userIdSelectValue)) {
+            return userIdSelectValue;
+        }
+
+        return URN_UUID + UUID.randomUUID();
     }
 }
