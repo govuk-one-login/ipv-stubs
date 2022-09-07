@@ -54,12 +54,25 @@
         </div>
         <h2 class="govuk-heading-l">Prove Your Identity</h2>
         <form action="/authorize">
-            <input type="hidden" name="journeyType" value="debug" />
-            <input class="govuk-button" data-module="govuk-button" type="submit" value="Debug route">
+            <input type="hidden" name="journeyType" value="full" />
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="userIdSelect">Choose a user id value:</label>
+                <select class="govuk-select" name="userIdSelect" id="userIdSelect">
+                    <option value=""></option>
+                    <option value="urn:uuid:00c6bddd-c5dc-42ab-89d1-cecf12cee10f">urn:uuid:00c6bddd-c5dc-42ab-89d1-cecf12cee10f - App journey user</option>
+                    <option value="urn:uuid:34g1agte-g88c-78aa-bn1a-dyu1f0flpo2x">urn:uuid:34g1agte-g88c-78aa-bn1a-dyu1f0flpo2x - Non app journey user</option>
+                </select>
+            </div>
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="userIdText">Or enter one manually</label>
+                <input class="govuk-input" data-module="govuk-input" name="userIdText" id="userIdText" type="text" value="">
+            </div>
+
+            <input class="govuk-button" data-module="govuk-button" type="submit" value="Full journey route">
         </form>
         <form action="/authorize">
-            <input type="hidden" name="journeyType" value="full" />
-            <input class="govuk-button" data-module="govuk-button" type="submit" value="Full journey route">
+            <input type="hidden" name="journeyType" value="debug" />
+            <input class="govuk-button" data-module="govuk-button" type="submit" value="Debug route">
         </form>
         <form action="/authorize">
             <label class="govuk-label" for="error">Choose an error type:</label>
