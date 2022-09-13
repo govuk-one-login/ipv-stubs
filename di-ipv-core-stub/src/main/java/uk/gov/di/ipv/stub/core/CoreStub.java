@@ -53,6 +53,9 @@ public class CoreStub {
                 "/backend/generateInitialClaimsSet",
                 coreStubHandler.backendGenerateInitialClaimsSet);
         Spark.post("/backend/createSessionRequest", coreStubHandler.createBackendSessionRequest);
+        Spark.get(
+                "/backend/createTokenRequestPrivateKeyJWT",
+                coreStubHandler.createTokenRequestPrivateKeyJWT);
     }
 
     private ExceptionHandler exceptionHandler() {

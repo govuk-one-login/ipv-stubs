@@ -8,7 +8,9 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
+import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import org.slf4j.Logger;
@@ -338,6 +340,20 @@ public class CoreStubHandler {
                 LOGGER.info("CreateBackendSessionRequest Complete");
                 response.type("application/json");
                 return createBackendSessionRequestJSONReply(authorizationRequest);
+            };
+
+    public Route createTokenRequestPrivateKeyJWT =
+            (Request request, Response response) -> {
+                LOGGER.info("createTokenRequestPrivateKeyJWT Start");
+                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                var authorizationCode =
+                        Objects.requireNonNull(request.queryParams("authorization_code"));
+
+                var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
+                TokenRequest tokenRequest =
+                        handlerHelper.createTokenRequest(
+                                new AuthorizationCode(authorizationCode), credentialIssuer);
+                return tokenRequest.toHTTPRequest().getQuery();
             };
 
     private String createBackendSessionRequestJSONReply(AuthorizationRequest authorizationRequest) {
