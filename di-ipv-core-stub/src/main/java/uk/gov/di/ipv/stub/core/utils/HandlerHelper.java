@@ -124,25 +124,7 @@ public class HandlerHelper {
             AuthorizationCode authorizationCode, CredentialIssuer credentialIssuer, State state)
             throws JOSEException {
 
-        ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
-        URI tokenURI = credentialIssuer.tokenUrl();
-
-        LOGGER.info("token url is {}", tokenURI);
-
-        AuthorizationCodeGrant authzGrant =
-                new AuthorizationCodeGrant(
-                        authorizationCode, CoreStubConfig.CORE_STUB_REDIRECT_URL);
-
-        PrivateKeyJWT privateKeyJWT =
-                new PrivateKeyJWT(
-                        new JWTAuthenticationClaimsSet(
-                                clientID, new Audience(credentialIssuer.audience())),
-                        JWSAlgorithm.ES256,
-                        this.ecSigningKey.toECPrivateKey(),
-                        this.ecSigningKey.getKeyID(),
-                        null);
-
-        TokenRequest tokenRequest = new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
+        TokenRequest tokenRequest = createTokenRequest(authorizationCode, credentialIssuer);
 
         HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
         String apiKey =
@@ -171,6 +153,31 @@ public class HandlerHelper {
         }
 
         return tokenResponse.toSuccessResponse().getTokens().getAccessToken();
+    }
+
+    public TokenRequest createTokenRequest(
+            AuthorizationCode authorizationCode, CredentialIssuer credentialIssuer)
+            throws JOSEException {
+        ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
+        URI tokenURI = credentialIssuer.tokenUrl();
+
+        LOGGER.info("token url is {}", tokenURI);
+
+        AuthorizationCodeGrant authzGrant =
+                new AuthorizationCodeGrant(
+                        authorizationCode, CoreStubConfig.CORE_STUB_REDIRECT_URL);
+
+        PrivateKeyJWT privateKeyJWT =
+                new PrivateKeyJWT(
+                        new JWTAuthenticationClaimsSet(
+                                clientID, new Audience(credentialIssuer.audience())),
+                        JWSAlgorithm.ES256,
+                        this.ecSigningKey.toECPrivateKey(),
+                        this.ecSigningKey.getKeyID(),
+                        null);
+
+        TokenRequest tokenRequest = new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
+        return tokenRequest;
     }
 
     public TokenResponse parseTokenResponse(HTTPResponse httpResponse) {
