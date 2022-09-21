@@ -371,13 +371,19 @@
             "value": "1985-02-08"
           }
         ],
+        "address": [
+          {
+            "postalCode": "EH1 9GP",
+          }
+        ],
         "drivingPermit": [
           {
             "personalNumber": "DOE99802085J99FG",
+            "fullAddress": "122 BURNS CRESCENT EDINBURGH EH1 9GP",
             "expiryDate": "2023-01-18",
-            "issueNumber": null,
-            "issuedBy": null,
-            "issueDate": null
+            "issueNumber": "5",
+            "issuedBy": "DVLA",
+            "issueDate": "2010-01-18"
           }
         ]
       }
