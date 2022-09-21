@@ -173,7 +173,6 @@ public class CoreStubHandler {
                 var credentialIssuer =
                         handlerHelper.findCredentialIssuer(
                                 Objects.requireNonNull(request.queryParams("cri")));
-
                 if (credentialIssuer.sendIdentityClaims()) {
                     return ViewHelper.render(
                             Map.of(
@@ -182,6 +181,12 @@ public class CoreStubHandler {
                                     "criName",
                                     credentialIssuer.name()),
                             "user-search.mustache");
+                }else if(Objects.nonNull(request.queryParams("postcode"))){
+                    var claimIdentity =
+                            new IdentityMapper()
+                                    .mapToAddressSharedClaims(request.queryParams("postcode"));
+                    sendAuthorizationRequest(request, response, credentialIssuer, claimIdentity);
+                    return null;
                 } else {
                     sendAuthorizationRequest(request, response, credentialIssuer, null);
                     return null;
@@ -242,11 +247,11 @@ public class CoreStubHandler {
                 return null;
             };
 
-    private void sendAuthorizationRequest(
+    private <T> void sendAuthorizationRequest(
             Request request,
             Response response,
             CredentialIssuer credentialIssuer,
-            SharedClaims sharedClaims)
+            T sharedClaims)
             throws JOSEException, java.text.ParseException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);

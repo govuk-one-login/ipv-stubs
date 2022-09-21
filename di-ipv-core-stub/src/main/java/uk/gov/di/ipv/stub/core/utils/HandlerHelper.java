@@ -226,8 +226,8 @@ public class HandlerHelper {
         }
     }
 
-    public AuthorizationRequest createAuthorizationJAR(
-            State state, CredentialIssuer credentialIssuer, SharedClaims sharedClaims)
+    public <T> AuthorizationRequest createAuthorizationJAR(
+            State state, CredentialIssuer credentialIssuer, T sharedClaims)
             throws JOSEException, java.text.ParseException {
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
         JWTClaimsSet claimsSet =
@@ -268,10 +268,10 @@ public class HandlerHelper {
         return signedJWT;
     }
 
-    public JWTClaimsSet createJWTClaimsSets(
+    public <T> JWTClaimsSet createJWTClaimsSets(
             State state,
             CredentialIssuer credentialIssuer,
-            SharedClaims sharedClaims,
+            T sharedClaims,
             ClientID clientID) {
 
         Instant now = Instant.now();
