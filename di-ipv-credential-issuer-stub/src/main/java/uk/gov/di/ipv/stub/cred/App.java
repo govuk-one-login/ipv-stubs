@@ -37,7 +37,7 @@ public class App {
                 Stream.of(server.getConnectors()).map(Connector::getConnectionFactories).flatMap(Collection::stream)
                         .filter(t -> t.getClass().isAssignableFrom(HttpConnectionFactory.class))
                         .map(t -> ((HttpConnectionFactory) t).getHttpConfiguration()).forEach(t -> {
-                            t.setRequestHeaderSize(10 * 1024);
+                            t.setRequestHeaderSize(9 * 1024);
                             t.setSendServerVersion(false);
                             t.setSendDateHeader(false);
                         });
