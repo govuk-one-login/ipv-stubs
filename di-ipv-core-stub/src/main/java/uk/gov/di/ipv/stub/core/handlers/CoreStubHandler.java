@@ -173,7 +173,9 @@ public class CoreStubHandler {
                 var credentialIssuer =
                         handlerHelper.findCredentialIssuer(
                                 Objects.requireNonNull(request.queryParams("cri")));
-                if (credentialIssuer.sendIdentityClaims()) {
+                var postcode = request.queryParams("postcode");
+                if (credentialIssuer.sendIdentityClaims()
+                        && Objects.isNull(request.queryParams("postcode"))) {
                     return ViewHelper.render(
                             Map.of(
                                     "cri",
@@ -181,7 +183,7 @@ public class CoreStubHandler {
                                     "criName",
                                     credentialIssuer.name()),
                             "user-search.mustache");
-                }else if(Objects.nonNull(request.queryParams("postcode"))){
+                } else if (postcode != null && !postcode.isBlank()) {
                     var claimIdentity =
                             new IdentityMapper()
                                     .mapToAddressSharedClaims(request.queryParams("postcode"));
@@ -248,10 +250,7 @@ public class CoreStubHandler {
             };
 
     private <T> void sendAuthorizationRequest(
-            Request request,
-            Response response,
-            CredentialIssuer credentialIssuer,
-            T sharedClaims)
+            Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims)
             throws JOSEException, java.text.ParseException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
@@ -361,7 +360,13 @@ public class CoreStubHandler {
                 return tokenRequest.toHTTPRequest().getQuery();
             };
 
-    public Route editPostCode;
+    public Route editPostcode =
+            (Request request, Response response) -> {
+                LOGGER.info("editPostcode Start");
+                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                return ViewHelper.render(
+                        Map.of("cri", credentialIssuerId), "edit-postcode.mustache");
+            };
 
     private String createBackendSessionRequestJSONReply(AuthorizationRequest authorizationRequest) {
         // Splits the QueryString from the Auth URI.  Turning the list of parameters

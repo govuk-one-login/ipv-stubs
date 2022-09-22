@@ -48,7 +48,6 @@ import spark.utils.StringUtils;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
 import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
-import uk.gov.di.ipv.stub.core.config.uatuser.SharedClaims;
 
 import java.io.IOException;
 import java.net.URI;
@@ -269,10 +268,7 @@ public class HandlerHelper {
     }
 
     public <T> JWTClaimsSet createJWTClaimsSets(
-            State state,
-            CredentialIssuer credentialIssuer,
-            T sharedClaims,
-            ClientID clientID) {
+            State state, CredentialIssuer credentialIssuer, T sharedClaims, ClientID clientID) {
 
         Instant now = Instant.now();
 

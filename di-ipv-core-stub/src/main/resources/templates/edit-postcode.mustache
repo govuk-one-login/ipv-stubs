@@ -47,26 +47,27 @@
         </div>
     </div>
 </header>
-
 <div class="govuk-width-container ">
     <main class="govuk-main-wrapper>" id="main-content" role="main">
-        <a href="/" class="govuk-back-link">Back</a>
-        <div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
-            <h2 class="govuk-heading-xl">
-                Visit Credential Issuers
-            </h2>
-        </div>
 
-        {{#cris}}
-            <p>
-                <a href="{{^isAddressCri}}/credential-issuer{{/isAddressCri}}{{#isAddressCri}}/edit-postcode{{/isAddressCri}}?cri={{id}}">
-                <input class="govuk-button" data-module="govuk-button" type="button" value="{{name}}{{#isAddressCri}} - PostCode{{/isAddressCri}}"></a>
-            </p>
-            <p>
-            <a href="{{#isAddressCri}}/credential-issuer?cri={{id}}{{/isAddressCri}}">
-                <input class="govuk-button" data-module="govuk-button" type="button" value="{{name}}"></a>
-            </p>
-        {{/cris}}
+		<a href="/" class="govuk-back-link">Back</a>
+		<div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
+			<h2 class="govuk-heading-xl">
+				Enter Postcode for test user
+			</h2>
+		</div>
+
+		<legend class="govuk-fieldset__legend govuk-label">Postcode (optional)</legend>
+        <form action="/credential-issuer?cri={{cri}}">
+            <input type="hidden" name="cri" value="{{cri}}">
+            <div class="govuk-form-group">
+                <input class="govuk-input govuk-input--width-10" id="postcode" name="postcode" type="text">
+                <button class="govuk-button" data-module="govuk-button">Continue</button>
+            </div>
+        </form>
+
+
+        </form>
 
     </main>
 </div>

@@ -124,15 +124,15 @@ public class IdentityMapper {
                 canonicalAddresses);
     }
 
-    public PostcodeSharedClaims mapToAddressSharedClaims(String postcode){
-        CanonicalAddress canonicalAddress = new CanonicalAddress(
-                null, null,null,null,postcode,null,null);
+    public PostcodeSharedClaims mapToAddressSharedClaims(String postcode) {
+        CanonicalAddress canonicalAddress =
+                new CanonicalAddress(null, null, null, null, postcode, null, null);
 
         return new PostcodeSharedClaims(
                 List.of(
                         "https://www.w3.org/2018/credentials/v1",
                         "https://vocab.london.cloudapps.digital/contexts/identity-v1.jsonld"),
-              List.of(canonicalAddress));
+                List.of(canonicalAddress));
     }
 
     public List<QuestionAndAnswer> mapToQuestionAnswers(
