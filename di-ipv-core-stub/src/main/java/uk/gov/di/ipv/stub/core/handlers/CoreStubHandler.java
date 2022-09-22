@@ -361,6 +361,8 @@ public class CoreStubHandler {
                 return tokenRequest.toHTTPRequest().getQuery();
             };
 
+    public Route editPostCode;
+
     private String createBackendSessionRequestJSONReply(AuthorizationRequest authorizationRequest) {
         // Splits the QueryString from the Auth URI.  Turning the list of parameters
         // (key1=value1&key2=value2 etc...) into a json object.
