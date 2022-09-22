@@ -13,7 +13,6 @@ import spark.embeddedserver.jetty.JettyServerFactory;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-
 public class App {
 
     public static void main(String[] args) {
@@ -23,26 +22,38 @@ public class App {
     }
 
     private static EmbeddedServerFactory createEmbeddedServerFactory() {
-        return new EmbeddedJettyFactory(new JettyServerFactory() {
-            @Override
-            public Server create(int maxThreads, int minThreads, int threadTimeoutMillis) {
-                return create(maxThreads <= 0 ? null
-                        : new QueuedThreadPool(maxThreads, minThreads, threadTimeoutMillis));
-            }
+        return new EmbeddedJettyFactory(
+                new JettyServerFactory() {
+                    @Override
+                    public Server create(int maxThreads, int minThreads, int threadTimeoutMillis) {
+                        return create(
+                                maxThreads <= 0
+                                        ? null
+                                        : new QueuedThreadPool(
+                                                maxThreads, minThreads, threadTimeoutMillis));
+                    }
 
-            @Override
-            public Server create(ThreadPool threadPool) {
-                Server server = new Server(threadPool);
+                    @Override
+                    public Server create(ThreadPool threadPool) {
+                        Server server = new Server(threadPool);
 
-                Stream.of(server.getConnectors()).map(Connector::getConnectionFactories).flatMap(Collection::stream)
-                        .filter(t -> t.getClass().isAssignableFrom(HttpConnectionFactory.class))
-                        .map(t -> ((HttpConnectionFactory) t).getHttpConfiguration()).forEach(t -> {
-                            t.setRequestHeaderSize(9 * 1024);
-                            t.setSendServerVersion(false);
-                            t.setSendDateHeader(false);
-                        });
-                return server;
-            }
-        });
+                        Stream.of(server.getConnectors())
+                                .map(Connector::getConnectionFactories)
+                                .flatMap(Collection::stream)
+                                .filter(
+                                        t ->
+                                                t.getClass()
+                                                        .isAssignableFrom(
+                                                                HttpConnectionFactory.class))
+                                .map(t -> ((HttpConnectionFactory) t).getHttpConfiguration())
+                                .forEach(
+                                        t -> {
+                                            t.setRequestHeaderSize(9 * 1024);
+                                            t.setSendServerVersion(false);
+                                            t.setSendDateHeader(false);
+                                        });
+                        return server;
+                    }
+                });
     }
 }
