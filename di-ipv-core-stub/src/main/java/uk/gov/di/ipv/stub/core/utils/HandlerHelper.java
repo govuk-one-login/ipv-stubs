@@ -48,7 +48,6 @@ import spark.utils.StringUtils;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
 import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
-import uk.gov.di.ipv.stub.core.config.uatuser.SharedClaims;
 
 import java.io.IOException;
 import java.net.URI;
@@ -226,8 +225,8 @@ public class HandlerHelper {
         }
     }
 
-    public AuthorizationRequest createAuthorizationJAR(
-            State state, CredentialIssuer credentialIssuer, SharedClaims sharedClaims)
+    public <T> AuthorizationRequest createAuthorizationJAR(
+            State state, CredentialIssuer credentialIssuer, T sharedClaims)
             throws JOSEException, java.text.ParseException {
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
         JWTClaimsSet claimsSet =
@@ -268,11 +267,8 @@ public class HandlerHelper {
         return signedJWT;
     }
 
-    public JWTClaimsSet createJWTClaimsSets(
-            State state,
-            CredentialIssuer credentialIssuer,
-            SharedClaims sharedClaims,
-            ClientID clientID) {
+    public <T> JWTClaimsSet createJWTClaimsSets(
+            State state, CredentialIssuer credentialIssuer, T sharedClaims, ClientID clientID) {
 
         Instant now = Instant.now();
 

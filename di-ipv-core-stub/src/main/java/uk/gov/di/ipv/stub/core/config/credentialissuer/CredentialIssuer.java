@@ -12,4 +12,8 @@ public record CredentialIssuer(
         boolean sendIdentityClaims,
         String expectedAlgo,
         String publicEncryptionJwkBase64,
-        String apiKeyEnvVar) {}
+        String apiKeyEnvVar) {
+    public boolean isAddressCri() {
+        return this.id.contains("address");
+    }
+}
