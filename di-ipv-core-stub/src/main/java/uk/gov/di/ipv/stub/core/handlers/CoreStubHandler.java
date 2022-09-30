@@ -26,6 +26,7 @@ import uk.gov.di.ipv.stub.core.config.uatuser.FindDateOfBirth;
 import uk.gov.di.ipv.stub.core.config.uatuser.FullName;
 import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
 import uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper;
+import uk.gov.di.ipv.stub.core.config.uatuser.PostcodeSharedClaims;
 import uk.gov.di.ipv.stub.core.config.uatuser.SharedClaims;
 import uk.gov.di.ipv.stub.core.config.uatuser.UKAddress;
 import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
@@ -320,6 +321,32 @@ public class CoreStubHandler {
                         new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID));
             };
 
+    public Route backendGenerateInitialClaimsSetPostCode =
+            (Request request, Response response) -> {
+                var credentialIssuerId =
+                        handlerHelper.findCredentialIssuer(
+                                Objects.requireNonNull(request.queryParams("cri")));
+
+                var postcode = request.queryParams("postcode");
+                if (postcode == null || postcode.isBlank()) {
+                    throw new IllegalStateException("Postcode cannot be blank");
+                }
+
+                PostcodeSharedClaims claimIdentity =
+                        new IdentityMapper().mapToAddressSharedClaims(postcode);
+
+                State state = createNewState(credentialIssuerId);
+                LOGGER.info("Created State {} for {}", state.toJSONString(), credentialIssuerId);
+
+                // ClaimSets can go direct to JSON
+                response.type("application/json");
+                System.out.println("claimIdentity = " + claimIdentity);
+                return handlerHelper.createJWTClaimsSets(
+                        state,
+                        credentialIssuerId,
+                        claimIdentity,
+                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID));
+            };
     public Route createBackendSessionRequest =
             (Request request, Response response) -> {
                 LOGGER.info("CreateBackendSessionRequest Start");
