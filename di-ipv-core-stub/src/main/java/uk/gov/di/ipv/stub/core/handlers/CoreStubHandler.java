@@ -320,6 +320,29 @@ public class CoreStubHandler {
                         new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID));
             };
 
+    public Route backendGenerateInitialClaimsSetPostCode =
+            (Request request, Response response) -> {
+
+                var credentialIssuerId =
+                        handlerHelper.findCredentialIssuer(
+                                Objects.requireNonNull(request.queryParams("cri")));
+
+                    var claimIdentity =
+                            new IdentityMapper()
+                                    .mapToAddressSharedClaims(Objects.requireNonNull(request.queryParams("postcode")));
+
+                State state = createNewState(credentialIssuerId);
+                LOGGER.info("Created State {} for {}", state.toJSONString(), credentialIssuerId);
+
+                // ClaimSets can go direct to JSON
+                response.type("application/json");
+                return handlerHelper.createJWTClaimsSets(
+                        state,
+                        credentialIssuerId,
+                        claimIdentity,
+                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID));
+
+            };
     public Route createBackendSessionRequest =
             (Request request, Response response) -> {
                 LOGGER.info("CreateBackendSessionRequest Start");
