@@ -57,7 +57,9 @@ public class CoreStub {
         Spark.get(
                 "/backend/createTokenRequestPrivateKeyJWT",
                 coreStubHandler.createTokenRequestPrivateKeyJWT);
-        Spark.get("/backend/generateInitialClaimsSetPostCode", coreStubHandler.backendGenerateInitialClaimsSetPostCode);
+        Spark.get(
+                "/backend/generateInitialClaimsSetPostCode",
+                coreStubHandler.backendGenerateInitialClaimsSetPostCode);
     }
 
     private ExceptionHandler exceptionHandler() {
