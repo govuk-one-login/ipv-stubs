@@ -42,6 +42,9 @@ public class CoreStubConfig {
             getConfigValue("CORE_STUB_CONFIG_FILE", "/app/config/cris-dev.yaml");
     public static final String CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64 =
             getConfigValue("CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64", null);
+
+    public static final String CORE_STUB_SIGNING_PUBLIC_JWK =
+            getConfigValue("CORE_STUB_SIGNING_PUBLIC_JWK", null);
     public static final String CORE_STUB_JWT_ISS_CRI_URI =
             getConfigValue(
                     "CORE_STUB_JWT_ISS_CRI_URI",
