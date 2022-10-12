@@ -151,7 +151,7 @@ public class CoreStubHandler {
                         SignedJWT.parse(
                                 handlerHelper.getUserInfo(accessToken, credentialIssuer, state));
                 handlerHelper.checkSignatureFormat(signedJWT);
-                if (!handlerHelper.verifySignedJwt(signedJWT)) {
+                if (!handlerHelper.verifySignedJwt(signedJWT, credentialIssuer)) {
                     throw new IllegalStateException(
                             "Unable to verify the returned JWT, format may be invalid.");
                 }

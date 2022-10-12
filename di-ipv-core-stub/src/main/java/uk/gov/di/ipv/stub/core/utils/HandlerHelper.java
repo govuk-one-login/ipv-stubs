@@ -404,9 +404,16 @@ public class HandlerHelper {
         }
     }
 
-    public boolean verifySignedJwt(SignedJWT signedJWT)
+    public boolean verifySignedJwt(SignedJWT signedJWT, CredentialIssuer credentialIssuer)
             throws JOSEException, java.text.ParseException {
         return signedJWT.verify(
-                new ECDSAVerifier(ECKey.parse(CoreStubConfig.CORE_STUB_SIGNING_PUBLIC_JWK)));
+                new ECDSAVerifier(
+                        ECKey.parse(
+                                base64Decode(
+                                        credentialIssuer.publicVCSigningVerificationJwkBase64()))));
+    }
+
+    private String base64Decode(String value) {
+        return new String(Base64.getDecoder().decode(value));
     }
 }
