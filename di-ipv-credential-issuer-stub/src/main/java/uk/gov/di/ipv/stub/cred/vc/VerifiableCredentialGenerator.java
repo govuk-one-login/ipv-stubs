@@ -106,12 +106,7 @@ public class VerifiableCredentialGenerator {
                                 CredentialIssuerConfig.getClientConfig(credential.getClientId())
                                         .getAudienceForVcJwt())
                         .claim(NOT_BEFORE, now.getEpochSecond())
-                        .claim(
-                                EXPIRATION_TIME,
-                                now.plusSeconds(
-                                                CredentialIssuerConfig
-                                                        .getVerifiableCredentialTtlSeconds())
-                                        .getEpochSecond())
+                        .claim(EXPIRATION_TIME, credential.getExp())
                         .claim(VC_CLAIM, vc)
                         .build();
 
