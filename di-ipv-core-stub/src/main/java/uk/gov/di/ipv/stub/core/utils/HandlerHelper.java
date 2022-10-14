@@ -398,10 +398,8 @@ public class HandlerHelper {
                         Base64.getDecoder().decode(credentialIssuer.publicEncryptionJwkBase64())));
     }
 
-    public void checkSignatureFormat(SignedJWT signedJWT) throws JOSEException {
-        if (signedJWT.getSignature().decode().length != ECDSA.getSignatureByteArrayLength(ES256)) {
-            throw new IllegalStateException("Concat format expected, DER format suspected");
-        }
+    public boolean checkES256SignatureFormat(SignedJWT signedJWT) throws JOSEException {
+        return signedJWT.getSignature().decode().length == ECDSA.getSignatureByteArrayLength(ES256);
     }
 
     public boolean verifySignedJwt(SignedJWT signedJWT, CredentialIssuer credentialIssuer)
