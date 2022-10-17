@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import uk.gov.di.ipv.stub.cred.domain.Credential;
 
+import java.time.Instant;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,7 +25,8 @@ public class CredentialServiceTest {
                         Map.of("an", "attribute"),
                         Map.of("a", "gpg45Score"),
                         "user-id",
-                        "client-id");
+                        "client-id",
+                        Instant.now().getEpochSecond());
 
         credentialService.persist(credential, "1234");
 

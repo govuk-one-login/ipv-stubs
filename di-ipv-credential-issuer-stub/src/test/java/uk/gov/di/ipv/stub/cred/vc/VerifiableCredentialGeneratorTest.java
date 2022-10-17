@@ -15,6 +15,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 import java.security.KeyFactory;
 import java.security.interfaces.ECPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -85,7 +86,13 @@ public class VerifiableCredentialGeneratorTest {
                         "ci",
                         new String[] {"A01", "D03"});
         String userId = "user-id";
-        Credential credential = new Credential(attributes, evidence, userId, "clientIdValid");
+        Credential credential =
+                new Credential(
+                        attributes,
+                        evidence,
+                        userId,
+                        "clientIdValid",
+                        Instant.now().getEpochSecond() + 300);
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 
@@ -168,7 +175,13 @@ public class VerifiableCredentialGeneratorTest {
                         "strength", 4,
                         "validity", 2);
         String userId = "user-id";
-        Credential credential = new Credential(attributes, evidence, userId, "clientIdValid");
+        Credential credential =
+                new Credential(
+                        attributes,
+                        evidence,
+                        userId,
+                        "clientIdValid",
+                        Instant.now().getEpochSecond());
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 

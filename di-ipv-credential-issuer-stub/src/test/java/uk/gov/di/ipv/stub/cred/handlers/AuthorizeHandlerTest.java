@@ -492,6 +492,9 @@ class AuthorizeHandlerTest {
         queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[] {"3"});
         queryParams.put(
                 CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, new String[] {"A01, D03"});
+        queryParams.put(CredentialIssuerConfig.EXPIRY_HOURS, new String[] {"5"});
+        queryParams.put(CredentialIssuerConfig.EXPIRY_MINUTES, new String[] {"0"});
+        queryParams.put(CredentialIssuerConfig.EXPIRY_SECONDS, new String[] {"0"});
         return queryParams;
     }
 

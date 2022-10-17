@@ -28,6 +28,9 @@ public class CredentialIssuerConfig {
     public static final String FAILED_CHECK_DETAILS_PARAM = "failedCheckDetails";
     public static final String BIOMETRICK_VERIFICATION_PARAM = "biometricVerificationScore";
     public static final String EVIDENCE_CONTRAINDICATOR_PARAM = "ci";
+    public static final String EXPIRY_HOURS = "expHours";
+    public static final String EXPIRY_MINUTES = "expMinutes";
+    public static final String EXPIRY_SECONDS = "expSeconds";
 
     public static Map<String, ClientConfig> CLIENT_CONFIGS;
 

@@ -49,6 +49,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -254,8 +255,36 @@ public class AuthorizeHandler {
                         gpgMap.put(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, ciList);
                     }
 
+                    int expHours =
+                            Integer.parseInt(
+                                    queryParamsMap.value(CredentialIssuerConfig.EXPIRY_HOURS));
+                    int expMinutes =
+                            Integer.parseInt(
+                                    queryParamsMap.value(CredentialIssuerConfig.EXPIRY_MINUTES));
+                    int expSeconds =
+                            Integer.parseInt(
+                                    queryParamsMap.value(CredentialIssuerConfig.EXPIRY_SECONDS));
+
+                    long exp;
+                    if (expHours == 0 && expMinutes == 0 && expSeconds == 0) {
+                        exp =
+                                Instant.now()
+                                        .plusSeconds(
+                                                CredentialIssuerConfig
+                                                        .getVerifiableCredentialTtlSeconds())
+                                        .getEpochSecond();
+                    } else {
+                        exp =
+                                Instant.now()
+                                        .plusSeconds(expSeconds)
+                                        .plusSeconds(60L * expMinutes)
+                                        .plusSeconds(3600L * expHours)
+                                        .getEpochSecond();
+                    }
+
                     Credential credential =
-                            new Credential(credentialAttributesMap, gpgMap, userId, clientIdValue);
+                            new Credential(
+                                    credentialAttributesMap, gpgMap, userId, clientIdValue, exp);
 
                     AuthorizationSuccessResponse successResponse =
                             generateAuthCode(
