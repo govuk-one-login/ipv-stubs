@@ -24,6 +24,7 @@ public class Orchestrator {
         Spark.get("/callback", ipvHandler.doCallback);
 
         Spark.internalServerError(
-                "<html><body><h1>Waaargh!!! Da Orc Boss sez we'ze got some gremlinz in da gearz.</h1></body></html>");
+                "<html><body><h1>Waaargh!!! Da Orc Boss sez we'ze got some gremlinz in da gearz.</h1>" +
+                        "<img src=\"/gds/assets/images/waaagh.jpg\"></img></body></html>");
     }
 }
