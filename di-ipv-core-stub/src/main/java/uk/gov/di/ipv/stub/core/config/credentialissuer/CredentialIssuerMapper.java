@@ -14,9 +14,6 @@ public class CredentialIssuerMapper {
         URI audience = URI.create((String) map.get("audience"));
         boolean sendIdentityClaims = Boolean.TRUE.equals(map.get("sendIdentityClaims"));
         String publicEncryptionJwkBase64 = (String) map.get("publicEncryptionJwkBase64");
-        String publicVCSigningVerificationJwkBase64 =
-                (String) map.get("publicVCSigningVerificationJwkBase64");
-
         String apiKeyEnvVar = (String) map.get("apiKeyEnvVar");
         return new CredentialIssuer(
                 id,
@@ -28,7 +25,6 @@ public class CredentialIssuerMapper {
                 sendIdentityClaims,
                 "ES256",
                 publicEncryptionJwkBase64,
-                publicVCSigningVerificationJwkBase64,
                 apiKeyEnvVar);
     }
 }
