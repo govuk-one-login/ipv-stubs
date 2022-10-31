@@ -13,7 +13,9 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.crypto.RSAEncrypter;
+import com.nimbusds.jose.crypto.impl.ECDSA;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.EncryptedJWT;
@@ -62,6 +64,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.nimbusds.jose.JWSAlgorithm.ES256;
 
 public class HandlerHelper {
     private class JWTSigner {
@@ -392,5 +396,22 @@ public class HandlerHelper {
         return RSAKey.parse(
                 new String(
                         Base64.getDecoder().decode(credentialIssuer.publicEncryptionJwkBase64())));
+    }
+
+    public boolean checkES256SignatureFormat(SignedJWT signedJWT) throws JOSEException {
+        return signedJWT.getSignature().decode().length == ECDSA.getSignatureByteArrayLength(ES256);
+    }
+
+    public boolean verifySignedJwt(SignedJWT signedJWT, CredentialIssuer credentialIssuer)
+            throws JOSEException, java.text.ParseException {
+        return signedJWT.verify(
+                new ECDSAVerifier(
+                        ECKey.parse(
+                                base64Decode(
+                                        credentialIssuer.publicVCSigningVerificationJwkBase64()))));
+    }
+
+    private String base64Decode(String value) {
+        return new String(Base64.getDecoder().decode(value));
     }
 }

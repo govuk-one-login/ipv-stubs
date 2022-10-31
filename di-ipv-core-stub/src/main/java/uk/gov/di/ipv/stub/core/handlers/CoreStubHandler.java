@@ -147,12 +147,18 @@ public class CoreStubHandler {
                         handlerHelper.exchangeCodeForToken(
                                 authorizationCode, credentialIssuer, state);
                 LOGGER.info("access token value: " + accessToken.getValue());
-                var userInfo =
+                var signedJWT =
                         SignedJWT.parse(
-                                        handlerHelper.getUserInfo(
-                                                accessToken, credentialIssuer, state))
-                                .getJWTClaimsSet()
-                                .toString();
+                                handlerHelper.getUserInfo(accessToken, credentialIssuer, state));
+                if (handlerHelper.checkES256SignatureFormat(signedJWT)) {
+                    if (!handlerHelper.verifySignedJwt(signedJWT, credentialIssuer)) {
+                        throw new IllegalStateException(
+                                "Unable to verify the returned JWT, format may be invalid.");
+                    }
+                    LOGGER.info("🚀 Successfully verified signedJWT is in concat format");
+                }
+
+                var userInfo = signedJWT.getJWTClaimsSet().toString();
 
                 String data = "{\"result\": \"hidden\"}";
                 if (CoreStubConfig.CORE_STUB_SHOW_VC) {
