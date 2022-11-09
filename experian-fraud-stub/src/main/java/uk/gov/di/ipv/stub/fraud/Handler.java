@@ -56,9 +56,12 @@ public class Handler {
                 }
 
                 if (requestNames.get(0).getSurName().contains("NO_FILE_")) {
-                    experianResponse.getClientResponsePayload().getDecisionElements().get(0).setScore(
-                            Integer.valueOf(requestNames.get(0).getSurName().substring(8))
-                    );
+                    experianResponse
+                            .getClientResponsePayload()
+                            .getDecisionElements()
+                            .get(0)
+                            .setScore(
+                                    Integer.valueOf(requestNames.get(0).getSurName().substring(8)));
                 }
 
                 LOGGER.debug("Stubbed experian response = " + experianResponse);
