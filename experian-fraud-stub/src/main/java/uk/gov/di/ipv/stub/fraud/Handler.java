@@ -8,6 +8,7 @@ import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.request.*;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.response.IdentityVerificationResponse;
+import uk.gov.di.ipv.stub.fraud.gateway.dto.response.ResponseType;
 
 import java.util.*;
 
@@ -83,6 +84,45 @@ public class Handler {
 
                 responseContactPerson.setNames(requestNames);
                 responseContactPerson.getPersonDetails().setDateOfBirth(requestDob);
+
+                // FraudCheck Error Simulation
+                if (fraudRequest
+                        .getHeader()
+                        .getRequestType()
+                        .equals("Authenticateplus-Standalone")) {
+                    if (requestNames.get(0).getSurName().equals("FRAUD_ERROR_RESPONSE")) {
+                        experianResponse.getResponseHeader().setResponseType(ResponseType.ERROR);
+                        experianResponse.getResponseHeader().setResponseCode("ERRSIMF1");
+                        experianResponse
+                                .getResponseHeader()
+                                .setResponseMessage("Simulated Fraud Error Response");
+                    }
+
+                    if (requestNames.get(0).getSurName().equals("FRAUD_TECH_FAIL")) {
+                        response.status(
+                                408); // Request Timeout (closest response to an abrupt socket
+                        // close)
+                        return "";
+                    }
+                }
+
+                // PepCheck Error Simulation
+                if (fraudRequest.getHeader().getRequestType().equals("PepSanctions01")) {
+                    if (requestNames.get(0).getSurName().equals("PEP_ERROR_RESPONSE")) {
+                        experianResponse.getResponseHeader().setResponseType(ResponseType.ERROR);
+                        experianResponse.getResponseHeader().setResponseCode("ERRSIMP1");
+                        experianResponse
+                                .getResponseHeader()
+                                .setResponseMessage("Simulated PEP Error Response");
+                    }
+
+                    if (requestNames.get(0).getSurName().equals("PEP_TECH_FAIL")) {
+                        response.status(
+                                408); // Request Timeout (closest response to an abrupt socket
+                        // close)
+                        return "";
+                    }
+                }
 
                 if (requestNames.get(0).getSurName().equalsIgnoreCase("SERVER_FAILURE")) {
                     response.status(503);
