@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static uk.gov.di.ipv.stub.fraud.Handler.FRAUD_CHECK_SOURCE;
+import static uk.gov.di.ipv.stub.fraud.Handler.PEP_CHECK_SOURCE;
 import static uk.gov.di.ipv.stub.fraud.Util.getResourceAsStream;
 import static uk.gov.di.ipv.stub.fraud.Util.mapFileToObject;
 
@@ -19,8 +21,8 @@ public class InMemoryDataStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryDataStore.class);
     private final HashMap<String, IdentityVerificationResponse> experianResponses = new HashMap<>();
 
-    public InMemoryDataStore(ObjectMapper mapper) {
-        init();
+    public InMemoryDataStore(ObjectMapper mapper, String check_source) {
+        init(check_source);
     }
 
     public IdentityVerificationResponse getResponse(final String id) {
@@ -55,27 +57,38 @@ public class InMemoryDataStore {
         }
     }
 
-    private void init() {
-        addResponse("AUTH1", "/GenericResponse/fraud-ex--auth1.json");
-        addResponse("AUTH2", "/GenericResponse/fraud-ex--auth2.json");
-        addResponse("NOAUTH", "/GenericResponse/fraud-ex--no-auth.json");
-        addResponse("REFER", "/GenericResponse/fraud-ex--refer.json");
-        addResponse("PEPS-NO-RULE", "/GenericResponse/fraud-ex--peps1-no-rule.json");
-        addResponse("PEPS", "/GenericResponse/fraud-ex--peps1-rule.json");
+    private void init(String check_source) {
 
-        addResponse("FARRELL", "/SpecificResponse/fraud-ex-ci1-farrell.json");
-        addResponse("ARKIL", "/SpecificResponse/fraud-ex-ci1-arkil.json");
-        addResponse("GILT", "/SpecificResponse/fraud-ex-ci2-gilt.json");
-        addResponse("KENNEDY", "/SpecificResponse/fraud-ex-ci3-kennedy.json");
+        switch (check_source) {
+            case FRAUD_CHECK_SOURCE:
+                addResponse("AUTH1", "/GenericResponse/fraud-ex--auth1.json");
+                addResponse("AUTH2", "/GenericResponse/fraud-ex--auth2.json");
+                addResponse("NOAUTH", "/GenericResponse/fraud-ex--no-auth.json");
 
-        for (Map.Entry<String, String[]> ci : Config.ciMap.entrySet()) {
-            addResponse(ci.getKey(), SerializationUtils.clone(experianResponses.get("REFER")));
-            setRuleId(ci.getKey(), ci.getValue());
-        }
+                addResponse("FARRELL", "/SpecificResponse/fraud-ex-ci1-farrell.json");
+                addResponse("ARKIL", "/SpecificResponse/fraud-ex-ci1-arkil.json");
+                addResponse("GILT", "/SpecificResponse/fraud-ex-ci2-gilt.json");
+                addResponse("KENNEDY", "/SpecificResponse/fraud-ex-ci3-kennedy.json");
 
-        for (Map.Entry<String, String[]> pep : Config.pepMap.entrySet()) {
-            addResponse(pep.getKey(), SerializationUtils.clone(experianResponses.get("PEPS")));
-            setRuleId(pep.getKey(), pep.getValue());
+                addResponse("REFER", "/GenericResponse/fraud-ex--refer.json");
+                for (Map.Entry<String, String[]> ci : Config.ciMap.entrySet()) {
+                    addResponse(
+                            ci.getKey(), SerializationUtils.clone(experianResponses.get("REFER")));
+                    setRuleId(ci.getKey(), ci.getValue());
+                }
+                break;
+            case PEP_CHECK_SOURCE:
+                addResponse("PEPS-NO-RULE", "/GenericResponse/fraud-ex--peps1-no-rule.json");
+
+                addResponse("PEPS", "/GenericResponse/fraud-ex--peps1-rule.json");
+                for (Map.Entry<String, String[]> pep : Config.pepMap.entrySet()) {
+                    addResponse(
+                            pep.getKey(), SerializationUtils.clone(experianResponses.get("PEPS")));
+                    setRuleId(pep.getKey(), pep.getValue());
+                }
+                break;
+            default:
+                LOGGER.error("InMemoryDataStore check source {} not handled", check_source);
         }
     }
 
