@@ -226,6 +226,20 @@
                 </div>
             {{/isVerificationType}}
 
+            {{^isUserAssertedType}}
+                <div class="govuk-form-group">
+                    <h1 class="govuk-label-wrapper">
+                        <label class="govuk-label govuk-label--l" for="evidenceJsonPayload">
+                           Override evidence block
+                        </label>
+                    </h1>
+                    <div class="govuk-hint">
+                        Set a custom evidence block in JSON format
+                    </div>
+                    <textarea class="govuk-textarea" id="evidenceJsonPayload" name="evidenceJsonPayload" rows="5"></textarea>
+                </div>
+            {{/isUserAssertedType}}
+
             <fieldset class="govuk-fieldset">
                 <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
                     <h1 class="govuk-fieldset__heading">

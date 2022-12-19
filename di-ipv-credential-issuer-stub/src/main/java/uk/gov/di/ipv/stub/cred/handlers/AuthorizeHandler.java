@@ -74,11 +74,13 @@ public class AuthorizeHandler {
 
     private static final String RESOURCE_ID_PARAM = "resourceId";
     private static final String JSON_PAYLOAD_PARAM = "jsonPayload";
+    private static final String EVIDENCE_JSON_PAYLOAD_PARAM = "evidenceJsonPayload";
     private static final String IS_EVIDENCE_TYPE_PARAM = "isEvidenceType";
     private static final String IS_ACTIVITY_TYPE_PARAM = "isActivityType";
     private static final String IS_FRAUD_TYPE_PARAM = "isFraudType";
     private static final String IS_VERIFICATION_TYPE_PARAM = "isVerificationType";
     private static final String IS_DOC_CHECKING_TYPE_PARAM = "isDocCheckingType";
+    private static final String IS_USER_ASSERTED_TYPE = "isUserAssertedType";
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
@@ -170,6 +172,9 @@ public class AuthorizeHandler {
                         IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
                 frontendParams.put(
                         IS_DOC_CHECKING_TYPE_PARAM, criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE));
+                frontendParams.put(
+                        IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
+                frontendParams.put(IS_USER_ASSERTED_TYPE, criType.equals(USER_ASSERTED_CRI_TYPE));
                 if (!criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
                     frontendParams.put(SHARED_CLAIMS, getSharedAttributes(queryParamsMap));
                 }
@@ -233,18 +238,26 @@ public class AuthorizeHandler {
                         credentialAttributesMap = combinedAttributeJson;
                     }
 
-                    Map<String, Object> gpgMap =
-                            generateGpg45Score(
-                                    getCriType(),
-                                    queryParamsMap.value(
-                                            CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM),
-                                    queryParamsMap.value(
-                                            CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM),
-                                    queryParamsMap.value(CredentialIssuerConfig.ACTIVITY_PARAM),
-                                    queryParamsMap.value(CredentialIssuerConfig.FRAUD_PARAM),
-                                    queryParamsMap.value(CredentialIssuerConfig.VERIFICATION_PARAM),
-                                    queryParamsMap.value(
-                                            CredentialIssuerConfig.BIOMETRICK_VERIFICATION_PARAM));
+                    Map<String, Object> gpgMap;
+                    String evidenceJsonPayload = queryParamsMap.value(EVIDENCE_JSON_PAYLOAD_PARAM);
+                    if (evidenceJsonPayload == null || evidenceJsonPayload.isEmpty()) {
+                        gpgMap =
+                                generateGpg45Score(
+                                        getCriType(),
+                                        queryParamsMap.value(
+                                                CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM),
+                                        queryParamsMap.value(
+                                                CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM),
+                                        queryParamsMap.value(CredentialIssuerConfig.ACTIVITY_PARAM),
+                                        queryParamsMap.value(CredentialIssuerConfig.FRAUD_PARAM),
+                                        queryParamsMap.value(
+                                                CredentialIssuerConfig.VERIFICATION_PARAM),
+                                        queryParamsMap.value(
+                                                CredentialIssuerConfig
+                                                        .BIOMETRICK_VERIFICATION_PARAM));
+                    } else {
+                        gpgMap = generateJsonPayload(evidenceJsonPayload);
+                    }
 
                     String ciString =
                             queryParamsMap
