@@ -1,0 +1,87 @@
+{
+  "data": [
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Passed fraud check (M1A)",
+      "payload": {
+        "type": "IdentityCheck",
+        "identityFraudScore": 2
+      }
+    },
+    {
+      "criType": "UK Passport (Stub)",
+      "label": "Passed passport check (M1A)",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 2,
+        "strengthScore": 4
+      }
+    },
+    {
+      "criType": "Knowledge Based Verification (Stub)",
+      "label": "Passed verification (M1A) with checkDetails",
+      "payload": {
+        "type": "IdentityCheck",
+        "verificationScore": 2,
+        "checkDetails": [
+          {
+            "kbvResponseMode": "multiple_choice",
+            "kbvQuality": 3,
+            "checkMethod": "kbv"
+          },
+          {
+            "kbvResponseMode": "multiple_choice",
+            "kbvQuality": 3,
+            "checkMethod": "kbv"
+          },
+          {
+            "kbvResponseMode": "multiple_choice",
+            "kbvQuality": 2,
+            "checkMethod": "kbv"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Knowledge Based Verification (Stub)",
+      "label": "Failed verification with failedCheckDetails",
+      "payload": {
+        "type": "IdentityCheck",
+        "verificationScore": 0,
+        "failedCheckDetails": [
+          {
+            "kbvResponseMode": "multiple_choice",
+            "checkMethod": "kbv"
+          },
+          {
+            "kbvResponseMode": "multiple_choice",
+            "checkMethod": "kbv"
+          },
+          {
+            "kbvResponseMode": "multiple_choice",
+            "checkMethod": "kbv"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Passed DCMAW (M1B) with checkDetails",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 2,
+        "strengthScore": 3,
+        "activityHistoryScore": "1",
+        "checkDetails": [
+          {
+            "checkMethod": "vri"
+          },
+          {
+            "biometricVerificationProcessLevel": 2,
+            "checkMethod": "bvr"
+          }
+        ]
+      }
+    }
+  ]
+}

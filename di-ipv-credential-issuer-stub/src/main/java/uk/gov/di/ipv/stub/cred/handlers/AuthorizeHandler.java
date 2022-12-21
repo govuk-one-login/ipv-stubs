@@ -66,6 +66,7 @@ public class AuthorizeHandler {
     public static final String SHARED_CLAIMS = "shared_claims";
 
     public static final String CRI_STUB_DATA = "cri_stub_data";
+    public static final String CRI_STUB_EVIDENCE_PAYLOADS = "cri_stub_evidence_payloads";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
 
@@ -157,6 +158,7 @@ public class AuthorizeHandler {
                 }
 
                 Object criStubData = getCriStubData();
+                Object criStubEvidencePayloads = getCriStubEvidencePayloads();
 
                 CriType criType = getCriType();
                 LOGGER.info("criType: {}", criType.value);
@@ -179,6 +181,7 @@ public class AuthorizeHandler {
                     frontendParams.put(SHARED_CLAIMS, getSharedAttributes(queryParamsMap));
                 }
                 frontendParams.put(CRI_STUB_DATA, criStubData);
+                frontendParams.put(CRI_STUB_EVIDENCE_PAYLOADS, criStubEvidencePayloads);
 
                 String error = request.attribute(ERROR_PARAM);
                 boolean hasError = error != null;
@@ -257,6 +260,11 @@ public class AuthorizeHandler {
                                                         .BIOMETRICK_VERIFICATION_PARAM));
                     } else {
                         gpgMap = generateJsonPayload(evidenceJsonPayload);
+                        if (gpgMap.get(CredentialIssuerConfig.EVIDENCE_TXN_PARAM) == null) {
+                            gpgMap.put(
+                                    CredentialIssuerConfig.EVIDENCE_TXN_PARAM,
+                                    UUID.randomUUID().toString());
+                        }
                     }
 
                     String ciString =
@@ -565,6 +573,19 @@ public class AuthorizeHandler {
                                 .parse(
                                         AuthorizeHandler.class.getResourceAsStream(
                                                 "/data/criStubData.json"));
+
+        return js.get("data");
+    }
+
+    private Object getCriStubEvidencePayloads()
+            throws UnsupportedEncodingException,
+                    com.nimbusds.jose.shaded.json.parser.ParseException {
+        JSONObject js =
+                (JSONObject)
+                        new JSONParser(MODE_JSON_SIMPLE)
+                                .parse(
+                                        AuthorizeHandler.class.getResourceAsStream(
+                                                "/data/criStubEvidencePayloads.json"));
 
         return js.get("data");
     }
