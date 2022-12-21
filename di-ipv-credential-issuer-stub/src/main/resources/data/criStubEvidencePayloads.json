@@ -66,19 +66,88 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
-      "label": "Passed DCMAW (M1B) with checkDetails",
+      "label": "Passed DCMAW driving licence check (M1B)",
       "payload": {
         "type": "IdentityCheck",
         "validityScore": 2,
         "strengthScore": 3,
-        "activityHistoryScore": "1",
+        "activityHistoryScore": 1,
         "checkDetails": [
           {
             "checkMethod": "vri"
           },
           {
-            "biometricVerificationProcessLevel": 2,
-            "checkMethod": "bvr"
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 2
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Failed DCMAW NFC chipped passport check",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 0,
+        "strengthScore": 4,
+        "ci": [
+          "D06",
+          "D05"
+        ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Failed DCMAW driving licence biometric check",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 0,
+        "strengthScore": 3,
+        "activityHistoryScore": 0,
+        "ci": [
+          "D06",
+          "D05"
+        ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vri",
+            "identityCheckPolicy": "published"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Failed DCMAW driving licence liveness/likeness check",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 0,
+        "strengthScore": 3,
+        "activityHistoryScore": 0,
+        "ci": [],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vri",
+            "identityCheckPolicy": "published",
+            "activityFrom": "2019-01-01"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
           }
         ]
       }
