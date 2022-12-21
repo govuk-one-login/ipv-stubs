@@ -226,6 +226,18 @@
                 </div>
             {{/isVerificationType}}
 
+            {{^isUserAssertedType}}
+                <div class="govuk-form-group">
+                    <h1 class="govuk-label-wrapper">
+                        <label class="govuk-label govuk-label--l" for="evidenceJsonPayload">
+                           Override evidence block (optional)
+                        </label>
+                    </h1>
+                    <div class="govuk-form-group" id="custom_evidence_block"></div><br>
+                    <textarea class="govuk-textarea" id="evidenceJsonPayload" name="evidenceJsonPayload" rows="5"></textarea>
+                </div>
+            {{/isUserAssertedType}}
+
             <fieldset class="govuk-fieldset">
                 <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
                     <h1 class="govuk-fieldset__heading">
@@ -366,6 +378,26 @@
             var val = $(event.target).val();
             var {payload} = filtered.find(x => x.label === val)
             $("#jsonPayload").val(JSON.stringify(payload, undefined, 4))
+        });
+    });
+
+    var evidenceDropdownData = {{{cri_stub_evidence_payloads}}}
+    var evidenceBlocksFiltered = evidenceDropdownData.filter(x => x.criType === "{{cri-name}}")
+    $(document).ready(function() {
+        var select = $('<select class="govuk-select" id="custom_evidence" name="sort">')
+        select.append($("<option selected disabled hidden value=''>").text('Select from dropdown...'))
+        $(evidenceBlocksFiltered).each(function() {
+            select.append($("<option>")
+            .prop('value', this.label)
+            .text(this.label));
+        });
+
+        var label = $('<label class="govuk-label" for="sort">').text("Select evidence block: ");
+        $('#custom_evidence_block').append(label).append(select);
+        $("#custom_evidence").on("change", function(event) {
+            var val = $(event.target).val();
+            var {payload} = evidenceBlocksFiltered.find(x => x.label === val)
+            $("#evidenceJsonPayload").val(JSON.stringify(payload, undefined, 4))
         });
     });
 </script>
