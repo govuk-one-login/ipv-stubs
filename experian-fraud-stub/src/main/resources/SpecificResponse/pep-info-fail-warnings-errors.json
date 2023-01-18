@@ -1,0 +1,61 @@
+{
+  "responseHeader": {
+    "requestType": "PepSanctions01",
+    "clientReferenceId": "123c45d6-7d89-12db-b3aa-f4e56e78a9b0",
+    "expRequestId": "0",
+    "messageTime": "2023-01-05T13:20:44Z",
+    "overallResponse": {
+      "decision": "NODECISION",
+      "decisionText": "Check the response for details",
+      "score": 0,
+      "decisionReasons": [
+        "Hunter Error"
+      ],
+      "recommendedNextActions": [],
+      "spareObjects": []
+    },
+    "responseCode": "R0201",
+    "responseType": "INFO",
+    "responseMessage": "Workflow Complete.",
+    "tenantID": "X246M3WS"
+  },
+  "clientResponsePayload": {
+    "orchestrationDecisions": [
+      {
+        "sequenceId": "1",
+        "decisionSource": "Hunter",
+        "decision": "NODECISION",
+        "decisionReasons": [
+          "Hunter Error"
+        ],
+        "score": 0,
+        "decisionText": "Check the response for details",
+        "nextAction": "Continue",
+        "decisionTime": "2023-01-01T09:00:50Z"
+      }
+    ],
+    "decisionElements": [
+      {
+        "serviceName": "Hunter",
+        "score": 0,
+        "appReference": "123c45d6-7d89-12db-b3aa-f4e56e78a9b0",
+        "rules": [],
+        "warningsErrors": [
+          {
+            "responseCode": "0001",
+            "responseType": "ERROR",
+            "responseMessage": "Stub Simulated - Generate submission error"
+          },
+          {
+            "responseCode": "0002",
+            "responseType": "ERROR",
+            "responseMessage": "Stub Simulated PEP Warning Error"
+          }
+        ],
+        "matches": [],
+        "dataCounts": [],
+        "scores": []
+      }
+    ]
+  }
+}

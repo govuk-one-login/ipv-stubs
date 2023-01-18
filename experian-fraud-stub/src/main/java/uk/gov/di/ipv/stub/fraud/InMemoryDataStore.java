@@ -70,6 +70,11 @@ public class InMemoryDataStore {
                 addResponse("GILT", "/SpecificResponse/fraud-ex-ci2-gilt.json");
                 addResponse("KENNEDY", "/SpecificResponse/fraud-ex-ci3-kennedy.json");
 
+                // Info response type but is a failure due to presence of warnings and errors
+                addResponse(
+                        "FRAUD_WARNINGS_ERRORS",
+                        "/SpecificResponse/authplus-info-fail-warnings-errors.json");
+
                 addResponse("REFER", "/GenericResponse/fraud-ex--refer.json");
                 for (Map.Entry<String, String[]> ci : Config.ciMap.entrySet()) {
                     addResponse(
@@ -79,6 +84,11 @@ public class InMemoryDataStore {
                 break;
             case PEP_CHECK_SOURCE:
                 addResponse("PEPS-NO-RULE", "/GenericResponse/fraud-ex--peps1-no-rule.json");
+
+                // Info response type but is a failure due to presence of warnings and errors
+                addResponse(
+                        "PEP_WARNINGS_ERRORS",
+                        "/SpecificResponse/pep-info-fail-warnings-errors.json");
 
                 addResponse("PEPS", "/GenericResponse/fraud-ex--peps1-rule.json");
                 for (Map.Entry<String, String[]> pep : Config.pepMap.entrySet()) {

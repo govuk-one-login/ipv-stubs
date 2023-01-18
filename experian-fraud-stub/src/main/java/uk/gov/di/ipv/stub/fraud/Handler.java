@@ -8,10 +8,12 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.request.*;
+import uk.gov.di.ipv.stub.fraud.gateway.dto.response.DecisionElement;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.response.IdentityVerificationResponse;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.response.ResponseType;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Handler {
 
@@ -36,74 +38,125 @@ public class Handler {
             (Request request, Response response) -> {
                 LOGGER.info("Fraud request: " + request.body());
 
-                IdentityVerificationRequest fraudRequest =
+                IdentityVerificationRequest identityVerificationRequest =
                         mapper.readValue(request.body(), IdentityVerificationRequest.class);
 
-                Contact requestContact = fraudRequest.getPayload().getContacts().get(0);
+                Contact requestContact =
+                        identityVerificationRequest.getPayload().getContacts().get(0);
                 String requestDob = requestContact.getPerson().getPersonDetails().getDateOfBirth();
                 List<Name> requestNames = requestContact.getPerson().getNames();
                 List<Address> requestAddress = requestContact.getAddresses();
 
+                final String requestType = identityVerificationRequest.getHeader().getRequestType();
+                final String requestSurnameName =
+                        requestNames.get(0).getSurName() != null
+                                ? requestNames.get(0).getSurName().toUpperCase()
+                                : "";
+
                 IdentityVerificationResponse modifiableResponse = null;
 
-                // FraudCheck Simulation
-                if (fraudRequest
-                        .getHeader()
-                        .getRequestType()
-                        .equals("Authenticateplus-Standalone")) {
+                if (requestType.equals("Authenticateplus-Standalone")) {
+                    // FraudCheck Simulation
 
                     // Look for a response for specific user surname, fall back to AUTH1
                     modifiableResponse =
-                            getModifiableResponse(
-                                    requestNames.get(0).getSurName().toUpperCase(),
-                                    "AUTH1",
-                                    FRAUD_CHECK_SOURCE);
+                            getModifiableResponse(requestSurnameName, "AUTH1", FRAUD_CHECK_SOURCE);
+
+                    // FRAUD_WARNINGS_ERRORS is based on real info response with 1 warningError
+                    if (requestSurnameName.equals("FRAUD_WARNINGS_ERRORS")) {
+                        modifiableResponse =
+                                getModifiableResponse(
+                                        requestSurnameName,
+                                        "FRAUD_WARNINGS_ERRORS",
+                                        FRAUD_CHECK_SOURCE);
+                    } else if (!checkRequestContactHasRequiredData(requestContact)) {
+                        // Request is missing fields needed for a real request
+
+                        modifiableResponse.getResponseHeader().setResponseType(ResponseType.ERROR);
+                        modifiableResponse.getResponseHeader().setResponseCode("ERRSIMD1");
+                        modifiableResponse
+                                .getResponseHeader()
+                                .setResponseMessage(
+                                        "Simulated - RequestContact is missing data for a required field");
+                    }
 
                     // Decision score set to suffix
-                    if (requestNames.get(0).getSurName().contains("NO_FILE_")) {
+                    if (requestSurnameName.contains("NO_FILE_")) {
                         modifiableResponse
                                 .getClientResponsePayload()
                                 .getDecisionElements()
                                 .get(0)
-                                .setScore(
-                                        Integer.valueOf(
-                                                requestNames.get(0).getSurName().substring(8)));
+                                .setScore(Integer.valueOf(requestSurnameName.substring(8)));
                     }
 
                     // Error response type in FraudCheck
-                    if (requestNames.get(0).getSurName().equals("FRAUD_ERROR_RESPONSE")) {
+                    if (requestSurnameName.equals("FRAUD_ERROR_RESPONSE")) {
                         modifiableResponse.getResponseHeader().setResponseType(ResponseType.ERROR);
-                        modifiableResponse.getResponseHeader().setResponseCode("ERRSIMF1");
+                        modifiableResponse.getResponseHeader().setResponseCode("ERRSIMDF1");
                         modifiableResponse
                                 .getResponseHeader()
                                 .setResponseMessage("Simulated Fraud Error Response");
                     }
 
                     // HTTP response status code to fraudCheck
-                    if (requestNames.get(0).getSurName().contains("FSC_")) {
-                        response.status(
-                                Integer.valueOf(requestNames.get(0).getSurName().substring(4)));
+                    if (requestSurnameName.contains("FSC_")) {
+                        response.status(Integer.valueOf(requestSurnameName.substring(4)));
                     }
 
-                    if (requestNames.get(0).getSurName().equals("FRAUD_TECH_FAIL")) {
+                    if (requestSurnameName.equals("FRAUD_TECH_FAIL")) {
                         response.status(
                                 408); // Request Timeout (closest response to an abrupt socket
                         // close)
-                        return "";
+                        return ""; // No message returned intended
                     }
-                }
+                } else if (requestType.equals("PepSanctions01")) {
+                    // PepCheck Simulation
 
-                // PepCheck Simulation
-                if (fraudRequest.getHeader().getRequestType().equals("PepSanctions01")) {
-
+                    // Look for a response for specific user surname, Fall back to PEP-NO-RULE
                     modifiableResponse =
                             getModifiableResponse(
-                                    requestNames.get(0).getSurName().toUpperCase(),
-                                    "PEPS-NO-RULE",
-                                    PEP_CHECK_SOURCE);
+                                    requestSurnameName, "PEPS-NO-RULE", PEP_CHECK_SOURCE);
+
+                    // PEP_WARNINGS_ERRORS is based on a real info response which had 2 warningError
+                    // (Response code and messages changed)
+                    // Position (0) was the overall error for a submission error in pep
+                    // Position (1) will be specific to the error encountered
+                    if (requestSurnameName.equals("PEP_WARNINGS_ERRORS")) {
+                        modifiableResponse =
+                                getModifiableResponse("", "PEP_WARNINGS_ERRORS", PEP_CHECK_SOURCE);
+                    } else if (!checkRequestContactHasRequiredData(requestContact)) {
+                        // Request is missing fields needed for a real request
+
+                        modifiableResponse.getResponseHeader().setResponseType(ResponseType.ERROR);
+                        modifiableResponse.getResponseHeader().setResponseCode("ERRSIMDP1");
+                        modifiableResponse
+                                .getResponseHeader()
+                                .setResponseMessage(
+                                        "Simulated - RequestContact is missing data for a required field");
+
+                    } else if (requestAddress.size() > 1) {
+                        // Pep check requires there be only one address so this simulates the
+                        // warnings error response that would be received
+
+                        modifiableResponse =
+                                getModifiableResponse("", "PEP_WARNINGS_ERRORS", PEP_CHECK_SOURCE);
+
+                        DecisionElement decisionElement =
+                                modifiableResponse
+                                        .getClientResponsePayload()
+                                        .getDecisionElements()
+                                        .get(0);
+
+                        // Warning Errors
+                        decisionElement.getWarningsErrors().get(1).setResponseCode("RAS1");
+                        decisionElement
+                                .getWarningsErrors()
+                                .get(1)
+                                .setResponseCode("Too many addresses sent in pep request.");
+                    }
 
                     // Error response type in PEP Check
-                    if (requestNames.get(0).getSurName().equals("PEP_ERROR_RESPONSE")) {
+                    if (requestSurnameName.equals("PEP_ERROR_RESPONSE")) {
                         modifiableResponse.getResponseHeader().setResponseType(ResponseType.ERROR);
                         modifiableResponse.getResponseHeader().setResponseCode("ERRSIMP1");
                         modifiableResponse
@@ -111,41 +164,50 @@ public class Handler {
                                 .setResponseMessage("Simulated PEP Error Response");
                     }
 
-                    // HTTP response status code to fraudCheck
-                    if (requestNames.get(0).getSurName().contains("PSC_")) {
-                        response.status(
-                                Integer.valueOf(requestNames.get(0).getSurName().substring(4)));
+                    // HTTP response status code to pepCheck
+                    if (requestSurnameName.contains("PSC_")) {
+                        response.status(Integer.valueOf(requestSurnameName.substring(4)));
                     }
 
-                    if (requestNames.get(0).getSurName().equals("PEP_TECH_FAIL")) {
+                    if (requestSurnameName.equals("PEP_TECH_FAIL")) {
                         response.status(
                                 408); // Request Timeout (closest response to an abrupt socket
                         // close)
-                        return "";
+                        return ""; // No message returned intended
                     }
+                } else {
+                    String message = String.format("Unknown Request Type %s", requestType);
+                    LOGGER.error(message);
+                    return message;
                 }
 
                 LOGGER.debug("Stubbed experian response = " + modifiableResponse);
 
-                Random randGen = new Random();
                 modifiableResponse
                         .getResponseHeader()
                         .setClientReferenceId(UUID.randomUUID().toString());
 
+                // ExpRequestId maps to txn id
                 modifiableResponse
                         .getResponseHeader()
-                        .setExpRequestId(String.format("RB0000%08d", randGen.nextInt(99999999)));
+                        .setExpRequestId(
+                                String.format(
+                                        "RB0000%08d",
+                                        ThreadLocalRandom.current().nextInt(99999999)));
 
-                Contact responseContact =
-                        modifiableResponse.getOriginalRequestData().getContacts().get(0);
-                Person responseContactPerson = responseContact.getPerson();
+                // Sets values of OriginalRequestData (which may not be present for some responses)
+                if (null != modifiableResponse.getOriginalRequestData()) {
+                    Contact responseContact =
+                            modifiableResponse.getOriginalRequestData().getContacts().get(0);
+                    Person responseContactPerson = responseContact.getPerson();
 
-                responseContact.setAddresses(requestAddress);
+                    responseContact.setAddresses(requestAddress);
 
-                responseContactPerson.setNames(requestNames);
-                responseContactPerson.getPersonDetails().setDateOfBirth(requestDob);
+                    responseContactPerson.setNames(requestNames);
+                    responseContactPerson.getPersonDetails().setDateOfBirth(requestDob);
+                }
 
-                if (requestNames.get(0).getSurName().equalsIgnoreCase("SERVER_FAILURE")) {
+                if (requestSurnameName.equalsIgnoreCase("SERVER_FAILURE")) {
                     response.status(503);
                     return "";
                 } else {
@@ -236,5 +298,63 @@ public class Handler {
         // Return a modifiable clone of the templateResponse
         return mapper.readValue(
                 mapper.writeValueAsString(templateResponse), IdentityVerificationResponse.class);
+    }
+
+    private boolean checkRequestContactHasRequiredData(Contact requestContact) {
+
+        if (null == requestContact) {
+            return false;
+        }
+
+        String requestDob = requestContact.getPerson().getPersonDetails().getDateOfBirth();
+        if (null == requestDob || requestDob.isEmpty()) {
+            return false;
+        }
+
+        List<Address> requestAddress = requestContact.getAddresses();
+        if (null == requestAddress || requestAddress.isEmpty()) {
+            return false;
+        }
+
+        // Simulates minimum required being a postcode + either building name or number
+        for (Address address : requestAddress) {
+
+            if (null == address.getPostal() || address.getPostal().isEmpty()) {
+                return false;
+            }
+
+            boolean buildingNameValid =
+                    !(null == address.getBuildingName() || address.getBuildingName().isEmpty());
+
+            boolean buildingNumberValid =
+                    !(null == address.getBuildingNumber() || address.getBuildingNumber().isEmpty());
+
+            // False if both are not valid - true if one is
+            if (!(buildingNameValid || buildingNumberValid)) {
+                return false;
+            }
+        }
+
+        List<Name> requestNames = requestContact.getPerson().getNames();
+
+        if (null == requestNames) {
+            return false;
+        }
+
+        // Middle name is not required
+        for (Name name : requestNames) {
+            if (null == name) {
+                return false;
+            }
+            if (null == name.getFirstName() || name.getFirstName().isEmpty()) {
+                return false;
+            }
+            if (null == name.getSurName() || name.getSurName().isEmpty()) {
+                return false;
+            }
+        }
+
+        // RequestContact has required data
+        return true;
     }
 }
