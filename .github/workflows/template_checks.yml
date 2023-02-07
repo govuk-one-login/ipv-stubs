@@ -1,0 +1,49 @@
+
+name: Run various checks on CloudFormation Templates
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - di-ipv-core-stub/deploy/template.yaml
+      - di-ipv-credential-issuer-stub/deploy/template.yaml
+      - di-ipv-orchestrator-stub/deploy/template.yaml
+      - experian-fraud-stub/deploy/template.yaml
+      - experian-kbv-stub/deploy/template.yaml
+jobs:
+  RunCloudformationLinter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: install cfn-lint
+        run: pip3 install cfn-lint
+      - name: run cfn-lint
+        run: |
+          cfn-lint --version
+          for template in $(git diff --name-only origin/main | grep '.*/template.yaml'); do
+            cfn-lint -t "$template"
+          done
+  RunCheckov:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: install checkov
+        run: pip3 install checkov
+      - name: run checkov
+        run: |
+          for template in $(git diff --name-only origin/main | grep '.*/template.yaml'); do
+            checkov --file "$template"
+          done
