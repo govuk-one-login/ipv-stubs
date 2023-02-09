@@ -22,6 +22,107 @@ Parameters:
     Description: "The ARN of the permissions boundary to apply when creating IAM roles"
     Type: String
     Default: "none"
+  COMMON_CORE_STUB_APP_TITLE:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/common/env/CORE_STUB_APP_TITLE"
+  COMMON_CORE_STUB_CLIENT_ID:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/common/env/CORE_STUB_CLIENT_ID"
+  COMMON_CORE_STUB_CONFIG_AGED_DOB:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_AGED_DOB"
+  COMMON_CORE_STUB_CONFIG_FILE:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_FILE"
+  COMMON_CORE_STUB_PORT:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/common/env/CORE_STUB_PORT"
+  COMMON_CORE_STUB_REDIRECT_URL:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/common/env/CORE_STUB_REDIRECT_URL"
+  COMMON_JAVA_HOME:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/common/env/JAVA_HOME"
+  COMMON_JAVA_OPTS:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/common/env/JAVA_OPTS"
+  COMMON_JBP_CONFIG_OPEN_JDK_JRE:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/common/env/JBP_CONFIG_OPEN_JDK_JRE"
+  CORE_STUB_CLIENT_ID:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_CLIENT_ID"
+  CORE_STUB_CONFIG_FILE:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_CONFIG_FILE"
+  CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI"
+  CORE_STUB_JWT_ISS_CRI_URI:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_JWT_ISS_CRI_URI"
+  CORE_STUB_KEYSTORE_ALIAS:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_ALIAS"
+  CORE_STUB_KEYSTORE_BASE64:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_BASE64"
+  CORE_STUB_KEYSTORE_PASSWORD:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_PASSWORD"
+  CORE_STUB_PORT:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_PORT"
+  CORE_STUB_REDIRECT_URL:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_REDIRECT_URL"
+  CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
+  CORE_STUB_USER_DATA_PATH:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_USER_DATA_PATH"
+  JAVA_HOME:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/JAVA_HOME"
+  JAVA_OPTS:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/JAVA_OPTS"
+  JBP_CONFIG_OPEN_JDK_JRE:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/JBP_CONFIG_OPEN_JDK_JRE"
+  MAX_JAR_TTL_MINS:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/MAX_JAR_TTL_MINS"
+  PASSPORT_PRIVATE_API_KEY:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
+
 
 Conditions:
   IsDevelopment: !Not
@@ -47,24 +148,12 @@ Conditions:
 Mappings:
   EnvironmentConfiguration:
     "130355686670": # Development
-      lb500ErrorLimit: 2
-      lb500ErrorWindow: 300
-      tg500ErrorLimit: 10
-      tg500ErrorWindow: 300
-      lambdaInvokeCompareWindow: 300
       fargateCPUsize: "256"
       fargateRAMsize: "512"
-      nodeOldSpaceLimit: "384"
       desiredTaskCount: 1
     "826978934233": #Stubs Build
-      lb500ErrorLimit: 2
-      lb500ErrorWindow: 300
-      tg500ErrorLimit: 10
-      tg500ErrorWindow: 300
-      lambdaInvokeCompareWindow: 300
       fargateCPUsize: "256"
       fargateRAMsize: "512"
-      nodeOldSpaceLimit: "256"
       desiredTaskCount: 1
   SecurityGroups:
     PrefixListIds:
@@ -344,7 +433,6 @@ Resources:
         - TargetGroupArn: !Ref LoadBalancerListenerTargetGroupECS
           Type: forward
 
-
   # ECS cluster, service and task definition
   CoreStubCluster:
     Type: "AWS::ECS::Cluster"
@@ -441,15 +529,38 @@ Resources:
             ] # Uses build account and ECR when not in development.
           Name: app
           Environment:
-            - Name: ANALYTICS_DOMAIN
-              Value: !If [ IsProduction, "account.gov.uk", !Sub "${Environment}.account.gov.uk" ]
-            - Name: SESSION_SECRET
-              Value: "no-secret"
-            - Name: NODE_OPTIONS
-              Value: !Join
-                - ''
-                - - '--max-old-space-size='
-                  - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, nodeOldSpaceLimit ]
+          - Name: CORE_STUB_CLIENT_ID:
+            Value: !Ref CORE_STUB_CLIENT_ID:
+          - Name: CORE_STUB_CONFIG_FILE:
+            Value: !Ref CORE_STUB_CONFIG_FILE:
+          - Name: CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI:
+            Value: !Ref CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI:
+          - Name: CORE_STUB_JWT_ISS_CRI_URI:
+            Value: !Ref CORE_STUB_JWT_ISS_CRI_URI:
+          - Name: CORE_STUB_KEYSTORE_ALIAS:
+            Value: !Ref CORE_STUB_KEYSTORE_ALIAS:
+          - Name: CORE_STUB_KEYSTORE_BASE64:
+            Value: !Ref CORE_STUB_KEYSTORE_BASE64:
+          - Name: CORE_STUB_KEYSTORE_PASSWORD:
+            Value: !Ref CORE_STUB_KEYSTORE_PASSWORD:
+          - Name: CORE_STUB_PORT:
+            Value: !Ref CORE_STUB_PORT:
+          - Name: CORE_STUB_REDIRECT_URL:
+            Value: !Ref CORE_STUB_REDIRECT_URL:
+          - Name: CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64:
+            Value: !Ref CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64:
+          - Name: CORE_STUB_USER_DATA_PATH:
+            Value: !Ref CORE_STUB_USER_DATA_PATH:
+          - Name: JAVA_HOME:
+            Value: !Ref JAVA_HOME:
+          - Name: JAVA_OPTS:
+            Value: !Ref JAVA_OPTS:
+          - Name: JBP_CONFIG_OPEN_JDK_JRE:
+            Value: !Ref JBP_CONFIG_OPEN_JDK_JRE:
+          - Name: MAX_JAR_TTL_MINS:
+            Value: !Ref MAX_JAR_TTL_MINS:
+          - Name: PASSPORT_PRIVATE_API_KEY:
+            Value: !Ref PASSPORT_PRIVATE_API_KEY:
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -511,53 +622,10 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
         Version: 2012-10-17
-      Policies:
-        - PolicyName: CoreStubDynamoDBSessionAccess
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "dynamodb:BatchGetItem"
-                  - "dynamodb:DescribeTable"
-                  - "dynamodb:GetItem"
-                  - "dynamodb:Query"
-                  - "dynamodb:Scan"
-                  - "dynamodb:BatchWriteItem"
-                  - "dynamodb:DeleteItem"
-                  - "dynamodb:UpdateItem"
-                  - "dynamodb:PutItem"
-                Resource:
-                  - !GetAtt CoreStubSessionsTable.Arn
-              - Effect: Allow
-                Action:
-                  - "kms:Decrypt"
-                Resource:
-                  - !GetAtt DynamoDBKmsKey.Arn
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
-
-  CoreStubSessionsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
-      TableName: !Sub "core-front-sessions-${Environment}"
-      BillingMode: "PAY_PER_REQUEST"
-      AttributeDefinitions:
-        - AttributeName: "id"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "id"
-          KeyType: "HASH"
-      TimeToLiveSpecification:
-        AttributeName: "expires"
-        Enabled: true
-      SSESpecification:
-        SSEEnabled: true
-        SSEType: KMS
-        KMSMasterKeyId: !GetAtt DynamoDBKmsKey.Arn
 
   LoggingKmsKey:
     Type: AWS::KMS::Key
@@ -585,36 +653,6 @@ Resources:
             Condition:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
-
-  DynamoDBKmsKey:
-    Type: AWS::KMS::Key
-    Properties:
-      EnableKeyRotation: true
-      KeyPolicy:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action:
-              - kms:*
-            Resource: "*"
-          - Effect: Allow
-            Principal:
-              Service: "dynamodb.amazonaws.com"
-            Action:
-              - "kms:Encrypt*"
-              - "kms:Decrypt*"
-              - "kms:ReEncrypt*"
-              - "kms:GenerateDataKey*"
-              - "kms:Describe*"
-            Resource: "*"
-            Condition:
-              StringEquals:
-                "kms:CallerAccount": !Sub "${AWS::AccountId}"
-                "kms:ViaService":
-                  - "dynamodb.amazonaws.com"
-                  - "ecs-tasks.amazonaws.com"
 
 Outputs:
   CoreStubEnvironment:
