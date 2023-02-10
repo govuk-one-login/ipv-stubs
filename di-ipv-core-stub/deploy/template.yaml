@@ -22,107 +22,107 @@ Parameters:
     Description: "The ARN of the permissions boundary to apply when creating IAM roles"
     Type: String
     Default: "none"
-  COMMON_CORE_STUB_APP_TITLE:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/common/env/CORE_STUB_APP_TITLE"
-  COMMON_CORE_STUB_CLIENT_ID:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/common/env/CORE_STUB_CLIENT_ID"
-  COMMON_CORE_STUB_CONFIG_AGED_DOB:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_AGED_DOB"
-  COMMON_CORE_STUB_CONFIG_FILE:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_FILE"
-  COMMON_CORE_STUB_PORT:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/common/env/CORE_STUB_PORT"
-  COMMON_CORE_STUB_REDIRECT_URL:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/common/env/CORE_STUB_REDIRECT_URL"
-  COMMON_JAVA_HOME:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/common/env/JAVA_HOME"
-  COMMON_JAVA_OPTS:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/common/env/JAVA_OPTS"
-  COMMON_JBP_CONFIG_OPEN_JDK_JRE:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/common/env/JBP_CONFIG_OPEN_JDK_JRE"
-  CORE_STUB_CLIENT_ID:
+    # disabling these as not being used - leaving these in as it may be useful for any/other core-stubs
+    #  CommonCoreStubAppTitle:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_APP_TITLE"
+    #  CommonCoreStubClientId:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_CLIENT_ID"
+    #  CommonCoreStubConfigAgedDob:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_AGED_DOB"
+    #  CommonCoreStubConfigFile:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_FILE"
+    #  CommonCoreStubPort:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_PORT"
+    #  CommonCoreStubRedirectUrl:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_REDIRECT_URL"
+    #  CommonJavaHome:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/JAVA_HOME"
+    #  CommonJavaOpts:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/JAVA_OPTS"
+    #  CommonJbpConfigOpenJdkJre:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/JBP_CONFIG_OPEN_JDK_JRE"
+  CoreStubClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_CLIENT_ID"
-  CORE_STUB_CONFIG_FILE:
+  CoreStubConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_CONFIG_FILE"
-  CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI:
+  CoreStubJwtAudExperianCriUri:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI"
-  CORE_STUB_JWT_ISS_CRI_URI:
+  CoreStubJwtIssCriUri:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_JWT_ISS_CRI_URI"
-  CORE_STUB_KEYSTORE_ALIAS:
+  CoreStubKeystoreAlias:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_ALIAS"
-  CORE_STUB_KEYSTORE_BASE64:
+  CoreStubKeystoreBase64:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_BASE64"
-  CORE_STUB_KEYSTORE_PASSWORD:
+  CoreStubKeystorePassword:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_PASSWORD"
-  CORE_STUB_PORT:
+  CoreStubPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_PORT"
-  CORE_STUB_REDIRECT_URL:
+  CoreStubRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_REDIRECT_URL"
-  CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64:
+  CoreStubSigningPrivateKeyJwkBase64:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
-  CORE_STUB_USER_DATA_PATH:
+  CoreStubUserDataPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_USER_DATA_PATH"
-  JAVA_HOME:
+  JavaHome:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/JAVA_HOME"
-  JAVA_OPTS:
+  JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/JAVA_OPTS"
-  JBP_CONFIG_OPEN_JDK_JRE:
+  JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/JBP_CONFIG_OPEN_JDK_JRE"
-  MAX_JAR_TTL_MINS:
+  MaxJarTtlMins:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/MAX_JAR_TTL_MINS"
-  PASSPORT_PRIVATE_API_KEY:
+  PassportPrivateApiKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
-
 
 Conditions:
   IsDevelopment: !Not
@@ -134,7 +134,7 @@ Conditions:
   IsNonProd: !Not
     - !Or
       - !Condition IsDevelopment
-      - !Condtion IsProduction
+      - !Condition IsProduction
 
   UsePermissionsBoundary:
     Fn::Not:
@@ -142,9 +142,8 @@ Conditions:
           - !Ref PermissionsBoundary
           - "none"
 
-# The AWS Account Id is used in the following mapping section because we have
-# multiple developer environments and it is undesirable to have to keep this
-# mapping up to date with each developer environment.
+# Mapping using aws account id - keeps things simple
+# if this is built out differently.
 Mappings:
   EnvironmentConfiguration:
     "130355686670": # Development
@@ -155,10 +154,6 @@ Mappings:
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
-  SecurityGroups:
-    PrefixListIds:
-      dynamodb: "pl-b3a742da"
-      s3: "pl-7ca54015"
 
 Resources:
   CoreDNSRecord:
@@ -191,21 +186,16 @@ Resources:
 
   CoreStubSSLCert:
     Type: AWS::CertificateManager::Certificate
-    Condition: IsNotDevelopment
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "${Environment}.stubs.account.gov.uk"
-        - stubs.account.gov.uk
+        - !Sub "core.${Environment}.stubs.account.gov.uk"
+        - core.stubs.account.gov.uk
       SubjectAlternativeNames: 
         - !If
-          - - IsNonProd
-          - - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
-          - - passport-core.stubs.account.gov.uk
-        - !If
-          - - IsNonProd
-          - - !Sub "core.${Environment}.stubs.account.gov.uk"
-          - - core.stubs.account.gov.uk
+          - IsNonProd
+          - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
+          - passport-core.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
             - IsNonProd
@@ -223,29 +213,26 @@ Resources:
             - IsNonProd
             - !ImportValue BuildPublicHostedZoneId
             - !ImportValue RootPublicHostedZoneId
-        - DomainName: !If
-            - IsNonProd
-            - !Sub "${Environment}.stubs.account.gov.uk"
-            - stubs.account.gov.uk
-          HostedZoneId: !If
-            - IsNonProd
-            - !ImportValue BuildPublicHostedZoneId
-            - !ImportValue RootPublicHostedZoneId
       ValidationMethod: DNS
 
- # Security Groups for the ECS service and load balancer
+  # Security Groups for the ECS service and load balancer
   LoadBalancerSG:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: >-
         Core Stub LoadBalancer Security Group
       SecurityGroupIngress:
-        - CidrIp:
-            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
-          Description: Allow vpc cidr ingress to port 80
-          FromPort: 80
+        - CidrIp: 0.0.0.0/0
+          Description: Allow internet ingress to port 443
           IpProtocol: tcp
-          ToPort: 80
+          FromPort: 443
+          ToPort: 443
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow egress from load balancer out to internet port 443
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 
@@ -253,11 +240,11 @@ Resources:
     Type: "AWS::EC2::SecurityGroupEgress"
     Properties:
       GroupId: !GetAtt LoadBalancerSG.GroupId
-      IpProtocol: tcp
       Description: >-
         Egress between the Core Stub load balancer and
         the core Stub ECS security group
       DestinationSecurityGroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
+      IpProtocol: tcp
       FromPort: 8080
       ToPort: 8080
 
@@ -365,8 +352,8 @@ Resources:
       SecurityGroups:
         - !GetAtt LoadBalancerSG.GroupId
       Subnets:
-        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
-        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
       Type: application
       #checkov:skip=CKV_AWS_91:ALB access logging is disabled in developer environments to make them easier to manage.
       LoadBalancerAttributes:
@@ -529,38 +516,38 @@ Resources:
             ] # Uses build account and ECR when not in development.
           Name: app
           Environment:
-          - Name: CORE_STUB_CLIENT_ID:
-            Value: !Ref CORE_STUB_CLIENT_ID:
-          - Name: CORE_STUB_CONFIG_FILE:
-            Value: !Ref CORE_STUB_CONFIG_FILE:
-          - Name: CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI:
-            Value: !Ref CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI:
-          - Name: CORE_STUB_JWT_ISS_CRI_URI:
-            Value: !Ref CORE_STUB_JWT_ISS_CRI_URI:
-          - Name: CORE_STUB_KEYSTORE_ALIAS:
-            Value: !Ref CORE_STUB_KEYSTORE_ALIAS:
-          - Name: CORE_STUB_KEYSTORE_BASE64:
-            Value: !Ref CORE_STUB_KEYSTORE_BASE64:
-          - Name: CORE_STUB_KEYSTORE_PASSWORD:
-            Value: !Ref CORE_STUB_KEYSTORE_PASSWORD:
-          - Name: CORE_STUB_PORT:
-            Value: !Ref CORE_STUB_PORT:
-          - Name: CORE_STUB_REDIRECT_URL:
-            Value: !Ref CORE_STUB_REDIRECT_URL:
-          - Name: CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64:
-            Value: !Ref CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64:
-          - Name: CORE_STUB_USER_DATA_PATH:
-            Value: !Ref CORE_STUB_USER_DATA_PATH:
-          - Name: JAVA_HOME:
-            Value: !Ref JAVA_HOME:
-          - Name: JAVA_OPTS:
-            Value: !Ref JAVA_OPTS:
-          - Name: JBP_CONFIG_OPEN_JDK_JRE:
-            Value: !Ref JBP_CONFIG_OPEN_JDK_JRE:
-          - Name: MAX_JAR_TTL_MINS:
-            Value: !Ref MAX_JAR_TTL_MINS:
-          - Name: PASSPORT_PRIVATE_API_KEY:
-            Value: !Ref PASSPORT_PRIVATE_API_KEY:
+          - Name: CORE_STUB_CLIENT_ID
+            Value: !Ref CoreStubClientId
+          - Name: CORE_STUB_CONFIG_FILE
+            Value: !Ref CoreStubConfigFile
+          - Name: CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI
+            Value: !Ref CoreStubJwtAudExperianCriUri
+          - Name: CORE_STUB_JWT_ISS_CRI_URI
+            Value: !Ref CoreStubJwtIssCriUri
+          - Name: CORE_STUB_KEYSTORE_ALIAS
+            Value: !Ref CoreStubKeystoreAlias
+          - Name: CORE_STUB_KEYSTORE_BASE64
+            Value: !Ref CoreStubKeystoreBase64
+          - Name: CORE_STUB_KEYSTORE_PASSWORD
+            Value: !Ref CoreStubKeystorePassword
+          - Name: CORE_STUB_PORT
+            Value: !Ref CoreStubPort
+          - Name: CORE_STUB_REDIRECT_URL
+            Value: !Ref CoreStubRedirectUrl
+          - Name: CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64
+            Value: !Ref CoreStubSigningPrivateKeyJwkBase64
+          - Name: CORE_STUB_USER_DATA_PATH
+            Value: !Ref CoreStubUserDataPath
+          - Name: JAVA_HOME
+            Value: !Ref JavaHome
+          - Name: JAVA_OPTS
+            Value: !Ref JavaOpts
+          - Name: JBP_CONFIG_OPEN_JDK_JRE
+            Value: !Ref JbpConfigOpenJdkJre
+          - Name: MAX_JAR_TTL_MINS
+            Value: !Ref MaxJarTtlMins
+          - Name: PASSPORT_PRIVATE_API_KEY
+            Value: !Ref PassportPrivateApiKey
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
