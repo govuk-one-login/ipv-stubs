@@ -31,7 +31,7 @@ jobs:
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.CORE_GH_ACTIONS_ROLE_ARN }}
           aws-region: eu-west-2
 
       - name: Login to Amazon ECR
@@ -58,7 +58,7 @@ jobs:
         env:
           CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.CORE_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: |
           cd ${GITHUB_WORKSPACE} || exit 1
@@ -79,14 +79,14 @@ jobs:
       - name: SAM Package
         working-directory: ./di-ipv-core-stub/deploy
         env:
-          ARTIFACT_BUCKET: ${{ secrets.ARTIFACT_BUCKET_NAME }}
+          ARTIFACT_BUCKET: ${{ secrets.CORE_ARTIFACT_BUCKET_NAME }}
         run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Update SAM template with ECR image
         working-directory: ./di-ipv-core-stub/deploy
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.CORE_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
 
@@ -97,5 +97,5 @@ jobs:
       - name: Upload Compressed CloudFormation artifacts to S3
         working-directory: ./di-ipv-core-stub/deploy
         env:
-          ARTIFACT_BUCKET: ${{ secrets.ARTIFACT_BUCKET_NAME }}
+          ARTIFACT_BUCKET: ${{ secrets.CORE_ARTIFACT_BUCKET_NAME }}
         run: aws s3 cp template.zip "s3://$ARTIFACT_BUCKET/template.zip" --metadata "repository=$GITHUB_REPOSITORY,commitsha=$GITHUB_SHA"
