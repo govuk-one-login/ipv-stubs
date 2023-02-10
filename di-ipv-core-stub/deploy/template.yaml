@@ -245,8 +245,8 @@ Resources:
         the core Stub ECS security group
       DestinationSecurityGroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
       IpProtocol: tcp
-      FromPort: 8080
-      ToPort: 8080
+      FromPort: 8085
+      ToPort: 8085
 
   CoreStubECSSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
@@ -285,8 +285,8 @@ Resources:
       Description: >-
         Core Front ECS permits inbound from the Core Front
         load balancer.
-      FromPort: 8080
-      ToPort: 8080
+      FromPort: 8085
+      ToPort: 8085
       GroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
       SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
 
@@ -449,7 +449,7 @@ Resources:
       LaunchType: FARGATE
       LoadBalancers:
         - ContainerName: app
-          ContainerPort: 8080
+          ContainerPort: 8085
           TargetGroupArn: !Ref LoadBalancerListenerTargetGroupECS
       NetworkConfiguration:
         AwsvpcConfiguration:
@@ -549,7 +549,7 @@ Resources:
           - Name: PASSPORT_PRIVATE_API_KEY
             Value: !Ref PassportPrivateApiKey
           PortMappings:
-            - ContainerPort: 8080
+            - ContainerPort: 8085
               Protocol: tcp
           LogConfiguration:
             LogDriver: awslogs
