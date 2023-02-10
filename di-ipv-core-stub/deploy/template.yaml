@@ -22,6 +22,107 @@ Parameters:
     Description: "The ARN of the permissions boundary to apply when creating IAM roles"
     Type: String
     Default: "none"
+    # disabling these as not being used - leaving these in as it may be useful for any/other core-stubs
+    #  CommonCoreStubAppTitle:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_APP_TITLE"
+    #  CommonCoreStubClientId:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_CLIENT_ID"
+    #  CommonCoreStubConfigAgedDob:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_AGED_DOB"
+    #  CommonCoreStubConfigFile:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_FILE"
+    #  CommonCoreStubPort:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_PORT"
+    #  CommonCoreStubRedirectUrl:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/CORE_STUB_REDIRECT_URL"
+    #  CommonJavaHome:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/JAVA_HOME"
+    #  CommonJavaOpts:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/JAVA_OPTS"
+    #  CommonJbpConfigOpenJdkJre:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/common/env/JBP_CONFIG_OPEN_JDK_JRE"
+  CoreStubClientId:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_CLIENT_ID"
+  CoreStubConfigFile:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_CONFIG_FILE"
+  CoreStubJwtAudExperianCriUri:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI"
+  CoreStubJwtIssCriUri:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_JWT_ISS_CRI_URI"
+  CoreStubKeystoreAlias:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_ALIAS"
+  CoreStubKeystoreBase64:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_BASE64"
+  CoreStubKeystorePassword:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_PASSWORD"
+  CoreStubPort:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_PORT"
+  CoreStubRedirectUrl:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_REDIRECT_URL"
+  CoreStubSigningPrivateKeyJwkBase64:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
+  CoreStubUserDataPath:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/CORE_STUB_USER_DATA_PATH"
+  JavaHome:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/JAVA_HOME"
+  JavaOpts:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/JAVA_OPTS"
+  JbpConfigOpenJdkJre:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/JBP_CONFIG_OPEN_JDK_JRE"
+  MaxJarTtlMins:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/MAX_JAR_TTL_MINS"
+  PassportPrivateApiKey:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
 
 Conditions:
   IsDevelopment: !Not
@@ -30,6 +131,10 @@ Conditions:
       - !Equals [ !Ref Environment, "production"]
   IsNotDevelopment: !Not [ !Condition IsDevelopment ]
   IsProduction: !Equals [ !Ref Environment, production ]
+  IsNonProd: !Not
+    - !Or
+      - !Condition IsDevelopment
+      - !Condition IsProduction
 
   UsePermissionsBoundary:
     Fn::Not:
@@ -37,51 +142,97 @@ Conditions:
           - !Ref PermissionsBoundary
           - "none"
 
-# The AWS Account Id is used in the following mapping section because we have
-# multiple developer environments and it is undesirable to have to keep this
-# mapping up to date with each developer environment.
+# Mapping using aws account id - keeps things simple
+# if this is built out differently.
 Mappings:
   EnvironmentConfiguration:
     "130355686670": # Development
-      lb500ErrorLimit: 2
-      lb500ErrorWindow: 300
-      tg500ErrorLimit: 10
-      tg500ErrorWindow: 300
-      lambdaInvokeCompareWindow: 300
       fargateCPUsize: "256"
       fargateRAMsize: "512"
-      nodeOldSpaceLimit: "384"
       desiredTaskCount: 1
     "826978934233": #Stubs Build
-      lb500ErrorLimit: 2
-      lb500ErrorWindow: 300
-      tg500ErrorLimit: 10
-      tg500ErrorWindow: 300
-      lambdaInvokeCompareWindow: 300
       fargateCPUsize: "256"
       fargateRAMsize: "512"
-      nodeOldSpaceLimit: "256"
       desiredTaskCount: 1
-  SecurityGroups:
-    PrefixListIds:
-      dynamodb: "pl-b3a742da"
-      s3: "pl-7ca54015"
 
 Resources:
+  CoreDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      TTL: 900
+      Name: !If
+        - IsNonProd
+        - !Sub "core.${Environment}.stubs.account.gov.uk"
+        - core.stubs.account.gov.uk
+      HostedZoneId: !If
+        - IsNonProd
+        - !ImportValue BuildPublicHostedZoneId
+        - !ImportValue RootPublicHostedZoneId
 
- # Security Groups for the ECS service and load balancer
+  CorePassportDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      TTL: 900
+      Name: !If
+        - IsNonProd
+        - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
+        - passport-core.stubs.account.gov.uk
+      HostedZoneId: !If
+        - IsNonProd
+        - !ImportValue BuildPublicHostedZoneId
+        - !ImportValue RootPublicHostedZoneId
+
+  CoreStubSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsNonProd
+        - !Sub "core.${Environment}.stubs.account.gov.uk"
+        - core.stubs.account.gov.uk
+      SubjectAlternativeNames: 
+        - !If
+          - IsNonProd
+          - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
+          - passport-core.stubs.account.gov.uk
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsNonProd
+            - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
+            - passport-core.stubs.account.gov.uk
+          HostedZoneId: !If
+            - IsNonProd
+            - !ImportValue BuildPublicHostedZoneId
+            - !ImportValue RootPublicHostedZoneId
+        - DomainName: !If
+            - IsNonProd
+            - !Sub "core.${Environment}.stubs.account.gov.uk"
+            - core.stubs.account.gov.uk
+          HostedZoneId: !If
+            - IsNonProd
+            - !ImportValue BuildPublicHostedZoneId
+            - !ImportValue RootPublicHostedZoneId
+      ValidationMethod: DNS
+
+  # Security Groups for the ECS service and load balancer
   LoadBalancerSG:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: >-
         Core Stub LoadBalancer Security Group
       SecurityGroupIngress:
-        - CidrIp:
-            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
-          Description: Allow vpc cidr ingress to port 80
-          FromPort: 80
+        - CidrIp: 0.0.0.0/0
+          Description: Allow internet ingress to port 443
           IpProtocol: tcp
-          ToPort: 80
+          FromPort: 443
+          ToPort: 443
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow egress from load balancer out to internet port 443
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 
@@ -89,13 +240,13 @@ Resources:
     Type: "AWS::EC2::SecurityGroupEgress"
     Properties:
       GroupId: !GetAtt LoadBalancerSG.GroupId
-      IpProtocol: tcp
       Description: >-
         Egress between the Core Stub load balancer and
         the core Stub ECS security group
       DestinationSecurityGroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
-      FromPort: 8080
-      ToPort: 8080
+      IpProtocol: tcp
+      FromPort: 8085
+      ToPort: 8085
 
   CoreStubECSSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
@@ -103,16 +254,6 @@ Resources:
       GroupDescription: >-
         Core Front ECS Security Group outbound permissions ruleset
       SecurityGroupEgress:
-        - DestinationPrefixListId: !FindInMap [SecurityGroups, PrefixListIds, dynamodb]
-          Description: Allow outbound traffic to dynamodb vpc endpoint
-          IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-        - DestinationPrefixListId: !FindInMap [SecurityGroups, PrefixListIds, s3]
-          Description: Allow outbound traffic to s3 vpc endpoint
-          IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
         - DestinationSecurityGroupId: !If
             - IsNotDevelopment
             - Fn::ImportValue:  !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
@@ -120,6 +261,12 @@ Resources:
           Description: Allow outbound traffic to AWS Services vpc endpoint security group
           IpProtocol: tcp
           FromPort: 443
+          ToPort: 443
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow outbound traffic from vpc cidr to port 443
+          FromPort: 443
+          IpProtocol: tcp
           ToPort: 443
       SecurityGroupIngress:
         - CidrIp:
@@ -138,8 +285,8 @@ Resources:
       Description: >-
         Core Front ECS permits inbound from the Core Front
         load balancer.
-      FromPort: 8080
-      ToPort: 8080
+      FromPort: 8085
+      ToPort: 8085
       GroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
       SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
 
@@ -201,11 +348,12 @@ Resources:
   LoadBalancer:
     Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
     Properties:
+      Scheme: internet-facing
       SecurityGroups:
         - !GetAtt LoadBalancerSG.GroupId
       Subnets:
-        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
-        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
       Type: application
       #checkov:skip=CKV_AWS_91:ALB access logging is disabled in developer environments to make them easier to manage.
       LoadBalancerAttributes:
@@ -233,6 +381,13 @@ Resources:
           - !Ref AWS::NoValue
     DependsOn: CoreStubAccessLogsBucketPolicy
 
+    #  LoadBalancerListenerCertificate:
+    #    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    #    Properties:
+    #      Certificates:
+    #        - !Ref CoreStubSSLCert
+    #    ListenerArn: !Ref LoadBalancerListener
+
   LoadBalancerListenerTargetGroupECS:
     Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
     Properties:
@@ -251,16 +406,19 @@ Resources:
           Value: 60
 
   LoadBalancerListener:
-    Type: "AWS::ElasticLoadBalancingV2::Listener"
+    Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       # checkov:skip=CKV_AWS_2:Certificate generation must be resolved before the listener can use HTTPS.
       # checkov:skip=CKV_AWS_103:The load balancer cannot use TLS v1.2 until HTTPS is enabled
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: HTTPS
+      Certificates:
+        - CertificateArn: !Ref CoreStubSSLCert
+      SslPolicy: ELBSecurityPolicy-TLS-1-2-2017-01
       DefaultActions:
         - TargetGroupArn: !Ref LoadBalancerListenerTargetGroupECS
           Type: forward
-      LoadBalancerArn: !Ref LoadBalancer
-      Port: 80
-      Protocol: HTTP
 
   # ECS cluster, service and task definition
   CoreStubCluster:
@@ -291,7 +449,7 @@ Resources:
       LaunchType: FARGATE
       LoadBalancers:
         - ContainerName: app
-          ContainerPort: 8080
+          ContainerPort: 8085
           TargetGroupArn: !Ref LoadBalancerListenerTargetGroupECS
       NetworkConfiguration:
         AwsvpcConfiguration:
@@ -308,7 +466,7 @@ Resources:
   CoreStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
-      MaxCapacity: 5
+      MaxCapacity: 3
       MinCapacity: 1
       ResourceId: !Join
         - '/'
@@ -346,14 +504,6 @@ Resources:
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
-  ECSAccessLogsGroupSubscriptionFilter:
-    Type: AWS::Logs::SubscriptionFilter
-    Condition: IsNotDevelopment
-    Properties:
-      DestinationArn: "arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython"
-      FilterPattern: ""
-      LogGroupName: !Ref ECSAccessLogsGroup
-
   ECSServiceTaskDefinition:
     Type: "AWS::ECS::TaskDefinition"
     Properties:
@@ -362,35 +512,44 @@ Resources:
           Image: !If [
               IsNotDevelopment,
               CONTAINER-IMAGE-PLACEHOLDER,
-              !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/core-front-development:${ImageTag}",
+              !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/core-stub-development:${ImageTag}",
             ] # Uses build account and ECR when not in development.
           Name: app
           Environment:
-            - Name: API_BASE_URL
-              Value: !Sub
-                - "https://${APIGatewayId}.execute-api.eu-west-2.amazonaws.com/${Environment}"
-                - APIGatewayId:
-                    Fn::ImportValue: !Sub IPVCorePrivateAPIGatewayID-${Environment}
-                  Environment: !Ref Environment
-            - Name: SESSION_TABLE_NAME
-              Value: !Sub
-                - "core-front-sessions-${Environment}"
-                - Environment: !Ref Environment
-            - Name: EXTERNAL_WEBSITE_HOST
-              Value: !GetAtt ApiGwHttpEndpoint.ApiEndpoint
-            - Name: GTM_ID
-              Value: !If [ IsProduction, "GTM-TT5HDKV", "GTM-TK92W68" ]
-            - Name: ANALYTICS_DOMAIN
-              Value: !If [ IsProduction, "account.gov.uk", !Sub "${Environment}.account.gov.uk" ]
-            - Name: SESSION_SECRET
-              Value: "no-secret"
-            - Name: NODE_OPTIONS
-              Value: !Join
-                - ''
-                - - '--max-old-space-size='
-                  - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, nodeOldSpaceLimit ]
+          - Name: CORE_STUB_CLIENT_ID
+            Value: !Ref CoreStubClientId
+          - Name: CORE_STUB_CONFIG_FILE
+            Value: !Ref CoreStubConfigFile
+          - Name: CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI
+            Value: !Ref CoreStubJwtAudExperianCriUri
+          - Name: CORE_STUB_JWT_ISS_CRI_URI
+            Value: !Ref CoreStubJwtIssCriUri
+          - Name: CORE_STUB_KEYSTORE_ALIAS
+            Value: !Ref CoreStubKeystoreAlias
+          - Name: CORE_STUB_KEYSTORE_BASE64
+            Value: !Ref CoreStubKeystoreBase64
+          - Name: CORE_STUB_KEYSTORE_PASSWORD
+            Value: !Ref CoreStubKeystorePassword
+          - Name: CORE_STUB_PORT
+            Value: !Ref CoreStubPort
+          - Name: CORE_STUB_REDIRECT_URL
+            Value: !Ref CoreStubRedirectUrl
+          - Name: CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64
+            Value: !Ref CoreStubSigningPrivateKeyJwkBase64
+          - Name: CORE_STUB_USER_DATA_PATH
+            Value: !Ref CoreStubUserDataPath
+          - Name: JAVA_HOME
+            Value: !Ref JavaHome
+          - Name: JAVA_OPTS
+            Value: !Ref JavaOpts
+          - Name: JBP_CONFIG_OPEN_JDK_JRE
+            Value: !Ref JbpConfigOpenJdkJre
+          - Name: MAX_JAR_TTL_MINS
+            Value: !Ref MaxJarTtlMins
+          - Name: PASSPORT_PRIVATE_API_KEY
+            Value: !Ref PassportPrivateApiKey
           PortMappings:
-            - ContainerPort: 8080
+            - ContainerPort: 8085
               Protocol: tcp
           LogConfiguration:
             LogDriver: awslogs
@@ -450,53 +609,10 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
         Version: 2012-10-17
-      Policies:
-        - PolicyName: CoreStubDynamoDBSessionAccess
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "dynamodb:BatchGetItem"
-                  - "dynamodb:DescribeTable"
-                  - "dynamodb:GetItem"
-                  - "dynamodb:Query"
-                  - "dynamodb:Scan"
-                  - "dynamodb:BatchWriteItem"
-                  - "dynamodb:DeleteItem"
-                  - "dynamodb:UpdateItem"
-                  - "dynamodb:PutItem"
-                Resource:
-                  - !GetAtt CoreStubSessionsTable.Arn
-              - Effect: Allow
-                Action:
-                  - "kms:Decrypt"
-                Resource:
-                  - !GetAtt DynamoDBKmsKey.Arn
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
-
-  CoreStubSessionsTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
-      TableName: !Sub "core-front-sessions-${Environment}"
-      BillingMode: "PAY_PER_REQUEST"
-      AttributeDefinitions:
-        - AttributeName: "id"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "id"
-          KeyType: "HASH"
-      TimeToLiveSpecification:
-        AttributeName: "expires"
-        Enabled: true
-      SSESpecification:
-        SSEEnabled: true
-        SSEType: KMS
-        KMSMasterKeyId: !GetAtt DynamoDBKmsKey.Arn
 
   LoggingKmsKey:
     Type: AWS::KMS::Key
@@ -524,36 +640,6 @@ Resources:
             Condition:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
-
-  DynamoDBKmsKey:
-    Type: AWS::KMS::Key
-    Properties:
-      EnableKeyRotation: true
-      KeyPolicy:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action:
-              - kms:*
-            Resource: "*"
-          - Effect: Allow
-            Principal:
-              Service: "dynamodb.amazonaws.com"
-            Action:
-              - "kms:Encrypt*"
-              - "kms:Decrypt*"
-              - "kms:ReEncrypt*"
-              - "kms:GenerateDataKey*"
-              - "kms:Describe*"
-            Resource: "*"
-            Condition:
-              StringEquals:
-                "kms:CallerAccount": !Sub "${AWS::AccountId}"
-                "kms:ViaService":
-                  - "dynamodb.amazonaws.com"
-                  - "ecs-tasks.amazonaws.com"
 
 Outputs:
   CoreStubEnvironment:

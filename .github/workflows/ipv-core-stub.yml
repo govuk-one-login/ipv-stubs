@@ -21,6 +21,13 @@ jobs:
         with:
           fetch-depth: '0'
 
+      - name: Checkout config repo
+        uses: actions/checkout@v3
+        with:
+          repository: alphagov/di-ipv-config
+          path: ./di-ipv-config
+          fetch-depth: '0'
+
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
@@ -42,7 +49,12 @@ jobs:
         with:
           cosign-release: 'v1.9.0'
 
+      - name: Copy Core Config into place
+        id: copy-config-to-stub
+        run: cp -rpfv ./di-ipv-config/stubs/di-ipv-core-stub ./di-ipv-core-stub/config
+
       - name: Build, tag, sign and push image to Amazon ECR
+        working-directory: ./di-ipv-core-stub
         env:
           CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
