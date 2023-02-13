@@ -160,7 +160,6 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       Type: A
-      TTL: 900
       Name: !If
         - IsNonProd
         - !Sub "core.${Environment}.stubs.account.gov.uk"
@@ -169,12 +168,14 @@ Resources:
         - IsNonProd
         - !ImportValue BuildPublicHostedZoneId
         - !ImportValue RootPublicHostedZoneId
+      AliasTarget:
+        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
+        DNSName: !GetAtt LoadBalancer.DNSName
 
   CorePassportDNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
       Type: A
-      TTL: 900
       Name: !If
         - IsNonProd
         - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
@@ -183,6 +184,9 @@ Resources:
         - IsNonProd
         - !ImportValue BuildPublicHostedZoneId
         - !ImportValue RootPublicHostedZoneId
+      AliasTarget:
+        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
+        DNSName: !GetAtt LoadBalancer.DNSName
 
   CoreStubSSLCert:
     Type: AWS::CertificateManager::Certificate
