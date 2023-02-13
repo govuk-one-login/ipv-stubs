@@ -252,7 +252,7 @@ Resources:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: >-
-        Core Front ECS Security Group outbound permissions ruleset
+        Core Stub ECS Security Group outbound permissions ruleset
       SecurityGroupEgress:
         - DestinationSecurityGroupId: !If
             - IsNotDevelopment
@@ -283,66 +283,12 @@ Resources:
     Properties:
       IpProtocol: tcp
       Description: >-
-        Core Front ECS permits inbound from the Core Front
+        Core Stub ECS permits inbound from the Core Stub
         load balancer.
       FromPort: 8085
       ToPort: 8085
       GroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
       SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
-
-  AccessLogsBucket:
-    Type: AWS::S3::Bucket
-    #checkov:skip=CKV_AWS_18: This is the bucket where our access logs go and AWS advise not sending a bucket's access logs to itself.
-    Properties:
-      BucketName: !Sub ipv-core-${Environment}-access-logs
-      AccessControl: LogDeliveryWrite
-      VersioningConfiguration:
-        Status: "Enabled"
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-
-  CoreStubAccessLogsBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref AccessLogsBucket
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS:
-                - arn:aws:iam::652711504416:root
-            Action:
-              - s3:PutObject
-            Resource:
-              - !Sub arn:aws:s3:::${AccessLogsBucket}/core-front-${Environment}/AWSLogs/${AWS::AccountId}/*
-          - Effect: Allow
-            Principal:
-              Service: logging.s3.amazonaws.com
-            Action: s3:PutObject
-            Resource: !Sub "arn:aws:s3:::${AccessLogsBucket}/*"
-            Condition:
-              StringEquals:
-                "aws:SourceAccount": !Sub "${AWS::AccountId}"
-          - Effect: Deny
-            Resource:
-              - !GetAtt AccessLogsBucket.Arn
-              - !Sub "${AccessLogsBucket.Arn}/*"
-            Principal: "*"
-            Action:
-              - "s3:*"
-            Condition:
-              Bool:
-                "aws:SecureTransport": false
-              NumericLessThan:
-                "s3:TlsVersion": "1.2"
 
   # Private Application Load Balancer
   LoadBalancer:
@@ -367,19 +313,18 @@ Resources:
         - !If
           - IsNotDevelopment
           - Key: access_logs.s3.bucket
-            Value: !Ref AccessLogsBucket
+            Value: !Sub "ipv-stubs-${Environment}-access-logs"
           - !Ref AWS::NoValue
         - !If
           - IsNotDevelopment
           - Key: access_logs.s3.prefix
-            Value: !Sub core-front-${Environment}
+            Value: !Sub core-stub-${Environment}
           - !Ref AWS::NoValue
         - !If
           - IsNotDevelopment
           - Key: deletion_protection.enabled
             Value: true
           - !Ref AWS::NoValue
-    DependsOn: CoreStubAccessLogsBucketPolicy
 
     #  LoadBalancerListenerCertificate:
     #    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
@@ -556,7 +501,7 @@ Resources:
             Options:
               awslogs-group: !Ref ECSAccessLogsGroup
               awslogs-region: !Sub ${AWS::Region}
-              awslogs-stream-prefix: !Sub core-front-${Environment}
+              awslogs-stream-prefix: !Sub core-stub-${Environment}
       Cpu: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, fargateCPUsize ]
       ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
       Memory: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, fargateRAMsize ]
