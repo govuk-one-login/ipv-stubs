@@ -27,6 +27,7 @@ jobs:
           repository: alphagov/di-ipv-config
           path: ./di-ipv-config
           fetch-depth: '0'
+          ref: 'refs/heads/main'
 
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v1-node16
