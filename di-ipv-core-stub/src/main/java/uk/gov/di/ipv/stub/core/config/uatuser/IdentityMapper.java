@@ -5,7 +5,10 @@ import spark.utils.StringUtils;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +62,12 @@ public class IdentityMapper {
                         addressValidFrom,
                         null);
 
-        Instant dob = Instant.parse(map.get("dob"));
-        Instant dateOfEntryOnCtdb = Instant.parse(map.get("dateOfEntryOnCtdb"));
-        FindDateOfBirth dateOfBirth = new FindDateOfBirth(dob, dateOfEntryOnCtdb);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate date = LocalDate.parse(map.get("dob"), formatter);
+        LocalDateTime dateTime = date.atStartOfDay();
+        Instant dob = dateTime.toInstant(ZoneOffset.UTC);
+
+        FindDateOfBirth dateOfBirth = new FindDateOfBirth(dob, dob);
 
         FullName name = new FullName(map.get("name"), map.get("surname"));
 
