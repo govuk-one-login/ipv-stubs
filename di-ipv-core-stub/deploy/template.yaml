@@ -322,7 +322,7 @@ Resources:
         - !If
           - IsNotDevelopment
           - Key: access_logs.s3.prefix
-            Value: !Sub core-stub-${Environment}
+            Value: core-stubs
           - !Ref AWS::NoValue
         - !If
           - IsNotDevelopment
