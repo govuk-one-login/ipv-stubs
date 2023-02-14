@@ -151,9 +151,13 @@ Mappings:
       fargateRAMsize: "512"
       desiredTaskCount: 1
     "826978934233": #Stubs Build
-      fargateCPUsize: "256"
-      fargateRAMsize: "512"
+      fargateCPUsize: "512"
+      fargateRAMsize: "1536"
       desiredTaskCount: 1
+  SecurityGroups:
+    PrefixListIds:
+      dynamodb: "pl-b3a742da"
+      s3: "pl-7ca54015"
 
 Resources:
   CoreDNSRecord:
@@ -258,6 +262,16 @@ Resources:
       GroupDescription: >-
         Core Stub ECS Security Group outbound permissions ruleset
       SecurityGroupEgress:
+        - DestinationPrefixListId: !FindInMap [SecurityGroups, PrefixListIds, dynamodb]
+          Description: Allow outbound traffic to dynamodb vpc endpoint
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+        - DestinationPrefixListId: !FindInMap [SecurityGroups, PrefixListIds, s3]
+          Description: Allow outbound traffic to s3 vpc endpoint
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
         - DestinationSecurityGroupId: !If
             - IsNotDevelopment
             - Fn::ImportValue:  !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
@@ -345,8 +359,8 @@ Resources:
       HealthCheckPath: /healthcheck
       Matcher:
         HttpCode: 200
-      Port: 80
-      Protocol: HTTP
+      Port: 443
+      Protocol: HTTPS
       TargetType: ip
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
@@ -442,7 +456,7 @@ Resources:
       TargetTrackingScalingPolicyConfiguration:
         PredefinedMetricSpecification:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
-        TargetValue: 70
+        TargetValue: 90
         ScaleInCooldown: 300
         ScaleOutCooldown: 60
 
