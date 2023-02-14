@@ -359,8 +359,8 @@ Resources:
       HealthCheckPath: /healthcheck
       Matcher:
         HttpCode: 200
-      Port: 80
-      Protocol: HTTP
+      Port: 443
+      Protocol: HTTPS
       TargetType: ip
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
