@@ -103,10 +103,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_USER_DATA_PATH"
-  JavaHome:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/JAVA_HOME"
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -160,22 +156,6 @@ Mappings:
       s3: "pl-7ca54015"
 
 Resources:
-  CoreDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Type: A
-      Name: !If
-        - IsNonProd
-        - !Sub "core.${Environment}.stubs.account.gov.uk"
-        - core.stubs.account.gov.uk
-      HostedZoneId: !If
-        - IsNonProd
-        - !ImportValue BuildPublicHostedZoneId
-        - !ImportValue RootPublicHostedZoneId
-      AliasTarget:
-        HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
-        DNSName: !GetAtt LoadBalancer.DNSName
-
   CorePassportDNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
@@ -197,26 +177,18 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "core.${Environment}.stubs.account.gov.uk"
-        - core.stubs.account.gov.uk
+        - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
+        - passport-core.stubs.account.gov.uk
       SubjectAlternativeNames: 
         - !If
           - IsNonProd
-          - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
-          - passport-core.stubs.account.gov.uk
+          - !Sub "core-passport.${Environment}.stubs.account.gov.uk"
+          - core-passport.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
             - IsNonProd
             - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
             - passport-core.stubs.account.gov.uk
-          HostedZoneId: !If
-            - IsNonProd
-            - !ImportValue BuildPublicHostedZoneId
-            - !ImportValue RootPublicHostedZoneId
-        - DomainName: !If
-            - IsNonProd
-            - !Sub "core.${Environment}.stubs.account.gov.uk"
-            - core.stubs.account.gov.uk
           HostedZoneId: !If
             - IsNonProd
             - !ImportValue BuildPublicHostedZoneId
@@ -352,15 +324,14 @@ Resources:
     #    ListenerArn: !Ref LoadBalancerListener
 
   LoadBalancerListenerTargetGroupECS:
-    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: TRUE
       HealthCheckProtocol: HTTP
-      HealthCheckPath: /healthcheck
       Matcher:
         HttpCode: 200
-      Port: 443
-      Protocol: HTTPS
+      Port: 8080
+      Protocol: HTTP
       TargetType: ip
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
