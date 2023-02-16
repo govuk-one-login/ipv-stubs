@@ -296,8 +296,8 @@ Resources:
       SecurityGroups:
         - !GetAtt LoadBalancerSG.GroupId
       Subnets:
-        - Fn::ImportValue: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, publicSubnetA ]
-        - Fn::ImportValue: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, publicSubnetB ]
+        - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, publicSubnetA ]
+        - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, publicSubnetB ]
       Type: application
       #checkov:skip=CKV_AWS_91:ALB access logging is disabled in developer environments to make them easier to manage.
       LoadBalancerAttributes:
