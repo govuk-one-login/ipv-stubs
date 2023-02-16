@@ -146,10 +146,18 @@ Mappings:
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
+      firewallSubnetA: subnet-0c22ab752af2439d5
+      firewallSubnetB: subnet-04f9414fcc0b2b91e
+      publicSubnetA: subnet-0c89049391800c299
+      publicSubnetB: subnet-039c468acadb7a3d8
     "826978934233": #Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
+      firewallSubnetA: subnet-0c22ab752af2439d5
+      firewallSubnetB: subnet-04f9414fcc0b2b91e
+      publicSubnetA: subnet-0c89049391800c299
+      publicSubnetB: subnet-039c468acadb7a3d8
   SecurityGroups:
     PrefixListIds:
       dynamodb: "pl-b3a742da"
@@ -288,8 +296,8 @@ Resources:
       SecurityGroups:
         - !GetAtt LoadBalancerSG.GroupId
       Subnets:
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        - Fn::ImportValue: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, publicSubnetA ]
+        - Fn::ImportValue: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, publicSubnetB ]
       Type: application
       #checkov:skip=CKV_AWS_91:ALB access logging is disabled in developer environments to make them easier to manage.
       LoadBalancerAttributes:
