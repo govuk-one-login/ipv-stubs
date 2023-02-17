@@ -204,6 +204,7 @@ Resources:
       Stage: "$default"
     DependsOn:
       - CoreStubApiDomain
+      - APIStageDefault
 
   # dns rcord
   CoreStubDNSRecord:
