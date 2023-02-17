@@ -115,10 +115,14 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/MAX_JAR_TTL_MINS"
+    # PassportPrivateApiKey:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
   PassportPrivateApiKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
+    Description: "Environment Variables for ECS - Retrieved from Secrets Manager"
+    Type: String
+    Default: '{{resolve:secretsmanager:/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY}}'
 
 Conditions:
   IsDevelopment: !Not
