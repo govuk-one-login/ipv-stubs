@@ -598,6 +598,15 @@ Resources:
                 Resource:
                   - !GetAtt "ECSAccessLogsGroup.Arn"
                   - !Sub "${ECSAccessLogsGroup.Arn}:*"
+        - PolicyName: CoreStubGetSecrets
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource:
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*"
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
