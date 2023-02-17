@@ -119,10 +119,6 @@ Parameters:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
     #    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
-  PassportPrivateApiKey:
-    Description: "Environment Variables for ECS - Retrieved from Secrets Manager"
-    Type: String
-    Default: '{{resolve:secretsmanager:/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY}}'
 
 Conditions:
   IsDevelopment: !Not
@@ -553,8 +549,9 @@ Resources:
             Value: !Ref JbpConfigOpenJdkJre
           - Name: MAX_JAR_TTL_MINS
             Value: !Ref MaxJarTtlMins
-          - Name: PASSPORT_PRIVATE_API_KEY
-            Value: !Ref PassportPrivateApiKey
+          Secrets:
+            - Name: "PASSPORT_PRIVATE_API_KEY"
+              ValueFrom: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -616,6 +613,16 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
         Version: 2012-10-17
+      Policies:
+        - PolicyName: CoreStubGetSecrets
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource:
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*"
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
