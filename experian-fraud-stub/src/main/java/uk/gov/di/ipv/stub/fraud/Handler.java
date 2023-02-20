@@ -211,7 +211,7 @@ public class Handler {
                     response.status(503);
                     return "";
                 } else {
-                    response.header("Content-Type", "application/json");
+                    response.header("Content-Type", "application/json; charset=utf-8");
                     // status code 200 by default
                     return mapper.writeValueAsString(modifiableResponse);
                 }
