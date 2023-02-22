@@ -1,11 +1,14 @@
-name: IPV Core Stub - Secure Pipeline build, push & Ship
+name: Passport Core Stub - Secure Pipeline build, push & Ship
 on:
   push:
     branches:
       - main
     paths:
-      - di-ipv-core-stub/**
-      - .github/workflows/ipv-core-stub.yml
+      - di-ipv-core-stub/deploy/passport/*
+      - di-ipv-core-stub/gradle/**
+      - di-ipv-core-stub/src/**
+      - di-ipv-core-stub/*
+      - .github/workflows/passport-core-stub.yml
 
 jobs:
   dockerBuildAndPush:
@@ -43,7 +46,7 @@ jobs:
       - name: Create tag
         id: create-tag
         run: |
-          IMAGE_TAG="${{ github.sha }}-secure-pipeline-$(date +'%Y-%m-%d-%H%M%S')"
+          IMAGE_TAG="${{ github.sha }}-$(date +'%Y-%m-%d-%H%M%S')"
           echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Install Cosign
@@ -74,17 +77,17 @@ jobs:
         run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
 
       - name: SAM Validate
-        working-directory: ./di-ipv-core-stub/deploy
+        working-directory: ./di-ipv-core-stub/deploy/passport
         run: sam validate --region ${{ env.AWS_REGION }}
 
       - name: SAM Package
-        working-directory: ./di-ipv-core-stub/deploy
+        working-directory: ./di-ipv-core-stub/deploy/passport
         env:
           ARTIFACT_BUCKET: ${{ secrets.CORE_ARTIFACT_BUCKET_NAME }}
         run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Update SAM template with ECR image
-        working-directory: ./di-ipv-core-stub/deploy
+        working-directory: ./di-ipv-core-stub/deploy/passport
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.CORE_ECR_REPOSITORY }}
@@ -92,11 +95,11 @@ jobs:
         run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
 
       - name: Compress Template
-        working-directory: ./di-ipv-core-stub/deploy
+        working-directory: ./di-ipv-core-stub/deploy/passport
         run: zip template.zip cf-template.yaml
 
       - name: Upload Compressed CloudFormation artifacts to S3
-        working-directory: ./di-ipv-core-stub/deploy
+        working-directory: ./di-ipv-core-stub/deploy/passport
         env:
           ARTIFACT_BUCKET: ${{ secrets.CORE_ARTIFACT_BUCKET_NAME }}
         run: aws s3 cp template.zip "s3://$ARTIFACT_BUCKET/template.zip" --metadata "repository=$GITHUB_REPOSITORY,commitsha=$GITHUB_SHA"
