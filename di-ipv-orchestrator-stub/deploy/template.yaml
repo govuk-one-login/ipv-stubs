@@ -1,5 +1,10 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Timeout: 30
+
 Description: >-
   This creates the necessary components to deploy IPV Orch Stub onto ECS
   Fargate within the dev platform VPC and private subnets (provided as parameters).
@@ -22,103 +27,67 @@ Parameters:
     Description: "The ARN of the permissions boundary to apply when creating IAM roles"
     Type: String
     Default: "none"
-    # disabling these as not being used - leaving these in as it may be useful for any/other core-stubs
-    #  CommonCoreStubAppTitle:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_APP_TITLE"
-    #  CommonCoreStubClientId:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_CLIENT_ID"
-    #  CommonCoreStubConfigAgedDob:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_AGED_DOB"
-    #  CommonCoreStubConfigFile:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_FILE"
-    #  CommonCoreStubPort:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_PORT"
-    #  CommonCoreStubRedirectUrl:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_REDIRECT_URL"
-    #  CommonJavaHome:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/JAVA_HOME"
-    #  CommonJavaOpts:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/JAVA_OPTS"
-    #  CommonJbpConfigOpenJdkJre:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/JBP_CONFIG_OPEN_JDK_JRE"
-  CoreStubClientId:
+
+  OrchestratorClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_CLIENT_ID"
-  CoreStubConfigFile:
+    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_ID"
+  OrchestratorRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_CONFIG_FILE"
-  CoreStubJwtAudExperianCriUri:
+    Default: "/stubs/orch/env/ORCHESTRATOR_REDIRECT_URL"
+  OrchestratorClientJwtTtl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI"
-  CoreStubJwtIssCriUri:
+    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_JWT_TTL"
+  OrchestratorPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_JWT_ISS_CRI_URI"
-  CoreStubKeystoreAlias:
+    Default: "/stubs/orch/env/ORCHESTRATOR_PORT"
+  OrchestratorClientSigningKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_ALIAS"
-  CoreStubKeystoreBase64:
+    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY"
+  OrchestratorJarEncryptionPublicKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_BASE64"
-  CoreStubKeystorePassword:
+    Default: "/stubs/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY"
+  IpvBackchannelEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_PASSWORD"
-  CoreStubPort:
+    Default: "/stubs/orch/env/IPV_BACKCHANNEL_ENDPOINT"
+  IpvBackchannelTokenPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_PORT"
-  CoreStubRedirectUrl:
+    Default: "/stubs/orch/env/IPV_BACKCHANNEL_TOKEN_PATH"
+  IpvBackchannelUserIdentityPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_REDIRECT_URL"
-  CoreStubSigningPrivateKeyJwkBase64:
+    Default: "/stubs/orch/env/IPV_BACKCHANNEL_USER_IDENTITY_PATH"
+  IpvEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
-  CoreStubUserDataPath:
+    Default: "/stubs/orch/env/IPV_ENDPOINT"
+  IpvCoreAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_USER_DATA_PATH"
+    Default: "/stubs/orch/env/IPV_CORE_AUDIENCE"
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/JAVA_OPTS"
+    Default: "/stubs/orch/env/JAVA_OPTS"
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/JBP_CONFIG_OPEN_JDK_JRE"
-  MaxJarTtlMins:
+    Default: "/stubs/orch/env/JBP_CONFIG_OPEN_JDK_JRE"
+  JavaHome:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/MAX_JAR_TTL_MINS"
-  PassportPrivateApiKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
+    Default: "/stubs/orch/env/JAVA_HOME"
+    # PassportPrivateApiKey:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
 
 Conditions:
   IsDevelopment: !Not
@@ -146,62 +115,81 @@ Mappings:
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
-      firewallSubnetA: subnet-0c22ab752af2439d5
-      firewallSubnetB: subnet-04f9414fcc0b2b91e
-      publicSubnetA: subnet-0c89049391800c299
-      publicSubnetB: subnet-039c468acadb7a3d8
     "826978934233": #Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
-      firewallSubnetA: subnet-0c22ab752af2439d5
-      firewallSubnetB: subnet-04f9414fcc0b2b91e
-      publicSubnetA: subnet-0c89049391800c299
-      publicSubnetB: subnet-039c468acadb7a3d8
+    "388905755587": #Stubs Prod
+      fargateCPUsize: "256"
+      fargateRAMsize: "1024"
+      desiredTaskCount: 1
   SecurityGroups:
     PrefixListIds:
       dynamodb: "pl-b3a742da"
       s3: "pl-7ca54015"
 
 Resources:
-  #CorePassportDNSRecord:
-  #  Type: AWS::Route53::RecordSet
-  #  Properties:
-  #    Type: A
-  #    Name: !If
-  #      - IsNonProd
-  #      - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
-  #      - passport-core.stubs.account.gov.uk
-  #    HostedZoneId: !If
-  #      - IsNonProd
-  #      - !ImportValue BuildPublicHostedZoneId
-  #      - !ImportValue RootPublicHostedZoneId
-  #    AliasTarget:
-  #      HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
-  #      DNSName: !GetAtt LoadBalancer.DNSName
+  # ssl cert
+  OrchStubSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsNonProd
+        - !Sub "orch.${Environment}.stubs.account.gov.uk"
+        - orch.stubs.account.gov.uk
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsNonProd
+            - !Sub "orch.${Environment}.stubs.account.gov.uk"
+            - orch.stubs.account.gov.uk
+          HostedZoneId: !If
+            - IsNonProd
+            - !ImportValue BuildPublicHostedZoneId
+            - !ImportValue RootPublicHostedZoneId
+      ValidationMethod: DNS
 
-  #CoreStubSSLCert:
-  #  Type: AWS::CertificateManager::Certificate
-  #  Properties:
-  #    DomainName: !If
-  #      - IsNonProd
-  #      - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
-  #      - passport-core.stubs.account.gov.uk
-  #    SubjectAlternativeNames:
-  #      - !If
-  #        - IsNonProd
-  #        - !Sub "core-passport.${Environment}.stubs.account.gov.uk"
-  #        - core-passport.stubs.account.gov.uk
-  #    DomainValidationOptions:
-  #      - DomainName: !If
-  #          - IsNonProd
-  #          - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
-  #          - passport-core.stubs.account.gov.uk
-  #        HostedZoneId: !If
-  #          - IsNonProd
-  #          - !ImportValue BuildPublicHostedZoneId
-  #          - !ImportValue RootPublicHostedZoneId
-  #    ValidationMethod: DNS
+  # api domain entries / mapping
+  OrchStubApiDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !If
+        - IsNonProd
+        - !Sub "orch.${Environment}.stubs.account.gov.uk"
+        -  orch.stubs.account.gov.uk
+      DomainNameConfigurations:
+        - CertificateArn: !Ref OrchStubSSLCert
+          EndpointType: REGIONAL
+          SecurityPolicy: TLS_1_2
+
+  OrchStubApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      DomainName: !If
+        - IsNonProd
+        - !Sub "orch.${Environment}.stubs.account.gov.uk"
+        - orch.stubs.account.gov.uk
+      ApiId: !Ref ApiGwHttpEndpoint
+      Stage: "$default"
+    DependsOn:
+      - OrchStubApiDomain
+      - APIStageDefault
+
+  # dns rcord
+  CoreStubDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !If
+        - IsNonProd
+        - !Sub "orch.${Environment}.stubs.account.gov.uk"
+        - orch.stubs.account.gov.uk
+      HostedZoneId: !If
+        - IsNonProd
+        - !ImportValue BuildPublicHostedZoneId
+        - !ImportValue RootPublicHostedZoneId
+      AliasTarget:
+        DNSName: !GetAtt OrchStubApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt OrchStubApiDomain.RegionalHostedZoneId
 
   # Security Groups for the ECS service and load balancer
   LoadBalancerSG:
@@ -210,17 +198,12 @@ Resources:
       GroupDescription: >-
         Orch Stub LoadBalancer Security Group
       SecurityGroupIngress:
-        - CidrIp: 0.0.0.0/0
-          Description: Allow internet ingress to port 443
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow vpc cidr ingress to port 80
+          FromPort: 80
           IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          Description: Allow egress from load balancer out to internet port 443
-          IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
+          ToPort: 80
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 
@@ -288,16 +271,74 @@ Resources:
       GroupId: !GetAtt OrchStubECSSecurityGroup.GroupId
       SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
 
+  # http api gateway - which does nothing other than route everything to LB
+  ApiGwHttpEndpoint:
+    Type: "AWS::ApiGatewayV2::Api"
+    Properties:
+      Name: !Sub ${AWS::StackName}-orch-api-gw
+      ProtocolType: HTTP
+
+  ApiGwHttpEndpointIntegration:
+    Type: "AWS::ApiGatewayV2::Integration"
+    Properties:
+      ApiId: !Ref ApiGwHttpEndpoint
+      IntegrationType: HTTP_PROXY
+      ConnectionId:
+        Fn::ImportValue: !Sub "${VpcStackName}-VpcLinkId"
+      ConnectionType: VPC_LINK
+      IntegrationMethod: ANY
+      IntegrationUri: !Ref LoadBalancerListener
+      PayloadFormatVersion: "1.0"
+
+  APIGWRoute:
+    Type: "AWS::ApiGatewayV2::Route"
+    Properties:
+      ApiId: !Ref ApiGwHttpEndpoint
+      RouteKey: "ANY /{proxy+}"
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref ApiGwHttpEndpointIntegration
+
+  APIStageDefault:
+    Type: "AWS::ApiGatewayV2::Stage"
+    Properties:
+      ApiId: !Ref ApiGwHttpEndpoint
+      StageName: $default
+      AutoDeploy: true
+      AccessLogSettings:
+        DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
+        Format: >-
+          {
+          "requestId":"$context.requestId",
+          "ip": "$context.identity.sourceIp",
+          "requestTime":"$context.requestTime",
+          "httpMethod":"$context.httpMethod",
+          "path": "$context.path",
+          "routeKey":"$context.routeKey",
+          "status":"$context.status",
+          "protocol":"$context.protocol",
+          "responseLength":"$context.responseLength",
+          "responseLatency":"$context.responseLatency"
+          }
+
+  APIGWAccessLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-orch-api-gw-accesslogs
+      RetentionInDays: 14
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
   # Private Application Load Balancer
   LoadBalancer:
     Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
     Properties:
-      Scheme: internet-facing
+      Scheme: internal
       SecurityGroups:
         - !GetAtt LoadBalancerSG.GroupId
       Subnets:
-        - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, publicSubnetA ]
-        - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, publicSubnetB ]
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
       Type: application
       #checkov:skip=CKV_AWS_91:ALB access logging is disabled in developer environments to make them easier to manage.
       LoadBalancerAttributes:
@@ -324,13 +365,6 @@ Resources:
             Value: false
           - !Ref AWS::NoValue
 
-    #  LoadBalancerListenerCertificate:
-    #    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
-    #    Properties:
-    #      Certificates:
-    #        - !Ref CoreStubSSLCert
-    #    ListenerArn: !Ref LoadBalancerListener
-
   LoadBalancerListenerTargetGroupECS:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -353,27 +387,24 @@ Resources:
       # checkov:skip=CKV_AWS_2:Certificate generation must be resolved before the listener can use HTTPS.
       # checkov:skip=CKV_AWS_103:The load balancer cannot use TLS v1.2 until HTTPS is enabled
       LoadBalancerArn: !Ref LoadBalancer
-      Port: 443
-      Protocol: HTTPS
-      Certificates:
-        - CertificateArn: !Ref CoreStubSSLCert
-      SslPolicy: ELBSecurityPolicy-TLS-1-2-2017-01
+      Protocol: HTTP
+      Port: 80
       DefaultActions:
         - TargetGroupArn: !Ref LoadBalancerListenerTargetGroupECS
           Type: forward
 
-  # ECS cluster, service and task definition
-  CoreStubCluster:
+  # ECS cluster, service, task and autoscaling definition
+  OrchStubCluster:
     Type: "AWS::ECS::Cluster"
     Properties:
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
 
-  CoreStubService:
+  OrchStubService:
     Type: "AWS::ECS::Service"
     Properties:
-      Cluster: !Ref CoreStubCluster
+      Cluster: !Ref OrchStubCluster
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 50
@@ -397,7 +428,7 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
           SecurityGroups:
-            - !GetAtt CoreStubECSSecurityGroup.GroupId
+            - !GetAtt OrchStubECSSecurityGroup.GroupId
           Subnets:
             - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
             - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
@@ -405,7 +436,7 @@ Resources:
     DependsOn:
       - LoadBalancerListener
 
-  CoreStubAutoScalingTarget:
+  OrchStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
       MaxCapacity: 3
@@ -413,23 +444,23 @@ Resources:
       ResourceId: !Join
         - '/'
         - - "service"
-          - !Ref CoreStubCluster
-          - !GetAtt CoreStubService.Name
+          - !Ref OrchStubCluster
+          - !GetAtt OrchStubService.Name
       RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
       ScalableDimension: ecs:service:DesiredCount
       ServiceNamespace: ecs
 
-  CoreStubAutoScalingPolicy:
-    DependsOn: CoreStubAutoScalingTarget
+  OrchStubAutoScalingPolicy:
+    DependsOn: OrchStubAutoScalingTarget
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
     Properties:
-      PolicyName: CoreStubAutoScalingPolicy
+      PolicyName: OrchStubAutoScalingPolicy
       PolicyType: TargetTrackingScaling
       ResourceId: !Join
         - '/'
         - - "service"
-          - !Ref CoreStubCluster
-          - !GetAtt CoreStubService.Name
+          - !Ref OrchStubCluster
+          - !GetAtt OrchStubService.Name
       ScalableDimension: ecs:service:DesiredCount
       ServiceNamespace: ecs
       TargetTrackingScalingPolicyConfiguration:
@@ -442,7 +473,7 @@ Resources:
   ECSAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/ecs/${AWS::StackName}-CoreStub-ECS
+      LogGroupName: !Sub /aws/ecs/${AWS::StackName}-OrchStub-ECS
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -452,42 +483,40 @@ Resources:
       ContainerDefinitions:
         - Essential: true
           Image: !If [
-              IsNotDevelopment,
-              CONTAINER-IMAGE-PLACEHOLDER,
-              !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/core-stub-development:${ImageTag}",
-            ] # Uses build account and ECR when not in development.
+            IsNotDevelopment,
+            CONTAINER-IMAGE-PLACEHOLDER,
+            !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/orch-stub-development:${ImageTag}",
+          ] # Uses build account and ECR when not in development.
           Name: app
           Environment:
-          - Name: CORE_STUB_CLIENT_ID
-            Value: !Ref CoreStubClientId
-          - Name: CORE_STUB_CONFIG_FILE
-            Value: !Ref CoreStubConfigFile
-          - Name: CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI
-            Value: !Ref CoreStubJwtAudExperianCriUri
-          - Name: CORE_STUB_JWT_ISS_CRI_URI
-            Value: !Ref CoreStubJwtIssCriUri
-          - Name: CORE_STUB_KEYSTORE_ALIAS
-            Value: !Ref CoreStubKeystoreAlias
-          - Name: CORE_STUB_KEYSTORE_BASE64
-            Value: !Ref CoreStubKeystoreBase64
-          - Name: CORE_STUB_KEYSTORE_PASSWORD
-            Value: !Ref CoreStubKeystorePassword
-          - Name: CORE_STUB_PORT
-            Value: !Ref CoreStubPort
-          - Name: CORE_STUB_REDIRECT_URL
-            Value: !Ref CoreStubRedirectUrl
-          - Name: CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64
-            Value: !Ref CoreStubSigningPrivateKeyJwkBase64
-          - Name: CORE_STUB_USER_DATA_PATH
-            Value: !Ref CoreStubUserDataPath
-          - Name: JAVA_OPTS
-            Value: !Ref JavaOpts
+          - Name: JAVA_HOME
+            Value: !Ref JavaHome
           - Name: JBP_CONFIG_OPEN_JDK_JRE
             Value: !Ref JbpConfigOpenJdkJre
-          - Name: MAX_JAR_TTL_MINS
-            Value: !Ref MaxJarTtlMins
-          - Name: PASSPORT_PRIVATE_API_KEY
-            Value: !Ref PassportPrivateApiKey
+          - Name: JAVA_OPTS
+            Value: !Ref JavaOpts
+          - Name: ORCHESTRATOR_CLIENT_ID
+            Value: !Ref OrchestratorClientId
+          - Name: ORCHESTRATOR_REDIRECT_URL
+            Value: !Ref OrchestratorRedirectUrl
+          - Name: ORCHESTRATOR_CLIENT_JWT_TTL
+            Value: !Ref OrchestratorClientJwtTtl
+          - Name: ORCHESTRATOR_PORT
+            Value: !Ref OrchestratorPort
+          - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
+            Value: !Ref OrchestratorClientSigningKey
+          - Name: ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY
+            Value: !Ref OrchestratorJarEncryptionPublicKey
+          - Name: IPV_BACKCHANNEL_ENDPOINT
+            Value: !Ref IpvBackchannelEndpoint
+          - Name: IPV_BACKCHANNEL_TOKEN_PATH
+            Value: !Ref IpvBackchannelTokenPath
+          - Name: IPV_BACKCHANNEL_USER_IDENTITY_PATH
+            Value: !Ref IpvBackchannelUserIdentityPath
+          - Name: IPV_ENDPOINT
+            Value: !Ref IpvEndpoint
+          - Name: IPV_CORE_AUDIENCE
+            Value: !Ref IpvCoreAudience
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -496,7 +525,7 @@ Resources:
             Options:
               awslogs-group: !Ref ECSAccessLogsGroup
               awslogs-region: !Sub ${AWS::Region}
-              awslogs-stream-prefix: !Sub core-stub-${Environment}
+              awslogs-stream-prefix: !Sub orch-stub-${Environment}
       Cpu: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, fargateCPUsize ]
       ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
       Memory: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, fargateRAMsize ]
@@ -516,7 +545,7 @@ Resources:
               Service: ecs-tasks.amazonaws.com
         Version: 2012-10-17
       Policies:
-        - PolicyName: PullCoreStubImage
+        - PolicyName: PullOrchStubImage
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -534,6 +563,15 @@ Resources:
                 Resource:
                   - !GetAtt "ECSAccessLogsGroup.Arn"
                   - !Sub "${ECSAccessLogsGroup.Arn}:*"
+        - PolicyName: OrchStubGetSecrets
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource:
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/orch/*"
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -549,11 +587,22 @@ Resources:
             Principal:
               Service: ecs-tasks.amazonaws.com
         Version: 2012-10-17
+      Policies:
+        - PolicyName: OrchStubGetSecrets
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource:
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/orch/core/*"
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
 
+  # kms key for logging
   LoggingKmsKey:
     Type: AWS::KMS::Key
     Properties:
@@ -581,63 +630,65 @@ Resources:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
 
-#Event to trigger env vars update
-  EnvVarsChangedRules:
+# eventbridge rules to trigger lambda
+  EnvVarsEventRules:
     Type: AWS::Events::Rule
     Properties:
-      Description: Rule to check for changes to Env var parameters
-      Name: EnvVarsChanged
-      RoleArn: String
-      EventPattern: |
+      Description: "Rule trigger lambda when SSM parameters are changed"
+      EventPattern: !Sub |
         {
-            "source": [
-                "aws.ssm"
-            ],
-            "detail-type": [
-                "Parameter Store Change"
-            ],
-            "detail": {
-                "name": [
-                    "parameter-1-name",
-                    "/parameter-2-name/level-2",
-                    "/parameter-3-name/level-2/level-3"
-                ],
-                "operation": [
-                    "Create",
-                    "Update",
-                    "Delete",
-                    "LabelParameterVersion"
-                ]
-            }
+          "source": ["aws.ssm"],
+          "detail-type": ["Parameter Store Change"],
+          "resources" : [ "arn:aws:ssm:${AWS::Region}:parameter/stubs/orch/env/*" ],
+          "region" : ${AWS::Region},
+          "detail" {
+            "operation":["Update"]
+          }
         }
-      State: Enabled
-      Targets:
-        - Arn: !Ref UpdateFargateTaskDefLambda
+# lambda dlq
 
-
-  UpdateFargateTaskDefLambda:
+# lambda to update ECS defn
+  UpdateEnvLambda:
     Type: AWS::Serverless::Function
     Properties:
-      # checkov:skip=CKV_AWS_116: DLQ not required
-      # checkov:skip=CKV_AWS_117: Internet access not required
-      ReservedConcurrentExecutions: 5
-      CodeUri: update-fargate-task-def/
-      Handler: app.lambdaHandler
+      CodeUri: "../../update-fargate-task-def/"
+      Handler: app.handler
       Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      Tags:
-        CheckovRulesToSkip: CKV_AWS_116.CKV_AWS_117
-      Metadata: # Manage esbuild properties
-        BuildMethod: esbuild
-        BuildProperties:
-          Minify: true
-          Target: "es2020"
-          # Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
-          EntryPoints:
-            - app.ts
+      DeadLetterConfig:
+        Type: SQS
+        QueueLogicalId: "UpdateEnvLambdaPostInvokeDLQ"
+      Environment:
+        Variables:
+          PREFIX: "/stubs/orch/env/"
+      Events:
+        Properties:
+          DeadLetterConfig:
+            Type: SQS
+            QueueLogicalId: "UpdateEnvLambdaPreInvokeDLQ"
+          EventBridgeRule:
+            Pattern: !Sub |
+              {
+                "source": ["aws.ssm"],
+                "detail-type": ["Parameter Store Change"],
+                "resources" : [ "arn:aws:ssm:${AWS::Region}:parameter/stubs/orch/env/*" ],
+                "region" : ${AWS::Region},
+                "detail" {
+                  "operation":["Update"]
+                }
+              }
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - app.ts
+              
+
+
 
 Outputs:
-  CoreStubEnvironment:
-    Description: Core Stub Environment
+  OrchStubEnvironment:
+    Description: Orch Stub Environment
     Value: !Ref Environment
