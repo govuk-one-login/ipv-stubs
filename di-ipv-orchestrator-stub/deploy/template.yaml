@@ -654,18 +654,20 @@ Resources:
       CodeUri: "../../update-fargate-task-def/"
       Handler: app.handler
       Runtime: nodejs18.x
-      DeadLetterConfig:
+      DeadLetterQueue:
         Type: SQS
         QueueLogicalId: "UpdateEnvLambdaPostInvokeDLQ"
+        TargetArn: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:UpdateEnvLambdaPostInvokeDLQ"
       Environment:
         Variables:
           PREFIX: "/stubs/orch/env/"
       Events:
-        Properties:
-          DeadLetterConfig:
-            Type: SQS
-            QueueLogicalId: "UpdateEnvLambdaPreInvokeDLQ"
-          EventBridgeRule:
+        SSMUpdates:
+          Type: EventBridgeRule
+          Properties:
+            DeadLetterConfig:
+              Type: SQS
+              QueueLogicalId: "UpdateEnvLambdaPreInvokeDLQ"
             Pattern: !Sub |
               {
                 "source": ["aws.ssm"],
@@ -684,9 +686,6 @@ Resources:
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - app.ts
-              
-
-
 
 Outputs:
   OrchStubEnvironment:
