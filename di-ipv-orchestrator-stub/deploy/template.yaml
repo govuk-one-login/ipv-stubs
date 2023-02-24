@@ -535,7 +535,7 @@ Resources:
       TaskRoleArn: !GetAtt ECSTaskRole.Arn
 
   ECSTaskExecutionRole:
-    #checkov:skip=CKV_SECRET_6:The "secret" is not a secret
+    #checkov:skip=CKV_SECRET_6:The "secret" is not a secret #pragma: allowlist secret
     Type: "AWS::IAM::Role"
     Properties:
       AssumeRolePolicyDocument:
