@@ -47,23 +47,23 @@ Parameters:
   OrchestratorClientSigningKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY"
+    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY" #pragma: allowlist secret
   OrchestratorJarEncryptionPublicKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY"
+    Default: "/stubs/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   IpvBackchannelEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_BACKCHANNEL_ENDPOINT"
+    Default: "/stubs/orch/env/IPV_BACKCHANNEL_ENDPOINT" #pragma: allowlist secret
   IpvBackchannelTokenPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_BACKCHANNEL_TOKEN_PATH"
+    Default: "/stubs/orch/env/IPV_BACKCHANNEL_TOKEN_PATH" #pragma: allowlist secret
   IpvBackchannelUserIdentityPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_BACKCHANNEL_USER_IDENTITY_PATH"
+    Default: "/stubs/orch/env/IPV_BACKCHANNEL_USER_IDENTITY_PATH" #pragma: allowlist secret
   IpvEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -535,7 +535,7 @@ Resources:
       TaskRoleArn: !GetAtt ECSTaskRole.Arn
 
   ECSTaskExecutionRole:
-    #checkov:skip=CKV_SECRET_6:The "secret" is not a secret #pragma: allowlist secret
+    # checkov:skip=CKV_SECRET_6:The "secret" is not a secret #pragma: allowlist secret
     Type: "AWS::IAM::Role"
     Properties:
       AssumeRolePolicyDocument:
@@ -570,13 +570,18 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/orch/*"
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
+    Metadata:
+      checkov:
+        skip:
+          - id: "CKV_SECRET_6" #pragma: allowlist secret
+            comment: "This is not sensitive"
 
   ECSTaskRole:
     Type: "AWS::IAM::Role"
@@ -595,9 +600,9 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/orch/core/*"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/orch/core/*" #pragma: allowlist secret
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -605,6 +610,33 @@ Resources:
 
   # kms key for logging
   LoggingKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+  # kms key for logging
+  LambdaKmsKey:
     Type: AWS::KMS::Key
     Properties:
       EnableKeyRotation: true
@@ -662,6 +694,8 @@ Resources:
       Environment:
         Variables:
           PREFIX: "/stubs/orch/env/"
+      KmsKeyArn: !Ref LambdaKmsKey
+      ReservedConcurrentExecutions: 10
       Events:
         SSMUpdates:
           Type: EventBridgeRule
@@ -679,6 +713,11 @@ Resources:
                   "operation":["Update"]
                 }
               }
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
