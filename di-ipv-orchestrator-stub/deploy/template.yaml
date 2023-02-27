@@ -687,6 +687,8 @@ Resources:
       CodeUri: "../../update-fargate-task-def/"
       Handler: app.handler
       Runtime: nodejs18.x
+      Architectures:
+        - arm64
       DeadLetterQueue:
         Type: SQS
         QueueLogicalId: "UpdateEnvLambdaPostInvokeDLQ"
