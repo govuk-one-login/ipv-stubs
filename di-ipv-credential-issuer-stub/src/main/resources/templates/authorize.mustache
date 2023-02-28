@@ -143,6 +143,14 @@
                         </label>
                         <input class="govuk-input govuk-input--width-2" id="validity" name="validityScore" type="number" min="0" max="5" step="1">
                     </div>
+                    {{#isEvidenceDrivingLicenceType}}
+                        <div class="govuk-form-group">
+                            <label class="govuk-label" for="activityHistory">
+                                Activity History
+                            </label>
+                            <input class="govuk-input govuk-input--width-2" id="activityHistory" name="activityHistoryScore" type="number" min="0" max="5" step="1">
+                        </div>
+                    {{/isEvidenceDrivingLicenceType}}
                 </fieldset>
             {{/isEvidenceType}}
 
