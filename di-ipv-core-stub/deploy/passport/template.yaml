@@ -95,10 +95,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/passport/env/CORE_STUB_REDIRECT_URL"
-  CoreStubSigningPrivateKeyJwkBase64:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
   CoreStubUserDataPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -556,8 +552,6 @@ Resources:
             Value: !Ref CoreStubPort
           - Name: CORE_STUB_REDIRECT_URL
             Value: !Ref CoreStubRedirectUrl
-          - Name: CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64
-            Value: !Ref CoreStubSigningPrivateKeyJwkBase64
           - Name: CORE_STUB_USER_DATA_PATH
             Value: !Ref CoreStubUserDataPath
           - Name: JAVA_OPTS
@@ -569,6 +563,8 @@ Resources:
           Secrets:
             - Name: "PASSPORT_PRIVATE_API_KEY"
               ValueFrom: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
+            - Name: "CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
+              ValueFrom: '{{resolve:ssm:/stubs/core/passport/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64}}'
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -624,6 +620,15 @@ Resources:
                   - "secretsmanager:GetSecretValue"
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*"
+        - PolicyName: CoreStubGetSSMParams
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssm:GetParameter'
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -649,6 +654,15 @@ Resources:
                   - "secretsmanager:GetSecretValue"
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*"
+        - PolicyName: CoreStubGetSSMParams
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssm:GetParameter'
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
