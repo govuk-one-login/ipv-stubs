@@ -502,7 +502,7 @@ Resources:
             Value: !Ref CoreStubEnableBackendRoutes
           Secrets:
             - Name: "CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
-              ValueFrom: '{{resolve:ssm:/stubs/core/cri/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64}}'
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/cri/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -564,7 +564,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - 'ssm:GetParameter'
+                  - 'ssm:GetParameters'
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
       PermissionsBoundary: !If
@@ -598,7 +598,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - 'ssm:GetParameter'
+                  - 'ssm:GetParameters'
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
       PermissionsBoundary: !If

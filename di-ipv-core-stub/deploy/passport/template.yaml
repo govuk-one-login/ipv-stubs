@@ -564,7 +564,7 @@ Resources:
             - Name: "PASSPORT_PRIVATE_API_KEY"
               ValueFrom: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
             - Name: "CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
-              ValueFrom: '{{resolve:ssm:/stubs/core/passport/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64}}'
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/passport/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -626,7 +626,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - 'ssm:GetParameter'
+                  - 'ssm:GetParameters'
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
       PermissionsBoundary: !If
@@ -660,7 +660,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - 'ssm:GetParameter'
+                  - 'ssm:GetParameters'
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
       PermissionsBoundary: !If
