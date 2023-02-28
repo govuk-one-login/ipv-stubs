@@ -25,43 +25,43 @@ Parameters:
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cris/env/JBP_CONFIG_OPEN_JDK_JRE"
+    Default: "/stubs/core/cri/env/JBP_CONFIG_OPEN_JDK_JRE"
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cris/env/JAVA_OPTS"
+    Default: "/stubs/core/cri/env/JAVA_OPTS"
   CoreStubConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cris/env/CORE_STUB_CONFIG_FILE"
+    Default: "/stubs/core/cri/env/CORE_STUB_CONFIG_FILE"
   CoreStubPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cris/env/CORE_STUB_PORT"
+    Default: "/stubs/core/cri/env/CORE_STUB_PORT"
   CoreStubClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cris/env/CORE_STUB_CLIENT_ID"
+    Default: "/stubs/core/cri/env/CORE_STUB_CLIENT_ID"
   CoreStubRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cris/env/CORE_STUB_REDIRECT_URL"
+    Default: "/stubs/core/cri/env/CORE_STUB_REDIRECT_URL"
   CoreStubAppTitle:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cris/env/CORE_STUB_APP_TITLE"
+    Default: "/stubs/core/cri/env/CORE_STUB_APP_TITLE"
   CoreStubConfigAgedDob:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cris/env/CORE_STUB_CONFIG_AGED_DOB"
+    Default: "/stubs/core/cri/env/CORE_STUB_CONFIG_AGED_DOB"
   CoreStubShowVc:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cris/env/CORE_STUB_SHOW_VC"
+    Default: "/stubs/core/cri/env/CORE_STUB_SHOW_VC"
   CoreStubEnableBackendRoutes:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cris/env/CORE_STUB_ENABLE_BACKEND_ROUTES"
+    Default: "/stubs/core/cri/env/CORE_STUB_ENABLE_BACKEND_ROUTES"
 
 Conditions:
   IsDevelopment: !Not
@@ -500,9 +500,6 @@ Resources:
             Value: !Ref CoreStubShowVc
           - Name: CORE_STUB_ENABLE_BACKEND_ROUTES
             Value: !Ref CoreStubEnableBackendRoutes
-          Secrets:
-            - Name: "PASSPORT_PRIVATE_API_KEY"
-              ValueFrom: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
