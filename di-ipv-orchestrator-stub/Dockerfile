@@ -1,6 +1,6 @@
 FROM openjdk:17-jdk-slim AS build
-COPY . /home/gradle/src
-WORKDIR /home/gradle/src
+COPY . /home/gradle
+WORKDIR /home/gradle
 RUN ./gradlew build --no-daemon --stacktrace
 
 FROM openjdk:17-jdk-slim
@@ -11,12 +11,12 @@ RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser
 RUN mkdir /app
 RUN apt-get update && apt-get install -y curl
 COPY --from=build \
-	/home/gradle/src/build/distributions/src.tar \
-	/app/
+    /home/gradle/src/build/distributions/src.tar \
+    /app/
 
 WORKDIR /app
 RUN tar -xvf src.tar \
-	&& rm src.tar
+    && rm src.tar
 
 RUN chown -R appuser:appgroup /app/
 USER appuser
