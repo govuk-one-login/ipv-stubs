@@ -2,6 +2,9 @@ FROM openjdk:17-jdk-slim AS build
 COPY . /home/gradle
 WORKDIR /home/gradle
 RUN ./gradlew build --no-daemon --stacktrace
+RUN ls -la
+WORKDIR /home/gradle/build/distributions/
+RUN ls -la
 
 FROM openjdk:17-jdk-slim
 
@@ -10,13 +13,14 @@ ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,addr
 RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser --gid 1001
 RUN mkdir /app
 RUN apt-get update && apt-get install -y curl
+RUN ls -la
 COPY --from=build \
-    /home/gradle/src/build/distributions/src.tar \
+    /home/gradle/build/distributions/di-ipv-orchestrator-stub.tar \
     /app/
 
 WORKDIR /app
-RUN tar -xvf src.tar \
-    && rm src.tar
+RUN tar -xvf di-ipv-orchestrator-stub.tar \
+    && rm di-ipv-orchestrator-stub.tar
 
 RUN chown -R appuser:appgroup /app/
 USER appuser
