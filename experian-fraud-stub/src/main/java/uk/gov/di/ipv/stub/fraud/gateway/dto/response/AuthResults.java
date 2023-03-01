@@ -8,16 +8,16 @@ import java.io.Serializable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OtherData implements Serializable {
+public class AuthResults implements Serializable {
 
-    @JsonProperty("authResults")
-    private AuthResults authResults;
+    @JsonProperty("authPlusResults")
+    private AuthPlusResults authPlusResults;
 
-    public AuthResults getAuthResults() {
-        return authResults;
+    public AuthPlusResults getAuthPlusResults() {
+        return authPlusResults;
     }
 
-    public void setAuthResults(AuthResults authResults) {
-        this.authResults = authResults;
+    public void setAuthPlusResults(AuthPlusResults authPlusResults) {
+        this.authPlusResults = authPlusResults;
     }
 }

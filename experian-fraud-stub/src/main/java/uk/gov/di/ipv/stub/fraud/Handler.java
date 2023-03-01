@@ -8,6 +8,7 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.request.*;
+import uk.gov.di.ipv.stub.fraud.gateway.dto.response.AuthConsumer;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.response.DecisionElement;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.response.IdentityVerificationResponse;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.response.ResponseType;
@@ -108,6 +109,38 @@ public class Handler {
                                 408); // Request Timeout (closest response to an abrupt socket
                         // close)
                         return ""; // No message returned intended
+                    }
+                    // Activity history score default success scenario
+                    if (requestSurnameName.contains("AHS")) {
+                        AuthConsumer authConsumer =
+                                modifiableResponse
+                                        .getClientResponsePayload()
+                                        .getDecisionElements()
+                                        .get(0)
+                                        .getOtherData()
+                                        .getAuthResults()
+                                        .getAuthPlusResults()
+                                        .getAuthConsumer();
+
+                        authConsumer.getIdandLocDataAtCL().setStartDateOldestPrim("201212");
+                        authConsumer.getIdandLocDataAtCL().setStartDateOldestSec("201512");
+                        authConsumer.getLocDataOnlyAtCLoc().setStartDateOldestPrim("201510");
+                    }
+                    // Activity History Scenario to return a date specified in the surname as oldest
+                    if (requestSurnameName.contains("SHS_")) {
+                        AuthConsumer authConsumer =
+                                modifiableResponse
+                                        .getClientResponsePayload()
+                                        .getDecisionElements()
+                                        .get(0)
+                                        .getOtherData()
+                                        .getAuthResults()
+                                        .getAuthPlusResults()
+                                        .getAuthConsumer();
+
+                        authConsumer
+                                .getLocDataOnlyAtCLoc()
+                                .setStartDateOldestPrim(requestSurnameName.substring(4));
                     }
                 } else if (requestType.equals("PepSanctions01")) {
                     // PepCheck Simulation
