@@ -3,6 +3,7 @@ COPY . /home/gradle
 WORKDIR /home/gradle
 RUN ./gradlew build --no-daemon --stacktrace
 
+
 FROM openjdk:17-jdk-slim
 
 ENV PORT 8083
@@ -11,12 +12,12 @@ RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser
 RUN mkdir /app
 RUN apt-get update && apt-get install -y curl
 COPY --from=build \
-    /home/gradle/src/build/distributions/src.tar \
+    /home/gradle/build/distributions/di-ipv-orchestrator-stub.tar \
     /app/
 
 WORKDIR /app
-RUN tar -xvf src.tar \
-    && rm src.tar
+RUN tar -xvf di-ipv-orchestrator-stub.tar \
+    && rm di-ipv-orchestrator-stub.tar
 
 RUN chown -R appuser:appgroup /app/
 USER appuser
