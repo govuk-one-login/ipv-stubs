@@ -427,6 +427,74 @@
           }
         ]
       }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Alice Parker (Valid) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "documentNumber": "PARKE710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Bob Parker (Valid) DVA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Bob",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVA",
+            "documentNumber": "55667789",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
     }
   ]
 }
