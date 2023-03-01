@@ -151,6 +151,21 @@
           }
         ]
       }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Passed driving licence check",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 1,
+        "strengthScore": 3,
+        "activityHistoryScore": 1,
+        "checkDetails": {
+          "identityCheckPolicy": "published",
+          "activityFrom": "1982-05-23",
+          "checkMethod": "data"
+        }
+      }
     }
   ]
 }
