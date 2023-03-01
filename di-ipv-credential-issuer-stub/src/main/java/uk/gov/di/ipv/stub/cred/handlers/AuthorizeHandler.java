@@ -168,7 +168,9 @@ public class AuthorizeHandler {
                 Map<String, Object> frontendParams = new HashMap<>();
                 frontendParams.put(RESOURCE_ID_PARAM, UUID.randomUUID().toString());
                 frontendParams.put(
-                        IS_EVIDENCE_TYPE_PARAM, criType.equals(CriType.EVIDENCE_CRI_TYPE));
+                        IS_EVIDENCE_TYPE_PARAM,
+                        criType.equals(CriType.EVIDENCE_CRI_TYPE)
+                                || criType.equals(CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE));
                 frontendParams.put(
                         IS_EVIDENCE_DRIVING_LICENCE_TYPE_PARAM,
                         criType.equals(CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE));
