@@ -8,16 +8,16 @@ import java.io.Serializable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OtherData implements Serializable {
+public class LocDataOnlyAtCLoc implements Serializable {
 
-    @JsonProperty("authResults")
-    private AuthResults authResults;
+    @JsonProperty("startDateOldestPrim")
+    private String startDateOldestPrim;
 
-    public AuthResults getAuthResults() {
-        return authResults;
+    public String getStartDateOldestPrim() {
+        return startDateOldestPrim;
     }
 
-    public void setAuthResults(AuthResults authResults) {
-        this.authResults = authResults;
+    public void setStartDateOldestPrim(String startDateOldestPrim) {
+        this.startDateOldestPrim = startDateOldestPrim;
     }
 }
