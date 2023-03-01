@@ -77,6 +77,8 @@ public class AuthorizeHandler {
     private static final String JSON_PAYLOAD_PARAM = "jsonPayload";
     private static final String EVIDENCE_JSON_PAYLOAD_PARAM = "evidenceJsonPayload";
     private static final String IS_EVIDENCE_TYPE_PARAM = "isEvidenceType";
+    private static final String IS_EVIDENCE_DRIVING_LICENCE_TYPE_PARAM =
+            "isEvidenceDrivingLicenceType";
     private static final String IS_ACTIVITY_TYPE_PARAM = "isActivityType";
     private static final String IS_FRAUD_TYPE_PARAM = "isFraudType";
     private static final String IS_VERIFICATION_TYPE_PARAM = "isVerificationType";
@@ -167,6 +169,9 @@ public class AuthorizeHandler {
                 frontendParams.put(RESOURCE_ID_PARAM, UUID.randomUUID().toString());
                 frontendParams.put(
                         IS_EVIDENCE_TYPE_PARAM, criType.equals(CriType.EVIDENCE_CRI_TYPE));
+                frontendParams.put(
+                        IS_EVIDENCE_DRIVING_LICENCE_TYPE_PARAM,
+                        criType.equals(CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE));
                 frontendParams.put(
                         IS_ACTIVITY_TYPE_PARAM, criType.equals(CriType.ACTIVITY_CRI_TYPE));
                 frontendParams.put(IS_FRAUD_TYPE_PARAM, criType.equals(CriType.FRAUD_CRI_TYPE));
@@ -445,6 +450,35 @@ public class AuthorizeHandler {
                                 "bvr",
                                 "biometricVerificationProcessLevel",
                                 biometricVerificationNum));
+
+                if (validityNum < 2) {
+                    gpg45Score.put(
+                            CredentialIssuerConfig.FAILED_CHECK_DETAILS_PARAM, checkDetailsValue);
+                } else {
+                    gpg45Score.put(CredentialIssuerConfig.CHECK_DETAILS_PARAM, checkDetailsValue);
+                }
+            }
+            case EVIDENCE_DRIVING_LICENCE_CRI_TYPE -> {
+                int strengthNum =
+                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(strengthValue) : 3;
+                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, strengthNum);
+                int validityNum =
+                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
+                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, validityNum);
+
+                if (StringUtils.isNotBlank(activityValue)) {
+                    gpg45Score.put(
+                            CredentialIssuerConfig.ACTIVITY_PARAM, Integer.parseInt(activityValue));
+                }
+
+                Map<String, Object> checkDetailsValue =
+                        Map.of(
+                                "identityCheckPolicy",
+                                "published",
+                                "activityFrom",
+                                "1982-05-23",
+                                "checkMethod",
+                                "data");
 
                 if (validityNum < 2) {
                     gpg45Score.put(
