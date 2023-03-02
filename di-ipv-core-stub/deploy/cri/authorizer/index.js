@@ -16,7 +16,7 @@ export const handler = async(event) => {
     var username = plainCreds[0]
     var password = plainCreds[1]
 
-    if (!(username === auth.username && password === auth.password)) {
+    if (username === auth.username && password === auth.password) {
         response = {
             "isAuthorized": true,
             "context": {
