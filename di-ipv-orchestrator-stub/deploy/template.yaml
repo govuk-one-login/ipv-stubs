@@ -675,23 +675,6 @@ Resources:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
 
-# eventbridge rules to trigger lambda
-  EnvVarsEventRules:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: "Rule trigger lambda when SSM parameters are changed"
-      EventPattern: !Sub |
-        {
-          "source": ["aws.ssm"],
-          "detail-type": ["Parameter Store Change"],
-          "resources" : [ "arn:aws:ssm:${AWS::Region}:parameter/stubs/orch/env/*" ],
-          "region" : "${AWS::Region}",
-          "detail" {
-            "operation":["Update"]
-          }
-        }
-# lambda dlq
-
 # lambda to update ECS defn
   UpdateEnvLambda:
     Type: AWS::Serverless::Function
@@ -719,12 +702,12 @@ Resources:
               QueueLogicalId: "UpdateEnvLambdaPreInvokeDLQ"
             Pattern: !Sub |
               {
-                "source": ["aws.ssm"],
-                "detail-type": ["Parameter Store Change"],
+                "source": [ "aws.ssm" ],
+                "detail-type": [ "Parameter Store Change" ],
                 "resources" : [ "arn:aws:ssm:${AWS::Region}:parameter/stubs/orch/env/*" ],
-                "region" : [${AWS::Region}],
+                "region" : [ "${AWS::Region}" ],
                 "detail" {
-                  "operation":["Update"]
+                  "operation":[ "Update" ]
                 }
               }
       VpcConfig:
