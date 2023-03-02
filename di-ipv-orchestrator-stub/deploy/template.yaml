@@ -722,7 +722,7 @@ Resources:
                 "source": ["aws.ssm"],
                 "detail-type": ["Parameter Store Change"],
                 "resources" : [ "arn:aws:ssm:${AWS::Region}:parameter/stubs/orch/env/*" ],
-                "region" : ${AWS::Region},
+                "region" : [${AWS::Region}],
                 "detail" {
                   "operation":["Update"]
                 }
