@@ -363,7 +363,7 @@ Resources:
       EnableSimpleResponses: true
       IdentitySource:
         - '$request.header.Authorization'
-      Name: lambda-authorizer
+      Name: cri-core-stub-authorizer
 
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
@@ -382,7 +382,7 @@ Resources:
       # checkov:skip=CKV_AWS_173: This does not need encrypted env variables
       FunctionName: cri-core-stub-auth
       Description: A lambda to handle http api gateway basic authentication
-      ReservedConcurrentExecutions: 5
+      ReservedConcurrentExecutions: 30
       Handler: index.handler
       Runtime: nodejs16.x
       PackageType: Zip
