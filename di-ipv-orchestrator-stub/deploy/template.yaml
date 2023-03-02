@@ -712,6 +712,10 @@ Resources:
           PREFIX: "/stubs/orch/env/"
       KmsKeyArn: !Ref LambdaKmsKey
       ReservedConcurrentExecutions: 10
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
       Events:
         SSMUpdates:
           Type: EventBridgeRule
