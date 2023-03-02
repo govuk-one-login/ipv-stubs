@@ -5,6 +5,17 @@ Description: >-
   This creates the necessary components to deploy IPV Core Stub onto ECS
   Fargate within the dev platform VPC and private subnets (provided as parameters).
 
+Globals:
+  Function:
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+
 Parameters:
   Environment:
     Description: The name of the environment to deploy to.
@@ -19,6 +30,11 @@ Parameters:
       The name of the stack that defines the VPC in which this container will
       run.
     Type: String
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
   PermissionsBoundary:
     Description: "The ARN of the permissions boundary to apply when creating IAM roles"
     Type: String
@@ -34,7 +50,7 @@ Parameters:
   CoreStubConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_CONFIG_FILE"
+    Default: "/stubs/core/cri/env/CORE_STUB_CONFIG_FILE" #pragma: allowlist secret
   CoreStubPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -54,7 +70,7 @@ Parameters:
   CoreStubConfigAgedDob:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_CONFIG_AGED_DOB"
+    Default: "/stubs/core/cri/env/CORE_STUB_CONFIG_AGED_DOB" #pragma: allowlist secret
   CoreStubShowVc:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -75,6 +91,11 @@ Conditions:
     - !Or
       - !Condition IsDevelopment
       - !Condition IsProduction
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
@@ -358,7 +379,8 @@ Resources:
       - "ApiAuthLambdaLogGroup"
     Properties:
       # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
-      # checkov:skip=CKV_AWS_115: This is for dev or build only - does not need function level concurrency
+      # checkov:skip=CKV_AWS_173: This does not need encrypted env variables
+      # checkov:skip=CKV_AWS_116: This does not need dead letter queues
       FunctionName: cri-core-stub-auth
       Description: A lambda to handle http api gateway basic authentication
       Handler: index.handler
@@ -640,7 +662,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*"
         - PolicyName: CoreStubGetSSMParams
@@ -674,7 +696,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret -- how can this be a secret ?
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*"
         - PolicyName: CoreStubGetSSMParams
