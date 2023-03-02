@@ -683,7 +683,6 @@ Resources:
       MessageRetentionPeriod: 1209600
       RedriveAllowPolicy: |
         {  "redrivePermission"  : "allowAll" }
-      SqsManagedSseEnabled: true
       KmsMasterKeyId: alias/aws/sqs
 #Pre lambda dlq
   PreUpdateEnvDLQ:
@@ -693,7 +692,6 @@ Resources:
       MessageRetentionPeriod: 1209600
       RedriveAllowPolicy: |
         {  "redrivePermission"  : "allowAll" }
-      SqsManagedSseEnabled: true
       KmsMasterKeyId: alias/aws/sqs
 
 
