@@ -675,6 +675,18 @@ Resources:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
 
+#lambda dlq
+  UpdateEnvDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: UpdateEnvLambdaDLQ
+      MessageRetentionPeriod: 1209600
+      RedriveAllowPolicy: |
+        {  "redrivePermission"  : "allowAll" }
+      SqsManagedSseEnabled: true
+      KmsMasterKeyId: alias/aws/sqs
+
+
 # lambda to update ECS defn
   UpdateEnvLambda:
     Type: AWS::Serverless::Function
@@ -686,8 +698,7 @@ Resources:
         - arm64
       DeadLetterQueue:
         Type: SQS
-        QueueLogicalId: "UpdateEnvLambdaPostInvokeDLQ"
-        TargetArn: !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:UpdateEnvLambdaPostInvokeDLQ"
+        TargetArn: !GetAtt UpdateEnvDLQ.Arn
       Environment:
         Variables:
           PREFIX: "/stubs/orch/env/"
