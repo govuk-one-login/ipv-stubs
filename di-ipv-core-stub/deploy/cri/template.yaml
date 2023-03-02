@@ -176,7 +176,7 @@ Resources:
         DNSName: !GetAtt CoreStubApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CoreStubApiDomain.RegionalHostedZoneId
 
-  # Security Groups for the ECS service and load balancer
+  # Security Groups for the Lambda, ECS service and load balancer
   LoadBalancerSG:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
@@ -256,11 +256,32 @@ Resources:
       GroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
       SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
 
+  LambdaSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: >-
+        Http api auth Lambda Security Group outbound permissions ruleset
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow egress HTTPS traffic to vpc cidr from port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow ingress traffic from vpc cidr to port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+
   # http api gateway - which does nothing other than route everything to LB
   ApiGwHttpEndpoint:
     Type: "AWS::ApiGatewayV2::Api"
     Properties:
-      Name: !Sub ${AWS::StackName}-passport-api-gw
+      Name: !Sub ${AWS::StackName}-cri-api-gw
       ProtocolType: HTTP
 
   ApiGwHttpEndpointIntegration:
@@ -280,6 +301,8 @@ Resources:
     Properties:
       ApiId: !Ref ApiGwHttpEndpoint
       RouteKey: "ANY /{proxy+}"
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref APIAuth
       Target: !Join
         - /
         - - integrations
@@ -307,11 +330,72 @@ Resources:
           "responseLatency":"$context.responseLatency"
           }
 
+  APIAuth:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref ApiGwHttpEndpoint
+      AuthorizerPayloadFormatVersion: '2.0'
+      AuthorizerResultTtlInSeconds: 0
+      AuthorizerType: REQUEST
+      AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cri-core-stub-auth/invocations'
+      EnableSimpleResponses: true
+      IdentitySource:
+        - '$request.header.Authorization'
+      Name: lambda-authorizer
+
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-passport-api-gw-accesslogs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-cri-api-gw-accesslogs
       RetentionInDays: 14
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  # http api gateway lambda for handling auth
+  ApiAuthLambda:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - "ApiAuthLambdaLogGroup"
+    Properties:
+      # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+      # checkov:skip=CKV_AWS_115: This is for dev or build only - does not need function level concurrency
+      FunctionName: cri-core-stub-auth
+      Description: A lambda to handle http api gateway basic authentication
+      Handler: index.handler
+      Runtime: nodejs16.x
+      PackageType: Zip
+      CodeUri: authorizer
+      Architectures:
+        - arm64
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt LambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: {}
+        - Statement:
+          - Sid: EnforceStayinSpecificVpc
+            Effect: Allow
+            Action:
+              - 'lambda:CreateFunction'
+              - 'lambda:UpdateFunctionConfiguration'
+            Resource:
+              - "*"
+            Condition:
+              StringEquals:
+                "lambda:VpcIds":
+                  - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+
+  ApiAuthLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/core/cri-stub-lambda-logs-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   # Private Application Load Balancer
