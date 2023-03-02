@@ -39,12 +39,12 @@ repos:
         args: ['--verbose']
         verbose: true
   - repo: https://github.com/aws-cloudformation/cfn-python-lint
-    rev: v0.73.2
+    rev: v0.74.0
     hooks:
       - id: cfn-python-lint
         files: ^(?!\..*).*/template\.(json|yml|yaml)$
   - repo: https://github.com/bridgecrewio/checkov.git
-    rev: '2.3.39'
+    rev: '2.3.56'
     hooks:
       - id: checkov
         args: ['--framework', 'cloudformation', '--quiet']
