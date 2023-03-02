@@ -685,6 +685,16 @@ Resources:
         {  "redrivePermission"  : "allowAll" }
       SqsManagedSseEnabled: true
       KmsMasterKeyId: alias/aws/sqs
+#Pre lambda dlq
+  PreUpdateEnvDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: PreUpdateEnvLambdaDLQ
+      MessageRetentionPeriod: 1209600
+      RedriveAllowPolicy: |
+        {  "redrivePermission"  : "allowAll" }
+      SqsManagedSseEnabled: true
+      KmsMasterKeyId: alias/aws/sqs
 
 
 # lambda to update ECS defn
@@ -709,8 +719,7 @@ Resources:
           Type: EventBridgeRule
           Properties:
             DeadLetterConfig:
-              Type: SQS
-              QueueLogicalId: "UpdateEnvLambdaPreInvokeDLQ"
+              Arn: !GetAtt PreUpdateEnvDLQ.Arn
             Pattern: !Sub |
               {
                 "source": [ "aws.ssm" ],
