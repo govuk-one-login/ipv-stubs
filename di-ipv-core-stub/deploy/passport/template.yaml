@@ -169,22 +169,17 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
-        - passport-core.stubs.account.gov.uk
-      SubjectAlternativeNames: 
-        - !If
-          - IsNonProd
-          - !Sub "core-passport.${Environment}.stubs.account.gov.uk"
-          - core-passport.stubs.account.gov.uk
+        - !Sub "passport.core.${Environment}.stubs.account.gov.uk"
+        - passport.core.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
             - IsNonProd
-            - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
-            - passport-core.stubs.account.gov.uk
+            - !Sub "passport.core.${Environment}.stubs.account.gov.uk"
+            - passport.core.stubs.account.gov.uk
           HostedZoneId: !If
             - IsNonProd
-            - !ImportValue BuildPublicHostedZoneId
-            - !ImportValue RootPublicHostedZoneId
+            - !ImportValue BuildCorePublicHostedZoneId
+            - !ImportValue CorePublicHostedZoneId
       ValidationMethod: DNS
 
   # api domain entries / mapping
@@ -193,8 +188,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
-        -  passport-core.stubs.account.gov.uk
+        - !Sub "passport.core.${Environment}.stubs.account.gov.uk"
+        -  passport.core.stubs.account.gov.uk
       DomainNameConfigurations:
         - CertificateArn: !Ref CoreStubSSLCert
           EndpointType: REGIONAL
@@ -205,8 +200,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
-        - passport-core.stubs.account.gov.uk
+        - !Sub "passport.core.${Environment}.stubs.account.gov.uk"
+        - passport.core.stubs.account.gov.uk
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -220,12 +215,12 @@ Resources:
       Type: A
       Name: !If
         - IsNonProd
-        - !Sub "passport-core.${Environment}.stubs.account.gov.uk"
-        - passport-core.stubs.account.gov.uk
+        - !Sub "passport.core.${Environment}.stubs.account.gov.uk"
+        - passport.core.stubs.account.gov.uk
       HostedZoneId: !If
         - IsNonProd
-        - !ImportValue BuildPublicHostedZoneId
-        - !ImportValue RootPublicHostedZoneId
+        - !ImportValue BuildCorePublicHostedZoneId
+        - !ImportValue CorePublicHostedZoneId
       AliasTarget:
         DNSName: !GetAtt CoreStubApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CoreStubApiDomain.RegionalHostedZoneId
