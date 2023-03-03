@@ -413,6 +413,18 @@ Resources:
               StringEquals:
                 "lambda:VpcIds":
                   - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+        - Statement:
+          - Sid: "apigateway-cri-core-stub-invoke"
+            Effect: Allow
+            Principal:
+              Service: "apigateway.amazonaws.com"
+            Action:
+              - "lambda:InvokeFunction"
+            Resource:
+              - !GetAtt ApiAuthLambda.Arn
+            Condition:
+              ArnLike:
+                "AWS:SourceArn": !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGwHttpEndpoint}/authorizers/${APIAuth}"
 
   ApiAuthLambdaLogGroup:
     Type: AWS::Logs::LogGroup
