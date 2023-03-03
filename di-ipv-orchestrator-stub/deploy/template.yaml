@@ -647,7 +647,8 @@ Resources:
             Condition:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
-  # kms key for logging
+
+  # kms key for lambda
   LambdaKmsKey:
     Type: AWS::KMS::Key
     Properties:
@@ -710,8 +711,8 @@ Resources:
       Environment:
         Variables:
           PREFIX: "/stubs/orch/env/"
-      KmsKeyArn: !Ref LambdaKmsKey
-      ReservedConcurrentExecutions: 10
+      KmsKeyArn: !GetAtt LambdaKmsKey.Arn
+      ReservedConcurrentExecutions: 1
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
