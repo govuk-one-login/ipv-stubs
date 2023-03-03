@@ -736,6 +736,20 @@ Resources:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
           - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+      Policies:
+        - VPCAccessPolicy: { }
+        - Statement:
+            - Sid: EnforceStayinSpecificVpc
+              Effect: Allow
+              Action:
+                - 'lambda:CreateFunction'
+                - 'lambda:UpdateFunctionConfiguration'
+              Resource:
+                - "*"
+              Condition:
+                StringEquals:
+                  "lambda:VpcIds":
+                    - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
