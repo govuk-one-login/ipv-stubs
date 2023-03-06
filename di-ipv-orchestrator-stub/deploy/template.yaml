@@ -240,6 +240,21 @@ Resources:
       FromPort: 8080
       ToPort: 8080
 
+  UpdateEnvLambdaSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: >-
+        UpdateEnvLambda Security Group
+      SecurityGroupEgress:
+        - DestinationSecurityGroupId: !If
+            - IsNotDevelopment
+            - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+            - !ImportValue InterfaceVpcEndpointSecurityGroupId
+          Description: Allow egress to VPC endpoints
+          IpProtocol: tcp
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+
   OrchStubECSSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
@@ -751,6 +766,8 @@ Resources:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
           - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt UpdateEnvLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
         - Statement:
