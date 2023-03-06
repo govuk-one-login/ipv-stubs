@@ -245,13 +245,19 @@ Resources:
     Properties:
       GroupDescription: >-
         UpdateEnvLambda Security Group
-      #SecurityGroupEgress:
-      #  - DestinationSecurityGroupId: !If
-      #      - IsNotDevelopment
-      #      - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-      #      - !ImportValue InterfaceVpcEndpointSecurityGroupId
-      #    Description: Allow egress to VPC endpoints
-      #    IpProtocol: tcp
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow egress HTTPS traffic to vpc cidr from port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow ingress traffic from vpc cidr to port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 
