@@ -27,6 +27,11 @@ Parameters:
     Description: "The ARN of the permissions boundary to apply when creating IAM roles"
     Type: String
     Default: "none"
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
 
   OrchestratorClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
@@ -106,7 +111,11 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
-
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
 # Mapping using aws account id - keeps things simple
 # if this is built out differently.
 Mappings:
@@ -717,6 +726,11 @@ Resources:
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+
       Events:
         SSMUpdates:
           Type: EventBridgeRule
