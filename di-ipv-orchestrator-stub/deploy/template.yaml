@@ -760,12 +760,12 @@ Resources:
               Arn: !GetAtt PreUpdateEnvDLQ.Arn
             Pattern: !Sub |
               {
-                "source": [ "aws.ssm" ],
-                "detail-type": [ "Parameter Store Change" ],
+                "source" : [ "aws.ssm" ],
+                "detail-type" : [ "Parameter Store Change" ],
                 "resources" : [ "arn:aws:ssm:${AWS::Region}:parameter/stubs/orch/env/*" ],
                 "region" : [ "${AWS::Region}" ],
-                "detail" {
-                  "operation":[ "Update" ]
+                "detail" : {
+                  "operation" : [ "Update" ]
                 }
               }
       VpcConfig:
