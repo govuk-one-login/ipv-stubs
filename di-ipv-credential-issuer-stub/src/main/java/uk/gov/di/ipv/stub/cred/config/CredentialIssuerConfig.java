@@ -3,7 +3,10 @@ package uk.gov.di.ipv.stub.cred.config;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +49,7 @@ public class CredentialIssuerConfig {
 
     public static ClientConfig getClientConfig(String clientId) {
         if (CLIENT_CONFIGS == null) {
-            CLIENT_CONFIGS = parseClientConfigs();
+            CLIENT_CONFIGS = parseClientConfigFile();
         }
         return CLIENT_CONFIGS.get(clientId);
     }
@@ -57,7 +60,7 @@ public class CredentialIssuerConfig {
 
     public static Map<String, ClientConfig> getClientConfigs() {
         if (CLIENT_CONFIGS == null) {
-            CLIENT_CONFIGS = parseClientConfigs();
+            CLIENT_CONFIGS = parseClientConfigFile();
         }
         return CLIENT_CONFIGS;
     }
@@ -99,5 +102,22 @@ public class CredentialIssuerConfig {
         Type type = new TypeToken<Map<String, ClientConfig>>() {}.getType();
 
         return gson.fromJson(clientConfigJson, type);
+    }
+
+    private static Map<String, ClientConfig> parseClientConfigFile() {
+        String client_config_file = getConfigValue("CLIENT_CONFIG_FILE", null);
+        if (client_config_file == null) {
+            return parseClientConfigs();
+        }
+
+        Path client_config = Path.of(client_config_file);
+        try {
+            String clientConfigJson = Files.readString(client_config);
+            Type type = new TypeToken<Map<String, ClientConfig>>() {}.getType();
+
+            return gson.fromJson(clientConfigJson, type);
+        } catch (IOException e) {
+            return new HashMap<>();
+        }
     }
 }
