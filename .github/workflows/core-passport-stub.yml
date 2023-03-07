@@ -1,15 +1,14 @@
-name: CRI Core Stub - Secure Pipeline build, push & Ship
-
+name: Passport Core Stub - Secure Pipeline build, push & Ship
 on:
   push:
     branches:
       - main
     paths:
-      - di-ipv-core-stub/deploy/cri/*
+      - di-ipv-core-stub/deploy/passport/*
       - di-ipv-core-stub/gradle/**
       - di-ipv-core-stub/src/**
       - di-ipv-core-stub/*
-      - .github/workflows/cri-core-stub.yml
+      - .github/workflows/core-passport-stub.yml
 
 jobs:
   dockerBuildAndPush:
@@ -37,7 +36,7 @@ jobs:
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          role-to-assume: ${{ secrets.CRI_CORE_GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.PASSPORT_CORE_GH_ACTIONS_ROLE_ARN }}
           aws-region: eu-west-2
 
       - name: Login to Amazon ECR
@@ -64,7 +63,7 @@ jobs:
         env:
           CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.CRI_CORE_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.PASSPORT_CORE_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -78,38 +77,29 @@ jobs:
         run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
 
       - name: SAM Validate
-        working-directory: ./di-ipv-core-stub/deploy/cri
+        working-directory: ./di-ipv-core-stub/deploy/passport
         run: sam validate --region ${{ env.AWS_REGION }}
 
       - name: SAM Package
-        working-directory: ./di-ipv-core-stub/deploy/cri
+        working-directory: ./di-ipv-core-stub/deploy/passport
         env:
-          ARTIFACT_BUCKET: ${{ secrets.CRI_CORE_ARTIFACT_BUCKET_NAME }}
+          ARTIFACT_BUCKET: ${{ secrets.PASSPORT_CORE_ARTIFACT_BUCKET_NAME }}
         run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Update SAM template with ECR image
-        working-directory: ./di-ipv-core-stub/deploy/cri
+        working-directory: ./di-ipv-core-stub/deploy/passport
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.CRI_CORE_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.PASSPORT_CORE_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
 
-      - name: Generate code signing config
-        id: signing
-        uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc
-        with:
-          template: ./di-ipv-core-stub/deploy/cri/cf-template.yaml
-          profile: ${{ secrets.SIGNING_PROFILE_NAME }}
+      - name: Compress Template
+        working-directory: ./di-ipv-core-stub/deploy/passport
+        run: zip template.zip cf-template.yaml
 
-      - name: SAM build and test
-        working-directory: ./di-ipv-core-stub/deploy/cri
-        run: sam build -t cf-template.yaml
-
-      - name: Deploy SAM app
-        uses: alphagov/di-devplatform-upload-action@v3
-        with:
-            artifact-bucket-name: ${{ secrets.CRI_CORE_ARTIFACT_BUCKET_NAME }}
-            signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-            working-directory: ./di-ipv-core-stub/deploy/cri
-            template-file: cf-template.yaml
+      - name: Upload Compressed CloudFormation artifacts to S3
+        working-directory: ./di-ipv-core-stub/deploy/passport
+        env:
+          ARTIFACT_BUCKET: ${{ secrets.PASSPORT_CORE_ARTIFACT_BUCKET_NAME }}
+        run: aws s3 cp template.zip "s3://$ARTIFACT_BUCKET/template.zip" --metadata "repository=$GITHUB_REPOSITORY,commitsha=$GITHUB_SHA"
