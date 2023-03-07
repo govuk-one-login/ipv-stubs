@@ -69,6 +69,7 @@ public class InMemoryDataStore {
                 addResponse("ARKIL", "/SpecificResponse/fraud-ex-ci1-arkil.json");
                 addResponse("GILT", "/SpecificResponse/fraud-ex-ci2-gilt.json");
                 addResponse("KENNEDY", "/SpecificResponse/fraud-ex-ci3-kennedy.json");
+                addResponse("AHS", "/SpecificResponse/fraud-ex--auth1-ahs.json");
 
                 // Info response type but is a failure due to presence of warnings and errors
                 addResponse(

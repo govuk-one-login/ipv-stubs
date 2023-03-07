@@ -8,10 +8,8 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.fraud.gateway.dto.request.*;
-import uk.gov.di.ipv.stub.fraud.gateway.dto.response.AuthConsumer;
-import uk.gov.di.ipv.stub.fraud.gateway.dto.response.DecisionElement;
-import uk.gov.di.ipv.stub.fraud.gateway.dto.response.IdentityVerificationResponse;
-import uk.gov.di.ipv.stub.fraud.gateway.dto.response.ResponseType;
+import uk.gov.di.ipv.stub.fraud.gateway.dto.request.Contact;
+import uk.gov.di.ipv.stub.fraud.gateway.dto.response.*;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -112,21 +110,14 @@ public class Handler {
                     }
                     // Activity history score default success scenario
                     if (requestSurnameName.contains("AHS")) {
-                        AuthConsumer authConsumer =
-                                modifiableResponse
-                                        .getClientResponsePayload()
-                                        .getDecisionElements()
-                                        .get(0)
-                                        .getOtherData()
-                                        .getAuthResults()
-                                        .getAuthPlusResults()
-                                        .getAuthConsumer();
 
-                        authConsumer.getIdandLocDataAtCL().setStartDateOldestPrim("201212");
-                        authConsumer.getIdandLocDataAtCL().setStartDateOldestSec("201512");
-                        authConsumer.getLocDataOnlyAtCLoc().setStartDateOldestPrim("201510");
+                        modifiableResponse =
+                                getModifiableResponse(
+                                        requestSurnameName, "AHS", FRAUD_CHECK_SOURCE);
                     }
                     // Activity History Scenario to return a date specified in the surname as oldest
+                    // TODO: incorporate specified date test user for activity history scoore
+                    /*
                     if (requestSurnameName.contains("SHS_")) {
                         AuthConsumer authConsumer =
                                 modifiableResponse
@@ -142,6 +133,8 @@ public class Handler {
                                 .getLocDataOnlyAtCLoc()
                                 .setStartDateOldestPrim(requestSurnameName.substring(4));
                     }
+
+                     */
                 } else if (requestType.equals("PepSanctions01")) {
                     // PepCheck Simulation
 
