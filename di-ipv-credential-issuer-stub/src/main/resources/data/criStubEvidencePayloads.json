@@ -157,7 +157,7 @@
       "label": "Passed driving licence check",
       "payload": {
         "type": "IdentityCheck",
-        "validityScore": 1,
+        "validityScore": 2,
         "strengthScore": 3,
         "activityHistoryScore": 1,
         "checkDetails": {
