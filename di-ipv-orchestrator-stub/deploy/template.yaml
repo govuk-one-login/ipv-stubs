@@ -85,10 +85,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/orch/env/JBP_CONFIG_OPEN_JDK_JRE"
-  JavaHome:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/JAVA_HOME"
     # PassportPrivateApiKey:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
@@ -531,8 +527,6 @@ Resources:
           ] # Uses build account and ECR when not in development.
           Name: app
           Environment:
-          - Name: JAVA_HOME
-            Value: !Ref JavaHome
           - Name: JBP_CONFIG_OPEN_JDK_JRE
             Value: !Ref JbpConfigOpenJdkJre
           - Name: JAVA_OPTS
