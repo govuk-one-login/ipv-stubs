@@ -473,14 +473,15 @@ public class AuthorizeHandler {
                             CredentialIssuerConfig.ACTIVITY_PARAM, Integer.parseInt(activityValue));
                 }
 
-                Map<String, Object> checkDetailsValue =
+                List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
+                checkDetailsValue.add(
                         Map.of(
                                 "identityCheckPolicy",
                                 "published",
                                 "activityFrom",
                                 "1982-05-23",
                                 "checkMethod",
-                                "data");
+                                "data"));
 
                 if (validityNum < 2) {
                     gpg45Score.put(
