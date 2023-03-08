@@ -44,18 +44,14 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/address/env/CREDENTIAL_ISSUER_TYPE"
-  ClientConfig:
+  ClientConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/address/env/CLIENT_CONFIG"
+    Default: "/stubs/credential-issuer/address/env/CLIENT_CONFIG_FILE"
   ClientAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/address/env/CLIENT_AUDIENCE"
-  VcSigningKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/address/env/VC_SIGNING_KEY"
   VcIssuer:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -492,8 +488,8 @@ Resources:
             Value: !Ref CredentialIssuerName
           - Name: CREDENTIAL_ISSUER_TYPE
             Value: !Ref CredentialIssuerType
-          - Name: CLIENT_CONFIG
-            Value: !Ref ClientConfig
+          - Name: CLIENT_CONFIG_FILE
+            Value: !Ref ClientConfigFile
           - Name: CLIENT_AUDIENCE
             Value: !Ref ClientAudience
           - Name: VC_ISSUER
