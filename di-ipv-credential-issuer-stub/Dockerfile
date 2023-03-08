@@ -15,6 +15,8 @@ COPY --from=build \
     /app/
 
 WORKDIR /app
+ADD config config
+
 RUN tar -xvf di-ipv-credential-issuer-stub.tar \
     && rm di-ipv-credential-issuer-stub.tar
 
