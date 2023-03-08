@@ -23,5 +23,5 @@ USER appuser
 EXPOSE $PORT
 EXPOSE 5006
 
-ENTRYPOINT ["./src/bin/src"]
+ENTRYPOINT ["./di-ipv-credential-issuer-stub/bin/di-ipv-credential-issuer-stub"]
 LABEL project="di-ipv-credential-issuer-stub"
