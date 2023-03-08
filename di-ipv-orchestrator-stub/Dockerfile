@@ -24,5 +24,5 @@ USER appuser
 EXPOSE $PORT
 EXPOSE 5007
 
-ENTRYPOINT ["./src/bin/src"]
+ENTRYPOINT ["./di-ipv-orchestrator-stub/bin/di-ipv-orchestrator-stub"]
 LABEL project="di-ipv-orchestrator-stub"
