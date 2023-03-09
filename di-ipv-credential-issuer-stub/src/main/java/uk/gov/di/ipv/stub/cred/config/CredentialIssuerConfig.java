@@ -117,7 +117,7 @@ public class CredentialIssuerConfig {
         Path client_config = Path.of(client_config_file);
         try {
             String clientConfigJson = Files.readString(client_config);
-            LOGGER.info("Client Config JSON: {}", clientConfigJson);
+            LOGGER.info("Successfully read config file: {}", client_config_file);
             Type type = new TypeToken<Map<String, ClientConfig>>() {}.getType();
 
             return gson.fromJson(clientConfigJson, type);
