@@ -299,7 +299,213 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 
-  # http api gateway - which does nothing other than route everything to LB
+
+  # Lambda To handle Basic Auth for Rest Api Gateway
+  ApiAuthLambda:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - "ApiAuthLambdaLogGroup"
+    Properties:
+      # checkov:skip=CKV_AWS_116: This does not need dead letter queues
+      # checkov:skip=CKV_AWS_173: This does not need encrypted env variables
+      FunctionName: cri-core-stub-auth
+      Description: A lambda to handle rest api gateway basic authentication
+      ReservedConcurrentExecutions: 30
+      Handler: index.handler
+      Runtime: nodejs16.x
+      PackageType: Zip
+      CodeUri: authorizer
+      Architectures:
+        - arm64
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt LambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: {}
+        - Statement:
+          - Sid: EnforceStayinSpecificVpc
+            Effect: Allow
+            Action:
+              - 'lambda:CreateFunction'
+              - 'lambda:UpdateFunctionConfiguration'
+            Resource:
+              - "*"
+            Condition:
+              StringEquals:
+                "lambda:VpcIds":
+                  - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+        - Statement:
+          - Sid: "apigateway-cri-core-stub-invoke"
+            Effect: Allow
+            Principal:
+              Service: "apigateway.amazonaws.com"
+            Action:
+              - "lambda:InvokeFunction"
+            Resource:
+              - !GetAtt ApiAuthLambda.Arn
+            Condition:
+              ArnLike:
+                "AWS:SourceArn": !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGwHttpEndpoint}/authorizers/${APIAuth}"
+
+  ApiAuthLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/core/cri-stub-lambda-logs-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+
+  # restful api gateway - which handles basic auth and redirects to nlb which then redirects to alb
+  #
+  #
+   RestApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub "${AWS::StackName}-RestApiGateway"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-RestApiGateway"
+        - Key: Service
+          Value: ci/cd
+        - Key: Source
+          Value: alphagov/di-devplatform-demo-sam-app/node-with-waf/template.yaml
+
+  RestApiGatewayDeployment:
+    DependsOn: RestApiGatewayMethod
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      StageName: !Sub "${AWS::StackName}-RestApiGatewayStage"
+      StageDescription:
+        CacheClusterEnabled: true
+        CacheClusterSize: 0.5
+        CacheDataEncrypted: true
+        CacheTtlInSeconds: 300
+        CachingEnabled: true
+
+  RestApiGatewayAuthResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.WWW-Authenticate: "'Basic'"
+      ResponseTemplates:
+        "application/json" : '{"message":$context.error.messageString}'
+      ResponseType: UNAUTHORIZED
+      RestApiId: !Ref RestApiGateway
+      StatusCode: '401'
+
+  RestApiGatewayAuth:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      AuthorizerResultTtlInSeconds: 0
+      AuthorizerUri: !Join
+        - ''
+        - - 'arn:aws:apigateway:'
+          - !Ref 'AWS::Region'
+          - ':lambda:path/2015-03-31/functions/'
+          - !GetAtt
+            - ApiAuthLambda
+            - Arn
+          - /invocations
+      Type: REQUEST
+      IdentitySource: method.request.header.Authorization
+      Name: cri-core-stub-authorizer
+      RestApiId: !Ref RestApiGateway
+
+  RestApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_59"
+            comment: "API should have AuthorizationType if appropriate - this is intentionally public"
+    Properties:
+      HttpMethod: GET
+      ResourceId: !GetAtt RestApiGateway.RootResourceId
+      RestApiId: !Ref RestApiGateway
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref RestApiGatewayAuth
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionType: VPC_LINK
+        ConnectionId:
+          Fn::ImportValue: !Sub "${VpcStackName}-VpcLinkId"
+            !Sub "${VpcStackName}-ApiGatewayVpcLinkId"
+        IntegrationHttpMethod: GET
+        Uri: !Sub
+          - "http://${LBDNS}"
+          - LBDNS:
+              Fn::ImportValue:
+                !Sub "${VpcStackName}-ApiGatewayVpcLinkTargetNLBDNS"
+
+  RestApiGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      DeploymentId: !Ref RestApiGatewayDeployment
+      StageName: !Sub ${Environment}
+      RestApiId: !Ref RestApiGateway
+      AccessLogSetting:
+        DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
+        Format: $context.requestId $context.apiId
+      CacheClusterEnabled: true
+      CacheClusterSize: 0.5
+      TracingEnabled: true
+      MethodSettings:
+        - ResourcePath: /
+          HttpMethod: GET
+          MetricsEnabled: 'true'
+          DataTraceEnabled: 'false'
+
+  APIGWAccessLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-cri-api-gw-accesslogs
+      RetentionInDays: 14
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+
+  NetworkLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref NetworkLoadBalancerTargetGroup
+      LoadBalancerArn:
+        Fn::ImportValue:
+          !Sub "${VpcStackName}-ApiGatewayVpcLinkTargetNLB"
+      Port: 80
+      Protocol: TCP
+
+  NetworkLoadBalancerTargetGroup:
+    DependsOn: ApplicationLoadBalancerListener
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${AWS::StackName}-NLBTarGrp"
+      Port: 80
+      Protocol: TCP
+      Targets:
+        - Id: !Ref ApplicationLoadBalancer
+      TargetType: alb
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VpcStackName}-VpcId"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-NLBTarGrp"
+        - Key: Service
+          Value: ci/cd
+        - Key: Source
+          Value: alphagov/di-devplatform-demo-sam-app/node-with-waf/template.yaml
+
+
+ ## old http api gateway - will be removed
   ApiGwHttpEndpoint:
     Type: "AWS::ApiGatewayV2::Api"
     Properties:
@@ -365,75 +571,7 @@ Resources:
         - '$request.header.Authorization'
       Name: cri-core-stub-authorizer
 
-  APIGWAccessLogsGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-cri-api-gw-accesslogs
-      RetentionInDays: 14
-      KmsKeyId: !GetAtt LoggingKmsKey.Arn
-
-  # http api gateway lambda for handling auth
-  ApiAuthLambda:
-    Type: AWS::Serverless::Function
-    DependsOn:
-      - "ApiAuthLambdaLogGroup"
-    Properties:
-      # checkov:skip=CKV_AWS_116: This does not need dead letter queues
-      # checkov:skip=CKV_AWS_173: This does not need encrypted env variables
-      FunctionName: cri-core-stub-auth
-      Description: A lambda to handle http api gateway basic authentication
-      ReservedConcurrentExecutions: 30
-      Handler: index.handler
-      Runtime: nodejs16.x
-      PackageType: Zip
-      CodeUri: authorizer
-      Architectures:
-        - arm64
-      MemorySize: 256
-      Environment:
-        Variables:
-          ENVIRONMENT: !Sub "${Environment}"
-      VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-        SecurityGroupIds:
-          - !GetAtt LambdaSecurityGroup.GroupId
-      Policies:
-        - VPCAccessPolicy: {}
-        - Statement:
-          - Sid: EnforceStayinSpecificVpc
-            Effect: Allow
-            Action:
-              - 'lambda:CreateFunction'
-              - 'lambda:UpdateFunctionConfiguration'
-            Resource:
-              - "*"
-            Condition:
-              StringEquals:
-                "lambda:VpcIds":
-                  - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
-        - Statement:
-          - Sid: "apigateway-cri-core-stub-invoke"
-            Effect: Allow
-            Principal:
-              Service: "apigateway.amazonaws.com"
-            Action:
-              - "lambda:InvokeFunction"
-            Resource:
-              - !GetAtt ApiAuthLambda.Arn
-            Condition:
-              ArnLike:
-                "AWS:SourceArn": !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGwHttpEndpoint}/authorizers/${APIAuth}"
-
-  ApiAuthLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 14
-      LogGroupName: !Sub "/aws/core/cri-stub-lambda-logs-${Environment}"
-      KmsKeyId: !GetAtt LoggingKmsKey.Arn
-
-  # Private Application Load Balancer
+    # Private Application Load Balancer
   LoadBalancer:
     Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
     Properties:
