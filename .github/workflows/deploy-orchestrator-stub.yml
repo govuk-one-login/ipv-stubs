@@ -1,4 +1,4 @@
-name: Orch Stub Build & Push
+name: Orch Build Stub Build & Push
 on:
   workflow_dispatch:
   push:
