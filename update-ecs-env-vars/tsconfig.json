@@ -13,7 +13,7 @@
         "isolatedModules": true,
         "outDir" : "./build",
         "callbackWaitsForEmptyEventLoop" : true
-    },	
+    },
     "lib": ["dom"],
     "files" : ["./app.ts"]
 }

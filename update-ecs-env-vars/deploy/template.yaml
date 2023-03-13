@@ -1,0 +1,205 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Timeout: 30
+
+Description: >-
+  This creates the lambda function to update environment vars in the stubs ECS task definitions when the
+  corresponding parameter is changed.
+
+Parameters:
+  VpcStackName:
+    Description: >
+      The name of the stack that defines the VPC in which this container will
+      run.
+    Type: String
+  PermissionsBoundary:
+    Description: "The ARN of the permissions boundary to apply when creating IAM roles"
+    Type: String
+    Default: "none"
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+
+Conditions:
+
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
+
+Resources:
+  # lambda to update ECS defn
+  UpdateEnvLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: "../"
+      Handler: app.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - arm64
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt UpdateEnvDLQ.Arn
+      Environment:
+        Variables:
+          PREFIXES: |
+            [{ "clusterNamePrefix" : "core-passport-stub-CoreStubCluster-" ,
+              "ssmParamPrefix" : "/stubs/core/passport/env/" },
+              { "clusterNamePrefix" : "cri-fraud-stub-CriStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/fraud/env/" },
+              { "clusterName" : "cri-err-test-1-stub-CriStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-1/env/" },
+              { "clusterNamePrefix" : "orch-build-stub-OrchStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/build/orch/env/" },
+              { "clusterNamePrefix" : "orch-staging-stub-OrchStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/staging/orch/env/" },
+              { "clusterNamePrefix" : "cri-kbv-stub-CriStubCluster-"
+                  "ssmParamPrefix" : "/stubs/credential-issuer/kbv/env/" },
+              { "clusterNamePrefix" : "cri-err-test-2-stub-CriStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-2/env/" },
+              { "clusterNamePrefix" : "cri-passport-stub-CriStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/passport/env/" },
+              { "clusterNamePrefix" : "core-cri-stub-CoreStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/core/cri/env/" },
+              { "clusterNamePrefix" : "cri-dcmaw-stub-CriStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/dcmaw/env/" },
+              { "clusterNamePrefix" : "cri-act-history-stub-CriStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/activity-history/env/" },
+              { "clusterNamePrefix" : "cri-address-stub-CriStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/address/env/" },
+              { "clusterNamePrefix" : "cri-drv-license-stub-CriStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/driving-licence/env/" }]
+      KmsKeyArn: !GetAtt LambdaKmsKey.Arn
+      ReservedConcurrentExecutions: 1
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+
+      Events:
+        SSMUpdates:
+          Type: EventBridgeRule
+          Properties:
+            DeadLetterConfig:
+              Arn: !GetAtt PreUpdateEnvDLQ.Arn
+            Pattern: !Sub |
+              {
+                "source" : [ "aws.ssm" ],
+                "detail-type" : [ "Parameter Store Change" ],
+                "resources" : [ "arn:aws:ssm:${AWS::Region}:parameter/stubs/*" ],
+                "region" : [ "${AWS::Region}" ],
+                "detail" : {
+                  "operation" : [ "Update" ]
+                }
+              }
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt UpdateEnvLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - Statement:
+            - Sid: EnforceStayinSpecificVpc
+              Effect: Allow
+              Action:
+                - 'lambda:CreateFunction'
+                - 'lambda:UpdateFunctionConfiguration'
+              Resource:
+                - "*"
+              Condition:
+                StringEquals:
+                  "lambda:VpcIds":
+                    - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - app.ts
+
+  UpdateEnvLambdaSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: >-
+        UpdateEnvLambda Security Group
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow egress HTTPS traffic to vpc cidr from port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow ingress traffic from vpc cidr to port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+  # kms key for lambda
+  LambdaKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+
+  #lambda dlq
+  UpdateEnvDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: UpdateEnvLambdaDLQ
+      MessageRetentionPeriod: 1209600
+      RedriveAllowPolicy: |
+        {  "redrivePermission"  : "allowAll" }
+      KmsMasterKeyId: alias/aws/sqs
+  #Pre lambda dlq
+  PreUpdateEnvDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: PreUpdateEnvLambdaDLQ
+      MessageRetentionPeriod: 1209600
+      RedriveAllowPolicy: |
+        {  "redrivePermission"  : "allowAll" }
+      KmsMasterKeyId: alias/aws/sqs
