@@ -175,11 +175,11 @@ Resources:
         - IsNonProd
         - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
         - cri.core.stubs.account.gov.uk
-      ApiId: !Ref ApiGwHttpEndpoint
+      ApiId: !Ref RestApiGateway
       Stage: "$default"
     DependsOn:
       - CoreStubApiDomain
-      - APIStageDefault
+      - RestApiGatewayStage
 
   # dns rcord
   CoreStubDNSRecord:
@@ -299,80 +299,7 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 
-  # http api gateway - which does nothing other than route everything to LB
-  ApiGwHttpEndpoint:
-    Type: "AWS::ApiGatewayV2::Api"
-    Properties:
-      Name: !Sub ${AWS::StackName}-cri-api-gw
-      ProtocolType: HTTP
-
-  ApiGwHttpEndpointIntegration:
-    Type: "AWS::ApiGatewayV2::Integration"
-    Properties:
-      ApiId: !Ref ApiGwHttpEndpoint
-      IntegrationType: HTTP_PROXY
-      ConnectionId:
-        Fn::ImportValue: !Sub "${VpcStackName}-VpcLinkId"
-      ConnectionType: VPC_LINK
-      IntegrationMethod: ANY
-      IntegrationUri: !Ref LoadBalancerListener
-      PayloadFormatVersion: "1.0"
-
-  APIGWRoute:
-    Type: "AWS::ApiGatewayV2::Route"
-    Properties:
-      ApiId: !Ref ApiGwHttpEndpoint
-      RouteKey: "ANY /{proxy+}"
-      AuthorizationType: CUSTOM
-      AuthorizerId: !Ref APIAuth
-      Target: !Join
-        - /
-        - - integrations
-          - !Ref ApiGwHttpEndpointIntegration
-
-  APIStageDefault:
-    Type: "AWS::ApiGatewayV2::Stage"
-    Properties:
-      ApiId: !Ref ApiGwHttpEndpoint
-      StageName: $default
-      AutoDeploy: true
-      AccessLogSettings:
-        DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
-        Format: >-
-          {
-          "requestId":"$context.requestId",
-          "ip": "$context.identity.sourceIp",
-          "requestTime":"$context.requestTime",
-          "httpMethod":"$context.httpMethod",
-          "path": "$context.path",
-          "routeKey":"$context.routeKey",
-          "status":"$context.status",
-          "protocol":"$context.protocol",
-          "responseLength":"$context.responseLength",
-          "responseLatency":"$context.responseLatency"
-          }
-
-  APIAuth:
-    Type: AWS::ApiGatewayV2::Authorizer
-    Properties:
-      ApiId: !Ref ApiGwHttpEndpoint
-      AuthorizerPayloadFormatVersion: '2.0'
-      AuthorizerResultTtlInSeconds: 0
-      AuthorizerType: REQUEST
-      AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cri-core-stub-auth/invocations'
-      EnableSimpleResponses: true
-      IdentitySource:
-        - '$request.header.Authorization'
-      Name: cri-core-stub-authorizer
-
-  APIGWAccessLogsGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-cri-api-gw-accesslogs
-      RetentionInDays: 14
-      KmsKeyId: !GetAtt LoggingKmsKey.Arn
-
-  # http api gateway lambda for handling auth
+  # Lambda To handle Basic Auth for Rest Api Gateway
   ApiAuthLambda:
     Type: AWS::Serverless::Function
     DependsOn:
@@ -381,7 +308,7 @@ Resources:
       # checkov:skip=CKV_AWS_116: This does not need dead letter queues
       # checkov:skip=CKV_AWS_173: This does not need encrypted env variables
       FunctionName: cri-core-stub-auth
-      Description: A lambda to handle http api gateway basic authentication
+      Description: A lambda to handle rest api gateway basic authentication
       ReservedConcurrentExecutions: 30
       Handler: index.handler
       Runtime: nodejs16.x
@@ -413,6 +340,18 @@ Resources:
               StringEquals:
                 "lambda:VpcIds":
                   - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+#        - Statement:
+#          - Sid: "apigateway-cri-core-stub-invoke"
+#            Effect: Allow
+#            Principal:
+#              Service: "apigateway.amazonaws.com"
+#            Action:
+#              - "lambda:InvokeFunction"
+#            Resource:
+#              - !GetAtt ApiAuthLambda.Arn
+#            Condition:
+#              ArnLike:
+#                "AWS:SourceArn": !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/authorizers/${RestApiGatewayAuth}"
 
   ApiAuthLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -421,7 +360,164 @@ Resources:
       LogGroupName: !Sub "/aws/core/cri-stub-lambda-logs-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
-  # Private Application Load Balancer
+  # restful api gateway - which handles basic auth and redirects to nlb which then redirects to alb
+  #
+  #
+  RestApiGateway:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub "${AWS::StackName}-cri-rest-api-gw"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-cri-rest-api-gwRestApiGateway"
+        - Key: Service
+          Value: ci/cd
+        - Key: Source
+          Value: alphagov/di-ipv-stubs/di-ipv-core-stub/deploy/cri/template.yaml
+
+  RestApiGatewayDeployment:
+    DependsOn: RestApiGatewayMethod
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref RestApiGateway
+      StageName: $default
+      StageDescription:
+        CacheClusterEnabled: true
+        CacheClusterSize: 0.5
+        CacheDataEncrypted: true
+        CacheTtlInSeconds: 300
+        CachingEnabled: true
+
+  RestApiGatewayAuthResponse:
+    Type: AWS::ApiGateway::GatewayResponse
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.WWW-Authenticate: "'Basic'"
+      ResponseTemplates:
+        "application/json" : '{"message":$context.error.messageString}'
+      ResponseType: UNAUTHORIZED
+      RestApiId: !Ref RestApiGateway
+      StatusCode: '401'
+
+  RestApiGatewayAuth:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      AuthorizerResultTtlInSeconds: 0
+      AuthorizerUri: !Join
+        - ''
+        - - 'arn:aws:apigateway:'
+          - !Ref 'AWS::Region'
+          - ':lambda:path/2015-03-31/functions/'
+          - !GetAtt
+            - ApiAuthLambda
+            - Arn
+          - /invocations
+      Type: REQUEST
+      IdentitySource: method.request.header.Authorization
+      Name: cri-core-stub-authorizer
+      RestApiId: !Ref RestApiGateway
+
+  RestApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_59"
+            comment: "API should have AuthorizationType if appropriate - this is intentionally public"
+    Properties:
+      HttpMethod: GET
+      ResourceId: !GetAtt RestApiGateway.RootResourceId
+      RestApiId: !Ref RestApiGateway
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref RestApiGatewayAuth
+      Integration:
+        Type: HTTP_PROXY
+        ConnectionType: VPC_LINK
+        ConnectionId:
+          Fn::ImportValue:
+            !Sub "${VpcStackName}-ApiGatewayVpcLinkId"
+        IntegrationHttpMethod: GET
+        Uri: !Sub
+          - "http://${LBDNS}"
+          - LBDNS:
+              Fn::ImportValue:
+                !Sub "${VpcStackName}-ApiGatewayVpcLinkTargetNLBDNS"
+
+  RestApiGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      DeploymentId: !Ref RestApiGatewayDeployment
+      StageName: $default
+      RestApiId: !Ref RestApiGateway
+      AccessLogSetting:
+        DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
+        # Format: $context.requestId $context.apiId
+        Format: >-
+          {
+          "requestId":"$context.requestId",
+          "ip": "$context.identity.sourceIp",
+          "requestTime":"$context.requestTime",
+          "httpMethod":"$context.httpMethod",
+          "path": "$context.path",
+          "routeKey":"$context.routeKey",
+          "status":"$context.status",
+          "protocol":"$context.protocol",
+          "responseLength":"$context.responseLength",
+          "responseLatency":"$context.responseLatency"
+          }
+      CacheClusterEnabled: true
+      CacheClusterSize: 0.5
+      TracingEnabled: true
+      MethodSettings:
+        - ResourcePath: /
+          HttpMethod: GET
+          MetricsEnabled: 'true'
+          DataTraceEnabled: 'false'
+
+  APIGWAccessLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-cri-api-gw-accesslogs
+      RetentionInDays: 14
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+
+  # Network Load Balancer Connection to Rest Api - The NLB itself is created by the dev platform VPC
+  NetworkLoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref NetworkLoadBalancerTargetGroup
+      LoadBalancerArn:
+        Fn::ImportValue:
+          !Sub "${VpcStackName}-ApiGatewayVpcLinkTargetNLB"
+      Port: 80
+      Protocol: TCP
+
+  NetworkLoadBalancerTargetGroup:
+    DependsOn: LoadBalancerListener
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub "${AWS::StackName}-NLBTarGrp"
+      Port: 80
+      Protocol: TCP
+      Targets:
+        - Id: !Ref LoadBalancer
+      TargetType: alb
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${VpcStackName}-VpcId"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-NLBTarGrp"
+        - Key: Service
+          Value: ci/cd
+        - Key: Source
+          Value: alphagov/di-ipv-stubs/di-ipv-core-stub/deploy/cri/template.yaml
+
+  # Private Application Load Balancer This gets requests from the NLB,
+  # which gets a connection from the Rest Api
   LoadBalancer:
     Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
     Properties:
