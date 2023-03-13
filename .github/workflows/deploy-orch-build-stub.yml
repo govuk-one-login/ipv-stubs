@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - di-ipv-orchestrator-stub/**
-      - .github/workflows/deploy-orchestrator-stub.yml
+      - .github/workflows/deploy-orch-build-stub.yml
 
 jobs:
   dockerBuildAndPush:
@@ -25,7 +25,7 @@ jobs:
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ secrets.ORCH_GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.ORCH_BUILD_GH_ACTIONS_ROLE_ARN }}
           aws-region: eu-west-2
 
       - name: Login to Amazon ECR
@@ -48,7 +48,7 @@ jobs:
         env:
           CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ORCH_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.ORCH_BUILD_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -62,20 +62,20 @@ jobs:
         run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
 
       - name: SAM Validate
-        working-directory: ./di-ipv-orchestrator-stub/deploy
+        working-directory: ./di-ipv-orchestrator-stub/deploy-build
         run: sam validate --region ${{ env.AWS_REGION }}
 
       - name: SAM Package
-        working-directory: ./di-ipv-orchestrator-stub/deploy
+        working-directory: ./di-ipv-orchestrator-stub/deploy-build
         env:
-          ARTIFACT_BUCKET: ${{ secrets.ORCH_ARTIFACT_BUCKET_NAME }}
+          ARTIFACT_BUCKET: ${{ secrets.ORCH_BUILD_ARTIFACT_BUCKET_NAME }}
         run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Update SAM template with ECR image
-        working-directory: ./di-ipv-orchestrator-stub/deploy
+        working-directory: ./di-ipv-orchestrator-stub/deploy-build
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ORCH_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.ORCH_BUILD_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
 
@@ -83,18 +83,18 @@ jobs:
         id: signing
         uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc
         with:
-          template: ./di-ipv-orchestrator-stub/deploy/cf-template.yaml
+          template: ./di-ipv-orchestrator-stub/deploy-build/cf-template.yaml
           profile: ${{ secrets.SIGNING_PROFILE_NAME }}
 
       - name: SAM build and test
-        working-directory: ./di-ipv-orchestrator-stub/deploy
+        working-directory: ./di-ipv-orchestrator-stub/deploy-build
         run: sam build -t cf-template.yaml
 
       - name: Deploy SAM app
         uses: alphagov/di-devplatform-upload-action@v3
         with:
-          artifact-bucket-name: ${{ secrets.ORCH_ARTIFACT_BUCKET_NAME }}
+          artifact-bucket-name: ${{ secrets.ORCH_BUILD_ARTIFACT_BUCKET_NAME }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-          working-directory: ./di-ipv-orchestrator-stub/deploy
+          working-directory: ./di-ipv-orchestrator-stub/deploy-build
           template-file: cf-template.yaml
 

@@ -31,55 +31,55 @@ Parameters:
   OrchestratorClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_ID"
+    Default: "/stubs/staging/orch/env/ORCHESTRATOR_CLIENT_ID" #pragma: allowlist secret
   OrchestratorRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_REDIRECT_URL"
+    Default: "/stubs/staging/orch/env/ORCHESTRATOR_REDIRECT_URL" #pragma: allowlist secret
   OrchestratorClientJwtTtl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_JWT_TTL"
+    Default: "/stubs/staging/orch/env/ORCHESTRATOR_CLIENT_JWT_TTL" #pragma: allowlist secret
   OrchestratorPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_PORT"
+    Default: "/stubs/staging/orch/env/ORCHESTRATOR_PORT" #pragma: allowlist secret
   OrchestratorClientSigningKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY" #pragma: allowlist secret
+    Default: "/stubs/staging/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY" #pragma: allowlist secret
   OrchestratorJarEncryptionPublicKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store" #pragma: allowlist secret
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+    Default: "/stubs/staging/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   IpvBackchannelEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_BACKCHANNEL_ENDPOINT" #pragma: allowlist secret
+    Default: "/stubs/staging/orch/env/IPV_BACKCHANNEL_ENDPOINT" #pragma: allowlist secret
   IpvBackchannelTokenPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_BACKCHANNEL_TOKEN_PATH" #pragma: allowlist secret
+    Default: "/stubs/staging/orch/env/IPV_BACKCHANNEL_TOKEN_PATH" #pragma: allowlist secret
   IpvBackchannelUserIdentityPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_BACKCHANNEL_USER_IDENTITY_PATH" #pragma: allowlist secret
+    Default: "/stubs/staging/orch/env/IPV_BACKCHANNEL_USER_IDENTITY_PATH" #pragma: allowlist secret
   IpvEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_ENDPOINT"
+    Default: "/stubs/staging/orch/env/IPV_ENDPOINT" #pragma: allowlist secret
   IpvCoreAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_CORE_AUDIENCE"
+    Default: "/stubs/staging/orch/env/IPV_CORE_AUDIENCE" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/JAVA_OPTS"
+    Default: "/stubs/staging/orch/env/JAVA_OPTS" #pragma: allowlist secret
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/JBP_CONFIG_OPEN_JDK_JRE"
+    Default: "/stubs/staging/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
     # PassportPrivateApiKey:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
@@ -143,13 +143,13 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-staging.${Environment}.stubs.account.gov.uk"
+        - orch-staging.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
             - IsNonProd
-            - !Sub "orch.${Environment}.stubs.account.gov.uk"
-            - orch.stubs.account.gov.uk
+            - !Sub "orch-staging.${Environment}.stubs.account.gov.uk"
+            - orch-staging.stubs.account.gov.uk
           HostedZoneId: !If
             - IsNonProd
             - !ImportValue BuildPublicHostedZoneId
@@ -162,8 +162,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        -  orch.stubs.account.gov.uk
+        - !Sub "orch-staging.${Environment}.stubs.account.gov.uk"
+        -  orch-staging.stubs.account.gov.uk
       DomainNameConfigurations:
         - CertificateArn: !Ref OrchStubSSLCert
           EndpointType: REGIONAL
@@ -174,8 +174,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-staging.${Environment}.stubs.account.gov.uk"
+        - orch-staging.stubs.account.gov.uk
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -189,8 +189,8 @@ Resources:
       Type: A
       Name: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-staging.${Environment}.stubs.account.gov.uk"
+        - orch-staging.stubs.account.gov.uk
       HostedZoneId: !If
         - IsNonProd
         - !ImportValue BuildPublicHostedZoneId
@@ -578,7 +578,7 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/orch/*"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/staging/orch/*"
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -644,5 +644,5 @@ Resources:
 
 Outputs:
   OrchStubEnvironment:
-    Description: Orch Stub Environment
+    Description: Orch Build Stub Environment
     Value: !Ref Environment
