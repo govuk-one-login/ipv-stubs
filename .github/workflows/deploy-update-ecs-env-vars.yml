@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - di-ipv-orchestrator-stub/**
-      - .github/workflows/deploy-orchestrator-stub.yml
+      - update-ecs-env-vars/**
+      - .github/workflows/deploy-update-ecs-env-vars.yml
 
 jobs:
   dockerBuildAndPush:
