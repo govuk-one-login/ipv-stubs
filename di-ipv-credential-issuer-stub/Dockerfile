@@ -11,17 +11,19 @@ RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser
 RUN mkdir /app
 RUN apt-get update && apt-get install -y curl
 COPY --from=build \
-	/home/gradle/src/build/distributions/src.tar \
-	/app/
+    /home/gradle/src/build/distributions/di-ipv-credential-issuer-stub.tar \
+    /app/
 
 WORKDIR /app
-RUN tar -xvf src.tar \
-	&& rm src.tar
+ADD config config
+
+RUN tar -xvf di-ipv-credential-issuer-stub.tar \
+    && rm di-ipv-credential-issuer-stub.tar
 
 RUN chown -R appuser:appgroup /app/
 USER appuser
 EXPOSE $PORT
 EXPOSE 5006
 
-ENTRYPOINT ["./src/bin/src"]
+ENTRYPOINT ["./di-ipv-credential-issuer-stub/bin/di-ipv-credential-issuer-stub"]
 LABEL project="di-ipv-credential-issuer-stub"

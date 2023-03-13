@@ -2,13 +2,19 @@ package uk.gov.di.ipv.stub.cred.config;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CredentialIssuerConfig {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CredentialIssuerConfig.class);
     public static final String PORT = getConfigValue("CREDENTIAL_ISSUER_PORT", "8084");
     public static final String NAME =
             getConfigValue("CREDENTIAL_ISSUER_NAME", "Credential Issuer Stub");
@@ -46,7 +52,7 @@ public class CredentialIssuerConfig {
 
     public static ClientConfig getClientConfig(String clientId) {
         if (CLIENT_CONFIGS == null) {
-            CLIENT_CONFIGS = parseClientConfigs();
+            CLIENT_CONFIGS = parseClientConfigFile();
         }
         return CLIENT_CONFIGS.get(clientId);
     }
@@ -57,7 +63,7 @@ public class CredentialIssuerConfig {
 
     public static Map<String, ClientConfig> getClientConfigs() {
         if (CLIENT_CONFIGS == null) {
-            CLIENT_CONFIGS = parseClientConfigs();
+            CLIENT_CONFIGS = parseClientConfigFile();
         }
         return CLIENT_CONFIGS;
     }
@@ -99,5 +105,24 @@ public class CredentialIssuerConfig {
         Type type = new TypeToken<Map<String, ClientConfig>>() {}.getType();
 
         return gson.fromJson(clientConfigJson, type);
+    }
+
+    private static Map<String, ClientConfig> parseClientConfigFile() {
+        String client_config_file = getConfigValue("CLIENT_CONFIG_FILE", null);
+        LOGGER.info("Client Config File: {}", client_config_file);
+        if (client_config_file == null) {
+            return parseClientConfigs();
+        }
+
+        Path client_config = Path.of(client_config_file);
+        try {
+            String clientConfigJson = Files.readString(client_config);
+            LOGGER.info("Successfully read config file: {}", client_config_file);
+            Type type = new TypeToken<Map<String, ClientConfig>>() {}.getType();
+
+            return gson.fromJson(clientConfigJson, type);
+        } catch (IOException e) {
+            return new HashMap<>();
+        }
     }
 }

@@ -1,14 +1,14 @@
-name: Passport Core Stub - Secure Pipeline build, push & Ship
+name: "Error Testing 2 CRI Stub - Secure Pipeline build, push & Ship"
 on:
   push:
     branches:
       - main
     paths:
-      - di-ipv-core-stub/deploy/passport/*
-      - di-ipv-core-stub/gradle/**
-      - di-ipv-core-stub/src/**
-      - di-ipv-core-stub/*
-      - .github/workflows/passport-core-stub.yml
+      - di-ipv-credential-issuer-stub/deploy/error-testing-2/*
+      - di-ipv-credential-issuer-stub/gradle/**
+      - di-ipv-credential-issuer-stub/src/**
+      - di-ipv-credential-issuer-stub/*
+      - .github/workflows/cri-error-testing-2-stub.yml
 
 jobs:
   dockerBuildAndPush:
@@ -36,7 +36,7 @@ jobs:
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          role-to-assume: ${{ secrets.PASSPORT_CORE_GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.CRI_ERR_TEST_2_GH_ACTIONS_ROLE_ARN }}
           aws-region: eu-west-2
 
       - name: Login to Amazon ECR
@@ -56,14 +56,14 @@ jobs:
 
       - name: Copy Core Config into place
         id: copy-config-to-stub
-        run: cp -rpfv ./di-ipv-config/stubs/di-ipv-core-stub ./di-ipv-core-stub/config
+        run: cp -rpfv ./di-ipv-config/stubs/di-ipv-credential-issuer-stub ./di-ipv-credential-issuer-stub/config
 
       - name: Build, tag, sign and push image to Amazon ECR
-        working-directory: ./di-ipv-core-stub
+        working-directory: ./di-ipv-credential-issuer-stub
         env:
           CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.PASSPORT_CORE_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.CRI_ERR_TEST_2_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -77,29 +77,29 @@ jobs:
         run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
 
       - name: SAM Validate
-        working-directory: ./di-ipv-core-stub/deploy/passport
+        working-directory: ./di-ipv-credential-issuer-stub/deploy/error-testing-2
         run: sam validate --region ${{ env.AWS_REGION }}
 
       - name: SAM Package
-        working-directory: ./di-ipv-core-stub/deploy/passport
+        working-directory: ./di-ipv-credential-issuer-stub/deploy/error-testing-2
         env:
-          ARTIFACT_BUCKET: ${{ secrets.PASSPORT_CORE_ARTIFACT_BUCKET_NAME }}
+          ARTIFACT_BUCKET: ${{ secrets.CRI_ERR_TEST_2_ARTIFACT_BUCKET_NAME }}
         run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Update SAM template with ECR image
-        working-directory: ./di-ipv-core-stub/deploy/passport
+        working-directory: ./di-ipv-credential-issuer-stub/deploy/error-testing-2
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.PASSPORT_CORE_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.CRI_ERR_TEST_2_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
 
       - name: Compress Template
-        working-directory: ./di-ipv-core-stub/deploy/passport
+        working-directory: ./di-ipv-credential-issuer-stub/deploy/error-testing-2
         run: zip template.zip cf-template.yaml
 
       - name: Upload Compressed CloudFormation artifacts to S3
-        working-directory: ./di-ipv-core-stub/deploy/passport
+        working-directory: ./di-ipv-credential-issuer-stub/deploy/error-testing-2
         env:
-          ARTIFACT_BUCKET: ${{ secrets.PASSPORT_CORE_ARTIFACT_BUCKET_NAME }}
+          ARTIFACT_BUCKET: ${{ secrets.CRI_ERR_TEST_2_ARTIFACT_BUCKET_NAME }}
         run: aws s3 cp template.zip "s3://$ARTIFACT_BUCKET/template.zip" --metadata "repository=$GITHUB_REPOSITORY,commitsha=$GITHUB_SHA"
