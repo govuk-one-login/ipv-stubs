@@ -103,9 +103,7 @@ Resources:
                 "detail-type" : [ "Parameter Store Change" ],
                 "region" : [ "${AWS::Region}" ],
                 "detail" : {
-                  "name" : [
-                    "/stubs/*"
-                  ]
+                  "name" : [ "/stubs/*" ],
                   "operation" : [ "Update" ]
                 }
               }
