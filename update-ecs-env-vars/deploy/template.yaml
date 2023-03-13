@@ -55,29 +55,31 @@ Resources:
         Variables:
           PREFIXES: |
             [{ "clusterNamePrefix" : "core-passport-stub-CoreStubCluster-" ,
-              "ssmParamPrefex" : "/stubs/core/passport/env/" },
+              "ssmParamPrefix" : "/stubs/core/passport/env/" },
               { "clusterNamePrefix" : "cri-fraud-stub-CriStubCluster-" ,
-                "ssmParamPrefex" : "/stubs/credential-issuer/fraud/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/fraud/env/" },
               { "clusterName" : "cri-err-test-1-stub-CriStubCluster-" ,
-                "ssmParamPrefex" : "/stubs/credential-issuer/error-testing-1/env/" },
-              { "clusterNamePrefix" : "orch-stub-OrchStubCluster-" ,
-                "ssmParamPrefex" : "/stubs/orch/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-1/env/" },
+              { "clusterNamePrefix" : "orch-build-stub-OrchStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/build/orch/env/" },
+              { "clusterNamePrefix" : "orch-staging-stub-OrchStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/staging/orch/env/" },
               { "clusterNamePrefix" : "cri-kbv-stub-CriStubCluster-"
-                  "ssmParamPrefex" : "/stubs/credential-issuer/kbv/env/" },
+                  "ssmParamPrefix" : "/stubs/credential-issuer/kbv/env/" },
               { "clusterNamePrefix" : "cri-err-test-2-stub-CriStubCluster-" ,
-                "ssmParamPrefex" : "/stubs/credential-issuer/error-testing-2/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-2/env/" },
               { "clusterNamePrefix" : "cri-passport-stub-CriStubCluster-" ,
-                "ssmParamPrefex" : "/stubs/credential-issuer/passport/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/passport/env/" },
               { "clusterNamePrefix" : "core-cri-stub-CoreStubCluster-" ,
-                "ssmParamPrefex" : "/stubs/core/cri/env/" },
+                "ssmParamPrefix" : "/stubs/core/cri/env/" },
               { "clusterNamePrefix" : "cri-dcmaw-stub-CriStubCluster-" ,
-                "ssmParamPrefex" : "/stubs/credential-issuer/dcmaw/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/dcmaw/env/" },
               { "clusterNamePrefix" : "cri-act-history-stub-CriStubCluster-" ,
-                "ssmParamPrefex" : "/stubs/credential-issuer/activity-history/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/activity-history/env/" },
               { "clusterNamePrefix" : "cri-address-stub-CriStubCluster-" ,
-                "ssmParamPrefex" : "/stubs/credential-issuer/address/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/address/env/" },
               { "clusterNamePrefix" : "cri-drv-license-stub-CriStubCluster-" ,
-                "ssmParamPrefex" : "/stubs/credential-issuer/driving-licence/env/" }]
+                "ssmParamPrefix" : "/stubs/credential-issuer/driving-licence/env/" }]
       KmsKeyArn: !GetAtt LambdaKmsKey.Arn
       ReservedConcurrentExecutions: 1
       PermissionsBoundary: !If
