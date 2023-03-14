@@ -10,9 +10,9 @@ import {
     ListServicesCommandOutput, ListClustersCommand, DescribeClustersCommand
 } from "@aws-sdk/client-ecs";
 
-import { Context, EventBridgeEvent, Handler  } from "aws-lambda";
+import { Context, EventBridgeEvent } from "aws-lambda";
 
-export const handler = async (
+export const lambdaHandler = async (
   event: EventBridgeEvent<any, any>,
   context: Context
 ): Promise<object> => {
