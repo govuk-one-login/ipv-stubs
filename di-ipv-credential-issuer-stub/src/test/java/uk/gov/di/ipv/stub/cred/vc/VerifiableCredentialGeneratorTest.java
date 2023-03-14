@@ -112,6 +112,7 @@ public class VerifiableCredentialGeneratorTest {
         assertEquals("https://issuer.example.com", claimsSetTree.path(ISSUER).asText());
         assertEquals(userId, claimsSetTree.path(SUBJECT).asText());
         assertNotNull(claimsSetTree.path(NOT_BEFORE));
+        assertNotNull(claimsSetTree.get(EXPIRATION_TIME));
         assertEquals(
                 300,
                 claimsSetTree.path(EXPIRATION_TIME).asLong()
@@ -188,6 +189,7 @@ public class VerifiableCredentialGeneratorTest {
         JsonNode claimsSetTree =
                 objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");
 
+        assertNotNull(claimsSetTree.get(EXPIRATION_TIME));
         assertNull(
                 claimsSetTree
                         .get(VC_CLAIM)
@@ -198,5 +200,43 @@ public class VerifiableCredentialGeneratorTest {
                         .get(VC_CLAIM)
                         .get(VC_CREDENTIAL_SUBJECT)
                         .get(CREDENTIAL_SUBJECT_ADDRESS));
+    }
+
+    @Test
+    void shouldNotIncludeExpirationThatAreNotPopulated() throws Exception {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("name", List.of());
+        attributes.put("birthDate", List.of(Map.of("value", "1984-09-28")));
+
+        Map<String, Object> evidence =
+                Map.of(
+                        "type", "CriStubCheck",
+                        "strength", 4,
+                        "validity", 2);
+        String userId = "user-id";
+        Credential credential =
+                new Credential(
+                        attributes,
+                        evidence,
+                        userId,
+                        "clientIdValid",
+                        null);
+
+        SignedJWT verifiableCredential = vcGenerator.generate(credential);
+
+        JsonNode claimsSetTree =
+                objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");
+
+        assertNull(
+                claimsSetTree
+                        .get(VC_CLAIM)
+                        .get(VC_CREDENTIAL_SUBJECT)
+                        .get(CREDENTIAL_SUBJECT_NAME));
+        assertNull(
+                claimsSetTree
+                        .get(VC_CLAIM)
+                        .get(VC_CREDENTIAL_SUBJECT)
+                        .get(CREDENTIAL_SUBJECT_ADDRESS));
+        assertNull(claimsSetTree.get(EXPIRATION_TIME));
     }
 }
