@@ -278,27 +278,6 @@ Resources:
       GroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
       SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
 
-  LambdaSecurityGroup:
-    Type: "AWS::EC2::SecurityGroup"
-    Properties:
-      GroupDescription: >-
-        Http api auth Lambda Security Group outbound permissions ruleset
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          Description: Allow egress HTTPS traffic to vpc cidr from port 443
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-      SecurityGroupIngress:
-        - CidrIp:
-            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
-          Description: Allow ingress traffic from vpc cidr to port 443
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
-      VpcId:
-        Fn::ImportValue: !Sub ${VpcStackName}-VpcId
-
   # Lambda To handle Basic Auth for Rest Api Gateway
   ApiAuthLambda:
     Type: AWS::Serverless::Function
@@ -307,6 +286,7 @@ Resources:
     Properties:
       # checkov:skip=CKV_AWS_116: This does not need dead letter queues
       # checkov:skip=CKV_AWS_173: This does not need encrypted env variables
+      # checkov:skip=CKV_AWS_117: This lambda should not sit inside vpc
       FunctionName: cri-core-stub-auth
       Description: A lambda to handle rest api gateway basic authentication
       ReservedConcurrentExecutions: 30
@@ -320,26 +300,6 @@ Resources:
       Environment:
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
-      VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-        SecurityGroupIds:
-          - !GetAtt LambdaSecurityGroup.GroupId
-      Policies:
-        - VPCAccessPolicy: {}
-        - Statement:
-          - Sid: EnforceStayinSpecificVpc
-            Effect: Allow
-            Action:
-              - 'lambda:CreateFunction'
-              - 'lambda:UpdateFunctionConfiguration'
-            Resource:
-              - "*"
-            Condition:
-              StringEquals:
-                "lambda:VpcIds":
-                  - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 #        - Statement:
 #          - Sid: "apigateway-cri-core-stub-invoke"
 #            Effect: Allow
