@@ -176,7 +176,7 @@ Resources:
         - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
         - cri.core.stubs.account.gov.uk
       ApiId: !Ref RestApiGateway
-      Stage: !Ref Environment
+      Stage: !Sub "${AWS::StackName}-${Environment}"
     DependsOn:
       - CoreStubApiDomain
       - RestApiGatewayStage
@@ -380,7 +380,7 @@ Resources:
     Type: AWS::ApiGateway::Deployment
     Properties:
       RestApiId: !Ref RestApiGateway
-      StageName: !Ref Environment
+      StageName: !Sub "${AWS::StackName}-${Environment}"
       StageDescription:
         CacheClusterEnabled: true
         CacheClusterSize: 0.5
@@ -447,7 +447,9 @@ Resources:
     Type: AWS::ApiGateway::Stage
     Properties:
       DeploymentId: !Ref RestApiGatewayDeployment
-      StageName: !Ref Environment
+      StageName: !Sub
+        - "${AWS::StackName}-${Environment}-${StackId}"
+        - StackId: !Select [2, !Split ['/', !Ref AWS::StackId]]
       RestApiId: !Ref RestApiGateway
       AccessLogSetting:
         DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
