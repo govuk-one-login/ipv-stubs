@@ -176,7 +176,7 @@ Resources:
         - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
         - cri.core.stubs.account.gov.uk
       ApiId: !Ref RestApiGateway
-      Stage: "$default"
+      Stage: !Ref Environment
     DependsOn:
       - CoreStubApiDomain
       - RestApiGatewayStage
@@ -380,7 +380,7 @@ Resources:
     Type: AWS::ApiGateway::Deployment
     Properties:
       RestApiId: !Ref RestApiGateway
-      StageName: $default
+      StageName: !Ref Environment
       StageDescription:
         CacheClusterEnabled: true
         CacheClusterSize: 0.5
@@ -447,7 +447,7 @@ Resources:
     Type: AWS::ApiGateway::Stage
     Properties:
       DeploymentId: !Ref RestApiGatewayDeployment
-      StageName: $default
+      StageName: !Ref Environment
       RestApiId: !Ref RestApiGateway
       AccessLogSetting:
         DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
