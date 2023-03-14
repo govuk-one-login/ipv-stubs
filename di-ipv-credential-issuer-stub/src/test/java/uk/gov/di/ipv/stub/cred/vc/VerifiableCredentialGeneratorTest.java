@@ -214,13 +214,7 @@ public class VerifiableCredentialGeneratorTest {
                         "strength", 4,
                         "validity", 2);
         String userId = "user-id";
-        Credential credential =
-                new Credential(
-                        attributes,
-                        evidence,
-                        userId,
-                        "clientIdValid",
-                        null);
+        Credential credential = new Credential(attributes, evidence, userId, "clientIdValid", null);
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 

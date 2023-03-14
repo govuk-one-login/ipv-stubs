@@ -295,7 +295,8 @@ public class AuthorizeHandler {
                                     queryParamsMap.value(CredentialIssuerConfig.EXPIRY_SECONDS));
 
                     Long exp = null;
-                    if (expFlag != null && expFlag.equals(CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE)) {
+                    if (expFlag != null
+                            && expFlag.equals(CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE)) {
                         if (expHours == 0 && expMinutes == 0 && expSeconds == 0) {
                             exp =
                                     Instant.now()

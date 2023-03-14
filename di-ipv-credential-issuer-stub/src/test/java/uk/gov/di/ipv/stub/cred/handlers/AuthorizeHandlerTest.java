@@ -345,7 +345,8 @@ class AuthorizeHandlerTest {
     }
 
     @Test
-    void generateResponseShouldPersistSharedAttributesCombinedWithJsonInput_withoutVCExp() throws Exception {
+    void generateResponseShouldPersistSharedAttributesCombinedWithJsonInput_withoutVCExp()
+            throws Exception {
         Map<String, String[]> queryParams = validGenerateResponseQueryParams();
         queryParams.remove(CredentialIssuerConfig.EXPIRY_FLAG);
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
@@ -514,7 +515,9 @@ class AuthorizeHandlerTest {
         queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[] {"3"});
         queryParams.put(
                 CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, new String[] {"A01, D03"});
-        queryParams.put(CredentialIssuerConfig.EXPIRY_FLAG, new String[] {CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE});
+        queryParams.put(
+                CredentialIssuerConfig.EXPIRY_FLAG,
+                new String[] {CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE});
         queryParams.put(CredentialIssuerConfig.EXPIRY_HOURS, new String[] {"5"});
         queryParams.put(CredentialIssuerConfig.EXPIRY_MINUTES, new String[] {"0"});
         queryParams.put(CredentialIssuerConfig.EXPIRY_SECONDS, new String[] {"0"});

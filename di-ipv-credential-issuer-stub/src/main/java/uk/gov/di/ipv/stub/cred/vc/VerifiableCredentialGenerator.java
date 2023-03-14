@@ -93,15 +93,16 @@ public class VerifiableCredentialGenerator {
             Credential credential, Map<String, Object> vc)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         Instant now = Instant.now();
-        JWTClaimsSet.Builder claim = new JWTClaimsSet.Builder()
-                .claim(SUBJECT, credential.getUserId())
-                .claim(ISSUER, CredentialIssuerConfig.getVerifiableCredentialIssuer())
-                .claim(
-                        AUDIENCE,
-                        CredentialIssuerConfig.getClientConfig(credential.getClientId())
-                                .getAudienceForVcJwt())
-                .claim(NOT_BEFORE, now.getEpochSecond())
-                .claim(VC_CLAIM, vc);
+        JWTClaimsSet.Builder claim =
+                new JWTClaimsSet.Builder()
+                        .claim(SUBJECT, credential.getUserId())
+                        .claim(ISSUER, CredentialIssuerConfig.getVerifiableCredentialIssuer())
+                        .claim(
+                                AUDIENCE,
+                                CredentialIssuerConfig.getClientConfig(credential.getClientId())
+                                        .getAudienceForVcJwt())
+                        .claim(NOT_BEFORE, now.getEpochSecond())
+                        .claim(VC_CLAIM, vc);
         if (!Objects.isNull(credential.getExp())) {
             claim = claim.claim(EXPIRATION_TIME, credential.getExp());
         }
