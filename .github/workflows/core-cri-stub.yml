@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - di-ipv-core-stub/deploy/cri/*
+      - di-ipv-core-stub/deploy/cri/**
       - di-ipv-core-stub/gradle/**
       - di-ipv-core-stub/src/**
       - di-ipv-core-stub/*
