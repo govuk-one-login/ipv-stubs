@@ -9,7 +9,7 @@ import {
     DescribeServicesCommand,
     ListServicesCommandOutput, ListClustersCommand, DescribeClustersCommand
 } from "@aws-sdk/client-ecs";
-
+import { SSMClient, GetParametersCommand } from "@aws-sdk/client-ssm";
 import { Context, EventBridgeEvent } from "aws-lambda";
 
 export const lambdaHandler = async (
@@ -88,16 +88,28 @@ export const lambdaHandler = async (
                                                         console.log("containerDefns: ");
                                                         console.log(containerDefn);
                                                         if (containerDefn.environment) {
-                                                            containerDefn.environment.forEach(function (environmentVar) {
+                                                            for(const environmentVar of containerDefn.environment){
                                                                 //see if this param has an env var with this event:
                                                                 // @ts-ignore
                                                                 if (event.detail.name.substring(prefix.ssmParamPrefix.length) == environmentVar.name) {
                                                                     console.log("environmentVar matched!!: ");
                                                                     console.log(environmentVar.name);
-                                                                    doUpdate = true;
-                                                                    environmentVar.value = event.detail.description;
+                                                                    //now to get the parameter value
+                                                                    const getParameterInput = {
+                                                                        Names : [
+                                                                            event.detail.name
+                                                                        ]
+                                                                    }
+
+                                                                    const client = new SSMClient({apiVersion: "2014-11-13", region: myRegion});
+                                                                    const getParameterCommand = new GetParametersCommand(getParameterInput);
+                                                                    const getParameterResponse = await client.send(getParameterCommand);
+                                                                    if(getParameterResponse.Parameters) {
+                                                                        doUpdate = true;
+                                                                        environmentVar.value = getParameterResponse.Parameters[0].Value;
+                                                                    }
                                                                 }
-                                                            })
+                                                            }
                                                         }
                                                     }
                                                     if (doUpdate) {
@@ -109,7 +121,8 @@ export const lambdaHandler = async (
                                                         const registerTaskDefinitionCommand = new RegisterTaskDefinitionCommand(<RegisterTaskDefinitionCommandInput>taskDefnDesc.taskDefinition);
                                                         const registerTaskDefnResponse = await ecsClient.send(registerTaskDefinitionCommand);
                                                         if (registerTaskDefnResponse) {
-                                                            console.log("registerTaskDefnResponse: " + registerTaskDefnResponse);
+                                                            console.log("registerTaskDefnResponse: ");
+                                                            console.log(registerTaskDefnResponse);
                                                             if (registerTaskDefnResponse.taskDefinition) {
                                                                 //apply new definition:
 
@@ -122,6 +135,8 @@ export const lambdaHandler = async (
                                                                 const updateServiceResponse = await ecsClient.send(updateServiceCommand);
 
                                                                 if (updateServiceResponse) {
+                                                                    console.log("updateServiceResponse: ");
+                                                                    console.log(updateServiceResponse);
                                                                     //remove the old task definitions?
                                                                     response = {
                                                                         statusCode: 200,

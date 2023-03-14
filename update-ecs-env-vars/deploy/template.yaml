@@ -55,31 +55,33 @@ Resources:
         Variables:
           PREFIXES: |
             [{ "clusterNamePrefix" : "core-passport-stub-CoreStubCluster-" ,
-              "ssmParamPrefix" : "/stubs/core/passport/env/" },
+              "ssmParamPrefix" : "/stubs/core/passport/env/" } ,
               { "clusterNamePrefix" : "cri-fraud-stub-CriStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/credential-issuer/fraud/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/fraud/env/" } ,
               { "clusterName" : "cri-err-test-1-stub-CriStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-1/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-1/env/" } ,
               { "clusterNamePrefix" : "orch-build-stub-OrchStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/build/orch/env/" },
+                "ssmParamPrefix" : "/stubs/build/orch/env/" } ,
               { "clusterNamePrefix" : "orch-staging-stub-OrchStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/staging/orch/env/" },
-              { "clusterNamePrefix" : "cri-kbv-stub-CriStubCluster-"
-                  "ssmParamPrefix" : "/stubs/credential-issuer/kbv/env/" },
+                "ssmParamPrefix" : "/stubs/staging/orch/env/" } ,
+              { "clusterNamePrefix" : "cri-kbv-stub-CriStubCluster-" ,
+                  "ssmParamPrefix" : "/stubs/credential-issuer/kbv/env/" } ,
               { "clusterNamePrefix" : "cri-err-test-2-stub-CriStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-2/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-2/env/" } ,
               { "clusterNamePrefix" : "cri-passport-stub-CriStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/credential-issuer/passport/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/passport/env/" } ,
               { "clusterNamePrefix" : "core-cri-stub-CoreStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/core/cri/env/" },
+                "ssmParamPrefix" : "/stubs/core/cri/env/" } ,
               { "clusterNamePrefix" : "cri-dcmaw-stub-CriStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/credential-issuer/dcmaw/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/dcmaw/env/" } ,
               { "clusterNamePrefix" : "cri-act-history-stub-CriStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/credential-issuer/activity-history/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/activity-history/env/" } ,
               { "clusterNamePrefix" : "cri-address-stub-CriStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/credential-issuer/address/env/" },
+                "ssmParamPrefix" : "/stubs/credential-issuer/address/env/" } ,
               { "clusterNamePrefix" : "cri-drv-license-stub-CriStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/credential-issuer/driving-licence/env/" }]
+                "ssmParamPrefix" : "/stubs/credential-issuer/driving-licence/env/" } ,
+              { "clusterNamePrefix" : "core-front-dev-tobys-CoreFrontCluster-" ,
+                "ssmParamPrefix" : "/stubs/tobytesting/thistest/" } ]
       KmsKeyArn: !GetAtt LambdaKmsKey.Arn
       ReservedConcurrentExecutions: 1
       PermissionsBoundary: !If
@@ -127,6 +129,35 @@ Resources:
                 StringEquals:
                   "lambda:VpcIds":
                     - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+        - Statement:
+            - Sid: AllowECSpermissions
+              Effect: Allow
+              Action:
+                - 'ecs:DeregisterTaskDefinition'
+                - 'ecs:DescribeTaskDefinition'
+                - 'ecs:DescribeServices'
+                - 'ecs:ListServices'
+                - 'ecs:UpdateService'
+                - 'ecs:DescribeClusters'
+                - 'ecs:ListClusters'
+                - 'ecs:ListTaskDefinitions'
+                - 'ecs:RegisterTaskDefinition'
+              Resource:
+                - "*"
+        - Statement:
+            - Sid: AllowPassRole
+              Effect: Allow
+              Action:
+                - 'iam:PassRole'
+              Resource: "*"
+        - Statement:
+            - Sid: AllowSSM
+              Effect: Allow
+              Action:
+                - "ssm:GetParameters"
+              Resource: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/*
+
+
 
     Metadata: # Manage esbuild properties
       BuildMethod: esbuild
@@ -134,6 +165,9 @@ Resources:
         Minify: true
         Target: "es2020"
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        External:
+          - "@aws-sdk/client-ecs"
+          - "@aws-sdk/client-ssm"
         EntryPoints:
           - app.ts
 
