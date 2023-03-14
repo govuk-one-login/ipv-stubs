@@ -38,11 +38,11 @@ jobs:
         working-directory: ./update-ecs-env-vars/deploy
         run: sam validate --region ${{ env.AWS_REGION }}
 
-      - name: SAM Package
-        working-directory: ./update-ecs-env-vars/deploy
-        env:
-          ARTIFACT_BUCKET: ${{ secrets.UPDATE_ECS_ARTIFACT_BUCKET_NAME }}
-        run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
+      #- name: SAM Package
+      #  working-directory: ./update-ecs-env-vars/deploy
+      #  env:
+      #    ARTIFACT_BUCKET: ${{ secrets.UPDATE_ECS_ARTIFACT_BUCKET_NAME }}
+      #  run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Generate code signing config
         id: signing
@@ -53,7 +53,7 @@ jobs:
 
       - name: SAM build and test
         working-directory: ./update-ecs-env-vars/deploy
-        run: sam build -t cf-template.yaml
+        run: sam build
 
       - name: Deploy SAM app
         uses: alphagov/di-devplatform-upload-action@v3
@@ -61,5 +61,5 @@ jobs:
           artifact-bucket-name: ${{ secrets.UPDATE_ECS_ARTIFACT_BUCKET_NAME }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
           working-directory: ./update-ecs-env-vars/deploy
-          template-file: cf-template.yaml
+          template-file: template.yaml
 
