@@ -283,6 +283,7 @@ public class AuthorizeHandler {
                         gpgMap.put(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, ciList);
                     }
 
+                    String expFlag = queryParamsMap.value(CredentialIssuerConfig.EXPIRY_FLAG);
                     int expHours =
                             Integer.parseInt(
                                     queryParamsMap.value(CredentialIssuerConfig.EXPIRY_HOURS));
@@ -293,21 +294,23 @@ public class AuthorizeHandler {
                             Integer.parseInt(
                                     queryParamsMap.value(CredentialIssuerConfig.EXPIRY_SECONDS));
 
-                    long exp;
-                    if (expHours == 0 && expMinutes == 0 && expSeconds == 0) {
-                        exp =
-                                Instant.now()
-                                        .plusSeconds(
-                                                CredentialIssuerConfig
-                                                        .getVerifiableCredentialTtlSeconds())
-                                        .getEpochSecond();
-                    } else {
-                        exp =
-                                Instant.now()
-                                        .plusSeconds(expSeconds)
-                                        .plusSeconds(60L * expMinutes)
-                                        .plusSeconds(3600L * expHours)
-                                        .getEpochSecond();
+                    Long exp = null;
+                    if (expFlag != null && !expFlag.equals(CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE)) {
+                        if (expHours == 0 && expMinutes == 0 && expSeconds == 0) {
+                            exp =
+                                    Instant.now()
+                                            .plusSeconds(
+                                                    CredentialIssuerConfig
+                                                            .getVerifiableCredentialTtlSeconds())
+                                            .getEpochSecond();
+                        } else {
+                            exp =
+                                    Instant.now()
+                                            .plusSeconds(expSeconds)
+                                            .plusSeconds(60L * expMinutes)
+                                            .plusSeconds(3600L * expHours)
+                                            .getEpochSecond();
+                        }
                     }
 
                     Credential credential =

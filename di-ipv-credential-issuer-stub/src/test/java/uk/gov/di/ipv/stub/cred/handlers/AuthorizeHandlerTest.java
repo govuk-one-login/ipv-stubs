@@ -62,11 +62,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -345,6 +341,32 @@ class AuthorizeHandlerTest {
         assertNotNull(persistedEvidence.get("txn"));
         assertNotNull(persistedEvidence.get("strengthScore"));
         assertNotNull(persistedEvidence.get("validityScore"));
+        assertNotNull(persistedCredential.getValue().getExp());
+    }
+
+    @Test
+    void generateResponseShouldPersistSharedAttributesCombinedWithJsonInput_and() throws Exception {
+        Map<String, String[]> queryParams = validGenerateResponseQueryParams();
+        queryParams.put(CredentialIssuerConfig.EXPIRY_FLAG, new String[] {CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE});
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+
+        ArgumentCaptor<Credential> persistedCredential = ArgumentCaptor.forClass(Credential.class);
+
+        verify(mockCredentialService)
+                .persist(persistedCredential.capture(), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
+        Map<String, Object> persistedAttributes = persistedCredential.getValue().getAttributes();
+        Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
+        assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
+        assertEquals("test-value", persistedAttributes.get("test"));
+        assertArrayEquals(new String[] {"A01", "D03"}, (String[]) persistedEvidence.get("ci"));
+        assertEquals("IdentityCheck", persistedEvidence.get("type"));
+        assertNotNull(persistedEvidence.get("txn"));
+        assertNotNull(persistedEvidence.get("strengthScore"));
+        assertNotNull(persistedEvidence.get("validityScore"));
+        assertNull(persistedCredential.getValue().getExp());
     }
 
     @Test
