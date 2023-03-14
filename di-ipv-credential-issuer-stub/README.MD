@@ -33,11 +33,6 @@ To run locally, you can run the startup script.
 This will first build the project with gradle,
 and after it will attempt to run it. Java 17 is required.
 
-Once started, visit the `/authorize` endpoint with the required query params
- [http://localhost:8084/authorize?response_type=code&client_id=test&redirect_uri=http://example.com](http://localhost:8084/authorize?response_type=code&client_id=test&redirect_uri=http://example.com).
-
-By clicking on the `Generate Auth Code` button you should be redirected to the given redirect_uri with an authentication code as a query param.
-
 ### IntelliJ Run Configuration
 
 To run locally, you can configure an IntelliJ run configuration. Ensure that Java 17 is installed and [IntelliJ has this defined as a SDK](https://www.jetbrains.com/help/idea/sdk.html#define-sdk). The `di-ipv-credential-issuer-stub` should be opened as the project root.
@@ -47,6 +42,13 @@ To run locally, you can configure an IntelliJ run configuration. Ensure that Jav
 3. Set module as `di-ipv-credential-issuer-stub.main`
 4. Select main class as `uk.gov.di.ipv.stub.cred.App`
 5. Set [Environment Variables](#environment) as a semi-colon seperated list
+
+### Accessing the Stub
+
+Once started via either method, visit the `/authorize` endpoint with the required query params:
+http://localhost:8084/authorize?client_id=ipv-core&request=replace-with-auth-JWT
+
+An auth JWT can be generated using [OAuth stub client](https://github.com/alphagov/di-stub-oauth-client/tree/wip-build-authorize-jar-url) or by contacting a team member for an example JWT.
 
 ### Remote Debugging
 
