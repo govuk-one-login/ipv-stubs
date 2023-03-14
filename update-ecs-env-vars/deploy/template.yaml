@@ -44,7 +44,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: "../"
-      Handler: app.handler
+      Handler: app.lambdaHandler
       Runtime: nodejs18.x
       Architectures:
         - arm64
