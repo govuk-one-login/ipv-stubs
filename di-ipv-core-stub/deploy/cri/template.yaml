@@ -295,7 +295,7 @@ Resources:
       PackageType: Zip
       CodeUri: authorizer
       Architectures:
-        - arm64
+        - x86_64
       MemorySize: 256
       Environment:
         Variables:
