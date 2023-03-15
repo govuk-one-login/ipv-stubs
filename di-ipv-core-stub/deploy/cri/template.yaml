@@ -300,6 +300,9 @@ Resources:
       Environment:
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: /stubs/core/*
 #      Events:
 #        RestApiGateway:
 #          Type: Api
