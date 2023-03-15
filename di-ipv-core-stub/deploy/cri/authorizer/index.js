@@ -21,6 +21,8 @@ exports.handler = function (event, context, callback) {
 }
 */
 
+console.log("Running Script")
+
 exports.handler = async(event, context, callback) => {
     const auth = await getParam();
     const authorizationHeader = event.headers.Authorization
@@ -28,6 +30,7 @@ exports.handler = async(event, context, callback) => {
     const plainCreds = (new Buffer(encodedCreds, 'base64')).toString().split(':')
     const username = plainCreds[0]
     const password = plainCreds[1]
+    console.log(auth)
 
     if (!authorizationHeader) return callback('Unauthorized')
 

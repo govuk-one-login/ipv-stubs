@@ -300,7 +300,16 @@ Resources:
       Environment:
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
-#        - Statement:
+#      Events:
+#        RestApiGateway:
+#          Type: Api
+#          Properties:
+#            RestApiId: !Ref RestApiGateway
+#            Path: /
+#            Method: get
+#            RequestParameters:
+#              - method.request.header.Authorization
+##        - Statement:
 #          - Sid: "apigateway-cri-core-stub-invoke"
 #            Effect: Allow
 #            Principal:
@@ -312,6 +321,16 @@ Resources:
 #            Condition:
 #              ArnLike:
 #                "AWS:SourceArn": !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/authorizers/${RestApiGatewayAuth}"
+
+  ApiAuthlambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ApiAuthLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/${AWS::StackName}-${Environment}/GET
+
+
 
   ApiAuthLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -340,13 +359,6 @@ Resources:
     Type: AWS::ApiGateway::Deployment
     Properties:
       RestApiId: !Ref RestApiGateway
-      StageName: !Sub "${AWS::StackName}-${Environment}"
-      StageDescription:
-        CacheClusterEnabled: true
-        CacheClusterSize: 0.5
-        CacheDataEncrypted: true
-        CacheTtlInSeconds: 300
-        CachingEnabled: true
 
   RestApiGatewayAuthResponse:
     Type: AWS::ApiGateway::GatewayResponse
@@ -407,9 +419,7 @@ Resources:
     Type: AWS::ApiGateway::Stage
     Properties:
       DeploymentId: !Ref RestApiGatewayDeployment
-      StageName: !Sub
-        - "${AWS::StackName}-${Environment}-${StackId}"
-        - StackId: !Select [2, !Split ['/', !Ref AWS::StackId]]
+      StageName: !Sub "${AWS::StackName}-${Environment}"
       RestApiId: !Ref RestApiGateway
       AccessLogSetting:
         DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
