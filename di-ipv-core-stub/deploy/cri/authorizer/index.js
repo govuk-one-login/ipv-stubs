@@ -25,7 +25,7 @@ console.log("Running Script")
 
 exports.handler = async(event, context, callback) => {
     const auth = await getParam();
-    const authorizationHeader = event.headers.Authorization
+    const authorizationHeader = event.headers.authorization
     const encodedCreds = authorizationHeader.split(' ')[1]
     const plainCreds = (new Buffer(encodedCreds, 'base64')).toString().split(':')
     const username = plainCreds[0]
