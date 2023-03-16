@@ -155,34 +155,6 @@ Resources:
             - !ImportValue CorePublicHostedZoneId
       ValidationMethod: DNS
 
-  # api domain entries / mapping
-  CoreStubRestApiDomain:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      CertificateArn: !Ref CoreStubSSLCert
-      DomainName: !If
-        - IsNonProd
-        - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
-        -  cri.core.stubs.account.gov.uk
-      EndpointConfiguration:
-         Types:
-           - EDGE
-           - REGIONAL
-      SecurityPolicy: TLS_1_2
-
-  CoreStubRestApiMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    Properties:
-      DomainName: !If
-        - IsNonProd
-        - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
-        - cri.core.stubs.account.gov.uk
-      RestApiId: !Ref RestApiGateway
-      Stage: !Sub "${AWS::StackName}-${Environment}"
-    DependsOn:
-      - CoreStubRestApiDomain
-      - RestApiGatewayStage
-
   # dns rcord
   CoreStubDNSRecord:
     Type: AWS::Route53::RecordSet
@@ -323,30 +295,30 @@ Resources:
 
   # restful api gateway - which handles basic auth and redirects to nlb which then redirects to alb
   #
-  #RestAuthorizerRole:
-  #  Type: "AWS::IAM::Role"
-  #  Properties:
-  #    AssumeRolePolicyDocument:
-  #      Version: 2012-10-17
-  #      Statement:
-  #        - Action: "sts:AssumeRole"
-  #          Effect: Allow
-  #          Principal:
-  #            Service: apigateway.amazonaws.com
-  #    Policies:
-  #      - PolicyName: ExecuteLambda
-  #        PolicyDocument:
-  #          Version: "2012-10-17"
-  #          Statement:
-  #            - Effect: Allow
-  #              Action:
-  #                - "lambda:InvokeFunction"
-  #              Resource:
-  #                - !GetAtt ApiAuthLambda.Arn
-  #    PermissionsBoundary: !If
-  #      - UsePermissionsBoundary
-  #      - !Ref PermissionsBoundary
-  #      - !Ref AWS::NoValue
+
+  # api domain entries / mapping
+  CoreStubRestApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      CertificateArn: !Ref CoreStubSSLCert
+      DomainName: !If
+        - IsNonProd
+        - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
+        -  cri.core.stubs.account.gov.uk
+      SecurityPolicy: TLS_1_2
+
+  CoreStubRestApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !If
+        - IsNonProd
+        - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
+        - cri.core.stubs.account.gov.uk
+      RestApiId: !Ref RestApiGateway
+      Stage: !Sub "${AWS::StackName}-${Environment}"
+    DependsOn:
+      - CoreStubRestApiDomain
+      - RestApiGatewayStage
 
   RestApiGateway:
     Type: AWS::ApiGateway::RestApi
@@ -381,7 +353,6 @@ Resources:
     Type: AWS::ApiGateway::Authorizer
     Properties:
       AuthorizerResultTtlInSeconds: 0
-      # AuthorizerCredentials: !GetAtt RestAuthorizerRole.Arn
       AuthorizerUri: !Join
         - ''
         - - 'arn:aws:apigateway:'
