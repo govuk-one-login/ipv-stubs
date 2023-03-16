@@ -304,7 +304,7 @@ Resources:
   CoreStubRestApiDomain:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      CertificateArn: !Ref CoreStubSSLCert
+      RegionalCertificateArn: !Ref CoreStubSSLCert
       #CertificateArn: !Sub
       #   - "arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/${certId}"
       #   - certId: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, certId ]
