@@ -112,48 +112,54 @@ Mappings:
       desiredTaskCount: 1
       environment: dev
       platform: core
+      certId: "748080cc-1b67-4aea-a6b4-3513c1d3e68f"
     "826978934233": #Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: build
       platform: core-stubs
+      certId: "748080cc-1b67-4aea-a6b4-3513c1d3e68f"
     "616199614141": #Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: build
       platform: stubs
+      certId: "748080cc-1b67-4aea-a6b4-3513c1d3e68f"
     "388905755587": #Stubs Prod
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: production
       platform: stubs
+      certId: "3b075315-6ebf-4334-9f6f-d14f3ecda71b"
   SecurityGroups:
     PrefixListIds:
       dynamodb: "pl-b3a742da"
       s3: "pl-7ca54015"
 
 Resources:
-  # ssl cert
-  CoreStubSSLCert:
-    Type: AWS::CertificateManager::Certificate
-    Properties:
-      DomainName: !If
-        - IsNonProd
-        - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
-        - cri.core.stubs.account.gov.uk
-      DomainValidationOptions:
-        - DomainName: !If
-            - IsNonProd
-            - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
-            - cri.core.stubs.account.gov.uk
-          HostedZoneId: !If
-            - IsNonProd
-            - !ImportValue BuildCorePublicHostedZoneId
-            - !ImportValue CorePublicHostedZoneId
-      ValidationMethod: DNS
+  # ssl cert - This has to be "click-opsed"
+  # as rest api gateways can only use certs generated
+  # in us-east-1
+  #CoreStubSSLCert:
+  #  Type: AWS::CertificateManager::Certificate
+  #  Properties:
+  #    DomainName: !If
+  #      - IsNonProd
+  #      - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
+  #      - cri.core.stubs.account.gov.uk
+  #    DomainValidationOptions:
+  #      - DomainName: !If
+  #          - IsNonProd
+  #          - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
+  #          - cri.core.stubs.account.gov.uk
+  #        HostedZoneId: !If
+  #          - IsNonProd
+  #          - !ImportValue BuildCorePublicHostedZoneId
+  #          - !ImportValue CorePublicHostedZoneId
+  #    ValidationMethod: DNS
 
   # dns rcord
   CoreStubDNSRecord:
@@ -300,11 +306,13 @@ Resources:
   CoreStubRestApiDomain:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      CertificateArn: !Ref CoreStubSSLCert
+      CertificateArn: !Sub
+         - "arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/${certId}"
+         - certId: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, certId ]
       DomainName: !If
         - IsNonProd
         - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
-        -  cri.core.stubs.account.gov.uk
+        - cri.core.stubs.account.gov.uk
       SecurityPolicy: TLS_1_2
 
   CoreStubRestApiMapping:
