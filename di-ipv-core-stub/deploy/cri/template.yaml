@@ -302,7 +302,7 @@ Resources:
           ENVIRONMENT: !Sub "${Environment}"
       Policies:
         - SSMParameterReadPolicy:
-            ParameterName: /stubs/core/*
+            ParameterName: stubs/core/*
 
   ApiAuthlambdaApiGatewayInvoke:
     Type: AWS::Lambda::Permission
