@@ -160,7 +160,12 @@ Resources:
 
 
 
-    Metadata: # Manage esbuild properties
+    Metadata:
+      checkov:
+        skip:
+          - id: "CKV_AWS_109"
+            comment: "This requires a broad set of perms"
+      # Manage esbuild properties
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
