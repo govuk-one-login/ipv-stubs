@@ -47,7 +47,7 @@ async function getParam() {
       Name: '/stubs/core/cri/env/CORE_STUB_API_AUTH',
       WithDecryption: false
     });
-    const paramDetails = await cliend.send(command);
+    const paramDetails = await ssm.send(command);
     console.log(paramDetails)
     const data = JSON.parse(paramDetails.Parameter.Value);
     return data;
