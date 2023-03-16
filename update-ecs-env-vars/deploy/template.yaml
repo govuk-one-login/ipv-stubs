@@ -42,6 +42,7 @@ Resources:
   # lambda to update ECS defn
   UpdateEnvLambda:
     Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
     Properties:
       CodeUri: "../"
       Handler: app.lambdaHandler
