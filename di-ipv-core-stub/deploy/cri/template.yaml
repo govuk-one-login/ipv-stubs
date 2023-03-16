@@ -365,7 +365,7 @@ Resources:
   RestApiGatewayAuth:
     Type: AWS::ApiGateway::Authorizer
     Properties:
-      AuthorizerResultTtlInSeconds: 0
+      AuthorizerResultTtlInSeconds: 300
       AuthorizerUri: !Join
         - ''
         - - 'arn:aws:apigateway:'
@@ -374,7 +374,7 @@ Resources:
           - !GetAtt ApiAuthLambda.Arn
           - /invocations
       Type: REQUEST
-      IdentitySource: method.request.header.Authorization
+      IdentitySource: method.request.header.authorization
       Name: cri-core-stub-authorizer
       RestApiId: !Ref RestApiGateway
 
