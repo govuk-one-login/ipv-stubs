@@ -39,6 +39,8 @@ exports.handler = async(event, context, callback) => {
     console.log(plainCreds)
 
     if (!(username === auth.username && password === auth.password)) return callback('Unauthorized')
+
+    const authResponse = buildAllowAllPolicy(event, username)
     callback(null, authResponse)
 }
 
