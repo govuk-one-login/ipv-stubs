@@ -291,7 +291,7 @@ Resources:
       Description: A lambda to handle rest api gateway basic authentication
       ReservedConcurrentExecutions: 30
       Handler: index.handler
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       PackageType: Zip
       CodeUri: authorizer
       Architectures:
