@@ -156,29 +156,31 @@ Resources:
       ValidationMethod: DNS
 
   # api domain entries / mapping
-  CoreStubApiDomain:
-    Type: AWS::ApiGatewayV2::DomainName
+  CoreStubRestApiDomain:
+    Type: AWS::ApiGateway::DomainName
     Properties:
+      CertificateArn: !Ref CoreStubSSLCert
       DomainName: !If
         - IsNonProd
         - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
         -  cri.core.stubs.account.gov.uk
-      DomainNameConfigurations:
-        - CertificateArn: !Ref CoreStubSSLCert
-          EndpointType: REGIONAL
-          SecurityPolicy: TLS_1_2
+      EndpointConfiguration:
+         Types:
+           - EDGE
+           - REGIONAL
+      SecurityPolicy: TLS_1_2
 
-  CoreStubApiMapping:
-    Type: AWS::ApiGatewayV2::ApiMapping
+  CoreStubRestApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
     Properties:
       DomainName: !If
         - IsNonProd
         - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
         - cri.core.stubs.account.gov.uk
-      ApiId: !Ref RestApiGateway
+      RestApiId: !Ref RestApiGateway
       Stage: !Sub "${AWS::StackName}-${Environment}"
     DependsOn:
-      - CoreStubApiDomain
+      - CoreStubRestApiDomain
       - RestApiGatewayStage
 
   # dns rcord
@@ -195,8 +197,8 @@ Resources:
         - !ImportValue BuildCorePublicHostedZoneId
         - !ImportValue CorePublicHostedZoneId
       AliasTarget:
-        DNSName: !GetAtt CoreStubApiDomain.RegionalDomainName
-        HostedZoneId: !GetAtt CoreStubApiDomain.RegionalHostedZoneId
+        DNSName: !GetAtt CoreStubRestApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt CoreStubRestApiDomain.RegionalHostedZoneId
 
   # Security Groups for the Lambda, ECS service and load balancer
   LoadBalancerSG:
@@ -321,30 +323,30 @@ Resources:
 
   # restful api gateway - which handles basic auth and redirects to nlb which then redirects to alb
   #
-  RestAuthorizerRole:
-    Type: "AWS::IAM::Role"
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action: "sts:AssumeRole"
-            Effect: Allow
-            Principal:
-              Service: apigateway.amazonaws.com
-      Policies:
-        - PolicyName: ExecuteLambda
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - "lambda:InvokeFunction"
-                Resource:
-                  - !GetAtt ApiAuthLambda.Arn
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
+  #RestAuthorizerRole:
+  #  Type: "AWS::IAM::Role"
+  #  Properties:
+  #    AssumeRolePolicyDocument:
+  #      Version: 2012-10-17
+  #      Statement:
+  #        - Action: "sts:AssumeRole"
+  #          Effect: Allow
+  #          Principal:
+  #            Service: apigateway.amazonaws.com
+  #    Policies:
+  #      - PolicyName: ExecuteLambda
+  #        PolicyDocument:
+  #          Version: "2012-10-17"
+  #          Statement:
+  #            - Effect: Allow
+  #              Action:
+  #                - "lambda:InvokeFunction"
+  #              Resource:
+  #                - !GetAtt ApiAuthLambda.Arn
+  #    PermissionsBoundary: !If
+  #      - UsePermissionsBoundary
+  #      - !Ref PermissionsBoundary
+  #      - !Ref AWS::NoValue
 
   RestApiGateway:
     Type: AWS::ApiGateway::RestApi
@@ -379,7 +381,7 @@ Resources:
     Type: AWS::ApiGateway::Authorizer
     Properties:
       AuthorizerResultTtlInSeconds: 0
-      AuthorizerCredentials: !GetAtt RestAuthorizerRole.Arn
+      # AuthorizerCredentials: !GetAtt RestAuthorizerRole.Arn
       AuthorizerUri: !Join
         - ''
         - - 'arn:aws:apigateway:'
