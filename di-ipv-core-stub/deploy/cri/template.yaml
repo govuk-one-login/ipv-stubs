@@ -303,27 +303,6 @@ Resources:
       Policies:
         - SSMParameterReadPolicy:
             ParameterName: /stubs/core/*
-#      Events:
-#        RestApiGateway:
-#          Type: Api
-#          Properties:
-#            RestApiId: !Ref RestApiGateway
-#            Path: /
-#            Method: get
-#            RequestParameters:
-#              - method.request.header.Authorization
-##        - Statement:
-#          - Sid: "apigateway-cri-core-stub-invoke"
-#            Effect: Allow
-#            Principal:
-#              Service: "apigateway.amazonaws.com"
-#            Action:
-#              - "lambda:InvokeFunction"
-#            Resource:
-#              - !GetAtt ApiAuthLambda.Arn
-#            Condition:
-#              ArnLike:
-#                "AWS:SourceArn": !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/authorizers/${RestApiGatewayAuth}"
 
   ApiAuthlambdaApiGatewayInvoke:
     Type: AWS::Lambda::Permission
@@ -332,8 +311,6 @@ Resources:
       FunctionName: !GetAtt ApiAuthLambda.Arn
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/${AWS::StackName}-${Environment}/GET
-
-
 
   ApiAuthLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -344,7 +321,31 @@ Resources:
 
   # restful api gateway - which handles basic auth and redirects to nlb which then redirects to alb
   #
-  #
+  RestAuthorizerRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+      Policies:
+        - PolicyName: ExecuteLambda
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "lambda:InvokeFunction"
+                Resource:
+                  - !GetAtt ApiAuthLambda.Arn
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
   RestApiGateway:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -378,6 +379,7 @@ Resources:
     Type: AWS::ApiGateway::Authorizer
     Properties:
       AuthorizerResultTtlInSeconds: 0
+      AuthorizerCredentials: !GetAtt RestAuthorizerRole.Arn
       AuthorizerUri: !Join
         - ''
         - - 'arn:aws:apigateway:'
