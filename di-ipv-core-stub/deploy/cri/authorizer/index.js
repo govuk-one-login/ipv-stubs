@@ -1,4 +1,5 @@
-const { SSMClient } = require("@aws-sdk/client-ssm");
+const { SSMClient, GetParameterCommand } = require("@aws-sdk/client-ssm");
+const ssm = new SSMClient({region: 'eu-west-2'});
 
 /*
 exports.handler = function (event, context, callback) {
@@ -42,11 +43,12 @@ exports.handler = async(event, context, callback) => {
 }
 
 async function getParam() {
-    const ssm = new SSMClient({region: 'eu-west-2'});
-    const paramDetails = await ssm.getParameter({
-      Name: '/stubs/core/cri/env/CORE_STUB_API_AUTH', /* required */
+    const command = new GetParameterCommand({
+      Name: '/stubs/core/cri/env/CORE_STUB_API_AUTH',
       WithDecryption: false
     });
+    const paramDetails = await cliend.send(command);
+    console.log(paramDetails)
     const data = JSON.parse(paramDetails.Parameter.Value);
     return data;
 }
