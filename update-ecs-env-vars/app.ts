@@ -38,6 +38,8 @@ export const lambdaHandler = async (
                 console.log(listClustersResult);
 
                 if (listClustersResult.clusterArns) {
+                    console.log("clusterArns: ");
+                    console.log(listClustersResult.clusterArns);
                     const describeClustersParams = {
                         clusters: listClustersResult.clusterArns
                     };
