@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - di-ipv-core-stub/deploy/cri/**
+      - di-ipv-core-stub/deploy/cri-rest-api/**
       - di-ipv-core-stub/gradle/**
       - di-ipv-core-stub/src/**
       - di-ipv-core-stub/*
@@ -78,17 +78,17 @@ jobs:
         run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
 
       - name: SAM Validate
-        working-directory: ./di-ipv-core-stub/deploy/cri
+        working-directory: ./di-ipv-core-stub/deploy/cri-rest-api
         run: sam validate --region ${{ env.AWS_REGION }}
 
       - name: SAM Package
-        working-directory: ./di-ipv-core-stub/deploy/cri
+        working-directory: ./di-ipv-core-stub/deploy/cri-rest-api
         env:
           ARTIFACT_BUCKET: ${{ secrets.CORE_CRI_ARTIFACT_BUCKET_NAME }}
         run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Update SAM template with ECR image
-        working-directory: ./di-ipv-core-stub/deploy/cri
+        working-directory: ./di-ipv-core-stub/deploy/cri-rest-api
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.CORE_CRI_ECR_REPOSITORY }}
@@ -99,11 +99,11 @@ jobs:
         id: signing
         uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc
         with:
-          template: ./di-ipv-core-stub/deploy/cri/cf-template.yaml
+          template: ./di-ipv-core-stub/deploy/cri-rest-api/cf-template.yaml
           profile: ${{ secrets.SIGNING_PROFILE_NAME }}
 
       - name: SAM build and test
-        working-directory: ./di-ipv-core-stub/deploy/cri
+        working-directory: ./di-ipv-core-stub/deploy/cri-rest-api
         run: sam build -t cf-template.yaml
 
       - name: Deploy SAM app
@@ -111,5 +111,5 @@ jobs:
         with:
             artifact-bucket-name: ${{ secrets.CORE_CRI_ARTIFACT_BUCKET_NAME }}
             signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-            working-directory: ./di-ipv-core-stub/deploy/cri
+            working-directory: ./di-ipv-core-stub/deploy/cri-rest-api
             template-file: cf-template.yaml
