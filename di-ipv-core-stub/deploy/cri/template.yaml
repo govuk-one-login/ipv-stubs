@@ -282,13 +282,13 @@ Resources:
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/*
 
-#  ApiAuthlambdaApiGatewayInvoke:
-#    Type: AWS::Lambda::Permission
-#    Properties:
-#      Action: lambda:InvokeFunction
-#      FunctionName: !GetAtt ApiAuthLambda.Arn
-#      Principal: apigateway.amazonaws.com
-#      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/${AWS::StackName}-${Environment}/GET
+  ApiAuthlambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ApiAuthLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/${AWS::StackName}-${Environment}/GET
 
   ApiAuthLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -374,7 +374,7 @@ Resources:
           - !GetAtt ApiAuthLambda.Arn
           - /invocations
       Type: REQUEST
-      IdentitySource: method.request.header.BasicAuth
+      IdentitySource: method.request.header.basicauth
       Name: cri-core-stub-authorizer
       RestApiId: !Ref RestApiGateway
 
