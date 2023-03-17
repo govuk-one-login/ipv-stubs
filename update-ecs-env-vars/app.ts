@@ -30,6 +30,7 @@ export const lambdaHandler = async (
                 console.log(event.detail.name);
                 const myRegion: string = "eu-west-2";
                 const ecsClient = new ECSClient({apiVersion: "2014-11-13", region: myRegion});
+                console.log(ecsClient);
                 //get the list of clusters
                 const listClustersParams = {};
                 const listClustersCommand = new ListClustersCommand(listClustersParams);
