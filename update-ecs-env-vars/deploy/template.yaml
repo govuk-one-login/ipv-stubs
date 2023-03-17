@@ -131,7 +131,7 @@ Resources:
                   "lambda:VpcIds":
                     - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
         - Statement:
-            - Sid: AllowECSTaskDefnpermissions
+            - Sid: AllowECSTaskDefnPermissions
               Effect: Allow
               Action:
                 - 'ecs:DeregisterTaskDefinition'
@@ -140,23 +140,11 @@ Resources:
                 - 'ecs:RegisterTaskDefinition'
                 - 'ecs:ListClusters'
                 - 'ecs:ListServices'
-              Resource:
-                - "*"
-        - Statement:
-            - Sid: AllowECSServicepermissions
-              Effect: Allow
-              Action:
+                - 'ecs:DescribeClusters'
                 - 'ecs:DescribeServices'
                 - 'ecs:UpdateService'
               Resource:
-                - !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:service/*
-        - Statement:
-            - Sid: AllowECSClusterpermissions
-              Effect: Allow
-              Action:
-                - 'ecs:DescribeClusters'
-              Resource:
-                - !Sub arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:cluster/*
+                - "*"
         - Statement:
             - Sid: AllowPassRole
               Effect: Allow
