@@ -292,7 +292,7 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt ApiAuthLambda.Arn
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/${AWS::StackName}-${Environment}/ANY
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/${AWS::StackName}-${Environment}/GET
 
   ApiAuthLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -390,7 +390,7 @@ Resources:
           - id: "CKV_AWS_59"
             comment: "API should have AuthorizationType if appropriate - this is intentionally public"
     Properties:
-      HttpMethod: ANY
+      HttpMethod: GET
       ResourceId: !GetAtt RestApiGateway.RootResourceId
       RestApiId: !Ref RestApiGateway
       AuthorizationType: CUSTOM
@@ -401,7 +401,7 @@ Resources:
         ConnectionId:
           Fn::ImportValue:
             !Sub "${VpcStackName}-ApiGatewayVpcLinkId"
-        IntegrationHttpMethod: ANY
+        IntegrationHttpMethod: GET
         Uri: !Sub
           - "http://${LBDNS}"
           - LBDNS:
@@ -434,8 +434,8 @@ Resources:
       CacheClusterEnabled: false
       TracingEnabled: true
       MethodSettings:
-        - ResourcePath: /{proxy+}
-          HttpMethod: ANY
+        - ResourcePath: /
+          HttpMethod: GET
           MetricsEnabled: 'true'
           DataTraceEnabled: 'false'
 
