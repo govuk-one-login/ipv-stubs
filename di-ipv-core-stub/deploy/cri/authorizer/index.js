@@ -22,13 +22,13 @@ exports.handler = async(event, context, callback) => {
     };
 
     if (username === auth.username && password === auth.password) {
-      console.log("Login Succeeded, Returning:", authResponse)
       response = {
           "isAuthorized": true,
           "context": {
               "Authorization": "Succeeded"
           }
       };
+      console.log("Login Succeeded, Returning:", response)
     }
     return response;
 }
