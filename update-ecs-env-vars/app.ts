@@ -7,7 +7,9 @@ import {
     RegisterTaskDefinitionCommandInput,
     ListServicesCommand,
     DescribeServicesCommand,
-    ListServicesCommandOutput, ListClustersCommand, DescribeClustersCommand
+    ListServicesCommandOutput,
+    ListClustersCommand,
+    DescribeClustersCommand
 } from "@aws-sdk/client-ecs";
 import { SSMClient, GetParametersCommand } from "@aws-sdk/client-ssm";
 import { Context, EventBridgeEvent } from "aws-lambda";
