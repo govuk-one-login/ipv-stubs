@@ -439,15 +439,6 @@ Resources:
           MetricsEnabled: 'true'
           DataTraceEnabled: 'false'
 
-  Stack:
-    Type: 'AWS::ApiGateway::Resource'
-    Properties:
-      RestApiId: !Ref RestApiGateway
-      ParentId: !GetAtt
-        - RestApiGateway
-        - RootResourceId
-      PathPart: "/{proxy+}"
-
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
