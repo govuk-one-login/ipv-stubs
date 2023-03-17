@@ -26,7 +26,8 @@ export const lambdaHandler = async (
         for(const prefix of prefixes) {
             console.log(prefix);
             if (event.detail.name.substring(0, prefix.ssmParamPrefix.length) == prefix.ssmParamPrefix) {
-
+                console.log('Event name matched!');
+                console.log(event.detail.name);
                 const myRegion: string = "eu-west-2";
                 const ecsClient = new ECSClient({apiVersion: "2014-11-13", region: myRegion});
                 //get the list of clusters
