@@ -1,0 +1,115 @@
+name: CRI PreProd Core Stub - Secure Pipeline build, push & Ship
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - di-ipv-core-stub/deploy/cri-preprod/**
+      - di-ipv-core-stub/gradle/**
+      - di-ipv-core-stub/src/**
+      - di-ipv-core-stub/*
+      - .github/workflows/core-cri-preprod-stub.yml
+
+jobs:
+  dockerBuildAndPush:
+    name: Docker build and push
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: eu-west-2
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+
+      - name: Checkout config repo
+        uses: actions/checkout@v3
+        with:
+          repository: alphagov/di-ipv-config
+          token: ${{ secrets.IPV_CONFIG_PAT }}
+          path: ./di-ipv-config
+          fetch-depth: '0'
+          ref: 'refs/heads/main'
+
+      - name: Set up AWS creds
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: ${{ secrets.CORE_CRI_PP_GH_ACTIONS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Create tag
+        id: create-tag
+        run: |
+          IMAGE_TAG="${{ github.sha }}-$(date +'%Y-%m-%d-%H%M%S')"
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v1.9.0'
+
+      - name: Copy Core Config into place
+        id: copy-config-to-stub
+        run: cp -rpfv ./di-ipv-config/stubs/di-ipv-core-stub ./di-ipv-core-stub/config
+
+      - name: Build, tag, sign and push image to Amazon ECR
+        working-directory: ./di-ipv-core-stub
+        env:
+          CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.CORE_CRI_PP_ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          cosign sign --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Set up SAM cli
+        uses: aws-actions/setup-sam@v2
+
+      - name: sam fix https://github.com/aws/aws-sam-cli/issues/4527
+        run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
+
+      - name: SAM Validate
+        working-directory: ./di-ipv-core-stub/deploy/cri
+        run: sam validate --region ${{ env.AWS_REGION }}
+
+      - name: SAM Package
+        working-directory: ./di-ipv-core-stub/deploy/cri
+        env:
+          ARTIFACT_BUCKET: ${{ secrets.CORE_CRI_PP_ARTIFACT_BUCKET_NAME }}
+        run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
+
+      - name: Update SAM template with ECR image
+        working-directory: ./di-ipv-core-stub/deploy/cri
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.CORE_CRI_PP_ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
+        run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
+
+      - name: Generate code signing config
+        id: signing
+        uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc
+        with:
+          template: ./di-ipv-core-stub/deploy/cri/cf-template.yaml
+          profile: ${{ secrets.SIGNING_PROFILE_NAME }}
+
+      - name: SAM build and test
+        working-directory: ./di-ipv-core-stub/deploy/cri
+        run: sam build -t cf-template.yaml
+
+      - name: Deploy SAM app
+        uses: alphagov/di-devplatform-upload-action@v3
+        with:
+            artifact-bucket-name: ${{ secrets.CORE_CRI_PP_ARTIFACT_BUCKET_NAME }}
+            signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+            working-directory: ./di-ipv-core-stub/deploy/cri
+            template-file: cf-template.yaml
