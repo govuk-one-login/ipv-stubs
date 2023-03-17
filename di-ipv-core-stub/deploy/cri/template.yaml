@@ -288,6 +288,7 @@ Resources:
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt ApiAuthLambda.Arn
+      FunctionUrlAuthType: NONE
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGwHttpEndpoint}/authorizers/${APIAuth}
 
@@ -384,7 +385,7 @@ Resources:
     Properties:
       ApiId: !Ref ApiGwHttpEndpoint
       AuthorizerPayloadFormatVersion: '2.0'
-      AuthorizerResultTtlInSeconds: 0
+      AuthorizerResultTtlInSeconds: 300
       AuthorizerType: REQUEST
       #AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cri-core-stub-auth/invocations'
       AuthorizerUri: !Join

@@ -14,17 +14,23 @@ exports.handler = async(event, context, callback) => {
     const username = plainCreds[0]
     const password = plainCreds[1]
 
-    /*
-      console.log(auth)
-      console.log(encodedCreds)
-      console.log(plainCreds)
-    */
+    let response = {
+        "isAuthorized": false,
+        "context": {
+            "Authorization": "failed"
+        }
+    };
 
-    if (!(username === auth.username && password === auth.password)) return callback('Unauthorized')
-
-    const authResponse = buildAllowAllPolicy(event, username)
-    console.log("Login Succeeded, Returning:", authResponse)
-    callback(null, authResponse)
+    if (username === auth.username && password === auth.password) {
+      console.log("Login Succeeded, Returning:", authResponse)
+      response = {
+          "isAuthorized": true,
+          "context": {
+              "Authorization": "Succeeded"
+          }
+      };
+    }
+    return response;
 }
 
 async function getParam() {
@@ -38,28 +44,3 @@ async function getParam() {
     return data;
 }
 
-function buildAllowAllPolicy (event, principalId) {
-  var apiOptions = {}
-  var tmp = event.methodArn.split(':')
-  var apiGatewayArnTmp = tmp[5].split('/')
-  var awsAccountId = tmp[4]
-  var awsRegion = tmp[3]
-  var restApiId = apiGatewayArnTmp[0]
-  var stage = apiGatewayArnTmp[1]
-  var apiArn = 'arn:aws:execute-api:' + awsRegion + ':' + awsAccountId + ':' +
-    restApiId + '/' + stage + '/*/*'
-  const policy = {
-    principalId: principalId,
-    policyDocument: {
-      Version: '2012-10-17',
-      Statement: [
-        {
-          Action: 'execute-api:Invoke',
-          Effect: 'Allow',
-          Resource: [apiArn]
-        }
-      ]
-    }
-  }
-  return policy
-};
