@@ -19,9 +19,12 @@ export const lambdaHandler = async (
     console.log(event);
     let response: any = "";
     //check this is an event for this lambda
+    console.log(process.env.PREFIXES);
     if(process.env.PREFIXES) {
         const prefixes = JSON.parse(process.env.PREFIXES);
+        console.log(prefixes);
         for(const prefix of prefixes) {
+            console.log(prefix);
             if (event.detail.name.substring(0, prefix.ssmParamPrefix.length) == prefix.ssmParamPrefix) {
 
                 const myRegion: string = "eu-west-2";
