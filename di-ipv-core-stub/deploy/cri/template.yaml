@@ -282,13 +282,13 @@ Resources:
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/*
 
-  ApiAuthlambdaApiGatewayInvoke:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt ApiAuthLambda.Arn
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/${AWS::StackName}-${Environment}/GET
+#  ApiAuthlambdaApiGatewayInvoke:
+#    Type: AWS::Lambda::Permission
+#    Properties:
+#      Action: lambda:InvokeFunction
+#      FunctionName: !GetAtt ApiAuthLambda.Arn
+#      Principal: apigateway.amazonaws.com
+#      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${RestApiGateway}/${AWS::StackName}-${Environment}/GET
 
   ApiAuthLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -374,7 +374,7 @@ Resources:
           - !GetAtt ApiAuthLambda.Arn
           - /invocations
       Type: REQUEST
-      IdentitySource: method.request.header.authorization
+      IdentitySource: method.request.header.BasicAuth
       Name: cri-core-stub-authorizer
       RestApiId: !Ref RestApiGateway
 
@@ -407,6 +407,7 @@ Resources:
   RestApiGatewayStage:
     Type: AWS::ApiGateway::Stage
     Properties:
+      #checkov:skip=CKV_AWS_120:we do not need cache clustering enabled
       DeploymentId: !Ref RestApiGatewayDeployment
       StageName: !Sub "${AWS::StackName}-${Environment}"
       RestApiId: !Ref RestApiGateway
@@ -426,8 +427,7 @@ Resources:
           "responseLength":"$context.responseLength",
           "responseLatency":"$context.responseLatency"
           }
-      CacheClusterEnabled: true
-      CacheClusterSize: 0.5
+      CacheClusterEnabled: false
       TracingEnabled: true
       MethodSettings:
         - ResourcePath: /

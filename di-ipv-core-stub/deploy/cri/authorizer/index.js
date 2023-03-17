@@ -1,46 +1,29 @@
 const { SSMClient, GetParameterCommand } = require("@aws-sdk/client-ssm");
 const ssm = new SSMClient({region: 'eu-west-2'});
 
-/*
-exports.handler = function (event, context, callback) {
-  var authorizationHeader = event.headers.Authorization
-
-  if (!authorizationHeader) return callback('Unauthorized')
-
-  var encodedCreds = authorizationHeader.split(' ')[1]
-  var plainCreds = (new Buffer(encodedCreds, 'base64')).toString().split(':')
-  var username = plainCreds[0]
-  var password = plainCreds[1]
-  const auth = await getParam();
-
-  if (!(username === auth.username && password === auth.password)) return callback('Unauthorized')
-
-  var authResponse = buildAllowAllPolicy(event, username)
-
-  callback(null, authResponse)
-}
-*/
-
-console.log("Running Script")
+console.log("Running Authorization Lambda")
 
 exports.handler = async(event, context, callback) => {
     const auth = await getParam();
-    const authorizationHeader = event.headers.authorization
+    console.log("Lambda Context:", context)
+    console.log("Lambda Event:", event)
+    const authorizationHeader = event.headers.BasicAuth
+    if (!authorizationHeader) return callback('Unauthorized')
     const encodedCreds = authorizationHeader.split(' ')[1]
     const plainCreds = (new Buffer(encodedCreds, 'base64')).toString().split(':')
     const username = plainCreds[0]
     const password = plainCreds[1]
-    console.log(auth)
 
-    if (!authorizationHeader) return callback('Unauthorized')
-
-    console.log(auth)
-    console.log(encodedCreds)
-    console.log(plainCreds)
+    /*
+      console.log(auth)
+      console.log(encodedCreds)
+      console.log(plainCreds)
+    */
 
     if (!(username === auth.username && password === auth.password)) return callback('Unauthorized')
 
     const authResponse = buildAllowAllPolicy(event, username)
+    console.log("Login Succeeded, Returning:", authResponse)
     callback(null, authResponse)
 }
 
@@ -50,7 +33,7 @@ async function getParam() {
       WithDecryption: false
     });
     const paramDetails = await ssm.send(command);
-    console.log(paramDetails)
+    //console.log(paramDetails)
     const data = JSON.parse(paramDetails.Parameter.Value);
     return data;
 }
