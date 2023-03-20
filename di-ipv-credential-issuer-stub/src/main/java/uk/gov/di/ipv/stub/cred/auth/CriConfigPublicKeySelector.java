@@ -12,6 +12,7 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
+import uk.gov.di.ipv.stub.cred.config.JwtAuthenticationConfig;
 
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
@@ -52,9 +53,12 @@ public class CriConfigPublicKeySelector implements ClientCredentialsSelector<Obj
     public void registerClients(Map<String, ClientConfig> clientConfigs) {
 
         for (Map.Entry<String, ClientConfig> configEntry : clientConfigs.entrySet()) {
-            Map<String, String> jwtAuthentication = configEntry.getValue().getJwtAuthentication();
+            JwtAuthenticationConfig jwtAuthentication =
+                    configEntry.getValue().getJwtAuthentication();
             String authenticationMethod =
-                    jwtAuthentication.getOrDefault("authenticationMethod", "none");
+                    jwtAuthentication.getAuthenticationMethod() != null
+                            ? jwtAuthentication.getAuthenticationMethod()
+                            : "none";
             LOGGER.info(
                     String.format(
                             "Using %s auth method for client id %s",
@@ -67,7 +71,7 @@ public class CriConfigPublicKeySelector implements ClientCredentialsSelector<Obj
                                             configEntry
                                                     .getValue()
                                                     .getJwtAuthentication()
-                                                    .get("signingPublicJwk"))
+                                                    .getSigningPublicJwk())
                                     .toECPublicKey();
 
                     clientPublicKeys.put(configEntry.getKey(), List.of(publicKey));

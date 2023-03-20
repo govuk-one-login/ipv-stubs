@@ -652,7 +652,7 @@ public class AuthorizeHandler {
                         getSignedJWT(requestParam, clientConfig.getEncryptionPrivateKey());
                 String publicJwk =
                         getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)
-                                ? clientConfig.getJwtAuthentication().get("signingPublicJwk")
+                                ? clientConfig.getJwtAuthentication().getSigningPublicJwk()
                                 : clientConfig.getSigningPublicJwk();
                 if (!es256SignatureVerifier.valid(signedJWT, publicJwk)) {
                     LOGGER.error("JWT signature is invalid");

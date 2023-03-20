@@ -53,7 +53,7 @@ public class ClientJwtVerifier {
                             authenticationJwt.getClientID().getValue()));
         }
 
-        if (clientConfig.getJwtAuthentication().get(AUTHENTICATION_METHOD).equals(NONE)) {
+        if (clientConfig.getJwtAuthentication().getAuthenticationMethod().equals(NONE)) {
             return;
         }
 
