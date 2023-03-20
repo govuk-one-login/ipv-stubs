@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.stub.core.config;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
@@ -13,14 +14,12 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -36,6 +35,7 @@ public class CoreStubConfig {
                             "http://localhost:" + CORE_STUB_PORT + "/callback"));
     public static final int CORE_STUB_MAX_SEARCH_RESULTS =
             Integer.parseInt(getConfigValue("CORE_STUB_MAX_SEARCH_RESULTS", "200"));
+    public static Map<String, UserAuth> CORE_STUB_BASIC_AUTH ;
     public static final String CORE_STUB_USER_DATA_PATH =
             getConfigValue("CORE_STUB_USER_DATA_PATH", "config/experian-uat-users-large.zip");
     public static final String CORE_STUB_CONFIG_FILE =
@@ -60,6 +60,8 @@ public class CoreStubConfig {
     public static final List<Identity> identities = new ArrayList<>();
     public static final List<CredentialIssuer> credentialIssuers = new ArrayList<>();
 
+    private static final Gson gson = new Gson();
+
     public static String getConfigValue(String key, String defaultValue) {
         String envValue = Optional.ofNullable(System.getenv(key)).orElse(defaultValue);
         if (StringUtils.isBlank(envValue)) {
@@ -67,6 +69,13 @@ public class CoreStubConfig {
                     "env var '%s' is not set and there is no default value".formatted(key));
         }
         return envValue;
+    }
+
+    public static Map<String, UserAuth> getUserAuth() {
+        if (CORE_STUB_BASIC_AUTH == null) {
+            CORE_STUB_BASIC_AUTH = parseUserAuth();
+        }
+        return CORE_STUB_BASIC_AUTH;
     }
 
     public static void initCRIS() throws IOException {
@@ -97,6 +106,17 @@ public class CoreStubConfig {
                         }
                     });
         }
+    }
+
+    private static Map<String, UserAuth> parseUserAuth() {
+        String user_auth = getConfigValue("CORE_STUB_BASIC_AUTH", null);
+        if (user_auth == null) {
+            return new HashMap<>();
+        }
+
+        Type type = new TypeToken<Map<String, UserAuth>>() {}.getType();
+
+        return gson.fromJson(user_auth, type);
     }
 
     private static void readZip(InputStream is, BiConsumer<ZipEntry, InputStream> consumer)
