@@ -32,7 +32,7 @@ public class CoreStub {
         BasicAuthHandler basicAuthHandler = new BasicAuthHandler();
         if (CoreStubConfig.ENABLE_BASIC_AUTH) {
             Spark.before(basicAuthHandler.authFilter);
-        };
+        }
         Spark.get("/", coreStubHandler.serveHomePage);
         Spark.get("/credential-issuers", coreStubHandler.showCredentialIssuer);
         Spark.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
