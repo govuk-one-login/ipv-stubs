@@ -40,7 +40,7 @@ public class BasicAuthHandler {
     }
 
     private String[] extractCredentials(String encodedHeader) {
-            String decodedHeader = new String(Base64.getDecoder().decode(encodedHeader));
-            return decodedHeader.split(":");
+        String decodedHeader = new String(Base64.getDecoder().decode(encodedHeader));
+        return decodedHeader.split(":");
     }
 }

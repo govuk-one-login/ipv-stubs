@@ -30,7 +30,9 @@ public class CoreStub {
     private void initRoutes() throws Exception {
         CoreStubHandler coreStubHandler = new CoreStubHandler(new HandlerHelper(getEcPrivateKey()));
         BasicAuthHandler basicAuthHandler = new BasicAuthHandler();
-        Spark.before(basicAuthHandler.authFilter);
+        if (CoreStubConfig.ENABLE_BASIC_AUTH) {
+            Spark.before(basicAuthHandler.authFilter);
+        };
         Spark.get("/", coreStubHandler.serveHomePage);
         Spark.get("/credential-issuers", coreStubHandler.showCredentialIssuer);
         Spark.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
