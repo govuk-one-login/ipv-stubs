@@ -125,12 +125,7 @@ public class Validator {
             return false;
         }
 
-        List<String> validRedirectUrls =
-                Arrays.asList(
-                        clientConfig
-                                .getJwtAuthentication()
-                                .get("validRedirectUrls")
-                                .split(REDIRECT_URI_SEPARATOR));
+        List<String> validRedirectUrls = clientConfig.getJwtAuthentication().getValidRedirectUrls();
 
         validRedirectUrls.forEach(url -> LOGGER.info("Configured redirect url: {}", url));
         return !validRedirectUrls.contains(redirectUri);

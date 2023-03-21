@@ -7,6 +7,7 @@ import com.nimbusds.oauth2.sdk.auth.verifier.InvalidClientException;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import org.junit.jupiter.api.Test;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
+import uk.gov.di.ipv.stub.cred.config.JwtAuthenticationConfig;
 import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 
 import java.security.PublicKey;
@@ -34,36 +35,21 @@ public class CriConfigPublicKeySelectorTest {
     @Test
     void registerClientsAllowsSelectionOfTheirKey() throws Exception {
         ClientConfig clientConfig1 = new ClientConfig();
-        Map<String, String> jwtAuthConfig1 =
-                Map.of(
-                        "id", "clientConfig1",
-                        "issuer", "clientConfig1",
-                        "subject", "clientConfig1",
-                        "signingPublicJwk", TestFixtures.EC_PUBLIC_JWK_1,
-                        "validRedirectUrls", "https://example.com",
-                        "authenticationMethod", "jwt");
+        JwtAuthenticationConfig jwtAuthConfig1 =
+                new JwtAuthenticationConfig(
+                        TestFixtures.EC_PUBLIC_JWK_1, List.of("https://example.com"), "jwt");
         clientConfig1.setJwtAuthentication(jwtAuthConfig1);
 
         ClientConfig clientConfig2 = new ClientConfig();
-        Map<String, String> jwtAuthConfig2 =
-                Map.of(
-                        "id", "clientConfig2",
-                        "issuer", "clientConfig2",
-                        "subject", "clientConfig2",
-                        "signingPublicJwk", TestFixtures.EC_PUBLIC_JWK_2,
-                        "validRedirectUrls", "https://example.com",
-                        "authenticationMethod", "jwt");
+        JwtAuthenticationConfig jwtAuthConfig2 =
+                new JwtAuthenticationConfig(
+                        TestFixtures.EC_PUBLIC_JWK_2, List.of("https://example.com"), "jwt");
         clientConfig2.setJwtAuthentication(jwtAuthConfig2);
 
         ClientConfig clientConfig3 = new ClientConfig();
-        Map<String, String> jwtAuthConfig3 =
-                Map.of(
-                        "id", "clientConfig3",
-                        "issuer", "clientConfig3",
-                        "subject", "clientConfig3",
-                        "signingPublicJwk", TestFixtures.EC_PUBLIC_JWK_3,
-                        "validRedirectUrls", "https://example.com",
-                        "authenticationMethod", "jwt");
+        JwtAuthenticationConfig jwtAuthConfig3 =
+                new JwtAuthenticationConfig(
+                        TestFixtures.EC_PUBLIC_JWK_3, List.of("https://example.com"), "jwt");
         clientConfig3.setJwtAuthentication(jwtAuthConfig3);
 
         Map<String, ClientConfig> clientConfigs =
@@ -96,36 +82,22 @@ public class CriConfigPublicKeySelectorTest {
     @Test
     void onlyThrowsForBadCertsWhenRetrievingPublicKeys() throws Exception {
         ClientConfig clientConfig1 = new ClientConfig();
-        Map<String, String> jwtAuthConfig1 =
-                Map.of(
-                        "id", "clientConfig1",
-                        "issuer", "clientConfig1",
-                        "subject", "clientConfig1",
-                        "signingPublicJwk", "{\"valid_json\": \"but_not_a_jwk\"}",
-                        "validRedirectUrls", "https://example.com",
-                        "authenticationMethod", "jwt");
+        JwtAuthenticationConfig jwtAuthConfig1 =
+                new JwtAuthenticationConfig(
+                        "{\"valid_json\": \"but_not_a_jwk\"}",
+                        List.of("https://example.com"),
+                        "jwt");
         clientConfig1.setJwtAuthentication(jwtAuthConfig1);
 
         ClientConfig clientConfig2 = new ClientConfig();
-        Map<String, String> jwtAuthConfig2 =
-                Map.of(
-                        "id", "clientConfig2",
-                        "issuer", "clientConfig2",
-                        "subject", "clientConfig2",
-                        "signingPublicJwk", TestFixtures.EC_PUBLIC_JWK_1,
-                        "validRedirectUrls", "https://example.com",
-                        "authenticationMethod", "jwt");
+        JwtAuthenticationConfig jwtAuthConfig2 =
+                new JwtAuthenticationConfig(
+                        TestFixtures.EC_PUBLIC_JWK_1, List.of("https://example.com"), "jwt");
         clientConfig2.setJwtAuthentication(jwtAuthConfig2);
 
         ClientConfig clientConfig3 = new ClientConfig();
-        Map<String, String> jwtAuthConfig3 =
-                Map.of(
-                        "id", "clientConfig3",
-                        "issuer", "clientConfig3",
-                        "subject", "clientConfig3",
-                        "signingPublicJwk", "Not even json",
-                        "validRedirectUrls", "https://example.com",
-                        "authenticationMethod", "jwt");
+        JwtAuthenticationConfig jwtAuthConfig3 =
+                new JwtAuthenticationConfig("Not even json", List.of("https://example.com"), "jwt");
         clientConfig3.setJwtAuthentication(jwtAuthConfig3);
 
         Map<String, ClientConfig> clientConfigs =

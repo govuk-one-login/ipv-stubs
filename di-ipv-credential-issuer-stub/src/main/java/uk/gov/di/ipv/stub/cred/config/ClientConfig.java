@@ -6,11 +6,10 @@ import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
-import java.util.Map;
 
 public class ClientConfig {
     private String signingPublicJwk;
-    private Map<String, String> jwtAuthentication;
+    private JwtAuthenticationConfig jwtAuthentication;
     private String base64EncryptionPrivateKey;
     private String audienceForVcJwt;
     private String encryptionPublicJwk;
@@ -27,11 +26,11 @@ public class ClientConfig {
         this.signingPublicJwk = signingPublicJwk;
     }
 
-    public Map<String, String> getJwtAuthentication() {
+    public JwtAuthenticationConfig getJwtAuthentication() {
         return jwtAuthentication;
     }
 
-    public void setJwtAuthentication(Map<String, String> jwtAuthentication) {
+    public void setJwtAuthentication(JwtAuthenticationConfig jwtAuthentication) {
         this.jwtAuthentication = jwtAuthentication;
     }
 
