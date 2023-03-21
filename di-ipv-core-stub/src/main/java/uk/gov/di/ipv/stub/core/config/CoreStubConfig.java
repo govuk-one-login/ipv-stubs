@@ -35,7 +35,7 @@ public class CoreStubConfig {
                             "http://localhost:" + CORE_STUB_PORT + "/callback"));
     public static final int CORE_STUB_MAX_SEARCH_RESULTS =
             Integer.parseInt(getConfigValue("CORE_STUB_MAX_SEARCH_RESULTS", "200"));
-    public static Map<String, UserAuth> CORE_STUB_BASIC_AUTH ;
+    public static UserAuth CORE_STUB_BASIC_AUTH;
     public static final String CORE_STUB_USER_DATA_PATH =
             getConfigValue("CORE_STUB_USER_DATA_PATH", "config/experian-uat-users-large.zip");
     public static final String CORE_STUB_CONFIG_FILE =
@@ -57,6 +57,9 @@ public class CoreStubConfig {
     public static final boolean CORE_STUB_ENABLE_BACKEND_ROUTES =
             Boolean.parseBoolean(getConfigValue("CORE_STUB_ENABLE_BACKEND_ROUTES", "true"));
 
+    public static final boolean ENABLE_BASIC_AUTH =
+            Boolean.parseBoolean(getConfigValue("ENABLE_BASIC_AUTH", "false"));
+
     public static final List<Identity> identities = new ArrayList<>();
     public static final List<CredentialIssuer> credentialIssuers = new ArrayList<>();
 
@@ -71,7 +74,7 @@ public class CoreStubConfig {
         return envValue;
     }
 
-    public static Map<String, UserAuth> getUserAuth() {
+    public static UserAuth getUserAuth() {
         if (CORE_STUB_BASIC_AUTH == null) {
             CORE_STUB_BASIC_AUTH = parseUserAuth();
         }
@@ -108,14 +111,12 @@ public class CoreStubConfig {
         }
     }
 
-    private static Map<String, UserAuth> parseUserAuth() {
+    private static UserAuth parseUserAuth() {
         String user_auth = getConfigValue("CORE_STUB_BASIC_AUTH", null);
         if (user_auth == null) {
-            return new HashMap<>();
+            return null;
         }
-
-        Type type = new TypeToken<Map<String, UserAuth>>() {}.getType();
-
+        Type type = new TypeToken<UserAuth>() {}.getType();
         return gson.fromJson(user_auth, type);
     }
 
