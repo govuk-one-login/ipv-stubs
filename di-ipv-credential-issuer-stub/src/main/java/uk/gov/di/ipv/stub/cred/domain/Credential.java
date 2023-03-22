@@ -7,14 +7,14 @@ public class Credential {
     private final Map<String, Object> evidence;
     private final String userId;
     private final String clientId;
-    private final long exp;
+    private final Long exp;
 
     public Credential(
             Map<String, Object> attributes,
             Map<String, Object> evidence,
             String userId,
             String clientId,
-            long exp) {
+            Long exp) {
         this.attributes = attributes;
         this.evidence = evidence;
         this.userId = userId;
@@ -38,7 +38,7 @@ public class Credential {
         return clientId;
     }
 
-    public long getExp() {
+    public Long getExp() {
         return exp;
     }
 }

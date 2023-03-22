@@ -18,11 +18,7 @@ import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.nimbusds.jwt.JWTClaimNames.AUDIENCE;
 import static com.nimbusds.jwt.JWTClaimNames.EXPIRATION_TIME;
@@ -97,7 +93,7 @@ public class VerifiableCredentialGenerator {
             Credential credential, Map<String, Object> vc)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         Instant now = Instant.now();
-        JWTClaimsSet claimsSet =
+        JWTClaimsSet.Builder claim =
                 new JWTClaimsSet.Builder()
                         .claim(SUBJECT, credential.getUserId())
                         .claim(ISSUER, CredentialIssuerConfig.getVerifiableCredentialIssuer())
@@ -106,9 +102,11 @@ public class VerifiableCredentialGenerator {
                                 CredentialIssuerConfig.getClientConfig(credential.getClientId())
                                         .getAudienceForVcJwt())
                         .claim(NOT_BEFORE, now.getEpochSecond())
-                        .claim(EXPIRATION_TIME, credential.getExp())
-                        .claim(VC_CLAIM, vc)
-                        .build();
+                        .claim(VC_CLAIM, vc);
+        if (!Objects.isNull(credential.getExp())) {
+            claim = claim.claim(EXPIRATION_TIME, credential.getExp());
+        }
+        JWTClaimsSet claimsSet = claim.build();
 
         KeyFactory kf = KeyFactory.getInstance(EC_ALGO);
         EncodedKeySpec privateKeySpec =

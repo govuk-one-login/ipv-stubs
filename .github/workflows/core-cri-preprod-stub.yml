@@ -1,15 +1,15 @@
-name: CRI Core Stub - Secure Pipeline build, push & Ship
+name: CRI PreProd Core Stub - Secure Pipeline build, push & Ship
 
 on:
   push:
     branches:
       - main
     paths:
-      - di-ipv-core-stub/deploy/cri-rest-api/**
+      - di-ipv-core-stub/deploy/cri-preprod/**
       - di-ipv-core-stub/gradle/**
       - di-ipv-core-stub/src/**
       - di-ipv-core-stub/*
-      - .github/workflows/core-cri-stub.yml
+      - .github/workflows/core-cri-preprod-stub.yml
 
 jobs:
   dockerBuildAndPush:
@@ -37,7 +37,7 @@ jobs:
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          role-to-assume: ${{ secrets.CORE_CRI_GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.CORE_CRI_PP_GH_ACTIONS_ROLE_ARN }}
           aws-region: eu-west-2
 
       - name: Login to Amazon ECR
@@ -64,7 +64,7 @@ jobs:
         env:
           CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.CORE_CRI_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.CORE_CRI_PP_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -78,20 +78,20 @@ jobs:
         run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
 
       - name: SAM Validate
-        working-directory: ./di-ipv-core-stub/deploy/cri-rest-api
+        working-directory: ./di-ipv-core-stub/deploy/cri-preprod
         run: sam validate --region ${{ env.AWS_REGION }}
 
       - name: SAM Package
-        working-directory: ./di-ipv-core-stub/deploy/cri-rest-api
+        working-directory: ./di-ipv-core-stub/deploy/cri-preprod
         env:
-          ARTIFACT_BUCKET: ${{ secrets.CORE_CRI_ARTIFACT_BUCKET_NAME }}
+          ARTIFACT_BUCKET: ${{ secrets.CORE_CRI_PP_ARTIFACT_BUCKET_NAME }}
         run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Update SAM template with ECR image
-        working-directory: ./di-ipv-core-stub/deploy/cri-rest-api
+        working-directory: ./di-ipv-core-stub/deploy/cri-preprod
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.CORE_CRI_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.CORE_CRI_PP_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
 
@@ -99,17 +99,17 @@ jobs:
         id: signing
         uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc
         with:
-          template: ./di-ipv-core-stub/deploy/cri-rest-api/cf-template.yaml
+          template: ./di-ipv-core-stub/deploy/cri-preprod/cf-template.yaml
           profile: ${{ secrets.SIGNING_PROFILE_NAME }}
 
       - name: SAM build and test
-        working-directory: ./di-ipv-core-stub/deploy/cri-rest-api
+        working-directory: ./di-ipv-core-stub/deploy/cri-preprod
         run: sam build -t cf-template.yaml
 
       - name: Deploy SAM app
         uses: alphagov/di-devplatform-upload-action@v3
         with:
-            artifact-bucket-name: ${{ secrets.CORE_CRI_ARTIFACT_BUCKET_NAME }}
+            artifact-bucket-name: ${{ secrets.CORE_CRI_PP_ARTIFACT_BUCKET_NAME }}
             signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-            working-directory: ./di-ipv-core-stub/deploy/cri-rest-api
+            working-directory: ./di-ipv-core-stub/deploy/cri-preprod
             template-file: cf-template.yaml

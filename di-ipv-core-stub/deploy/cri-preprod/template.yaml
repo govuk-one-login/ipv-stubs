@@ -42,43 +42,43 @@ Parameters:
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/JBP_CONFIG_OPEN_JDK_JRE"
+    Default: "/stubs/core/cri-preprod/env/JBP_CONFIG_OPEN_JDK_JRE"  #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/JAVA_OPTS"
+    Default: "/stubs/core/cri-preprod/env/JAVA_OPTS" #pragma: allowlist secret
   CoreStubConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_CONFIG_FILE" #pragma: allowlist secret
+    Default: "/stubs/core/cri-preprod/env/CORE_STUB_CONFIG_FILE" #pragma: allowlist secret
   CoreStubPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_PORT"
+    Default: "/stubs/core/cri-preprod/env/CORE_STUB_PORT" #pragma: allowlist secret
   CoreStubClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_CLIENT_ID"
+    Default: "/stubs/core/cri-preprod/env/CORE_STUB_CLIENT_ID" #pragma: allowlist secret
   CoreStubRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_REDIRECT_URL"
+    Default: "/stubs/core/cri-preprod/env/CORE_STUB_REDIRECT_URL" #pragma: allowlist secret
   CoreStubAppTitle:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_APP_TITLE"
+    Default: "/stubs/core/cri-preprod/env/CORE_STUB_APP_TITLE" #pragma: allowlist secret
   CoreStubConfigAgedDob:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_CONFIG_AGED_DOB" #pragma: allowlist secret
+    Default: "/stubs/core/cri-preprod/env/CORE_STUB_CONFIG_AGED_DOB" #pragma: allowlist secret
   CoreStubShowVc:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_SHOW_VC"
+    Default: "/stubs/core/cri-preprod/env/CORE_STUB_SHOW_VC" #pragma: allowlist secret
   CoreStubEnableBackendRoutes:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_ENABLE_BACKEND_ROUTES"
+    Default: "/stubs/core/cri-preprod/env/CORE_STUB_ENABLE_BACKEND_ROUTES" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -142,13 +142,13 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
-        - cri.core.stubs.account.gov.uk
+        - !Sub "cri-preprod.core.${Environment}.stubs.account.gov.uk"
+        - cri-preprod.core.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
             - IsNonProd
-            - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
-            - cri.core.stubs.account.gov.uk
+            - !Sub "cri-preprod.core.${Environment}.stubs.account.gov.uk"
+            - cri-preprod.core.stubs.account.gov.uk
           HostedZoneId: !If
             - IsNonProd
             - !ImportValue BuildCorePublicHostedZoneId
@@ -162,8 +162,8 @@ Resources:
       Type: A
       Name: !If
         - IsNonProd
-        - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
-        - cri.core.stubs.account.gov.uk
+        - !Sub "cri-preprod.core.${Environment}.stubs.account.gov.uk"
+        - cri-preprod.core.stubs.account.gov.uk
       HostedZoneId: !If
         - IsNonProd
         - !ImportValue BuildCorePublicHostedZoneId
@@ -266,7 +266,7 @@ Resources:
       # checkov:skip=CKV_AWS_116: This does not need dead letter queues
       # checkov:skip=CKV_AWS_173: This does not need encrypted env variables
       # checkov:skip=CKV_AWS_117: This lambda should not sit inside vpc
-      FunctionName: cri-core-stub-auth
+      FunctionName: cri-preprod-core-stub-auth
       Description: A lambda to handle http api gateway basic authentication
       ReservedConcurrentExecutions: 30
       Handler: index.handler
@@ -295,7 +295,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 14
-      LogGroupName: !Sub "/aws/core/cri-stub-lambda-logs-${Environment}"
+      LogGroupName: !Sub "/aws/core/cri-preprod-stub-lambda-logs-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   # http api gateway - which handles basic auth via the basicauth header and then redirects to an internal alb
@@ -307,8 +307,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
-        - cri.core.stubs.account.gov.uk
+        - !Sub "cri-preprod.core.${Environment}.stubs.account.gov.uk"
+        - cri-preprod.core.stubs.account.gov.uk
       DomainNameConfigurations:
         - CertificateArn: !Ref CoreStubSSLCert
           EndpointType: REGIONAL
@@ -319,8 +319,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "cri.core.${Environment}.stubs.account.gov.uk"
-        - cri.core.stubs.account.gov.uk
+        - !Sub "cri-preprod.core.${Environment}.stubs.account.gov.uk"
+        - cri-preprod.core.stubs.account.gov.uk
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -330,7 +330,7 @@ Resources:
   ApiGwHttpEndpoint:
     Type: "AWS::ApiGatewayV2::Api"
     Properties:
-      Name: !Sub ${AWS::StackName}-cri-api-gw
+      Name: !Sub ${AWS::StackName}-api-gw
       ProtocolType: HTTP
 
   ApiGwHttpEndpointIntegration:
@@ -386,7 +386,7 @@ Resources:
       AuthorizerPayloadFormatVersion: '2.0'
       AuthorizerResultTtlInSeconds: 300
       AuthorizerType: REQUEST
-      #AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cri-core-stub-auth/invocations'
+      #AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cri-preprod-core-stub-auth/invocations'
       AuthorizerUri: !Join
         - ''
         - - 'arn:aws:apigateway:'
@@ -397,12 +397,12 @@ Resources:
       EnableSimpleResponses: true
       IdentitySource:
         - '$request.header.basicauth'
-      Name: cri-core-stub-authorizer
+      Name: cri-preprod-core-stub-authorizer
 
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-cri-api-gw-accesslogs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-gw-accesslogs
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -594,7 +594,7 @@ Resources:
             Value: !Ref CoreStubEnableBackendRoutes
           Secrets:
             - Name: "CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
-              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/cri/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/cri-preprod/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp

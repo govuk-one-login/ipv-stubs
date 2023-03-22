@@ -94,7 +94,7 @@ public class TokenHandler {
                             CredentialIssuerConfig.getClientConfig(
                                     requestParams.value(RequestParamConstants.CLIENT_ID));
                     String authMethod =
-                            clientConfig.getJwtAuthentication().get(AUTHENTICATION_METHOD);
+                            clientConfig.getJwtAuthentication().getAuthenticationMethod();
                     if (!authMethod.equals(NONE_AUTHENTICATION_METHOD)) {
                         TokenErrorResponse errorResponse =
                                 new TokenErrorResponse(OAuth2Error.INVALID_REQUEST);
