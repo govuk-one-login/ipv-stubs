@@ -163,7 +163,7 @@ Resources:
       DomainName: !If
         - IsNonProd
         - !Sub "orch-build.${Environment}.stubs.account.gov.uk"
-        -  orch-build.stubs.account.gov.uk
+        - orch-build.stubs.account.gov.uk
       DomainNameConfigurations:
         - CertificateArn: !Ref OrchStubSSLCert
           EndpointType: REGIONAL

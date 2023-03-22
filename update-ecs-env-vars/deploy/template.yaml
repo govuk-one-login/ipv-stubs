@@ -15,8 +15,12 @@ Parameters:
       The name of the stack that defines the VPC in which this container will
       run.
     Type: String
-  PermissionsBoundary:
-    Description: "The ARN of the permissions boundary to apply when creating IAM roles"
+  #PermissionsBoundary:
+  #  Description: "The ARN of the permissions boundary to apply when creating IAM roles"
+  #  Type: String
+  #  Default: "none"
+  ProgrammaticPermissionsBoundary:
+    Description: "The ARN of the programmatic permissions boundary to apply when creating IAM roles"
     Type: String
     Default: "none"
   CodeSigningConfigArn:
@@ -30,7 +34,7 @@ Conditions:
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
-          - !Ref PermissionsBoundary
+          - !Ref ProgrammaticPermissionsBoundary
           - "none"
   UseCodeSigning:
     Fn::Not:
@@ -87,7 +91,7 @@ Resources:
       ReservedConcurrentExecutions: 1
       PermissionsBoundary: !If
         - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
+        - !Ref ProgrammaticPermissionsBoundary
         - !Ref AWS::NoValue
       CodeSigningConfigArn: !If
         - UseCodeSigning
