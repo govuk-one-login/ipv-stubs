@@ -29,8 +29,8 @@ public class CoreStub {
 
     private void initRoutes() throws Exception {
         CoreStubHandler coreStubHandler = new CoreStubHandler(new HandlerHelper(getEcPrivateKey()));
-        BasicAuthHandler basicAuthHandler = new BasicAuthHandler();
         if (CoreStubConfig.ENABLE_BASIC_AUTH) {
+            BasicAuthHandler basicAuthHandler = new BasicAuthHandler();
             Spark.before(basicAuthHandler.authFilter);
         }
         Spark.get("/", coreStubHandler.serveHomePage);

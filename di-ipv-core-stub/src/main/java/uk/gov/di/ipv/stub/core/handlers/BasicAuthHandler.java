@@ -9,7 +9,7 @@ import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import java.util.Base64;
 
 public class BasicAuthHandler {
-    private static int NUMBER_OF_AUTHENTICATION_FIELDS = 2;
+    private static final int NUMBER_OF_AUTHENTICATION_FIELDS = 2;
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic";
 
@@ -27,13 +27,14 @@ public class BasicAuthHandler {
 
     private Boolean authenticated(Request request) {
         String authHeader = request.headers(AUTHORIZATION_HEADER);
+        int authTypeIndex = authHeader.indexOf(AUTHORIZATION_TYPE);
+
+        if (authHeader == null || authTypeIndex < 0) {
+            return false;
+        }
+
         String encodedHeader =
-                authHeader
-                        .substring(
-                                authHeader.indexOf(AUTHORIZATION_TYPE)
-                                        + AUTHORIZATION_TYPE.length()
-                                        + 1)
-                        .trim();
+                authHeader.substring(authTypeIndex + AUTHORIZATION_TYPE.length() + 1).trim();
         String[] submittedCredentials = extractCredentials(encodedHeader);
 
         if (submittedCredentials != null
