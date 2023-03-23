@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "@aws-sdk/client-ssm": "^3.290.0"
-  }
-}

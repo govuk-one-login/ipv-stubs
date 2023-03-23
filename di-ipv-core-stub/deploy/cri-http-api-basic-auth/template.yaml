@@ -79,14 +79,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri/env/CORE_STUB_ENABLE_BACKEND_ROUTES"
-  CoreStubBasicAuth:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_BASIC_AUTH" #pragma: allowlist secret
-  EnableBasicAuth:
-    Description: "Environment Variables for ECS"
-    Type: String
-    Default: "true" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -265,7 +257,48 @@ Resources:
       GroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
       SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
 
-  # http api gateway - redirects to an internal alb
+  # http api gateway lambda for handling auth
+  ApiAuthLambda:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - "ApiAuthLambdaLogGroup"
+    Properties:
+      # checkov:skip=CKV_AWS_116: This does not need dead letter queues
+      # checkov:skip=CKV_AWS_173: This does not need encrypted env variables
+      # checkov:skip=CKV_AWS_117: This lambda should not sit inside vpc
+      FunctionName: cri-core-stub-auth
+      Description: A lambda to handle http api gateway basic authentication
+      ReservedConcurrentExecutions: 30
+      Handler: index.handler
+      Runtime: nodejs18.x
+      PackageType: Zip
+      CodeUri: authorizer
+      Architectures:
+        - arm64
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+      Policies:
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/*
+
+  ApiAuthlambdaApiGatewayInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt ApiAuthLambda.Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGwHttpEndpoint}/authorizers/${APIAuth}
+
+  ApiAuthLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/core/cri-stub-lambda-logs-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  # http api gateway - which handles basic auth via the basicauth header and then redirects to an internal alb
   #
 
   # api domain entries / mapping
@@ -317,6 +350,8 @@ Resources:
     Properties:
       ApiId: !Ref ApiGwHttpEndpoint
       RouteKey: "ANY /{proxy+}"
+      AuthorizationType: CUSTOM
+      AuthorizerId: !Ref APIAuth
       Target: !Join
         - /
         - - integrations
@@ -343,6 +378,26 @@ Resources:
           "responseLength":"$context.responseLength",
           "responseLatency":"$context.responseLatency"
           }
+
+  APIAuth:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref ApiGwHttpEndpoint
+      AuthorizerPayloadFormatVersion: '2.0'
+      AuthorizerResultTtlInSeconds: 300
+      AuthorizerType: REQUEST
+      #AuthorizerUri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:cri-core-stub-auth/invocations'
+      AuthorizerUri: !Join
+        - ''
+        - - 'arn:aws:apigateway:'
+          - !Ref 'AWS::Region'
+          - ':lambda:path/2015-03-31/functions/'
+          - !GetAtt ApiAuthLambda.Arn
+          - /invocations
+      EnableSimpleResponses: true
+      IdentitySource:
+        - '$request.header.basicauth'
+      Name: cri-core-stub-authorizer
 
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
@@ -537,10 +592,6 @@ Resources:
             Value: !Ref CoreStubShowVc
           - Name: CORE_STUB_ENABLE_BACKEND_ROUTES
             Value: !Ref CoreStubEnableBackendRoutes
-          - Name: CORE_STUB_BASIC_AUTH
-            Value: !Ref CoreStubBasicAuth
-          - Name: ENABLE_BASIC_AUTH
-            Value: !Ref EnableBasicAuth
           Secrets:
             - Name: "CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/cri/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
