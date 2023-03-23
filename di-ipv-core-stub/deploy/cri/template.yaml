@@ -399,7 +399,7 @@ Resources:
       HealthCheckEnabled: TRUE
       HealthCheckProtocol: HTTP
       Matcher:
-        HttpCode: 200
+        HttpCode: 401
       Port: 8080
       Protocol: HTTP
       TargetType: ip
