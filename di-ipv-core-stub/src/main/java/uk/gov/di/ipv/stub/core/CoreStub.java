@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import spark.ExceptionHandler;
 import spark.Spark;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
+import uk.gov.di.ipv.stub.core.handlers.BasicAuthHandler;
 import uk.gov.di.ipv.stub.core.handlers.CoreStubHandler;
 import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
 import uk.gov.di.ipv.stub.core.utils.ViewHelper;
@@ -28,6 +29,10 @@ public class CoreStub {
 
     private void initRoutes() throws Exception {
         CoreStubHandler coreStubHandler = new CoreStubHandler(new HandlerHelper(getEcPrivateKey()));
+        if (CoreStubConfig.ENABLE_BASIC_AUTH) {
+            BasicAuthHandler basicAuthHandler = new BasicAuthHandler();
+            Spark.before(basicAuthHandler.authFilter);
+        }
         Spark.get("/", coreStubHandler.serveHomePage);
         Spark.get("/credential-issuers", coreStubHandler.showCredentialIssuer);
         Spark.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
