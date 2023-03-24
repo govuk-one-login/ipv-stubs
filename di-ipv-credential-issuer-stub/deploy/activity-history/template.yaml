@@ -27,39 +27,39 @@ Parameters:
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/JBP_CONFIG_OPEN_JDK_JRE"
+    Default: "/stubs/credential-issuer/activity-history/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/JAVA_OPTS"
+    Default: "/stubs/credential-issuer/activity-history/env/JAVA_OPTS" #pragma: allowlist secret
   CredentialIssuerPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/CREDENTIAL_ISSUER_PORT"
+    Default: "/stubs/credential-issuer/activity-history/env/CREDENTIAL_ISSUER_PORT" #pragma: allowlist secret
   CredentialIssuerName:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/CREDENTIAL_ISSUER_NAME"
+    Default: "/stubs/credential-issuer/activity-history/env/CREDENTIAL_ISSUER_NAME" #pragma: allowlist secret
   CredentialIssuerType:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/CREDENTIAL_ISSUER_TYPE"
+    Default: "/stubs/credential-issuer/activity-history/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
   ClientConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/CLIENT_CONFIG_FILE"
+    Default: "/stubs/credential-issuer/activity-history/env/CLIENT_CONFIG_FILE" #pragma: allowlist secret
   ClientAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/CLIENT_AUDIENCE"
+    Default: "/stubs/credential-issuer/activity-history/env/CLIENT_AUDIENCE" #pragma: allowlist secret
   VcIssuer:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/VC_ISSUER"
+    Default: "/stubs/credential-issuer/activity-history/env/VC_ISSUER" #pragma: allowlist secret
   VcTtlSeconds:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/VC_TTL_SECONDS"
+    Default: "/stubs/credential-issuer/activity-history/env/VC_TTL_SECONDS" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -433,7 +433,7 @@ Resources:
   CriStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
-      MaxCapacity: 3
+      MaxCapacity: 5
       MinCapacity: 1
       ResourceId: !Join
         - '/'
@@ -556,7 +556,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/cri/*"
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/credential-issuer/*"
@@ -592,7 +592,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/cri/*"
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/credential-issuer/*"

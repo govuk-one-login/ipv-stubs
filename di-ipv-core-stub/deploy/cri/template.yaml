@@ -42,11 +42,11 @@ Parameters:
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/JBP_CONFIG_OPEN_JDK_JRE"
+    Default: "/stubs/core/cri/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/JAVA_OPTS"
+    Default: "/stubs/core/cri/env/JAVA_OPTS" #pragma: allowlist secret
   CoreStubConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -54,19 +54,19 @@ Parameters:
   CoreStubPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_PORT"
+    Default: "/stubs/core/cri/env/CORE_STUB_PORT" #pragma: allowlist secret
   CoreStubClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_CLIENT_ID"
+    Default: "/stubs/core/cri/env/CORE_STUB_CLIENT_ID" #pragma: allowlist secret
   CoreStubRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_REDIRECT_URL"
+    Default: "/stubs/core/cri/env/CORE_STUB_REDIRECT_URL" #pragma: allowlist secret
   CoreStubAppTitle:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_APP_TITLE"
+    Default: "/stubs/core/cri/env/CORE_STUB_APP_TITLE" #pragma: allowlist secret
   CoreStubConfigAgedDob:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -74,11 +74,11 @@ Parameters:
   CoreStubShowVc:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_SHOW_VC"
+    Default: "/stubs/core/cri/env/CORE_STUB_SHOW_VC" #pragma: allowlist secret
   CoreStubEnableBackendRoutes:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/CORE_STUB_ENABLE_BACKEND_ROUTES"
+    Default: "/stubs/core/cri/env/CORE_STUB_ENABLE_BACKEND_ROUTES"  #pragma: allowlist secret
   CoreStubBasicAuth:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -87,6 +87,7 @@ Parameters:
     Description: "Environment Variables for ECS"
     Type: String
     Default: "true" #pragma: allowlist secret
+
 
 Conditions:
   IsDevelopment: !Not

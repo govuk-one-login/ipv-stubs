@@ -83,7 +83,7 @@ Parameters:
     # PassportPrivateApiKey:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY"
+    #    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -126,7 +126,7 @@ Mappings:
       environment: build
       platform: stubs
     "388905755587": #Stubs Prod
-      fargateCPUsize: "256"
+      fargateCPUsize: "512"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: production
@@ -452,7 +452,7 @@ Resources:
   OrchStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
-      MaxCapacity: 3
+      MaxCapacity: 5
       MinCapacity: 1
       ResourceId: !Join
         - '/'

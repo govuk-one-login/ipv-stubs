@@ -26,91 +26,91 @@ Parameters:
     #  CommonCoreStubAppTitle:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_APP_TITLE"
+    #    Default: "/stubs/core/common/env/CORE_STUB_APP_TITLE"  #pragma: allowlist secret
     #  CommonCoreStubClientId:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_CLIENT_ID"
+    #    Default: "/stubs/core/common/env/CORE_STUB_CLIENT_ID"  #pragma: allowlist secret
     #  CommonCoreStubConfigAgedDob:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_AGED_DOB"
+    #    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_AGED_DOB"  #pragma: allowlist secret
     #  CommonCoreStubConfigFile:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_FILE"
+    #    Default: "/stubs/core/common/env/CORE_STUB_CONFIG_FILE" #pragma: allowlist secret
     #  CommonCoreStubPort:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_PORT"
+    #    Default: "/stubs/core/common/env/CORE_STUB_PORT" #pragma: allowlist secret
     #  CommonCoreStubRedirectUrl:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/CORE_STUB_REDIRECT_URL"
+    #    Default: "/stubs/core/common/env/CORE_STUB_REDIRECT_URL" #pragma: allowlist secret
     #  CommonJavaHome:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/JAVA_HOME"
+    #    Default: "/stubs/core/common/env/JAVA_HOME" #pragma: allowlist secret
     #  CommonJavaOpts:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/JAVA_OPTS"
+    #    Default: "/stubs/core/common/env/JAVA_OPTS" #pragma: allowlist secret
     #  CommonJbpConfigOpenJdkJre:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/common/env/JBP_CONFIG_OPEN_JDK_JRE"
+    #    Default: "/stubs/core/common/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
   CoreStubClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_CLIENT_ID"
+    Default: "/stubs/core/passport/env/CORE_STUB_CLIENT_ID" #pragma: allowlist secret
   CoreStubConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_CONFIG_FILE"
+    Default: "/stubs/core/passport/env/CORE_STUB_CONFIG_FILE" #pragma: allowlist secret
   CoreStubJwtAudExperianCriUri:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI"
+    Default: "/stubs/core/passport/env/CORE_STUB_JWT_AUD_EXPERIAN_CRI_URI" #pragma: allowlist secret
   CoreStubJwtIssCriUri:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_JWT_ISS_CRI_URI"
+    Default: "/stubs/core/passport/env/CORE_STUB_JWT_ISS_CRI_URI" #pragma: allowlist secret
   CoreStubKeystoreAlias:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_ALIAS"
+    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_ALIAS" #pragma: allowlist secret
   CoreStubKeystoreBase64:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_BASE64"
+    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_BASE64" #pragma: allowlist secret
   CoreStubKeystorePassword:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_PASSWORD"
+    Default: "/stubs/core/passport/env/CORE_STUB_KEYSTORE_PASSWORD" #pragma: allowlist secret
   CoreStubPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_PORT"
+    Default: "/stubs/core/passport/env/CORE_STUB_PORT" #pragma: allowlist secret
   CoreStubRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_REDIRECT_URL"
+    Default: "/stubs/core/passport/env/CORE_STUB_REDIRECT_URL" #pragma: allowlist secret
   CoreStubUserDataPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_USER_DATA_PATH"
+    Default: "/stubs/core/passport/env/CORE_STUB_USER_DATA_PATH" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/JAVA_OPTS"
+    Default: "/stubs/core/passport/env/JAVA_OPTS" #pragma: allowlist secret
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/JBP_CONFIG_OPEN_JDK_JRE"
+    Default: "/stubs/core/passport/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
   MaxJarTtlMins:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/MAX_JAR_TTL_MINS"
+    Default: "/stubs/core/passport/env/MAX_JAR_TTL_MINS" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -152,8 +152,8 @@ Mappings:
       environment: build
       platform: stubs
     "388905755587": #Stubs Prod
-      fargateCPUsize: "256"
-      fargateRAMsize: "512"
+      fargateCPUsize: "512"
+      fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: production
       platform: stubs
@@ -479,7 +479,7 @@ Resources:
   CoreStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
-      MaxCapacity: 3
+      MaxCapacity: 5
       MinCapacity: 1
       ResourceId: !Join
         - '/'
@@ -612,7 +612,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*"
         - PolicyName: CoreStubGetSSMParams
@@ -646,7 +646,7 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*"
         - PolicyName: CoreStubGetSSMParams
