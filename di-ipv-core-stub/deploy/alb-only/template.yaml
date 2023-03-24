@@ -66,7 +66,7 @@ Parameters:
   CoreStubClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_CLIENT_ID"
+    Default: "/stubs/core/passport/env/CORE_STUB_CLIENT_ID" #pragma: allowlist secret
   CoreStubConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -78,7 +78,7 @@ Parameters:
   CoreStubJwtIssCriUri:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_JWT_ISS_CRI_URI"
+    Default: "/stubs/core/passport/env/CORE_STUB_JWT_ISS_CRI_URI" #pragma: allowlist secret
   CoreStubKeystoreAlias:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -94,11 +94,11 @@ Parameters:
   CoreStubPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_PORT"
+    Default: "/stubs/core/passport/env/CORE_STUB_PORT" #pragma: allowlist secret
   CoreStubRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_REDIRECT_URL"
+    Default: "/stubs/core/passport/env/CORE_STUB_REDIRECT_URL" #pragma: allowlist secret
   CoreStubSigningPrivateKeyJwkBase64:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -106,7 +106,7 @@ Parameters:
   CoreStubUserDataPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/passport/env/CORE_STUB_USER_DATA_PATH"
+    Default: "/stubs/core/passport/env/CORE_STUB_USER_DATA_PATH" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
