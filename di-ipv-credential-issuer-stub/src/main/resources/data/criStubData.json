@@ -458,7 +458,8 @@
         "drivingPermit": [
           {
             "issuedBy": "DVLA",
-            "documentNumber": "PARKE710112PBFGA",
+            "issueDate": "2005-02-02",
+            "personalNumber": "PARKE710112PBFGA",
             "expiryDate": "2032-02-02"
           }
         ]
@@ -490,7 +491,8 @@
         "drivingPermit": [
           {
             "issuedBy": "DVA",
-            "documentNumber": "55667789",
+            "issueDate": "2005-02-02",
+            "personalNumber": "55667789",
             "expiryDate": "2032-02-02"
           }
         ]

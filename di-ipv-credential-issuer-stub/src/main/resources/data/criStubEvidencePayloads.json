@@ -168,6 +168,23 @@
           }
         ]
       }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Failed driving licence check with CI",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 0,
+        "strengthScore": 3,
+        "activityHistoryScore": 0,
+        "ci": ["D02"],
+        "failedCheckDetails": [
+          {
+            "identityCheckPolicy": "published",
+            "checkMethod": "data"
+          }
+        ]
+      }
     }
   ]
 }
