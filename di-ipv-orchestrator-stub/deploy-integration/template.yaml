@@ -452,7 +452,7 @@ Resources:
   OrchStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
-      MaxCapacity: 5
+      MaxCapacity: 1
       MinCapacity: 1
       ResourceId: !Join
         - '/'
