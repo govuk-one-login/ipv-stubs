@@ -467,7 +467,7 @@ Resources:
   CoreStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
-      MaxCapacity: 3
+      MaxCapacity: 1
       MinCapacity: 1
       ResourceId: !Join
         - '/'
