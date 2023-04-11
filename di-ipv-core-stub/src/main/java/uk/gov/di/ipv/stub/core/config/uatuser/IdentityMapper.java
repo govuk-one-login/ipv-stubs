@@ -57,7 +57,7 @@ public class IdentityMapper {
                         map.get("houseName"),
                         map.get("street"),
                         map.get("district"),
-                        map.get("posttown"),
+                        map.get("postTown"),
                         map.get("postcode"),
                         addressValidFrom,
                         null);
