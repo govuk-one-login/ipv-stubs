@@ -95,14 +95,14 @@ Mappings:
       environment: build
       platform: core-stubs
     "616199614141": #Stubs Build
-      fargateCPUsize: "1024"
-      fargateRAMsize: "2048"
+      fargateCPUsize: "256"
+      fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: build
       platform: stubs
     "388905755587": #Stubs Prod
-      fargateCPUsize: "512"
-      fargateRAMsize: "1024"
+      fargateCPUsize: "1024"
+      fargateRAMsize: "2048"
       desiredTaskCount: 1
       environment: production
       platform: stubs
