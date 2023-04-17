@@ -51,6 +51,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri/env/CORE_STUB_CONFIG_FILE" #pragma: allowlist secret
+  CoreStubJwtIssCriUri:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/CORE_STUB_JWT_ISS_CRI_URI"
   CoreStubPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -526,6 +530,8 @@ Resources:
             Value: !Ref CoreStubConfigFile
           - Name: CORE_STUB_PORT
             Value: !Ref CoreStubPort
+          - Name: CORE_STUB_JWT_ISS_CRI_URI
+            Value: !Ref CoreStubJwtIssCriUri
           - Name: CORE_STUB_CLIENT_ID
             Value: !Ref CoreStubClientId
           - Name: CORE_STUB_REDIRECT_URL
