@@ -43,6 +43,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+  ApiKeyCriAddressBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_ADDRESS_BUILD"
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -546,6 +550,8 @@ Resources:
             Value: !Ref CoreStubEnableBackendRoutes
           - Name: CORE_STUB_BASIC_AUTH
             Value: !Ref CoreStubBasicAuth
+          - Name: API_KEY_CRI_ADDRESS_BUILD
+            Value: !Ref ApiKeyCriAddressBuild
           - Name: ENABLE_BASIC_AUTH
             Value: !Ref EnableBasicAuth
           Secrets:
