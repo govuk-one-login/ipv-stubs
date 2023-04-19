@@ -9,6 +9,7 @@ on:
       - di-ipv-credential-issuer-stub/src/**
       - di-ipv-credential-issuer-stub/*
       - .github/workflows/cri-activity-history-stub.yml
+  workflow_dispatch:
 
 jobs:
   dockerBuildAndPush:

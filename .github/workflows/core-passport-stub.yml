@@ -9,6 +9,7 @@ on:
       - di-ipv-core-stub/src/**
       - di-ipv-core-stub/*
       - .github/workflows/core-passport-stub.yml
+  workflow_dispatch:
 
 jobs:
   dockerBuildAndPush:
