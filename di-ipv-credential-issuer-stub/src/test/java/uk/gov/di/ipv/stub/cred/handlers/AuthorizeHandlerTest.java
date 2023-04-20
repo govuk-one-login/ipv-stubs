@@ -389,7 +389,7 @@ class AuthorizeHandlerTest {
         verify(mockResponse)
                 .redirect(
                         VALID_REDIRECT_URI
-                                + "?error=invalid_request&iss=Credential+Issuer+Stub&error_description=An+error+description");
+                                + "?iss=Credential+Issuer+Stub&state=test-state&error=invalid_request&error_description=An+error+description");
     }
 
     private String createExpectedErrorQueryStringParams(ErrorObject error) {
