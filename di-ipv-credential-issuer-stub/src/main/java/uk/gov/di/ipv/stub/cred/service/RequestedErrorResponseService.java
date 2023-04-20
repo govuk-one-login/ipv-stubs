@@ -3,6 +3,7 @@ package uk.gov.di.ipv.stub.cred.service;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.crypto.RSADecrypter;
+import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationErrorResponse;
 import com.nimbusds.oauth2.sdk.ErrorObject;
@@ -62,15 +63,15 @@ public class RequestedErrorResponseService {
             String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
             ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdValue);
 
-            String redirectUri =
+            JWTClaimsSet jwtClaimsSet =
                     getSignedJWT(
                                     queryParamsMap.value(RequestParamConstants.REQUEST),
                                     clientConfig.getEncryptionPrivateKey())
-                            .getJWTClaimsSet()
-                            .getClaim(RequestParamConstants.REDIRECT_URI)
-                            .toString();
+                            .getJWTClaimsSet();
 
-            String state = queryParamsMap.value(RequestParamConstants.STATE);
+            String redirectUri =
+                    jwtClaimsSet.getClaim(RequestParamConstants.REDIRECT_URI).toString();
+            String state = jwtClaimsSet.getClaim(RequestParamConstants.STATE).toString();
 
             return new AuthorizationErrorResponse(
                     URI.create(redirectUri),
