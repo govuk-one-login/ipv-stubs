@@ -65,16 +65,13 @@ public class RequestedErrorResponseService {
 
             JWTClaimsSet jwtClaimsSet =
                     getSignedJWT(
-                            queryParamsMap.value(RequestParamConstants.REQUEST),
-                            clientConfig.getEncryptionPrivateKey())
-                        .getJWTClaimsSet();
+                                    queryParamsMap.value(RequestParamConstants.REQUEST),
+                                    clientConfig.getEncryptionPrivateKey())
+                            .getJWTClaimsSet();
 
-            String redirectUri = jwtClaimsSet
-                    .getClaim(RequestParamConstants.REDIRECT_URI)
-                    .toString();
-            String state = jwtClaimsSet
-                    .getClaim(RequestParamConstants.STATE)
-                    .toString();
+            String redirectUri =
+                    jwtClaimsSet.getClaim(RequestParamConstants.REDIRECT_URI).toString();
+            String state = jwtClaimsSet.getClaim(RequestParamConstants.STATE).toString();
 
             return new AuthorizationErrorResponse(
                     URI.create(redirectUri),
