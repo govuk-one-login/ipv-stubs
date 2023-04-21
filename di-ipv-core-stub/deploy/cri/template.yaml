@@ -51,6 +51,22 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri/env/API_KEY_CRI_KBV_BUILD"
+  ApiKeyCriAddressStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_ADDRESS_STAGING"
+  ApiKeyCriKbvStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_KBV_STAGING"
+  ApiKeyCriAddressIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_ADDRESS_INTEGRATION"
+  ApiKeyCriKbvIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_KBV_INTEGRATION"
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -558,6 +574,14 @@ Resources:
             Value: !Ref ApiKeyCriAddressBuild
           - Name: API_KEY_CRI_KBV_BUILD
             Value: !Ref ApiKeyCriKbvBuild
+          - Name: API_KEY_CRI_ADDRESS_STAGING
+            Value: !Ref ApiKeyCriAddressStaging
+          - Name: API_KEY_CRI_KBV_STAGING
+            Value: !Ref ApiKeyCriKbvStaging
+          - Name: API_KEY_CRI_ADDRESS_INTEGRATION
+            Value: !Ref ApiKeyCriAddressIntegration
+          - Name: API_KEY_CRI_KBV_INTEGRATION
+            Value: !Ref ApiKeyCriKbvIntegration
           - Name: ENABLE_BASIC_AUTH
             Value: !Ref EnableBasicAuth
           Secrets:
