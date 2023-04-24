@@ -492,6 +492,10 @@
                 "type": "GivenName"
               },
               {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
                 "value": "Par-ker",
                 "type": "FamilyName"
               }
@@ -523,6 +527,10 @@
             "nameParts": [
               {
                 "value": "Aliçe",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
                 "type": "GivenName"
               },
               {
