@@ -466,6 +466,89 @@
       }
     },
     {
+      "criType": "Address (Stub)",
+      "label": "Alice Parker Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Alice Parker (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Par-ker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Knowledge Based Verification (Stub)",
+      "label": "Alice Parker (Valid) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Aliçe",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parkér",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          }
+        ]
+      }
+    },  
+    {
       "criType": "Driving Licence (Stub)",
       "label": "Bob Parker (Valid) DVA Licence",
       "payload": {
@@ -494,6 +577,89 @@
             "issueDate": "2005-02-02",
             "personalNumber": "55667789",
             "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Bob Parker Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1951-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Bob Parker (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Bob",
+                "type": "GivenName"
+              },
+              {
+                "value": "Pa rk'er",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1951-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Knowledge Based Verification (Stub)",
+      "label": "Bob Parker (Valid) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Böb",
+                "type": "GivenName"
+              },
+              {
+                "value": "Pârker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1951-01-01"
           }
         ]
       }
