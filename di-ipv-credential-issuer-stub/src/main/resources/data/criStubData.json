@@ -555,7 +555,7 @@
           }
         ]
       }
-    },  
+    },
     {
       "criType": "Driving Licence (Stub)",
       "label": "Bob Parker (Valid) DVA Licence",
@@ -668,6 +668,238 @@
             "postalCode": "BA14 0QP",
             "addressLocality": "TROWBRIDGE",
             "validFrom": "1951-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Dawn Rayner-Marsden (Valid) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Dawn",
+                "type": "GivenName"
+              },
+              {
+                "value": "Rayner-Marsden",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-02-17"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2017-04-17",
+            "personalNumber": "RAYNE802170D99ZZ04",
+            "expiryDate": "2027-04-16"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Dawn Rayner-Marsden Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "11",
+            "streetName": "EVESHAM ROAD",
+            "postalCode": "GL52 2AA",
+            "addressLocality": "CHELTENHAM",
+            "validFrom": "2000-02-17"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Dawn Rayner-Marsden (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Dawn",
+                "type": "GivenName"
+              },
+              {
+                "value": "Rayner Marsden",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-02-17"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "11",
+            "streetName": "EVESHAM ROAD",
+            "postalCode": "GL52 2AA",
+            "addressLocality": "CHELTENHAM",
+            "validFrom": "2000-02-17"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Knowledge Based Verification (Stub)",
+      "label": "Dawn Rayner-Marsden (Valid) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Dawn",
+                "type": "GivenName"
+              },
+              {
+                "value": "Rayner-Marsdon",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-02-17"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "11",
+            "streetName": "EVESHAM ROAD",
+            "postalCode": "GL52 2AA",
+            "addressLocality": "CHELTENHAM",
+            "validFrom": "2000-02-17"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Shuk-Ling Lei (Valid) DVA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Shuk-Ling",
+                "type": "GivenName"
+              },
+              {
+                "value": "Lei",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1977-08-27"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVA",
+            "issueDate": "2015-11-11",
+            "personalNumber": "LEI99708277S99ZZ06",
+            "expiryDate": "2025-11-10"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Shuk-Ling Lei Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "42",
+            "streetName": "KEMPLEY COURT",
+            "postalCode": "GL18 2AT",
+            "addressLocality": "DYMOCK",
+            "validFrom": "2018-03-04"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Shuk-Ling Lei (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Shuk Ling",
+                "type": "GivenName"
+              },
+              {
+                "value": "Lei",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1977-08-28"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "42",
+            "streetName": "KEMPLEY COURT",
+            "postalCode": "GL18 2AT",
+            "addressLocality": "DYMOCK",
+            "validFrom": "2018-03-04"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Knowledge Based Verification (Stub)",
+      "label": "Shuk-Ling Lei (Valid) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Shuk-Ling",
+                "type": "GivenName"
+              },
+              {
+                "value": "Lei",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1977-08-27"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "42",
+            "streetName": "KEMPLEY COURT",
+            "postalCode": "GL18 2AT",
+            "addressLocality": "DYMOCK",
+            "validFrom": "2018-03-04"
           }
         ]
       }
