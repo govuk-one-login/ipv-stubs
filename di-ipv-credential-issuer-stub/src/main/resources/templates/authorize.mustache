@@ -275,6 +275,22 @@
                             </tr>
                         {{/isVerificationType}}
 
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">
+                                <div class="govuk-form-group">
+                                    <h1 class="govuk-label-wrapper">
+                                        <label class="govuk-label govuk-label--l" for="ci">
+                                            Contra-indicators
+                                        </label>
+                                    </h1>
+                                    <div id="ci-more-detail-hint" class="govuk-hint">
+                                        Please provide a comma-separated list e.g. A01,D02
+                                    </div>
+                                    <textarea class="govuk-textarea" id="ci" name="ci" rows="1" aria-describedby="ci-more-detail-hint"></textarea>
+                                </div>
+                            </td>
+                        </tr>
+
                         {{^isUserAssertedType}}
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">
@@ -345,22 +361,6 @@
                                         </div>
                                     </div>
                                 </fieldset>
-                            </td>
-                        </tr>
-
-                        <tr class="govuk-table__row">
-                            <td class="govuk-table__cell">
-                                <div class="govuk-form-group">
-                                    <h1 class="govuk-label-wrapper">
-                                        <label class="govuk-label govuk-label--l" for="ci">
-                                            Contra-indicators
-                                        </label>
-                                    </h1>
-                                    <div id="ci-more-detail-hint" class="govuk-hint">
-                                        Please provide a comma-separated list e.g. A01,D02
-                                    </div>
-                                    <textarea class="govuk-textarea" id="ci" name="ci" rows="1" aria-describedby="ci-more-detail-hint"></textarea>
-                                </div>
                             </td>
                         </tr>
                         </tbody>
