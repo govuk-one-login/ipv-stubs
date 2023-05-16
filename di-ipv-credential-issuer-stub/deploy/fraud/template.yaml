@@ -123,12 +123,12 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "fraud-${Environment}.dev.stubs.account.gov.uk"
+        - !Sub "fraud-${Environment}.core.dev.stubs.account.gov.uk"
         - !If [IsNonProd, !Sub "fraud-cri.${Environment}.stubs.account.gov.uk", fraud-cri.stubs.account.gov.uk]
       DomainValidationOptions:
         - DomainName: !If
             - IsCoreDev
-            - !Sub "fraud-${Environment}.dev.stubs.account.gov.uk"
+            - !Sub "fraud-${Environment}.core.dev.stubs.account.gov.uk"
             - !If [IsNonProd, !Sub "fraud-cri.${Environment}.stubs.account.gov.uk", fraud-cri.stubs.account.gov.uk]
           HostedZoneId: !If
             - IsCoreDev
@@ -142,7 +142,7 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "fraud-${Environment}.dev.stubs.account.gov.uk"
+        - !Sub "fraud-${Environment}.core.dev.stubs.account.gov.uk"
         - !If [IsNonProd, !Sub "fraud-cri.${Environment}.stubs.account.gov.uk", fraud-cri.stubs.account.gov.uk]
       DomainNameConfigurations:
         - CertificateArn: !Ref CriStubSSLCert
@@ -154,7 +154,7 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "fraud-${Environment}.dev.stubs.account.gov.uk"
+        - !Sub "fraud-${Environment}.core.dev.stubs.account.gov.uk"
         - !If [IsNonProd, !Sub "fraud-cri.${Environment}.stubs.account.gov.uk", fraud-cri.stubs.account.gov.uk]
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
@@ -169,7 +169,7 @@ Resources:
       Type: A
       Name: !If
         - IsCoreDev
-        - !Sub "fraud-${Environment}.dev.stubs.account.gov.uk"
+        - !Sub "fraud-${Environment}.core.dev.stubs.account.gov.uk"
         - !If [IsNonProd, !Sub "fraud-cri.${Environment}.stubs.account.gov.uk", fraud-cri.stubs.account.gov.uk]
       HostedZoneId: !If
         - IsCoreDev
