@@ -10,10 +10,6 @@ Parameters:
     Description: The name of the environment to deploy to.
     Type: String
     AllowedPattern: ((production)|(build)|(dev.*))
-  ImageTag:
-    Description: The tag of cri-stub image to deploy in the task definition.
-    Type: String
-    Default: "none"
   VpcStackName:
     Description: >
       The name of the stack that defines the VPC in which this container will
@@ -66,8 +62,11 @@ Conditions:
     - !Or
       - !Equals [ !Ref Environment, "build"]
       - !Equals [ !Ref Environment, "production"]
+  IsCoreDev: !Or
+    - !Equals [ !Ref AWS::AccountId, "130355686670"]
+    - !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsNotDevelopment: !Not [ !Condition IsDevelopment ]
-  IsProduction: !Equals [ !Ref Environment, production ]
+  IsProduction: !Equals [ !Ref Environment, "production" ]
   IsNonProd: !Not
     - !Or
       - !Condition IsDevelopment
@@ -82,7 +81,13 @@ Conditions:
 # if this is built out differently.
 Mappings:
   EnvironmentConfiguration:
-    "130355686670": # Core Development
+    "130355686670": # Old Core Development
+      fargateCPUsize: "256"
+      fargateRAMsize: "512"
+      desiredTaskCount: 1
+      environment: dev
+      platform: core
+    "175872367215": # New Core Development
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
@@ -117,18 +122,18 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !If
-        - IsNonProd
-        - !Sub "kbv-cri.${Environment}.stubs.account.gov.uk"
-        - kbv-cri.stubs.account.gov.uk
+        - IsCoreDev
+        - !Sub "kbv-${Environment}.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "kbv-cri.${Environment}.stubs.account.gov.uk", kbv-cri.stubs.account.gov.uk]
       DomainValidationOptions:
         - DomainName: !If
-            - IsNonProd
-            - !Sub "kbv-cri.${Environment}.stubs.account.gov.uk"
-            - kbv-cri.stubs.account.gov.uk
+            - IsCoreDev
+            - !Sub "kbv-${Environment}.dev.stubs.account.gov.uk"
+            - !If [IsNonProd, !Sub "kbv-cri.${Environment}.stubs.account.gov.uk", kbv-cri.stubs.account.gov.uk]
           HostedZoneId: !If
-            - IsNonProd
-            - !ImportValue BuildPublicHostedZoneId
-            - !ImportValue RootPublicHostedZoneId
+            - IsCoreDev
+            - !ImportValue DevPublicHostedZoneId
+            - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
       ValidationMethod: DNS
 
   # api domain entries / mapping
@@ -136,9 +141,9 @@ Resources:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
       DomainName: !If
-        - IsNonProd
-        - !Sub "kbv-cri.${Environment}.stubs.account.gov.uk"
-        -  kbv-cri.stubs.account.gov.uk
+        - IsCoreDev
+        - !Sub "kbv-${Environment}.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "kbv-cri.${Environment}.stubs.account.gov.uk", kbv-cri.stubs.account.gov.uk]
       DomainNameConfigurations:
         - CertificateArn: !Ref CriStubSSLCert
           EndpointType: REGIONAL
@@ -148,9 +153,9 @@ Resources:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
       DomainName: !If
-        - IsNonProd
-        - !Sub "kbv-cri.${Environment}.stubs.account.gov.uk"
-        - kbv-cri.stubs.account.gov.uk
+        - IsCoreDev
+        - !Sub "kbv-${Environment}.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "kbv-cri.${Environment}.stubs.account.gov.uk", kbv-cri.stubs.account.gov.uk]
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -163,13 +168,13 @@ Resources:
     Properties:
       Type: A
       Name: !If
-        - IsNonProd
-        - !Sub "kbv-cri.${Environment}.stubs.account.gov.uk"
-        - kbv-cri.stubs.account.gov.uk
+        - IsCoreDev
+        - !Sub "kbv-${Environment}.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "kbv-cri.${Environment}.stubs.account.gov.uk", kbv-cri.stubs.account.gov.uk]
       HostedZoneId: !If
-        - IsNonProd
-        - !ImportValue BuildPublicHostedZoneId
-        - !ImportValue RootPublicHostedZoneId
+        - IsCoreDev
+        - !ImportValue DevPublicHostedZoneId
+        - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
       AliasTarget:
         DNSName: !GetAtt CriStubApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CriStubApiDomain.RegionalHostedZoneId
@@ -218,10 +223,8 @@ Resources:
           IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-        - DestinationSecurityGroupId: !If
-            - IsNotDevelopment
-            - Fn::ImportValue:  !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-            - !ImportValue InterfaceVpcEndpointSecurityGroupId
+        - DestinationSecurityGroupId:
+            Fn::ImportValue:  !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
           Description: Allow outbound traffic to AWS Services vpc endpoint security group
           IpProtocol: tcp
           FromPort: 443
@@ -476,11 +479,7 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Essential: true
-          Image: !If [
-              IsNotDevelopment,
-              CONTAINER-IMAGE-PLACEHOLDER,
-              !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/cri-stub-development:${ImageTag}",
-            ] # Uses build account and ECR when not in development.
+          Image: CONTAINER-IMAGE-PLACEHOLDER
           Name: app
           Environment:
           - Name: JBP_CONFIG_OPEN_JDK_JRE
