@@ -138,9 +138,9 @@ Resources:
   OrchStubSSLCert:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub "orch-${Environment}.dev.stubs.account.gov.uk"
+      DomainName: !Sub "orch-${Environment}.core.dev.stubs.account.gov.uk"
       DomainValidationOptions:
-        - DomainName: !Sub "orch-${Environment}.dev.stubs.account.gov.uk"
+        - DomainName: !Sub "orch-${Environment}.core.dev.stubs.account.gov.uk"
           HostedZoneId: !ImportValue DevPublicHostedZoneId
       ValidationMethod: DNS
 
@@ -148,7 +148,7 @@ Resources:
   OrchStubApiDomain:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
-      DomainName: !Sub "orch-${Environment}.dev.stubs.account.gov.uk"
+      DomainName: !Sub "orch-${Environment}.core.dev.stubs.account.gov.uk"
       DomainNameConfigurations:
         - CertificateArn: !Ref OrchStubSSLCert
           EndpointType: REGIONAL
@@ -157,7 +157,7 @@ Resources:
   OrchStubApiMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
-      DomainName: !Sub "orch-${Environment}.dev.stubs.account.gov.uk"
+      DomainName: !Sub "orch-${Environment}.core.dev.stubs.account.gov.uk"
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -169,7 +169,7 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       Type: A
-      Name: !Sub "orch-${Environment}.dev.stubs.account.gov.uk"
+      Name: !Sub "orch-${Environment}.core.dev.stubs.account.gov.uk"
       HostedZoneId: !ImportValue DevPublicHostedZoneId
       AliasTarget:
         DNSName: !GetAtt OrchStubApiDomain.RegionalDomainName
