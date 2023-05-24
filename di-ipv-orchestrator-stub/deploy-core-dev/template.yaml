@@ -76,10 +76,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/build/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
-    # PassportPrivateApiKey:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -472,32 +468,32 @@ Resources:
           Image: CONTAINER-IMAGE-PLACEHOLDER
           Name: app
           Environment:
-          - Name: JBP_CONFIG_OPEN_JDK_JRE
-            Value: !Ref JbpConfigOpenJdkJre
-          - Name: JAVA_OPTS
-            Value: !Ref JavaOpts
-          - Name: ORCHESTRATOR_CLIENT_ID
-            Value: !Ref OrchestratorClientId
-          - Name: ORCHESTRATOR_REDIRECT_URL
-            Value: !Ref OrchestratorRedirectUrl
-          - Name: ORCHESTRATOR_CLIENT_JWT_TTL
-            Value: !Ref OrchestratorClientJwtTtl
-          - Name: ORCHESTRATOR_PORT
-            Value: !Ref OrchestratorPort
-          - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
-            Value: !Ref OrchestratorClientSigningKey
-          - Name: ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY
-            Value: !Ref OrchestratorJarEncryptionPublicKey
-          - Name: IPV_BACKCHANNEL_ENDPOINT
-            Value: !Ref IpvBackchannelEndpoint
-          - Name: IPV_BACKCHANNEL_TOKEN_PATH
-            Value: !Ref IpvBackchannelTokenPath
-          - Name: IPV_BACKCHANNEL_USER_IDENTITY_PATH
-            Value: !Ref IpvBackchannelUserIdentityPath
-          - Name: IPV_ENDPOINT
-            Value: !Ref IpvEndpoint
-          - Name: IPV_CORE_AUDIENCE
-            Value: !Ref IpvCoreAudience
+            - Name: JBP_CONFIG_OPEN_JDK_JRE
+              Value: !Ref JbpConfigOpenJdkJre
+            - Name: JAVA_OPTS
+              Value: !Ref JavaOpts
+            - Name: ORCHESTRATOR_CLIENT_ID
+              Value: !Ref OrchestratorClientId
+            - Name: ORCHESTRATOR_REDIRECT_URL
+              Value: !Ref OrchestratorRedirectUrl
+            - Name: ORCHESTRATOR_CLIENT_JWT_TTL
+              Value: !Ref OrchestratorClientJwtTtl
+            - Name: ORCHESTRATOR_PORT
+              Value: !Ref OrchestratorPort
+            - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
+              Value: !Ref OrchestratorClientSigningKey
+            - Name: ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: !Ref OrchestratorJarEncryptionPublicKey
+            - Name: IPV_BACKCHANNEL_ENDPOINT
+              Value: !Ref IpvBackchannelEndpoint
+            - Name: IPV_BACKCHANNEL_TOKEN_PATH
+              Value: !Ref IpvBackchannelTokenPath
+            - Name: IPV_BACKCHANNEL_USER_IDENTITY_PATH
+              Value: !Ref IpvBackchannelUserIdentityPath
+            - Name: IPV_ENDPOINT
+              Value: !Ref IpvEndpoint
+            - Name: IPV_CORE_AUDIENCE
+              Value: !Ref IpvCoreAudience
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -553,7 +549,7 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/build/orch/*"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/*"
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -583,7 +579,7 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/orch/core/*" #pragma: allowlist secret
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/*" #pragma: allowlist secret
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
