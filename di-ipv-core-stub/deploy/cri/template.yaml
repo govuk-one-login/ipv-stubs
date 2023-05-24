@@ -728,3 +728,9 @@ Outputs:
   CoreStubEnvironment:
     Description: Core Stub Environment
     Value: !Ref Environment
+  CoreStubDomain:
+    Description: Core Stub DNS Domain
+    Value: !Ref CoreStubDNSRecord
+  CoreStubApiDomain:
+    Description: Core Stub API Domain
+    Value: !Ref CoreStubApiDomain

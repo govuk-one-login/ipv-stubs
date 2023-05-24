@@ -642,3 +642,9 @@ Outputs:
   CriStubEnvironment:
     Description: Cri Stub Environment
     Value: !Ref Environment
+  CriStubDomain:
+    Description: Cri Stub DNS Domain
+    Value: !Ref CriStubDNSRecord
+  CriStubApiDomain:
+    Description: Cri Stub API Domain
+    Value: !Ref CriStubApiDomain
