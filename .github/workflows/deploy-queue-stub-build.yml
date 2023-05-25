@@ -18,18 +18,18 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: '0'
 
       - name: Set up AWS creds
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.QUEUE_STUBS_BUILD_GH_ROLE }}
           aws-region: eu-west-2
 
       - name: Set up SAM cli
-        uses: aws-actions/setup-sam@v1
+        uses: aws-actions/setup-sam@v2
 
       - name: Set up esbuild
         run: curl -fsSL https://esbuild.github.io/dl/latest | sh
