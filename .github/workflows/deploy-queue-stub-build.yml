@@ -25,7 +25,7 @@ jobs:
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.QUEUE_STUBS_BUILD_GH_ROLE }}
+          role-to-assume: ${{ secrets.QUEUE_STUB_BUILD_GH_ROLE }}
           aws-region: eu-west-2
 
       - name: Set up SAM cli
@@ -39,9 +39,6 @@ jobs:
 
       - name: check esbuild works
         run: esbuild --version
-
-      - name: sam fix https://github.com/aws/aws-sam-cli/issues/4527
-        run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
 
       - name: SAM Validate
         working-directory: ./di-ipv-queue-stub/deploy-build
