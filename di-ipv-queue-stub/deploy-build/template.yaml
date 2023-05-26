@@ -45,7 +45,7 @@ Resources:
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
 
     Properties:
-      CodeUri: "../enqueue-event"
+      CodeUri: "../enqueue-event/src/handlers"
       Handler: enqueueEvent.lambdaHandler
       Runtime: nodejs18.x
       Architectures:
