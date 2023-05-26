@@ -109,7 +109,7 @@ Resources:
         External:
           - "@aws-sdk/client-sqs"
         EntryPoints:
-          - enqueueEvents.ts
+          - enqueueEvent.ts
 
   EnqueueEventLambdaSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
