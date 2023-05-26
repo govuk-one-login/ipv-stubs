@@ -25,7 +25,7 @@ jobs:
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          role-to-assume: ${{ secrets.QUEUE_STUBS_BUILD_GH_ROLE }}
+          role-to-assume: ${{ secrets.QUEUE_STUB_BUILD_GH_ROLE }}
           aws-region: eu-west-2
 
       - name: Set up SAM cli
