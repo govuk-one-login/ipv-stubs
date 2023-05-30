@@ -4,6 +4,7 @@
     "version": "0.0.1",
     "private": true,
     "devDependencies": {
+        "@aws-sdk/client-sqs": "^3.338.0",
         "@babel/core": "^7.21.8",
         "@babel/preset-env": "^7.21.5",
         "@babel/preset-typescript": "^7.21.5",

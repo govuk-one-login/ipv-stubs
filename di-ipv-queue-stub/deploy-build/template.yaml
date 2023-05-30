@@ -46,7 +46,7 @@ Resources:
 
     Properties:
       CodeUri: "../enqueue-event/src/handlers"
-      Handler: enqueueEvent.lambdaHandler
+      Handler: enqueueEvent.handler
       Runtime: nodejs18.x
       Architectures:
         - arm64
@@ -63,7 +63,9 @@ Resources:
         - UseCodeSigning
         - !Ref CodeSigningConfigArn
         - !Ref AWS::NoValue
-
+      Environment:
+        Variables:
+          QUEUE_KMS_KEY_ID: "alias/sqs/QueuesKmsKey"
       Events:
         ApiEvent:
           Type: Api
@@ -97,7 +99,26 @@ Resources:
               Effect: Allow
               Action:
                 - "sqs:SendMessage"
-              Resource: !Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:queue/*
+                - "sqs:ReceiveMessage"
+                - "sqs:DeleteMessage"
+                - "sqs:GetQueueAttributes"
+                - "sqs:GetQueueUrl"
+                - "sqs:CreateQueue"
+                - "sqs:AddPermission"
+              Resource: !Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:stubQueue_*
+        - Statement:
+            - Sid: AllowKMS
+              Effect: Allow
+              Action:
+                - "kms:Decrypt"
+                - "kms:GenerateDataKey*"
+                - "kms:DescribeKey"
+              Resource:
+                - !Sub "arn:aws:kms:eu-west-2:${AWS::AccountId}:key/*"
+              Condition:
+                "ForAnyValue:StringLike":
+                  "kms:ResourceAliases":
+                    - "alias/sqs/QueuesKmsKey"
 
     Metadata:
       # Manage esbuild properties
@@ -172,21 +193,24 @@ Resources:
             Principal:
               AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
             Action:
-              - kms:*
+              - "kms:*"
             Resource: "*"
           - Effect: Allow
             Principal:
-              AWS: "arn:aws:iam::457601271792:root" # Build account id
+              AWS:
+                - "arn:aws:iam::457601271792:root" # Build account id
+                - "arn:aws:iam::130355686670:root" # OldDev account id
+                - "arn:aws:iam::175872367215:root" # Dev account id
             Action:
               - "kms:Decrypt"
             Resource: "*"
-          - Effect: Allow
-            Principal:
-              Service: !Sub "lambda.amazonaws.com"
-            Action:
-              - "kms:Encrypt*"
-              - "kms:GenerateDataKey*"
-            Resource: !GetAtt EnqueueEventLambda.Arn
+
+  #QueuesKmsKey Alias
+  QueuesKmsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: "alias/sqs/QueuesKmsKey"
+      TargetKeyId: !Ref QueuesKmsKey
 
   #lambda dlq
   EnqueueEventDLQ:
@@ -211,26 +235,37 @@ Resources:
   F2FMessageQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: F2FMessageQueue
+      QueueName: "stubQueue_F2FMessageQueue"
       KmsMasterKeyId: !Ref QueuesKmsKey
 
-  F2FMessageQueuePolicy:
-    Type: AWS::IAM::ManagedPolicy
+  MessageQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
     Properties:
-      ManagedPolicyName: "F2FMessageQueuePolicy"
+      Queues:
+        - !Ref F2FMessageQueue
       PolicyDocument:
-        - Version: "2012-10-17"
-          Statement:
-            - Effect: "Allow"
-              Action:
-                - "sqs:ReadMessage"
-              Resource:
-                - !GetAtt F2FMessageQueue.Arn
-              Condition:
-                StringEquals:
-                  "aws:PrincipalAccount":
-                    - "457601271792" # Build account id
-                    #could also put in the arn of the build lambda here...
+        Statement:
+          - Sid: "AllowReadByOtherAccount"
+            Effect: Allow
+            Action:
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+            Resource: !GetAtt F2FMessageQueue.Arn
+            Principal:
+              AWS:
+                - "arn:aws:iam::457601271792:root" # Build account id
+                - "arn:aws:iam::130355686670:root" # OldDev account id
+                - "arn:aws:iam::175872367215:root" # Dev account id
+         #- Sid: "AllowKeyAccess"
+         #  Effect: Allow
+         #  Action:
+         #    - "kms:Encrypt"
+         #    - "kms:GenerateDataKey"
+         #  Resource: !Ref QueuesKmsKey
+         #  Principle:
+         #    AWS:
+         #      - !Sub "arn:aws:iam::${AWS::AccountId}:root"
 
   EnqueueEventApi:
     Type: AWS::Serverless::Api
