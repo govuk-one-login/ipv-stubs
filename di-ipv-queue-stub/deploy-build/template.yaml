@@ -15,15 +15,11 @@ Parameters:
       The name of the stack that defines the VPC in which this container will
       run.
     Type: String
-  PermissionsBoundary:
-    Description: "The ARN of the permissions boundary to apply when creating IAM roles"
-    Type: String
-    Default: "none"
   CodeSigningConfigArn:
     Type: String
     Description: >
       The ARN of the Code Signing Config to use, provided by the deployment pipeline
-    Default: "none"
+    Default: ""
 
 Conditions:
 
@@ -31,11 +27,6 @@ Conditions:
     Fn::Not:
       - Fn::Equals:
           - !Ref CodeSigningConfigArn
-          - "none"
-  UsePermissionsBoundary:
-    Fn::Not:
-      - Fn::Equals:
-          - !Ref PermissionsBoundary
           - "none"
 
 Resources:
@@ -55,10 +46,6 @@ Resources:
         TargetArn: !GetAtt EnqueueEventDLQ.Arn
       KmsKeyArn: !GetAtt LambdaKmsKey.Arn
       ReservedConcurrentExecutions: 1
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
       CodeSigningConfigArn: !If
         - UseCodeSigning
         - !Ref CodeSigningConfigArn
@@ -276,6 +263,14 @@ Resources:
       CacheClusterEnabled: False
       StageName: prod
 
+Outputs:
+  ApiGatewayUrl:
+    Description: The API URL to post the event data
+    Value: !Join
+    - ''
+    - - "https://"
+      - !GetAtt EnqueueEventApi.RootResourceId
+      - ".execute-api.eu-west-2.amazonaws.com/prod"
 
 
 
