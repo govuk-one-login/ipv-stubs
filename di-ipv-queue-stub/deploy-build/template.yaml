@@ -269,7 +269,7 @@ Outputs:
     Value: !Join
     - ''
     - - "https://"
-      - !GetAtt EnqueueEventApi.RootResourceId
+      - !Ref EnqueueEventApi
       - ".execute-api.eu-west-2.amazonaws.com/prod"
 
 

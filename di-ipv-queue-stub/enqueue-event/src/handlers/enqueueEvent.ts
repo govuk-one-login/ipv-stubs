@@ -60,9 +60,9 @@ export const handler: Handler = async (
                     "175872367215"
                 ],
                 Actions: [
-                    "sqs:ReceiveMessage",
-                    "sqs:DeleteMessage",
-                    "sqs:GetQueueAttributes"
+                    "ReceiveMessage",
+                    "DeleteMessage",
+                    "GetQueueAttributes"
                 ]
             }
             let addQueuePermissionCommand = new AddPermissionCommand(addQueuePermissionCommandInput);
