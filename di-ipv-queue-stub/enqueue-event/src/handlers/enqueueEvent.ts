@@ -14,6 +14,7 @@ import {
 } from "@aws-sdk/client-sqs";
 export const handler: Handler = async (
     event: any,
+    context:any
 ) => {
     console.log("event:");
     console.log(event);
@@ -85,13 +86,16 @@ export const handler: Handler = async (
     console.log("sendSqsMessageCommandOutput:");
     console.log(sendSqsMessageCommandOutput);
 
+    let aws_account_id = JSON.stringify(context.invokedFunctionArn).split(':')[4];
+
     let response = {
         "statusCode": 200,
         "headers": {
             "Content-Type": "application/json"
         },
         "isBase64Encoded": false,
-        "body": "{\n  \"Status\": \"enqueued\"\n}"
+        "body": "{\n  \"status\": \"enqueued\",\n \"queueArn\": \"arn:aws:sqs:eu-west-2:"
+            + aws_account_id + ":" + body.queueName + "\" \n}"
     }
     return response;
 }
