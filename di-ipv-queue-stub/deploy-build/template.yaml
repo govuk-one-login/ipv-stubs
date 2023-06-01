@@ -224,6 +224,18 @@ Resources:
     Properties:
       QueueName: "stubQueue_F2FMessageQueue"
       KmsMasterKeyId: !Ref QueuesKmsKey
+      VisibilityTimeout: 360
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt F2FDLQ.Arn
+        maxReceiveCount: 1
+
+  F2FDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "stubQueue_F2FDLQ"
+      KmsMasterKeyId: !Ref QueuesKmsKey
+      RedriveAllowPolicy:
+        redrivePermission: allowAll
 
   MessageQueuePolicy:
     Type: AWS::SQS::QueuePolicy
