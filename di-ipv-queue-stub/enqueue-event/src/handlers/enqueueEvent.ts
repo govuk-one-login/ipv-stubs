@@ -18,6 +18,7 @@ export const handler: Handler = async (
 ) => {
     console.log("event:");
     console.log(event);
+    let aws_account_id = JSON.stringify(context.invokedFunctionArn).split(':')[4];
     let body = JSON.parse(event.body);
     console.log("body:");
     console.log(body);
@@ -46,7 +47,9 @@ export const handler: Handler = async (
             let createQueueCommandInput:CreateQueueCommandInput = {
                 QueueName: body.queueName,
                 Attributes: {
-                    KmsMasterKeyId: 'alias/sqs/QueuesKmsKey'
+                    KmsMasterKeyId: 'alias/sqs/QueuesKmsKey',
+                    RedrivePolicy: "{ deadLetterQueueTargetArn: \"arn:aws:sqs:eu-west-2:\"" + aws_account_id + "\":F2FDLQ\", maxReceiveCount: 1 }",
+                    VisibilityTimeout: "360"
                 }
             }
             let createQueueCommand = new CreateQueueCommand(createQueueCommandInput);
@@ -86,7 +89,7 @@ export const handler: Handler = async (
     console.log("sendSqsMessageCommandOutput:");
     console.log(sendSqsMessageCommandOutput);
 
-    let aws_account_id = JSON.stringify(context.invokedFunctionArn).split(':')[4];
+
 
     let response = {
         "statusCode": 200,
