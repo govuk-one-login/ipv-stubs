@@ -47,6 +47,21 @@
       }
     },
     {
+      "criType": "Claimed Identity Collector (Stub)",
+      "label": "Mary Watson Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "221B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Fraud Check (Stub)",
       "label": "Mary Watson (Valid) Fraud",
       "payload": {
@@ -161,6 +176,21 @@
       }
     },
     {
+      "criType": "Claimed Identity Collector (Stub)",
+      "label": "James Moriarty (Invalid) Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "111B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 1XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Fraud Check (Stub)",
       "label": "James Moriarty (Invalid) Fraud",
       "payload": {
@@ -261,6 +291,23 @@
     },
     {
       "criType": "Address (Stub)",
+      "label": "Kenneth Decerqueira (Valid Experian) Address",
+      "payload": {
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity Collector (Stub)",
       "label": "Kenneth Decerqueira (Valid Experian) Address",
       "payload": {
         "address": [
@@ -404,6 +451,21 @@
       }
     },
     {
+      "criType": "Claimed Identity Collector (Stub)",
+      "label": "Joe Shmoe Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "122",
+            "streetName": "BURNS CRESCENT",
+            "postalCode": "EH1 9GP",
+            "addressLocality": "EDINBURGH",
+            "validFrom": "1995-01-02"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Fraud Check (Stub)",
       "label": "Joe Shmoe (Valid) Fraud",
       "payload": {
@@ -479,6 +541,21 @@
     },
     {
       "criType": "Address (Stub)",
+      "label": "Alice Doe Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "221C",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1980-01-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity Collector (Stub)",
       "label": "Alice Doe Valid Address",
       "payload": {
         "address": [
@@ -573,6 +650,20 @@
     },
     {
       "criType": "Address (Stub)",
+      "label": "Alice Parker Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          }
+        ]
+      }
+    },    {
+      "criType": "Claimed Identity Collector (Stub)",
       "label": "Alice Parker Valid Address",
       "payload": {
         "address": [
@@ -697,6 +788,21 @@
     },
     {
       "criType": "Address (Stub)",
+      "label": "Bob Parker Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1951-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity Collector (Stub)",
       "label": "Bob Parker Valid Address",
       "payload": {
         "address": [
