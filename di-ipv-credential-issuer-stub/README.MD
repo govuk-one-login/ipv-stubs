@@ -23,7 +23,6 @@ The stub application to simulate the credential issuers to be used during the IP
 ## Running locally
 
 ### Startup script
-
 To run locally, you can run the startup script.
 
 ```shell
