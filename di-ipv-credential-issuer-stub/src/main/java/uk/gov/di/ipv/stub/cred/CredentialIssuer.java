@@ -7,6 +7,7 @@ import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler;
 import uk.gov.di.ipv.stub.cred.handlers.CredentialHandler;
 import uk.gov.di.ipv.stub.cred.handlers.DocAppCredentialHandler;
+import uk.gov.di.ipv.stub.cred.handlers.F2FHandler;
 import uk.gov.di.ipv.stub.cred.handlers.JwksHandler;
 import uk.gov.di.ipv.stub.cred.handlers.TokenHandler;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
@@ -26,6 +27,7 @@ public class CredentialIssuer {
     private final CredentialHandler credentialHandler;
     private final DocAppCredentialHandler docAppCredentialHandler;
     private final JwksHandler jwksHandler;
+    private final F2FHandler f2fHandler;
 
     public CredentialIssuer() {
         Spark.staticFileLocation("/public");
@@ -57,6 +59,7 @@ public class CredentialIssuer {
         docAppCredentialHandler =
                 new DocAppCredentialHandler(credentialService, tokenService, vcGenerator);
         jwksHandler = new JwksHandler();
+        f2fHandler = new F2FHandler(tokenService);
 
         initRoutes();
         initErrorMapping();
@@ -68,6 +71,8 @@ public class CredentialIssuer {
         Spark.post("/token", tokenHandler.issueAccessToken);
         if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
             Spark.post("/credentials/issue", docAppCredentialHandler.getResource);
+        } else if etCriType().equals(CriType.FACE_TO_FACE_CRI_TYPE)) {
+            Spark.post("/credentials/issue", f2fHandler.getResource)
         } else {
             Spark.post("/credentials/issue", credentialHandler.getResource);
         }
