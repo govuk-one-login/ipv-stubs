@@ -26,8 +26,7 @@ public class F2FHandler {
     private static final String JSON_RESPONSE_TYPE = "application/json;charset=UTF-8";
     private TokenService tokenService;
 
-    public F2FHandler(
-            TokenService tokenService) {
+    public F2FHandler(TokenService tokenService) {
         this.tokenService = tokenService;
     }
 
@@ -46,9 +45,7 @@ public class F2FHandler {
 
                 var userInfo =
                         new UserInfo(new Subject("urn:fdc:gov.uk:2022:" + UUID.randomUUID()));
-                userInfo.setClaim(
-                        "https://vocab.account.gov.uk/v1/credentialStatus",
-                        "pending");
+                userInfo.setClaim("https://vocab.account.gov.uk/v1/credentialStatus", "pending");
 
                 return userInfo.toJSONString();
             };
