@@ -11,16 +11,12 @@ import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import uk.gov.di.ipv.stub.cred.domain.Credential;
-import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
-import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
 import javax.servlet.http.HttpServletResponse;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -28,6 +24,7 @@ public class F2FHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(F2FHandler.class);
     private static final String JSON_RESPONSE_TYPE = "application/json;charset=UTF-8";
+    private TokenService tokenService;
 
     public F2FHandler(
             TokenService tokenService) {
@@ -37,6 +34,12 @@ public class F2FHandler {
     public Route getResource =
             (Request request, Response response) -> {
                 String accessTokenString = request.headers(HttpHeader.AUTHORIZATION.toString());
+                ValidationResult validationResult = validateAccessToken(accessTokenString);
+
+                if (!validationResult.isValid()) {
+                    response.status(validationResult.getError().getHTTPStatusCode());
+                    return validationResult.getError().getDescription();
+                }
 
                 response.type(JSON_RESPONSE_TYPE);
                 response.status(HttpServletResponse.SC_ACCEPTED);
