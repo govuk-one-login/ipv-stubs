@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >-
-  This creates the necessary components to deploy IPV Face-to-Face Credential Issuer
+  This creates the necessary components to deploy IPV Face to Face Credential Issuer
   Stub onto ECS Fargate within the dev platform VPC and private subnets
   (provided as parameters).
 
@@ -23,39 +23,39 @@ Parameters:
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/face-to-face/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/f2f/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/face-to-face/env/JAVA_OPTS" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/f2f/env/JAVA_OPTS" #pragma: allowlist secret
   CredentialIssuerPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/face-to-face/env/CREDENTIAL_ISSUER_PORT" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/f2f/env/CREDENTIAL_ISSUER_PORT" #pragma: allowlist secret
   CredentialIssuerName:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/face-to-face/env/CREDENTIAL_ISSUER_NAME" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/f2f/env/CREDENTIAL_ISSUER_NAME" #pragma: allowlist secret
   CredentialIssuerType:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/face-to-face/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/f2f/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
   ClientConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/face-to-face/env/CLIENT_CONFIG_FILE" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/f2f/env/CLIENT_CONFIG_FILE" #pragma: allowlist secret
   ClientAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/face-to-face/env/CLIENT_AUDIENCE" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/f2f/env/CLIENT_AUDIENCE" #pragma: allowlist secret
   VcIssuer:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/face-to-face/env/VC_ISSUER" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/f2f/env/VC_ISSUER" #pragma: allowlist secret
   VcTtlSeconds:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/face-to-face/env/VC_TTL_SECONDS" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/f2f/env/VC_TTL_SECONDS" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -123,13 +123,13 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "face-to-face-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "face-to-face-cri.${Environment}.stubs.account.gov.uk", face-to-face-cri.stubs.account.gov.uk]
+        - !Sub "f2f-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "f2f-cri.${Environment}.stubs.account.gov.uk", f2f-cri.stubs.account.gov.uk]
       DomainValidationOptions:
         - DomainName: !If
             - IsCoreDev
-            - !Sub "face-to-face-${Environment}.core.dev.stubs.account.gov.uk"
-            - !If [IsNonProd, !Sub "face-to-face-cri.${Environment}.stubs.account.gov.uk", face-to-face-cri.stubs.account.gov.uk]
+            - !Sub "f2f-${Environment}.core.dev.stubs.account.gov.uk"
+            - !If [IsNonProd, !Sub "f2f-cri.${Environment}.stubs.account.gov.uk", f2f-cri.stubs.account.gov.uk]
           HostedZoneId: !If
             - IsCoreDev
             - !ImportValue DevPublicHostedZoneId
@@ -142,8 +142,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "face-to-face-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "face-to-face-cri.${Environment}.stubs.account.gov.uk", face-to-face-cri.stubs.account.gov.uk]
+        - !Sub "f2f-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "f2f-cri.${Environment}.stubs.account.gov.uk", f2f-cri.stubs.account.gov.uk]
       DomainNameConfigurations:
         - CertificateArn: !Ref CriStubSSLCert
           EndpointType: REGIONAL
@@ -154,8 +154,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "face-to-face-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "face-to-face-cri.${Environment}.stubs.account.gov.uk", face-to-face-cri.stubs.account.gov.uk]
+        - !Sub "f2f-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "f2f-cri.${Environment}.stubs.account.gov.uk", f2f-cri.stubs.account.gov.uk]
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -169,8 +169,8 @@ Resources:
       Type: A
       Name: !If
         - IsCoreDev
-        - !Sub "face-to-face-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "face-to-face-cri.${Environment}.stubs.account.gov.uk", face-to-face-cri.stubs.account.gov.uk]
+        - !Sub "f2f-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "f2f-cri.${Environment}.stubs.account.gov.uk", f2f-cri.stubs.account.gov.uk]
       HostedZoneId: !If
         - IsCoreDev
         - !ImportValue DevPublicHostedZoneId
@@ -266,7 +266,7 @@ Resources:
   ApiGwHttpEndpoint:
     Type: "AWS::ApiGatewayV2::Api"
     Properties:
-      Name: !Sub ${AWS::StackName}-face-to-face-cri-api-gw
+      Name: !Sub ${AWS::StackName}-f2f-cri-api-gw
       ProtocolType: HTTP
 
   ApiGwHttpEndpointIntegration:
@@ -316,7 +316,7 @@ Resources:
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-face-to-face-cri-api-gw-accesslogs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-f2f-cri-api-gw-accesslogs
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -502,7 +502,7 @@ Resources:
             Value: !Ref VcTtlSeconds
           Secrets:
             - Name: "VC_SIGNING_KEY"
-              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/face-to-face/env/VC_SIGNING_KEY"
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/f2f/env/VC_SIGNING_KEY"
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
