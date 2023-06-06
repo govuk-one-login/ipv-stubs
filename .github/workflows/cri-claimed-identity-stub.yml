@@ -37,7 +37,7 @@ jobs:
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          role-to-assume: ${{ secrets.CRI_CIC_GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.CRI_CI_GH_ACTIONS_ROLE_ARN }}
           aws-region: eu-west-2
 
       - name: Login to Amazon ECR
@@ -64,7 +64,7 @@ jobs:
         env:
           CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.CRI_CIC_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.CRI_CI_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -84,14 +84,14 @@ jobs:
       - name: SAM Package
         working-directory: ./di-ipv-credential-issuer-stub/deploy/claimed-identity
         env:
-          ARTIFACT_BUCKET: ${{ secrets.CRI_CIC_ARTIFACT_BUCKET_NAME }}
+          ARTIFACT_BUCKET: ${{ secrets.CRI_CI_ARTIFACT_BUCKET_NAME }}
         run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Update SAM template with ECR image
         working-directory: ./di-ipv-credential-issuer-stub/deploy/claimed-identity
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.CRI_CIC_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.CRI_CI_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
 
@@ -102,5 +102,5 @@ jobs:
       - name: Upload Compressed CloudFormation artifacts to S3
         working-directory: ./di-ipv-credential-issuer-stub/deploy/claimed-identity
         env:
-          ARTIFACT_BUCKET: ${{ secrets.CRI_CIC_ARTIFACT_BUCKET_NAME }}
+          ARTIFACT_BUCKET: ${{ secrets.CRI_CI_ARTIFACT_BUCKET_NAME }}
         run: aws s3 cp template.zip "s3://$ARTIFACT_BUCKET/template.zip" --metadata "repository=$GITHUB_REPOSITORY,commitsha=$GITHUB_SHA"

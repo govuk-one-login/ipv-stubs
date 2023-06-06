@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >-
-  This creates the necessary components to deploy IPV Claimed Identity Collector Credential Issuer
+  This creates the necessary components to deploy IPV Claimed Identity Credential Issuer
   Stub onto ECS Fargate within the dev platform VPC and private subnets
   (provided as parameters).
 

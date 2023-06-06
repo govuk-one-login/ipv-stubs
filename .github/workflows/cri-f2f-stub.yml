@@ -1,4 +1,4 @@
-name: Face-to-Face CRI Stub - Secure Pipeline build, push & Ship
+name: Face to Face CRI Stub - Secure Pipeline build, push & Ship
 on:
   push:
     branches:
@@ -8,7 +8,7 @@ on:
       - di-ipv-credential-issuer-stub/gradle/**
       - di-ipv-credential-issuer-stub/src/**
       - di-ipv-credential-issuer-stub/*
-      - .github/workflows/cri-face-to-face-stub.yml
+      - .github/workflows/cri-f2f-stub.yml
   workflow_dispatch:
 
 jobs:
