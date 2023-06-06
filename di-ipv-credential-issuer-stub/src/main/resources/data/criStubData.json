@@ -47,16 +47,26 @@
       }
     },
     {
-      "criType": "Claimed Identity Collector (Stub)",
-      "label": "Mary Watson Valid Address",
+      "criType": "Claimed Identity (Stub)",
+      "label": "Mary Watson",
       "payload": {
-        "address": [
+        "name": [
           {
-            "buildingName": "221B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 6XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
           }
         ]
       }
@@ -176,16 +186,26 @@
       }
     },
     {
-      "criType": "Claimed Identity Collector (Stub)",
-      "label": "James Moriarty (Invalid) Address",
+      "criType": "Claimed Identity (Stub)",
+      "label": "James Moriarty",
       "payload": {
-        "address": [
+        "name": [
           {
-            "buildingName": "111B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 1XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
+            "nameParts": [
+              {
+                "value": "James",
+                "type": "GivenName"
+              },
+              {
+                "value": "Moriarty",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1939-10-09"
           }
         ]
       }
@@ -307,18 +327,26 @@
       }
     },
     {
-      "criType": "Claimed Identity Collector (Stub)",
-      "label": "Kenneth Decerqueira (Valid Experian) Address",
+      "criType": "Claimed Identity (Stub)",
+      "label": "Kenneth Decerqueira",
       "payload": {
-        "address": [
+        "name": [
           {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HADLEY ROAD",
-            "postalCode": "BA2 5AA",
-            "buildingNumber": "8",
-            "addressLocality": "BATH",
-            "validFrom": "2000-01-01"
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
           }
         ]
       }
@@ -451,16 +479,26 @@
       }
     },
     {
-      "criType": "Claimed Identity Collector (Stub)",
-      "label": "Joe Shmoe Valid Address",
+      "criType": "Claimed Identity (Stub)",
+      "label": "Joe Shmoe",
       "payload": {
-        "address": [
+        "name": [
           {
-            "buildingName": "122",
-            "streetName": "BURNS CRESCENT",
-            "postalCode": "EH1 9GP",
-            "addressLocality": "EDINBURGH",
-            "validFrom": "1995-01-02"
+            "nameParts": [
+              {
+                "value": "Joe Shmoe",
+                "type": "GivenName"
+              },
+              {
+                "value": "Doe The Ball",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1985-02-08"
           }
         ]
       }
@@ -555,16 +593,34 @@
       }
     },
     {
-      "criType": "Claimed Identity Collector (Stub)",
-      "label": "Alice Doe Valid Address",
+      "criType": "Claimed Identity (Stub)",
+      "label": "Alice Doe",
       "payload": {
-        "address": [
+        "name": [
           {
-            "buildingName": "221C",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 6XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1980-01-02"
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Laura",
+                "type": "GivenName"
+              },
+              {
+                "value": "Doe",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
           }
         ]
       }
@@ -663,16 +719,26 @@
         ]
       }
     },    {
-      "criType": "Claimed Identity Collector (Stub)",
-      "label": "Alice Parker Valid Address",
+      "criType": "Claimed Identity (Stub)",
+      "label": "Alice Parker",
       "payload": {
-        "address": [
+        "name": [
           {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
+            "nameParts": [
+              {
+                "value": "Joe Shmoe",
+                "type": "GivenName"
+              },
+              {
+                "value": "Doe The Ball",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1985-02-08"
           }
         ]
       }
@@ -802,16 +868,26 @@
       }
     },
     {
-      "criType": "Claimed Identity Collector (Stub)",
-      "label": "Bob Parker Valid Address",
+      "criType": "Claimed Identity (Stub)",
+      "label": "Bob Parker",
       "payload": {
-        "address": [
+        "name": [
           {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1951-01-01"
+            "nameParts": [
+              {
+                "value": "Bob",
+                "type": "GivenName"
+              },
+              {
+                "value": "Pa rk'er",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
           }
         ]
       }
