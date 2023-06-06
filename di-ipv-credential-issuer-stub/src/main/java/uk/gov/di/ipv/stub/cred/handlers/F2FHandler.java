@@ -6,8 +6,6 @@ import com.nimbusds.oauth2.sdk.id.Subject;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import org.eclipse.jetty.http.HttpHeader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -22,7 +20,6 @@ import java.util.UUID;
 
 public class F2FHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(F2FHandler.class);
     private static final String JSON_RESPONSE_TYPE = "application/json;charset=UTF-8";
     private TokenService tokenService;
 
@@ -39,6 +36,8 @@ public class F2FHandler {
                     response.status(validationResult.getError().getHTTPStatusCode());
                     return validationResult.getError().getDescription();
                 }
+
+                tokenService.revoke(accessTokenString);
 
                 response.type(JSON_RESPONSE_TYPE);
                 response.status(HttpServletResponse.SC_ACCEPTED);
