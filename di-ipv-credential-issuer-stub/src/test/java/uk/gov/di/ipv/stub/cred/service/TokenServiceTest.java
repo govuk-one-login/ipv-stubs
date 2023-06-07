@@ -1,10 +1,13 @@
 package uk.gov.di.ipv.stub.cred.service;
 
+import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -45,4 +48,21 @@ public class TokenServiceTest {
 
         assertNull(tokenService.getPayload(accessToken.toAuthorizationHeader()));
     }
+
+    @Test
+    void shouldReturnInvalidRequestIfTokenNull() {
+        ValidationResult testResult = tokenService.validateAccessToken(null);
+        assertFalse(testResult.isValid());
+        assertEquals(OAuth2Error.INVALID_REQUEST, testResult.getError());
+    }
+
+    @Test
+    void shouldReturnInvalidClientIfPayloadNull() {
+        ValidationResult testResult = tokenService.validateAccessToken("test");
+        assertFalse(testResult.isValid());
+        assertEquals(OAuth2Error.INVALID_CLIENT, testResult.getError());
+    }
+
+    @Test
+    void shouldReturnValidRequestIfTokenValid() {}
 }
