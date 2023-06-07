@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TokenServiceTest {
     private static final String PAYLOAD = "test-payload";
@@ -64,5 +65,12 @@ public class TokenServiceTest {
     }
 
     @Test
-    void shouldReturnValidRequestIfTokenValid() {}
+    void shouldReturnValidRequestIfTokenValid() {
+        BearerAccessToken accessToken = new BearerAccessToken();
+        tokenService.persist(accessToken, PAYLOAD);
+        ValidationResult testResult =
+                tokenService.validateAccessToken(accessToken.toAuthorizationHeader());
+        assertTrue(testResult.isValid());
+        assertNull(testResult.getError());
+    }
 }
