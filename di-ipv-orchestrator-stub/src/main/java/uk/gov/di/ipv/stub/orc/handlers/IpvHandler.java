@@ -176,6 +176,7 @@ public class IpvHandler {
                                 authorizationCode, URI.create(ORCHESTRATOR_REDIRECT_URL)));
 
         var httpTokenResponse = sendHttpRequest(tokenRequest.toHTTPRequest());
+        logger.info("Token response: " + httpTokenResponse.getStatusCode());
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
 
         if (tokenResponse instanceof TokenErrorResponse) {
