@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWEObject;
-import com.nimbusds.jose.crypto.RSADecrypter;
 import com.nimbusds.jose.shaded.json.JSONObject;
 import com.nimbusds.jose.shaded.json.parser.JSONParser;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -37,6 +35,7 @@ import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.utils.ES256SignatureVerifier;
+import uk.gov.di.ipv.stub.cred.utils.JwtHelper;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
@@ -46,7 +45,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.time.Instant;
@@ -136,7 +134,8 @@ public class AuthorizeHandler {
                     }
 
                     SignedJWT signedJWT =
-                            getSignedJWT(requestValue, clientConfig.getEncryptionPrivateKey());
+                            JwtHelper.getSignedJWT(
+                                    requestValue, clientConfig.getEncryptionPrivateKey());
 
                     AuthorizationErrorResponse errorResponse =
                             new AuthorizationErrorResponse(
@@ -225,7 +224,8 @@ public class AuthorizeHandler {
                 }
 
                 SignedJWT signedJWT =
-                        getSignedJWT(requestValue, clientConfig.getEncryptionPrivateKey());
+                        JwtHelper.getSignedJWT(
+                                requestValue, clientConfig.getEncryptionPrivateKey());
                 String redirectUri =
                         signedJWT
                                 .getJWTClaimsSet()
@@ -527,7 +527,7 @@ public class AuthorizeHandler {
 
         try {
             SignedJWT signedJWT =
-                    getSignedJWT(
+                    JwtHelper.getSignedJWT(
                             queryParams.value(RequestParamConstants.REQUEST),
                             clientConfig.getEncryptionPrivateKey());
             JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
@@ -592,19 +592,6 @@ public class AuthorizeHandler {
         return null;
     }
 
-    private SignedJWT getSignedJWT(String request, PrivateKey encryptionPrivateKey)
-            throws ParseException {
-        try {
-            JWEObject jweObject = getJweObject(request, encryptionPrivateKey);
-            return jweObject.getPayload().toSignedJWT();
-        } catch (ParseException
-                | NoSuchAlgorithmException
-                | InvalidKeySpecException
-                | JOSEException e) {
-            return SignedJWT.parse(request);
-        }
-    }
-
     private Object getCriStubData()
             throws UnsupportedEncodingException,
                     com.nimbusds.jose.shaded.json.parser.ParseException {
@@ -649,7 +636,8 @@ public class AuthorizeHandler {
         if (!Validator.isNullBlankOrEmpty(requestParam)) {
             try {
                 SignedJWT signedJWT =
-                        getSignedJWT(requestParam, clientConfig.getEncryptionPrivateKey());
+                        JwtHelper.getSignedJWT(
+                                requestParam, clientConfig.getEncryptionPrivateKey());
                 String publicJwk =
                         getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)
                                 ? clientConfig.getJwtAuthentication().getSigningPublicJwk()
@@ -684,15 +672,6 @@ public class AuthorizeHandler {
             sharedAttributesJson = "Error: missing 'request' query parameter";
         }
         return sharedAttributesJson;
-    }
-
-    private JWEObject getJweObject(String requestParam, PrivateKey encryptionPrivateKey)
-            throws ParseException, NoSuchAlgorithmException, InvalidKeySpecException,
-                    JOSEException {
-        JWEObject encryptedJweObject = JWEObject.parse(requestParam);
-        RSADecrypter rsaDecrypter = new RSADecrypter(encryptionPrivateKey);
-        encryptedJweObject.decrypt(rsaDecrypter);
-        return encryptedJweObject;
     }
 
     private AuthorizationErrorResponse handleRequestedError(QueryParamsMap queryParamsMap)

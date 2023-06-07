@@ -1,22 +1,26 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.id.Subject;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import org.eclipse.jetty.http.HttpHeader;
+import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import uk.gov.di.ipv.stub.cred.config.ClientConfig;
+import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
+import uk.gov.di.ipv.stub.cred.utils.JwtHelper;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 
 import javax.servlet.http.HttpServletResponse;
 
 import java.util.Objects;
-import java.util.UUID;
 
 public class F2FHandler {
 
@@ -39,11 +43,20 @@ public class F2FHandler {
 
                 tokenService.revoke(accessTokenString);
 
+                QueryParamsMap queryParamsMap = request.queryMap();
+                String requestValue = queryParamsMap.value(RequestParamConstants.REQUEST);
+                String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
+                ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdValue);
+                SignedJWT signedJWT =
+                        JwtHelper.getSignedJWT(
+                                requestValue, clientConfig.getEncryptionPrivateKey());
+
+                String subject = signedJWT.getJWTClaimsSet().getSubject();
+
                 response.type(JSON_RESPONSE_TYPE);
                 response.status(HttpServletResponse.SC_ACCEPTED);
 
-                var userInfo =
-                        new UserInfo(new Subject("urn:fdc:gov.uk:2022:" + UUID.randomUUID()));
+                var userInfo = new UserInfo(new Subject(subject));
                 userInfo.setClaim("https://vocab.account.gov.uk/v1/credentialStatus", "pending");
 
                 return userInfo.toJSONString();
