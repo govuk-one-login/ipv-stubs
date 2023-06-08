@@ -515,6 +515,9 @@ Resources:
       RequiresCompatibilities:
         - FARGATE
       TaskRoleArn: !GetAtt ECSTaskRole.Arn
+      RuntimePlatform:
+        CpuArchitecture: ARM64
+        OperatingSystemFamily: LINUX
 
   ECSTaskExecutionRole:
     # checkov:skip=CKV_SECRET_6:The "secret" is not a secret #pragma: allowlist secret
