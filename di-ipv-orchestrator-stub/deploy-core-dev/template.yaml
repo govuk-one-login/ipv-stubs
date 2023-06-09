@@ -221,6 +221,11 @@ Resources:
           IpProtocol: tcp
           FromPort: 443
           ToPort: 443
+        - CidrIpv6: ::/0
+          Description: Allow outbound traffic to external IPV6 port 443
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
         - CidrIp:
             Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
           Description: Allow outbound traffic from vpc cidr to port 443
