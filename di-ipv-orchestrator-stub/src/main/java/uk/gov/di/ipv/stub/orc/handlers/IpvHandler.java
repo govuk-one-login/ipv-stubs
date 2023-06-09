@@ -122,6 +122,7 @@ public class IpvHandler {
                     mustacheData = buildMustacheData(userInfo);
                     moustacheDataModel.put("data", mustacheData);
                 } catch (OrchestratorStubException | ParseException | JsonSyntaxException e) {
+                    System.err.println(e);
                     List<Map<String, Object>> errorObject =
                             List.of(Map.of("error_message", e.getMessage()));
                     moustacheDataModel.put("error", errorObject);
@@ -179,7 +180,9 @@ public class IpvHandler {
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
 
         if (tokenResponse instanceof TokenErrorResponse) {
+            System.out.println(((TokenErrorResponse) tokenResponse).toJSONObject().toString());
             TokenErrorResponse errorResponse = tokenResponse.toErrorResponse();
+            System.out.println(errorResponse.toJSONObject().toString());
             logger.error("Failed to get token: " + errorResponse.getErrorObject());
             throw new OrchestratorStubException(errorResponse.getErrorObject().getDescription());
         }
