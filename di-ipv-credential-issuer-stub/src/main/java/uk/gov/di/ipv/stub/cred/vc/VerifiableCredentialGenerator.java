@@ -23,6 +23,7 @@ import java.util.*;
 import static com.nimbusds.jwt.JWTClaimNames.AUDIENCE;
 import static com.nimbusds.jwt.JWTClaimNames.EXPIRATION_TIME;
 import static com.nimbusds.jwt.JWTClaimNames.ISSUER;
+import static com.nimbusds.jwt.JWTClaimNames.JWT_ID;
 import static com.nimbusds.jwt.JWTClaimNames.NOT_BEFORE;
 import static com.nimbusds.jwt.JWTClaimNames.SUBJECT;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
@@ -102,6 +103,7 @@ public class VerifiableCredentialGenerator {
                                 CredentialIssuerConfig.getClientConfig(credential.getClientId())
                                         .getAudienceForVcJwt())
                         .claim(NOT_BEFORE, now.getEpochSecond())
+                        .claim(JWT_ID, UUID.randomUUID())
                         .claim(VC_CLAIM, vc);
         if (!Objects.isNull(credential.getExp())) {
             claim = claim.claim(EXPIRATION_TIME, credential.getExp());
