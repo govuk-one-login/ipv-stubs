@@ -7,6 +7,46 @@ The format of the POST request to the API gateway should look like
     "queueEvent": <This can be  any shape - it will be sent to the queue as a string>
 }
 ```
+or
+```
+{
+    "queueName": "stubQueue_AnyQueueName",
+    "sub": <the sub field in the queue message body>
+    "state": <the state field in the queue message body>
+    "customClaims" : <the vc you want this to put onto the queue>
+    "privateSiginingKeyId" : <a key ID that the lamda can access, one is provided by the stack>
+}
+```
+or
+```
+{
+    "queueName": "stubQueue_AnyQueueName",
+    "sub": <the sub field in the queue message body>
+    "state": <the state field in the queue message body>
+    "customClaims" : <the vc you want this to put onto the queue>
+    "secretId" : <a secret string in secrets manager that the lamda can access containing key material>
+}
+```
+or
+```
+{
+    "queueName": "stubQueue_AnyQueueName",
+    "sub": <the sub field in the queue message body>
+    "state": <the state field in the queue message body>
+    "customClaims" : <the vc you want this to put onto the queue>
+    "privateSiginingKey" : <a key to sign the JWT>
+}
+```
+or
+```
+{
+    "queueName": "stubQueue_AnyQueueName",
+    "sub": <the sub field in the queue message body>
+    "state": <the state field in the queue message body>
+    "error" : <the error to put onto the queue message>
+    "error_description" : <the error_description tp put in the message>
+}
+```
 The name of the queue you are pushing to must have the `stubQueue_` prefix
 The response should be:
 ```
