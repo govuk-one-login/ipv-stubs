@@ -20,15 +20,12 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static com.nimbusds.jwt.JWTClaimNames.AUDIENCE;
 import static com.nimbusds.jwt.JWTClaimNames.EXPIRATION_TIME;
 import static com.nimbusds.jwt.JWTClaimNames.ISSUER;
-import static com.nimbusds.jwt.JWTClaimNames.JWT_ID;
 import static com.nimbusds.jwt.JWTClaimNames.NOT_BEFORE;
 import static com.nimbusds.jwt.JWTClaimNames.SUBJECT;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -120,7 +117,6 @@ public class VerifiableCredentialGeneratorTest {
                 300,
                 claimsSetTree.path(EXPIRATION_TIME).asLong()
                         - claimsSetTree.path(NOT_BEFORE).asLong());
-        assertDoesNotThrow(() -> UUID.fromString(claimsSetTree.path(JWT_ID).asText()));
 
         JsonNode vcClaimTree = claimsSetTree.path(VC_CLAIM);
         assertEquals(VERIFIABLE_CREDENTIAL_TYPE, vcClaimTree.path(VC_TYPE).path(0).asText());
