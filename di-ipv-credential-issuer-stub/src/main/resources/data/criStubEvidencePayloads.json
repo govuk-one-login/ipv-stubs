@@ -9,6 +9,22 @@
       }
     },
     {
+      "criType": "Fraud Check (Stub)",
+      "label": "Passed fraud check with activity history (M1B)",
+      "payload": {
+        "type": "IdentityCheck",
+        "identityFraudScore": 2,
+        "activityHistoryScore": 1,
+        "checkDetails": [
+          {
+            "checkMethod": "data",
+            "identityCheckPolicy": "published",
+            "activityFrom": "2019-01-01"
+          }
+        ]
+      }
+    },
+    {
       "criType": "UK Passport (Stub)",
       "label": "Passed passport check (M1A)",
       "payload": {
