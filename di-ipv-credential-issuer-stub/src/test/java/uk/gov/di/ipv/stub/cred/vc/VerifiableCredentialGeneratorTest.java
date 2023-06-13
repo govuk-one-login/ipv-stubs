@@ -20,12 +20,15 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.nimbusds.jwt.JWTClaimNames.AUDIENCE;
 import static com.nimbusds.jwt.JWTClaimNames.EXPIRATION_TIME;
 import static com.nimbusds.jwt.JWTClaimNames.ISSUER;
+import static com.nimbusds.jwt.JWTClaimNames.JWT_ID;
 import static com.nimbusds.jwt.JWTClaimNames.NOT_BEFORE;
 import static com.nimbusds.jwt.JWTClaimNames.SUBJECT;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -96,6 +99,11 @@ public class VerifiableCredentialGeneratorTest {
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 
+        // Serializing and deserializing to ensure all objects within VC are correctly
+        // serialized/deserialized
+        String serializedVerifiableCredential = verifiableCredential.serialize();
+        SignedJWT parsedVerifiableCredential = SignedJWT.parse(serializedVerifiableCredential);
+
         KeyFactory kf = KeyFactory.getInstance(EC_ALGO);
         ECPublicKey ecPublicKey =
                 (ECPublicKey)
@@ -103,20 +111,23 @@ public class VerifiableCredentialGeneratorTest {
                                 new X509EncodedKeySpec(
                                         Base64.getDecoder().decode(EC_PUBLIC_KEY_1)));
         ECDSAVerifier ecVerifier = new ECDSAVerifier(ecPublicKey);
-        assertTrue(verifiableCredential.verify(ecVerifier));
+        assertTrue(parsedVerifiableCredential.verify(ecVerifier));
 
         JsonNode claimsSetTree =
-                objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");
+                objectMapper
+                        .valueToTree(parsedVerifiableCredential.getJWTClaimsSet())
+                        .path("claims");
 
-        assertEquals("https://example.com/audience", claimsSetTree.path(AUDIENCE).asText());
+        assertEquals("https://example.com/audience", claimsSetTree.path(AUDIENCE).path(0).asText());
         assertEquals("https://issuer.example.com", claimsSetTree.path(ISSUER).asText());
         assertEquals(userId, claimsSetTree.path(SUBJECT).asText());
         assertNotNull(claimsSetTree.path(NOT_BEFORE));
         assertNotNull(claimsSetTree.get(EXPIRATION_TIME));
         assertEquals(
-                300,
+                300000,
                 claimsSetTree.path(EXPIRATION_TIME).asLong()
                         - claimsSetTree.path(NOT_BEFORE).asLong());
+        assertDoesNotThrow(() -> UUID.fromString(claimsSetTree.path(JWT_ID).asText()));
 
         JsonNode vcClaimTree = claimsSetTree.path(VC_CLAIM);
         assertEquals(VERIFIABLE_CREDENTIAL_TYPE, vcClaimTree.path(VC_TYPE).path(0).asText());
