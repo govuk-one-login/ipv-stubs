@@ -242,17 +242,31 @@
                         {{#isFraudType}}
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">
-                                    <div class="govuk-form-group">
-                                        <h1 class="govuk-label-wrapper">
-                                            <label class="govuk-label govuk-label--l" for="fraud">
-                                                GPG45 Fraud
-                                            </label>
-                                        </h1>
-                                        <label class="govuk-label" for="fraud">
-                                            Fraud
-                                        </label>
-                                        <input class="govuk-input govuk-input--width-2" id="fraud" name="identityFraudScore" type="number" min="0" max="5" step="1">
-                                    </div>
+                                    <fieldset class="govuk-fieldset">
+                                        <div class="govuk-date-input" id="gpg45">
+                                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                                                <h1 class="govuk-fieldset__heading">
+                                                    GPG45 Evidence
+                                                </h1>
+                                            </legend>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label" for="fraud">
+                                                        Fraud
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="fraud" name="identityFraudScore" type="number" min="0" max="5" step="1">
+                                                </div>
+                                            </div>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label govuk-date-input__label" for="activity">
+                                                        Activity
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="activity" name="activityHistoryScore" type="number" min="0" max="5" step="1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
                                 </td>
                             </tr>
                         {{/isFraudType}}
