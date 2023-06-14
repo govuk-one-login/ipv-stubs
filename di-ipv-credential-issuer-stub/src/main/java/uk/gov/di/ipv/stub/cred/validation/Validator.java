@@ -121,7 +121,8 @@ public class Validator {
         LOGGER.info("Validating client redirect uri: {}", redirectUri);
 
         if (isRedirectUriPaasDomain(redirectUri)
-                || isRedirectUriAmazonApiGatewayCallback(redirectUri)) {
+                || isRedirectUriAmazonApiGatewayCallback(redirectUri)
+                || isRedirectUriDevDomain(redirectUri)) {
             return false;
         }
 
@@ -144,6 +145,10 @@ public class Validator {
      */
     private static boolean isRedirectUriPaasDomain(String redirectUri) {
         return redirectUri != null && redirectUri.contains(PAAS_DOMAIN);
+    }
+
+    private static boolean isRedirectUriDevDomain(String redirectUri) {
+        return redirectUri != null && redirectUri.contains(CredentialIssuerConfig.DEV_DOMAIN);
     }
 
     private static boolean isRedirectUriAmazonApiGatewayCallback(String redirectUri) {
