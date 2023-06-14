@@ -24,7 +24,7 @@ or
     "sub": <the sub field in the queue message body>
     "state": <the state field in the queue message body>
     "customClaims" : <the vc you want this to put onto the queue>
-    "secretId" : <a secret string in secrets manager that the lamda can access containing key material>
+    "secretId" : <a secret string in secrets manager containing key material>
 }
 ```
 or
