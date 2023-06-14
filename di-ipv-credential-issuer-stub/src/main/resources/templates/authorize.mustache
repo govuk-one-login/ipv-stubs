@@ -95,6 +95,20 @@
                                 </td>
                             </tr>
                         {{/shared_claims}}
+                        {{#isF2FType}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                                        <div class="govuk-checkboxes__item">
+                                            <input class="govuk-checkboxes__input" type="checkbox" name="f2f_send_vc_queue" id="f2f_send_vc_queue" value="checked">
+                                            <label class="govuk-label govuk-checkboxes__label" for="f2f_send_vc_queue">
+                                                Send VC to async queue
+                                            </label>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/isF2FType}}
                         <tr class="govuk-table__row">
                             <td class="govuk-table__cell">
                                 {{#hasError}}
