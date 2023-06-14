@@ -47,6 +47,18 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri/env/API_KEY_CRI_KBV_BUILD" #pragma: allowlist secret
+  ApiKeyCriFraudBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_FRAUD_BUILD" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_DL_BUILD" #pragma: allowlist secret
+  ApiKeyCriPassportBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_PASSPORT_BUILD" #pragma: allowlist secret
   ApiKeyCriAddressStaging:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -55,6 +67,18 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri/env/API_KEY_CRI_KBV_STAGING" #pragma: allowlist secret
+  ApiKeyCriFraudStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_FRAUD_STAGING" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_DL_STAGING" #pragma: allowlist secret
+  ApiKeyCriPassportStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_PASSPORT_STAGING" #pragma: allowlist secret
   ApiKeyCriAddressIntegration:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -63,6 +87,18 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri/env/API_KEY_CRI_KBV_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriFraudIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_FRAUD_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_DL_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriPassportIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_PASSPORT_INTEGRATION" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -580,14 +616,32 @@ Resources:
             Value: !Ref ApiKeyCriAddressBuild
           - Name: API_KEY_CRI_KBV_BUILD
             Value: !Ref ApiKeyCriKbvBuild
+          - Name: API_KEY_CRI_FRAUD_BUILD
+            Value: !Ref ApiKeyCriFraudBuild
+          - Name: API_KEY_CRI_DL_BUILD
+            Value: !Ref ApiKeyCriDrivingPermitBuild
+          - Name: API_KEY_CRI_PASSPORT_BUILD
+            Value: !Ref ApiKeyCriPassportBuild
           - Name: API_KEY_CRI_ADDRESS_STAGING
             Value: !Ref ApiKeyCriAddressStaging
           - Name: API_KEY_CRI_KBV_STAGING
             Value: !Ref ApiKeyCriKbvStaging
+          - Name: API_KEY_CRI_FRAUD_STAGING
+            Value: !Ref ApiKeyCriFraudStaging
+          - Name: API_KEY_CRI_DL_STAGING
+            Value: !Ref ApiKeyCriDrivingPermitStaging
+          - Name: API_KEY_CRI_PASSPORT_STAGING
+            Value: !Ref ApiKeyCriPassportStaging
           - Name: API_KEY_CRI_ADDRESS_INTEGRATION
             Value: !Ref ApiKeyCriAddressIntegration
           - Name: API_KEY_CRI_KBV_INTEGRATION
             Value: !Ref ApiKeyCriKbvIntegration
+          - Name: API_KEY_CRI_FRAUD_INTEGRATION
+            Value: !Ref ApiKeyCriFraudIntegration
+          - Name: API_KEY_CRI_DL_INTEGRATION
+            Value: !Ref ApiKeyCriDrivingPermitIntegration
+          - Name: API_KEY_CRI_PASSPORT_INTEGRATION
+            Value: !Ref ApiKeyCriPassportIntegration
           - Name: ENABLE_BASIC_AUTH
             Value: !Ref EnableBasicAuth
           Secrets:
