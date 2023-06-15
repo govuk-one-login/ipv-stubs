@@ -85,11 +85,7 @@ public class Validator {
                     Integer.parseInt(fraudValue);
 
                     return areStringsNullOrEmpty(
-                            Arrays.asList(
-                                    strengthValue,
-                                    validityValue,
-                                    activityValue,
-                                    verificationValue));
+                            Arrays.asList(strengthValue, validityValue, verificationValue));
                 } catch (NumberFormatException e) {
                     return new ValidationResult(
                             false,
