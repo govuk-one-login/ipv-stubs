@@ -32,6 +32,7 @@ import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
+import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
@@ -88,6 +89,7 @@ class AuthorizeHandlerTest {
     private AuthorizeHandler authorizeHandler;
     private AuthCodeService mockAuthCodeService;
     private CredentialService mockCredentialService;
+    private VerifiableCredentialGenerator mockVcGenerator;
     private RequestedErrorResponseService requestedErrorResponseService =
             new RequestedErrorResponseService();
 
@@ -108,13 +110,15 @@ class AuthorizeHandlerTest {
         mockViewHelper = mock(ViewHelper.class);
         mockAuthCodeService = mock(AuthCodeService.class);
         mockCredentialService = mock(CredentialService.class);
+        mockVcGenerator = mock(VerifiableCredentialGenerator.class);
 
         authorizeHandler =
                 new AuthorizeHandler(
                         mockViewHelper,
                         mockAuthCodeService,
                         mockCredentialService,
-                        requestedErrorResponseService);
+                        requestedErrorResponseService,
+                        mockVcGenerator);
     }
 
     @Test

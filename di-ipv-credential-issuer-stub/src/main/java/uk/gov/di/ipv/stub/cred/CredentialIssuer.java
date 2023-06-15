@@ -47,7 +47,8 @@ public class CredentialIssuer {
                         new ViewHelper(),
                         authCodeService,
                         credentialService,
-                        requestedErrorResponseService);
+                        requestedErrorResponseService,
+                        vcGenerator);
         tokenHandler =
                 new TokenHandler(
                         authCodeService,
