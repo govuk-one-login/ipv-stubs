@@ -347,9 +347,6 @@ public class AuthorizeHandler {
                                         "stubQueue_F2FQueueBuild",
                                         new F2FQueueEvent(userId, state, signedVcJwt));
                         String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
-                        //
-                        // httpRequest.setQuery("{\"queueName\":\"stubQueue_\",\"sub\":\"" + userId
-                        // + "\",state\":\"" + state + "}");
                         httpRequest.setQuery(body);
                         HTTPResponse httpResponse = httpRequest.send();
                         System.out.println(httpResponse.getContentAsJSONObject().toString());
