@@ -125,6 +125,13 @@ Resources:
                 - "secretsmanager:ListSecrets" #pragma: allowlist secret
               Resource:
                 - !Sub "arn:aws:secretsmanager:eu-west-2:${AWS::AccountId}:secret:/stubs/queue/*" #pragma: allowlist secret
+        - Statement:
+            - Sid: AllowGetSSMParam
+              Effect: Allow
+              Action:
+                - "ssm:GetParameter"
+              Resource:
+                - !Sub "arn:aws:ssm:eu-west-2:${AWS::AccountId}:parameter/stubs/*"
 
     Metadata:
       # Manage esbuild properties
@@ -329,6 +336,8 @@ Resources:
     Properties:
       CacheClusterEnabled: False
       StageName: prod
+
+
 
 Outputs:
   ApiGatewayUrl:

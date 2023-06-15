@@ -15,6 +15,7 @@ import {
     GetSecretValueCommand,
     SecretsManagerClient
 } from "@aws-sdk/client-secrets-manager";
+import {SSMClient, GetParameterCommand, GetParameterCommandOutput, GetParameterCommandInput} from "@aws-sdk/client-ssm";
 import { buildSignedJwt } from 'di-stub-oauth-client';
 import type { RequestPayload } from '../types';
 import type { SignedJwtParams } from 'di-stub-oauth-client';
@@ -104,7 +105,7 @@ export const handler: Handler = async (
                 customClaims: body.customClaims,
                 privateSigningKeyId: body.privateSigningKeyId
             }
-        }else{ //A secret manager key name is provided
+        }else if(!!body.secretId){ //A secret manager key name is provided
             let secretsManagerClient = new SecretsManagerClient(awsConfig);
             const getSecretValueCommandInput: GetSecretValueCommandInput = {
                 SecretId: body.secretId
@@ -117,6 +118,18 @@ export const handler: Handler = async (
                 issuer: body.issuer,
                 customClaims: body.customClaims,
                 privateSigningKey: secretEntry[body.secretId]
+            }
+        }else{ //An SSM parameter is provided
+            let ssmClient = new SSMClient(awsConfig);
+            const getParameterCommandInput: GetParameterCommandInput = {
+                Name: body.parameterName
+            }
+            const getParameterCommand = new GetParameterCommand(getParameterCommandInput);
+            let getParameterCommandOutput: GetParameterCommandOutput = await ssmClient.send(getParameterCommand);
+            buildJwtParams = {
+                issuer: body.issuer,
+                customClaims: body.customClaims,
+                privateSigningKey: getParameterCommandOutput.Parameter.Value
             }
         }
 
