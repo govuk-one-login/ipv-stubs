@@ -112,6 +112,13 @@ class ValidatorTest {
     }
 
     @Test
+    void shouldReturnSuccessfulValidationOnValidFraudWithActivityGpg() {
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.FRAUD_CRI_TYPE, null, null, "1", "1", null);
+        assertTrue(result.isValid());
+    }
+
+    @Test
     void shouldReturnFailedValidationIfInvalidNumberParamProvidedInFraud() {
         ValidationResult result =
                 Validator.verifyGpg45(CriType.FRAUD_CRI_TYPE, null, null, null, "abc", null);
