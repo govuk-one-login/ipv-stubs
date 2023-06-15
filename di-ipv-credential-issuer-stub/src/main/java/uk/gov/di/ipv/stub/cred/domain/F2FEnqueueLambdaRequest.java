@@ -11,5 +11,3 @@ public class F2FEnqueueLambdaRequest {
     private String queueName;
     private F2FQueueEvent queueEvent;
 }
-
-

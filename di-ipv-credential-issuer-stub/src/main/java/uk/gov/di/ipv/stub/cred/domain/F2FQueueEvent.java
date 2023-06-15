@@ -11,6 +11,7 @@ import lombok.Setter;
 public class F2FQueueEvent {
     private String sub;
     private String state;
+
     @JsonProperty("https://vocab.account.gov.uk/v1/credentialJWT")
     private String vcJwt;
 }

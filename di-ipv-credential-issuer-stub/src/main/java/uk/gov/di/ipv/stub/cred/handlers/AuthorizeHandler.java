@@ -190,8 +190,7 @@ public class AuthorizeHandler {
                         IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
                 frontendParams.put(
                         IS_DOC_CHECKING_TYPE_PARAM, criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE));
-                frontendParams.put(
-                        IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
+                frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
                 frontendParams.put(IS_USER_ASSERTED_TYPE, criType.equals(USER_ASSERTED_CRI_TYPE));
                 if (!criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
                     frontendParams.put(SHARED_CLAIMS, getSharedAttributes(queryParamsMap));
@@ -241,10 +240,11 @@ public class AuthorizeHandler {
                                 .getClaim(RequestParamConstants.REDIRECT_URI)
                                 .toString();
                 String userId = signedJWT.getJWTClaimsSet().getSubject();
-                String state = signedJWT
-                        .getJWTClaimsSet()
-                        .getClaim(RequestParamConstants.STATE)
-                        .toString();
+                String state =
+                        signedJWT
+                                .getJWTClaimsSet()
+                                .getClaim(RequestParamConstants.STATE)
+                                .toString();
 
                 try {
                     Map<String, Object> attributesMap =
@@ -331,23 +331,32 @@ public class AuthorizeHandler {
                             new Credential(
                                     credentialAttributesMap, gpgMap, userId, clientIdValue, exp);
 
-                    boolean F2F_SEND_VC_QUEUE = Objects.equals(queryParamsMap.value(RequestParamConstants.F2F_SEND_VC_QUEUE), "checked");
+                    boolean F2F_SEND_VC_QUEUE =
+                            Objects.equals(
+                                    queryParamsMap.value(RequestParamConstants.F2F_SEND_VC_QUEUE),
+                                    "checked");
                     if (F2F_SEND_VC_QUEUE) {
                         String signedVcJwt =
                                 verifiableCredentialGenerator.generate(credential).serialize();
-                        HTTPRequest httpRequest = new HTTPRequest(HTTPRequest.Method.POST, URI.create("<lambda-endpoint>"));
+                        HTTPRequest httpRequest =
+                                new HTTPRequest(
+                                        HTTPRequest.Method.POST, URI.create("<lambda-endpoint>"));
                         ObjectMapper objectMapper = new ObjectMapper();
-                        F2FEnqueueLambdaRequest enqueueLambdaRequest = new F2FEnqueueLambdaRequest(
-                                "stubQueue_F2FQueueBuild",
-                                new F2FQueueEvent(userId, state, signedVcJwt));
+                        F2FEnqueueLambdaRequest enqueueLambdaRequest =
+                                new F2FEnqueueLambdaRequest(
+                                        "stubQueue_F2FQueueBuild",
+                                        new F2FQueueEvent(userId, state, signedVcJwt));
                         String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
-//                        httpRequest.setQuery("{\"queueName\":\"stubQueue_\",\"sub\":\"" + userId + "\",state\":\"" + state + "}");
+                        //
+                        // httpRequest.setQuery("{\"queueName\":\"stubQueue_\",\"sub\":\"" + userId
+                        // + "\",state\":\"" + state + "}");
                         httpRequest.setQuery(body);
                         HTTPResponse httpResponse = httpRequest.send();
                         System.out.println(httpResponse.getContentAsJSONObject().toString());
                     }
 
-                    AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
+                    AuthorizationSuccessResponse successResponse =
+                            generateAuthCode(state, redirectUri);
                     persistData(
                             queryParamsMap,
                             successResponse.getAuthorizationCode(),
