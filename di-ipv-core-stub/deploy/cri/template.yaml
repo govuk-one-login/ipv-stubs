@@ -58,7 +58,7 @@ Parameters:
   ApiKeyCriPassportBuild:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/API_KEY_CRI_PASSPORT_BUILD" #pragma: allowlist secret
+    Default: "/stubs/core/cri/env/API_KEY_CRI_PASSPORTA_BUILD" #pragma: allowlist secret
   ApiKeyCriAddressStaging:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -78,7 +78,7 @@ Parameters:
   ApiKeyCriPassportStaging:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/API_KEY_CRI_PASSPORT_STAGING" #pragma: allowlist secret
+    Default: "/stubs/core/cri/env/API_KEY_CRI_PASSPORTA_STAGING" #pragma: allowlist secret
   ApiKeyCriAddressIntegration:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -98,7 +98,7 @@ Parameters:
   ApiKeyCriPassportIntegration:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri/env/API_KEY_CRI_PASSPORT_INTEGRATION" #pragma: allowlist secret
+    Default: "/stubs/core/cri/env/API_KEY_CRI_PASSPORTA_INTEGRATION" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -620,7 +620,7 @@ Resources:
             Value: !Ref ApiKeyCriFraudBuild
           - Name: API_KEY_CRI_DL_BUILD
             Value: !Ref ApiKeyCriDrivingPermitBuild
-          - Name: API_KEY_CRI_PASSPORT_BUILD
+          - Name: API_KEY_CRI_PASSPORTA_BUILD
             Value: !Ref ApiKeyCriPassportBuild
           - Name: API_KEY_CRI_ADDRESS_STAGING
             Value: !Ref ApiKeyCriAddressStaging
@@ -630,7 +630,7 @@ Resources:
             Value: !Ref ApiKeyCriFraudStaging
           - Name: API_KEY_CRI_DL_STAGING
             Value: !Ref ApiKeyCriDrivingPermitStaging
-          - Name: API_KEY_CRI_PASSPORT_STAGING
+          - Name: API_KEY_CRI_PASSPORTA_STAGING
             Value: !Ref ApiKeyCriPassportStaging
           - Name: API_KEY_CRI_ADDRESS_INTEGRATION
             Value: !Ref ApiKeyCriAddressIntegration
@@ -640,7 +640,7 @@ Resources:
             Value: !Ref ApiKeyCriFraudIntegration
           - Name: API_KEY_CRI_DL_INTEGRATION
             Value: !Ref ApiKeyCriDrivingPermitIntegration
-          - Name: API_KEY_CRI_PASSPORT_INTEGRATION
+          - Name: API_KEY_CRI_PASSPORTA_INTEGRATION
             Value: !Ref ApiKeyCriPassportIntegration
           - Name: ENABLE_BASIC_AUTH
             Value: !Ref EnableBasicAuth
