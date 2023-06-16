@@ -313,7 +313,7 @@ Resources:
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-orch-api-gw-accesslogs
+      LogGroupName: !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-orch-api-gw-accesslogs
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
