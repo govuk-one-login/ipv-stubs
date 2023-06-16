@@ -316,7 +316,10 @@ Resources:
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-error-testing-1-cri-api-gw-accesslogs
+      LogGroupName: !If
+        - IsCoreDev
+        - !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-error-testing-1-cri-api-gw-accesslogs
+        - !Sub /aws/apigateway/${AWS::StackName}-error-testing-1-cri-api-gw-accesslogs
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
