@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -13,5 +15,5 @@ public class F2FQueueEvent {
     private String state;
 
     @JsonProperty("https://vocab.account.gov.uk/v1/credentialJWT")
-    private String vcJwt;
+    private List<String> vcJwt;
 }

@@ -959,6 +959,37 @@
           }
         ]
       }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Kenneth Decerqueira (Valid Passport)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Kenneth"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Decerqueira"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "passport": [
+          {
+            "expiryDate": "2030-01-01",
+            "documentNumber": "321654987"
+          }
+        ]
+      }
     }
   ]
 }

@@ -23,6 +23,8 @@ public class CredentialIssuerConfig {
     public static String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
     public static final String DEV_DOMAIN =
             getConfigValue("DEV_DOMAIN", ".dev.identity.account.gov.uk");
+    public static final String F2F_STUB_QUEUE_URL = getConfigValue("F2F_STUB_QUEUE_URL", null);
+    public static final String F2F_STUB_QUEUE_NAME = getConfigValue("F2F_STUB_QUEUE_NAME", null);
 
     public static final String EVIDENCE_TYPE_PARAM = "type";
     public static final String EVIDENCE_TYPE_IDENTITY_CHECK = "IdentityCheck";

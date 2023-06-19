@@ -63,6 +63,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
+import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME;
+import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_URL;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
 import static uk.gov.di.ipv.stub.cred.config.CriType.USER_ASSERTED_CRI_TYPE;
 
@@ -340,15 +342,16 @@ public class AuthorizeHandler {
                                 verifiableCredentialGenerator.generate(credential).serialize();
                         HTTPRequest httpRequest =
                                 new HTTPRequest(
-                                        HTTPRequest.Method.POST, URI.create("<lambda-endpoint>"));
+                                        HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
                         ObjectMapper objectMapper = new ObjectMapper();
                         F2FEnqueueLambdaRequest enqueueLambdaRequest =
                                 new F2FEnqueueLambdaRequest(
-                                        "stubQueue_F2FQueueBuild",
-                                        new F2FQueueEvent(userId, state, signedVcJwt));
+                                        F2F_STUB_QUEUE_NAME,
+                                        new F2FQueueEvent(userId, state, List.of(signedVcJwt)));
                         String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
                         httpRequest.setQuery(body);
                         HTTPResponse httpResponse = httpRequest.send();
+                        System.out.println("F2F send VC to queue response");
                         System.out.println(httpResponse.getContentAsJSONObject().toString());
                     }
 
