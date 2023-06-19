@@ -20,6 +20,10 @@ Parameters:
     Description: >
       The ARN of the Code Signing Config to use, provided by the deployment pipeline
     Default: ""
+  Environment:
+    Description: The name of the environment to deploy to.
+    Type: String
+    AllowedPattern: ((production)|(build)|(dev.*))
 
 Conditions:
 
@@ -28,8 +32,37 @@ Conditions:
       - Fn::Equals:
           - !Ref CodeSigningConfigArn
           - "none"
+  IsDevelopment: !Not
+    - !Or
+      - !Equals [ !Ref Environment, "build"]
+      - !Equals [ !Ref Environment, "production"]
+  IsProduction: !Equals [ !Ref Environment, production ]
+  IsNonProd: !Not
+    - !Or
+      - !Condition IsDevelopment
+      - !Condition IsProduction
 
 Resources:
+
+  # ssl cert
+  QueueStubSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsNonProd
+        - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
+        - queue-build.stubs.account.gov.uk
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsNonProd
+            - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
+            - queue-build.stubs.account.gov.uk
+          HostedZoneId: !If
+            - IsNonProd
+            - !ImportValue BuildPublicHostedZoneId
+            - !ImportValue RootPublicHostedZoneId
+      ValidationMethod: DNS
+
   # lambda to update ECS defn
   EnqueueEventLambda:
     Type: AWS::Serverless::Function
@@ -336,8 +369,19 @@ Resources:
     Properties:
       CacheClusterEnabled: False
       StageName: prod
-
-
+      Domain:
+        CertificateArn: !Ref QueueStubSSLCert
+        DomainName: !If
+          - IsNonProd
+          - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
+          - queue-build.stubs.account.gov.uk
+        EndpointConfiguration: REGIONAL
+        SecurityPolicy: TLS_1_2
+        Route53:
+          HostedZoneId: !If
+          - IsNonProd
+          - !ImportValue BuildPublicHostedZoneId
+          - !ImportValue RootPublicHostedZoneId
 
 Outputs:
   ApiGatewayUrl:
@@ -345,8 +389,11 @@ Outputs:
     Value: !Join
     - ''
     - - "https://"
-      - !Ref EnqueueEventApi
-      - ".execute-api.eu-west-2.amazonaws.com/prod"
+      - !If
+        - IsNonProd
+        - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
+        - queue-build.stubs.account.gov.uk
+      - "/prod"
   SignJwtKmsKeyId:
     Description: A key ID for signing JWTs
     Value: !Ref SignJwtKmsKey
