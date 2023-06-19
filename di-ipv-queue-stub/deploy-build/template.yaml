@@ -20,6 +20,10 @@ Parameters:
     Description: >
       The ARN of the Code Signing Config to use, provided by the deployment pipeline
     Default: ""
+  Environment:
+    Description: The name of the environment to deploy to.
+    Type: String
+    AllowedPattern: ((production)|(build)|(dev.*))
 
 Conditions:
 
@@ -28,8 +32,37 @@ Conditions:
       - Fn::Equals:
           - !Ref CodeSigningConfigArn
           - "none"
+  IsDevelopment: !Not
+    - !Or
+      - !Equals [ !Ref Environment, "build"]
+      - !Equals [ !Ref Environment, "production"]
+  IsProduction: !Equals [ !Ref Environment, production ]
+  IsNonProd: !Not
+    - !Or
+      - !Condition IsDevelopment
+      - !Condition IsProduction
 
 Resources:
+
+  # ssl cert
+  QueueStubSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsNonProd
+        - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
+        - queue-build.stubs.account.gov.uk
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsNonProd
+            - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
+            - queue-build.stubs.account.gov.uk
+          HostedZoneId: !If
+            - IsNonProd
+            - !ImportValue BuildPublicHostedZoneId
+            - !ImportValue RootPublicHostedZoneId
+      ValidationMethod: DNS
+
   # lambda to update ECS defn
   EnqueueEventLambda:
     Type: AWS::Serverless::Function
@@ -106,6 +139,32 @@ Resources:
                 "ForAnyValue:StringLike":
                   "kms:ResourceAliases":
                     - "alias/sqs/QueuesKmsKey"
+        - Statement:
+            - Sid: AllowKMSSign
+              Effect: Allow
+              Action:
+                - "kms:Sign"
+              Resource:
+                - !Sub "arn:aws:kms:eu-west-2:${AWS::AccountId}:key/*"
+              Condition:
+                "ForAnyValue:StringLike":
+                  "kms:ResourceAliases":
+                    - "alias/sqs/SignJwtKmsKey"
+        - Statement:
+            - Sid: AllowSecretsManagerGet #pragma: allowlist secret
+              Effect: Allow
+              Action:
+                - "secretsmanager:GetSecretValue" #pragma: allowlist secret
+                - "secretsmanager:ListSecrets" #pragma: allowlist secret
+              Resource:
+                - !Sub "arn:aws:secretsmanager:eu-west-2:${AWS::AccountId}:secret:/stubs/queue/*" #pragma: allowlist secret
+        - Statement:
+            - Sid: AllowGetSSMParam
+              Effect: Allow
+              Action:
+                - "ssm:GetParameter"
+              Resource:
+                - !Sub "arn:aws:ssm:eu-west-2:${AWS::AccountId}:parameter/stubs/*"
 
     Metadata:
       # Manage esbuild properties
@@ -116,6 +175,7 @@ Resources:
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         External:
           - "@aws-sdk/client-sqs"
+          - "@aws-sdk/client-secrets-manager"
         EntryPoints:
           - enqueueEvent.ts
 
@@ -192,12 +252,46 @@ Resources:
               - "kms:Decrypt"
             Resource: "*"
 
+  # jwt key for VCs
+  SignJwtKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyUsage: SIGN_VERIFY
+      Description: "A key which can be used to sign JWTs"
+      KeySpec: ECC_NIST_P256
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "kms:*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              AWS:
+                - "arn:aws:iam::457601271792:root" # Build account id
+                - "arn:aws:iam::130355686670:root" # OldDev account id
+                - "arn:aws:iam::175872367215:root" # Dev account id
+            Action:
+              - "kms:Verify"
+            Resource: "*"
+
+
   #QueuesKmsKey Alias
   QueuesKmsKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
       AliasName: "alias/sqs/QueuesKmsKey"
       TargetKeyId: !Ref QueuesKmsKey
+
+  #SignJwtKmsKey Alias
+  SignJwtKmsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: "alias/sqs/SignJwtKmsKey"
+      TargetKeyId: !Ref SignJwtKmsKey
 
   #lambda dlq
   EnqueueEventDLQ:
@@ -208,6 +302,7 @@ Resources:
       RedriveAllowPolicy: |
         {  "redrivePermission"  : "allowAll" }
       KmsMasterKeyId: alias/aws/sqs
+
   #Pre lambda dlq
   PreEnqueueEventDLQ:
     Type: AWS::SQS::Queue
@@ -274,6 +369,19 @@ Resources:
     Properties:
       CacheClusterEnabled: False
       StageName: prod
+      Domain:
+        CertificateArn: !Ref QueueStubSSLCert
+        DomainName: !If
+          - IsNonProd
+          - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
+          - queue-build.stubs.account.gov.uk
+        EndpointConfiguration: REGIONAL
+        SecurityPolicy: TLS_1_2
+        Route53:
+          HostedZoneId: !If
+          - IsNonProd
+          - !ImportValue BuildPublicHostedZoneId
+          - !ImportValue RootPublicHostedZoneId
 
 Outputs:
   ApiGatewayUrl:
@@ -281,8 +389,17 @@ Outputs:
     Value: !Join
     - ''
     - - "https://"
-      - !Ref EnqueueEventApi
-      - ".execute-api.eu-west-2.amazonaws.com/prod"
+      - !If
+        - IsNonProd
+        - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
+        - queue-build.stubs.account.gov.uk
+      - "/prod"
+  SignJwtKmsKeyId:
+    Description: A key ID for signing JWTs
+    Value: !Ref SignJwtKmsKey
+  SignJwtKmsKeyArn:
+    Description: A key Arn for signing JWTs
+    Value: !GetAtt SignJwtKmsKey.Arn
 
 
 
