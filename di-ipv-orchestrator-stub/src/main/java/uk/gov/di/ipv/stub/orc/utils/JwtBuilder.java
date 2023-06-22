@@ -69,7 +69,7 @@ public class JwtBuilder {
                 .claim("state", UUID.randomUUID().toString())
                 .claim("govuk_signin_journey_id", UUID.randomUUID().toString())
                 .claim("persistent_session_id", UUID.randomUUID().toString())
-                .claim("email", "dev-platform-testing@digital.cabinet-office.gov.uk")
+                .claim("email_address", "dev-platform-testing@digital.cabinet-office.gov.uk")
                 .build();
     }
 
