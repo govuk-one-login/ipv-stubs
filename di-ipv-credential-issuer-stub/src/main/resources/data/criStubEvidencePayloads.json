@@ -201,6 +201,26 @@
           }
         ]
       }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Passed f2f check",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 4,
+        "validityScore": 2,
+        "verificationScore": 3,
+        "checkDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
     }
   ]
 }

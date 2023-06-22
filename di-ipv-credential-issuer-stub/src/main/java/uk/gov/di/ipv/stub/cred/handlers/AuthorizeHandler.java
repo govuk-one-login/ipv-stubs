@@ -18,6 +18,8 @@ import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
+import com.nimbusds.oauth2.sdk.http.HTTPRequest;
+import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
@@ -32,6 +34,8 @@ import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.domain.Credential;
+import uk.gov.di.ipv.stub.cred.domain.F2FEnqueueLambdaRequest;
+import uk.gov.di.ipv.stub.cred.domain.F2FQueueEvent;
 import uk.gov.di.ipv.stub.cred.error.CriStubException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
@@ -40,6 +44,7 @@ import uk.gov.di.ipv.stub.cred.utils.ES256SignatureVerifier;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
+import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -58,6 +63,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
+import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME;
+import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_URL;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
 import static uk.gov.di.ipv.stub.cred.config.CriType.USER_ASSERTED_CRI_TYPE;
 
@@ -67,6 +74,7 @@ public class AuthorizeHandler {
 
     public static final String CRI_STUB_DATA = "cri_stub_data";
     public static final String CRI_STUB_EVIDENCE_PAYLOADS = "cri_stub_evidence_payloads";
+    public static final String F2F_STUB_QUEUE_NAME_FIELD = "f2f_stub_queue_name";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
 
@@ -84,6 +92,7 @@ public class AuthorizeHandler {
     private static final String IS_VERIFICATION_TYPE_PARAM = "isVerificationType";
     private static final String IS_DOC_CHECKING_TYPE_PARAM = "isDocCheckingType";
     private static final String IS_USER_ASSERTED_TYPE = "isUserAssertedType";
+    private static final String IS_F2F_TYPE = "isF2FType";
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
@@ -95,17 +104,20 @@ public class AuthorizeHandler {
     private final RequestedErrorResponseService requestedErrorResponseService;
     private final ES256SignatureVerifier es256SignatureVerifier = new ES256SignatureVerifier();
     private ViewHelper viewHelper;
+    private VerifiableCredentialGenerator verifiableCredentialGenerator;
 
     public AuthorizeHandler(
             ViewHelper viewHelper,
             AuthCodeService authCodeService,
             CredentialService credentialService,
-            RequestedErrorResponseService requestedErrorResponseService) {
+            RequestedErrorResponseService requestedErrorResponseService,
+            VerifiableCredentialGenerator verifiableCredentialGenerator) {
         Objects.requireNonNull(viewHelper);
         this.viewHelper = viewHelper;
         this.authCodeService = authCodeService;
         this.credentialService = credentialService;
         this.requestedErrorResponseService = requestedErrorResponseService;
+        this.verifiableCredentialGenerator = verifiableCredentialGenerator;
     }
 
     public Route doAuthorize =
@@ -181,14 +193,14 @@ public class AuthorizeHandler {
                         IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
                 frontendParams.put(
                         IS_DOC_CHECKING_TYPE_PARAM, criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE));
-                frontendParams.put(
-                        IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
+                frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
                 frontendParams.put(IS_USER_ASSERTED_TYPE, criType.equals(USER_ASSERTED_CRI_TYPE));
                 if (!criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
                     frontendParams.put(SHARED_CLAIMS, getSharedAttributes(queryParamsMap));
                 }
                 frontendParams.put(CRI_STUB_DATA, criStubData);
                 frontendParams.put(CRI_STUB_EVIDENCE_PAYLOADS, criStubEvidencePayloads);
+                frontendParams.put(F2F_STUB_QUEUE_NAME_FIELD, F2F_STUB_QUEUE_NAME);
 
                 String error = request.attribute(ERROR_PARAM);
                 boolean hasError = error != null;
@@ -232,6 +244,11 @@ public class AuthorizeHandler {
                                 .getClaim(RequestParamConstants.REDIRECT_URI)
                                 .toString();
                 String userId = signedJWT.getJWTClaimsSet().getSubject();
+                String state =
+                        signedJWT
+                                .getJWTClaimsSet()
+                                .getClaim(RequestParamConstants.STATE)
+                                .toString();
 
                 try {
                     Map<String, Object> attributesMap =
@@ -318,13 +335,31 @@ public class AuthorizeHandler {
                             new Credential(
                                     credentialAttributesMap, gpgMap, userId, clientIdValue, exp);
 
+                    boolean F2F_SEND_VC_QUEUE =
+                            Objects.equals(
+                                    queryParamsMap.value(RequestParamConstants.F2F_SEND_VC_QUEUE),
+                                    "checked");
+                    if (F2F_SEND_VC_QUEUE) {
+                        String queueName = queryParamsMap.value(F2F_STUB_QUEUE_NAME_FIELD);
+                        String signedVcJwt =
+                                verifiableCredentialGenerator.generate(credential).serialize();
+                        HTTPRequest httpRequest =
+                                new HTTPRequest(
+                                        HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        F2FEnqueueLambdaRequest enqueueLambdaRequest =
+                                new F2FEnqueueLambdaRequest(
+                                        queueName,
+                                        new F2FQueueEvent(userId, state, List.of(signedVcJwt)));
+                        String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
+                        httpRequest.setQuery(body);
+                        HTTPResponse httpResponse = httpRequest.send();
+                        System.out.println("F2F send VC to queue response");
+                        System.out.println(httpResponse.getContentAsJSONObject().toString());
+                    }
+
                     AuthorizationSuccessResponse successResponse =
-                            generateAuthCode(
-                                    signedJWT
-                                            .getJWTClaimsSet()
-                                            .getClaim(RequestParamConstants.STATE)
-                                            .toString(),
-                                    redirectUri);
+                            generateAuthCode(state, redirectUri);
                     persistData(
                             queryParamsMap,
                             successResponse.getAuthorizationCode(),
@@ -374,6 +409,7 @@ public class AuthorizeHandler {
     }
 
     private Map<String, Object> generateJsonPayload(String payload) throws CriStubException {
+        if (StringUtils.isBlank(payload)) payload = "{}";
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(payload, Map.class);

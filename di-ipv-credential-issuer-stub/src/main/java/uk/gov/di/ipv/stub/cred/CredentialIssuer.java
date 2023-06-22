@@ -47,7 +47,8 @@ public class CredentialIssuer {
                         new ViewHelper(),
                         authCodeService,
                         credentialService,
-                        requestedErrorResponseService);
+                        requestedErrorResponseService,
+                        vcGenerator);
         tokenHandler =
                 new TokenHandler(
                         authCodeService,
@@ -71,7 +72,7 @@ public class CredentialIssuer {
         Spark.post("/token", tokenHandler.issueAccessToken);
         if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
             Spark.post("/credentials/issue", docAppCredentialHandler.getResource);
-        } else if (getCriType().equals(CriType.FACE_TO_FACE_CRI_TYPE)) {
+        } else if (getCriType().equals(CriType.F2F_CRI_TYPE)) {
             Spark.post("/credentials/issue", f2fHandler.getResource);
         } else {
             Spark.post("/credentials/issue", credentialHandler.getResource);
