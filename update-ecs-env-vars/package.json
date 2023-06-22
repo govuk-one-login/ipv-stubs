@@ -5,8 +5,8 @@
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@aws-sdk/client-ecs": "^3.272.0",
-    "@aws-sdk/client-ssm": "^3.290.0",
+    "@aws-sdk/client-ecs": "^3.357.0",
+    "@aws-sdk/client-ssm": "^3.357.0",
     "@tsconfig/recommended": "^1.0.2",
     "@types/aws-lambda": "^8.10.110",
     "@types/node": "^18.14.0"
