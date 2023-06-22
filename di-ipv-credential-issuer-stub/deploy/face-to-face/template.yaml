@@ -510,7 +510,7 @@ Resources:
           - Name: F2F_STUB_QUEUE_URL
             Value: !Ref F2fStubQueueUrl
           - Name: F2F_STUB_QUEUE_NAME
-            Value: !Sub stubQueue_F2FQueue_${Environment}
+            Value: !If [IsCoreDev, !Sub "stubQueue_F2FQueue_${Environment}", "stubQueue_F2FQueue_build"]
           Secrets:
             - Name: "VC_SIGNING_KEY"
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/f2f/env/VC_SIGNING_KEY"
