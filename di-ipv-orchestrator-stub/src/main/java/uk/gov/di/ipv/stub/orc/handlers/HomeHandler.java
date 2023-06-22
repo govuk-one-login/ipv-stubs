@@ -13,11 +13,6 @@ public class HomeHandler {
     public static final String NON_APP_JOURNEY_USER_ID_PREFIX = "urn:uuid:";
     public static Route serveHomePage =
             (Request request, Response response) -> {
-                var modelMap = new HashMap<String, Object>();
-                modelMap.put("appJourneyUserId", APP_JOURNEY_USER_ID_PREFIX + UUID.randomUUID());
-                modelMap.put(
-                        "nonAppJourneyUserId", NON_APP_JOURNEY_USER_ID_PREFIX + UUID.randomUUID());
-
-                return ViewHelper.render(modelMap, "home.mustache");
+                return ViewHelper.render(null, "home.mustache");
             };
 }
