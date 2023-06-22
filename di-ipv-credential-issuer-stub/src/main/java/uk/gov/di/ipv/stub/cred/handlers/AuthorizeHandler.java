@@ -74,6 +74,7 @@ public class AuthorizeHandler {
 
     public static final String CRI_STUB_DATA = "cri_stub_data";
     public static final String CRI_STUB_EVIDENCE_PAYLOADS = "cri_stub_evidence_payloads";
+    public static final String F2F_STUB_QUEUE_NAME_FIELD = "f2f_stub_queue_name";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
 
@@ -199,6 +200,7 @@ public class AuthorizeHandler {
                 }
                 frontendParams.put(CRI_STUB_DATA, criStubData);
                 frontendParams.put(CRI_STUB_EVIDENCE_PAYLOADS, criStubEvidencePayloads);
+                frontendParams.put(F2F_STUB_QUEUE_NAME_FIELD, F2F_STUB_QUEUE_NAME);
 
                 String error = request.attribute(ERROR_PARAM);
                 boolean hasError = error != null;
@@ -338,6 +340,7 @@ public class AuthorizeHandler {
                                     queryParamsMap.value(RequestParamConstants.F2F_SEND_VC_QUEUE),
                                     "checked");
                     if (F2F_SEND_VC_QUEUE) {
+                        String queueName = queryParamsMap.value(F2F_STUB_QUEUE_NAME_FIELD);
                         String signedVcJwt =
                                 verifiableCredentialGenerator.generate(credential).serialize();
                         HTTPRequest httpRequest =
@@ -346,7 +349,7 @@ public class AuthorizeHandler {
                         ObjectMapper objectMapper = new ObjectMapper();
                         F2FEnqueueLambdaRequest enqueueLambdaRequest =
                                 new F2FEnqueueLambdaRequest(
-                                        F2F_STUB_QUEUE_NAME,
+                                        queueName,
                                         new F2FQueueEvent(userId, state, List.of(signedVcJwt)));
                         String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
                         httpRequest.setQuery(body);
