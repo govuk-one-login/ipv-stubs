@@ -56,15 +56,7 @@
         <form action="/authorize">
             <input type="hidden" name="journeyType" value="full" />
             <div class="govuk-form-group">
-                <label class="govuk-label" for="userIdSelect">Choose a user id value:</label>
-                <select class="govuk-select" name="userIdSelect" id="userIdSelect">
-                    <option value=""></option>
-                    <option value="{{appJourneyUserId}}">{{appJourneyUserId}} - App journey user</option>
-                    <option value="{{nonAppJourneyUserId}}">{{nonAppJourneyUserId}} - Non app journey user</option>
-                </select>
-            </div>
-            <div class="govuk-form-group">
-                <label class="govuk-label" for="userIdText">Or enter one manually</label>
+                <label class="govuk-label" for="userIdText">Enter userId manually</label>
                 <input class="govuk-input" data-module="govuk-input" name="userIdText" id="userIdText" type="text" value="">
             </div>
 

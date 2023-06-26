@@ -81,10 +81,9 @@ public class IpvHandler {
 
                 String errorType = request.queryMap().get("error").value();
 
-                String userIdSelectValue = request.queryMap().get("userIdSelect").value();
                 String userIdTextValue = request.queryMap().get("userIdText").value();
 
-                String userId = getUserIdValue(userIdSelectValue, userIdTextValue);
+                String userId = getUserIdValue(userIdTextValue);
 
                 JWTClaimsSet claims = JwtBuilder.buildAuthorizationRequestClaims(userId, errorType);
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
@@ -254,13 +253,9 @@ public class IpvHandler {
         }
     }
 
-    private String getUserIdValue(String userIdSelectValue, String userIdTextValue) {
+    private String getUserIdValue(String userIdTextValue) {
         if (StringUtils.isNotBlank(userIdTextValue)) {
             return userIdTextValue;
-        }
-
-        if (StringUtils.isNotBlank(userIdSelectValue)) {
-            return userIdSelectValue;
         }
 
         return URN_UUID + UUID.randomUUID();
