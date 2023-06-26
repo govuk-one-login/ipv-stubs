@@ -143,7 +143,8 @@ export const handler: Handler = async (
 
     let sendSqsMessageInput:SendMessageCommandInput = {
         QueueUrl: queueUrl,
-        MessageBody: JSON.stringify(queueBody)
+        MessageBody: JSON.stringify(queueBody),
+        DelaySeconds: 30
     }
 
     let sendSqsMessageCommand = new SendMessageCommand(sendSqsMessageInput);
