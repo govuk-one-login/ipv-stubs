@@ -204,13 +204,54 @@
     },
     {
       "criType": "Face to Face Check (Stub)",
-      "label": "Passed f2f check",
+      "label": "Passed f2f passport check",
       "payload": {
         "type": "IdentityCheck",
         "strengthScore": 4,
         "validityScore": 2,
         "verificationScore": 3,
         "checkDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Failed f2f passport check",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 4,
+        "validityScore": 0,
+        "verificationScore": 3,
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Failed f2f passport check with CI",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 4,
+        "validityScore": 0,
+        "verificationScore": 3,
+        "ci": ["D14"],
+        "failedCheckDetails": [
           {
             "checkMethod": "vcrypt",
             "identityCheckPolicy": "published"
