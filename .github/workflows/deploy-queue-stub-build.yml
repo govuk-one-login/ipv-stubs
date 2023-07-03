@@ -57,12 +57,6 @@ jobs:
           template: ./di-ipv-queue-stub/deploy-build/template.yaml
           profile: ${{ secrets.SIGNING_PROFILE_NAME }}
 
-      - name: Setup node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: npm
-
       - name: npm install
         working-directory: ./di-ipv-queue-stub/enqueue-event
         run: npm ci
