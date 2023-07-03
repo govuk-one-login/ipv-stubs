@@ -7,9 +7,7 @@
         "@aws-sdk/client-secrets-manager": "^3.357.0",
         "@aws-sdk/client-sqs": "^3.357.0",
         "@aws-sdk/client-ssm": "^3.357.0",
-        "@types/dotenv": "^8.2.0",
-        "@types/node": "^20.2.5",
-        "@types/uuid": "^9.0.2"
+        "@types/node": "^20.2.5"
     },
     "dependencies": {
         "di-stub-oauth-client": "git+ssh://git@github.com:alphagov/di-stub-oauth-client#main"
