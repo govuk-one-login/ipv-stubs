@@ -10,4 +10,5 @@ import lombok.Setter;
 public class F2FEnqueueLambdaRequest {
     private String queueName;
     private F2FQueueEvent queueEvent;
+    private int delaySeconds;
 }
