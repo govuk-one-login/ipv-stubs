@@ -209,8 +209,8 @@ Mappings:
       platform: stubs
       dnsZoneId: "NOT-NEEDED"
     "388905755587": # Stubs Prod
-      fargateCPUsize: "256"
-      fargateRAMsize: "512"
+      fargateCPUsize: "4096"
+      fargateRAMsize: "8192"
       desiredTaskCount: 1
       environment: production
       platform: stubs

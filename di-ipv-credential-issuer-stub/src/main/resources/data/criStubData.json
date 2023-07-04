@@ -962,6 +962,37 @@
     },
     {
       "criType": "Face to Face Check (Stub)",
+      "label": "Mary Watson (Valid Passport)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "824159121",
+            "expiryDate": "2030-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
       "label": "Kenneth Decerqueira (Valid Passport)",
       "payload": {
         "name": [
