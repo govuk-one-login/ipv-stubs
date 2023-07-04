@@ -176,6 +176,10 @@ Resources:
         External:
           - "@aws-sdk/client-sqs"
           - "@aws-sdk/client-secrets-manager"
+          - "@aws-sdk/client-ssm"
+          - "@types/dotenv"
+          - "@types/node"
+          - "@types/uuid"
         EntryPoints:
           - enqueueEvent.ts
 
