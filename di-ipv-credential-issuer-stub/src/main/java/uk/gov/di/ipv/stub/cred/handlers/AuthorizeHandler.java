@@ -350,12 +350,11 @@ public class AuthorizeHandler {
                         F2FEnqueueLambdaRequest enqueueLambdaRequest =
                                 new F2FEnqueueLambdaRequest(
                                         queueName,
-                                        new F2FQueueEvent(userId, state, List.of(signedVcJwt)));
+                                        new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
+                                        10);
                         String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
                         httpRequest.setQuery(body);
                         HTTPResponse httpResponse = httpRequest.send();
-                        System.out.println("F2F send VC to queue response");
-                        System.out.println(httpResponse.getContentAsJSONObject().toString());
                     }
 
                     AuthorizationSuccessResponse successResponse =
