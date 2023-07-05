@@ -60,11 +60,14 @@ export const handler: Handler = async (
             queueUrl = createQueueCommandOutput.QueueUrl;
             let addQueuePermissionCommandInput: AddPermissionCommandInput = {
                 QueueUrl: queueUrl,
-                Label: "add read and delete from dev and build perms",
+                Label: "add read and delete from dev, build, staging, prod perms",
                 AWSAccountIds: [
                     "457601271792",
                     "130355686670",
-                    "175872367215"
+                    "175872367215",
+                    "335257547869",
+                    "991138514218",
+                    "075701497069"
                 ],
                 Actions: [
                     "ReceiveMessage",

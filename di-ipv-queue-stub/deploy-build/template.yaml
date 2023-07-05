@@ -249,6 +249,9 @@ Resources:
                 - "arn:aws:iam::457601271792:root" # Build account id
                 - "arn:aws:iam::130355686670:root" # OldDev account id
                 - "arn:aws:iam::175872367215:root" # Dev account id
+                - "arn:aws:iam::335257547869:root" # Staging account id
+                - "arn:aws:iam::991138514218:root" # Integration account id
+                - "arn:aws:iam::075701497069:root" # Prod account id
             Action:
               - "kms:Decrypt"
             Resource: "*"
@@ -275,6 +278,9 @@ Resources:
                 - "arn:aws:iam::457601271792:root" # Build account id
                 - "arn:aws:iam::130355686670:root" # OldDev account id
                 - "arn:aws:iam::175872367215:root" # Dev account id
+                - "arn:aws:iam::335257547869:root" # Staging account id
+                - "arn:aws:iam::991138514218:root" # Integration account id
+                - "arn:aws:iam::075701497069:root" # Prod account id
             Action:
               - "kms:Verify"
             Resource: "*"
@@ -352,6 +358,9 @@ Resources:
                 - "arn:aws:iam::457601271792:root" # Build account id
                 - "arn:aws:iam::130355686670:root" # OldDev account id
                 - "arn:aws:iam::175872367215:root" # Dev account id
+                - "arn:aws:iam::335257547869:root" # Staging account id
+                - "arn:aws:iam::991138514218:root" # Integration account id
+                - "arn:aws:iam::075701497069:root" # Prod account id
          #- Sid: "AllowKeyAccess"
          #  Effect: Allow
          #  Action:
