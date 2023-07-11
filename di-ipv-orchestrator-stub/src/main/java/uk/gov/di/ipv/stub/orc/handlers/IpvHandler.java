@@ -73,16 +73,9 @@ public class IpvHandler {
             (Request request, Response response) -> {
                 var state = new State();
                 stateSession.put(state.getValue(), null);
-                String journeyType = request.queryMap().get("journeyType").value();
-                URI journeyTypeEndpointURI =
-                        journeyType.equals("debug")
-                                ? new URI(IPV_ENDPOINT).resolve("/oauth2/debug-authorize")
-                                : new URI(IPV_ENDPOINT).resolve("/oauth2/authorize");
 
                 String errorType = request.queryMap().get("error").value();
-
                 String userIdTextValue = request.queryMap().get("userIdText").value();
-
                 String userId = getUserIdValue(userIdTextValue);
 
                 JWTClaimsSet claims = JwtBuilder.buildAuthorizationRequestClaims(userId, errorType);
@@ -95,7 +88,7 @@ public class IpvHandler {
                                 .state(state)
                                 .scope(new Scope("openid"))
                                 .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
-                                .endpointURI(journeyTypeEndpointURI)
+                                .endpointURI(new URI(IPV_ENDPOINT).resolve("/oauth2/authorize"))
                                 .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
                                 .build();
 
