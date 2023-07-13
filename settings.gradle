@@ -2,4 +2,8 @@ include "di-ipv-core-stub",
 		"di-ipv-credential-issuer-stub",
 		"di-ipv-orchestrator-stub",
 		"experian-kbv-stub",
-		"experian-fraud-stub"
+		"experian-fraud-stub",
+		"di-ipv-cimit-stub",
+		"di-ipv-cimit-stub:lambdas",
+		"di-ipv-cimit-stub:lambdas:get-contra-indicators",
+		"di-ipv-cimit-stub:lambdas:get-contra-indicator-credential"

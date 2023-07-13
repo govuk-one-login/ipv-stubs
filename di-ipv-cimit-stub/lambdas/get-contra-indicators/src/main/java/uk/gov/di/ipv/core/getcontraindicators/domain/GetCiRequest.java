@@ -1,0 +1,18 @@
+package uk.gov.di.ipv.core.getcontraindicators.domain;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
+import lombok.Data;
+
+@Data
+public class GetCiRequest {
+
+    @JsonProperty("govuk_signin_journey_id")
+    private final String govukSigninJourneyId;
+
+    @JsonProperty("ip_address")
+    private final String ipAddress;
+
+    @JsonProperty("user_id")
+    private final String userId;
+}

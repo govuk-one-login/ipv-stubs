@@ -1,0 +1,25 @@
+plugins {
+	id "java"
+}
+
+group "uk.gov.di.ipv"
+
+repositories {
+	mavenCentral()
+}
+
+sourceCompatibility = 17
+
+dependencies {
+	implementation"com.amazonaws:aws-java-sdk-kms:1.12.395",
+			"com.amazonaws:aws-lambda-java-core:1.2.1",
+			"com.amazonaws:aws-lambda-java-events:3.11.0",
+			"com.nimbusds:oauth2-oidc-sdk:9.27"
+
+	implementation "com.amazonaws:aws-lambda-java-core:1.2.1",
+			"com.amazonaws:aws-lambda-java-events:3.11.0",
+			"com.google.code.gson:gson:2.8.9"
+
+	testImplementation "org.junit.jupiter:junit-jupiter:5.9.3",
+			"org.mockito:mockito-junit-jupiter:5.4.0"
+}
