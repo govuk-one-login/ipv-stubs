@@ -39,7 +39,7 @@ Resources:
     DependsOn:
       - "GetContraIndicatorsFunctionLogGroup"
     Properties:
-      FunctionName: !Sub "get-contra-indicators-${Environment}"
+      FunctionName: !Sub "getContraIndicators-${Environment}"
       CodeUri: "../lambdas/get-contra-indicators"
       Handler: uk.gov.di.ipv.core.getcontraindicators.GetContraIndicatorsHandler::handleRequest
       Runtime: java17
@@ -115,7 +115,7 @@ Resources:
     DependsOn:
       - "GetContraIndicatorCredentialFunctionLogGroup"
     Properties:
-      FunctionName: !Sub "get-contra-indicator-credential-${Environment}"
+      FunctionName: !Sub "getContraIndicatorCredential-${Environment}"
       CodeUri: "../lambdas/get-contra-indicator-credential"
       Handler: uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler::handleRequest
       Runtime: java17
