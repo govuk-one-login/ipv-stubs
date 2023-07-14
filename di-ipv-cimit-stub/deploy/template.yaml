@@ -201,37 +201,6 @@ Resources:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
 
-  # jwt key for VCs
-  SignJwtKmsKey:
-    Type: AWS::KMS::Key
-    Properties:
-      KeyUsage: SIGN_VERIFY
-      Description: "A key which can be used to sign JWTs"
-      KeySpec: ECC_NIST_P256
-      KeyPolicy:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action:
-              - "kms:*"
-            Resource: "*"
-          - Effect: Allow
-            Principal:
-              AWS:
-                - "arn:aws:iam::175872367215:root" # Dev account id
-                - "arn:aws:iam::130355686670:root" # OldDev account id
-            Action:
-              - "kms:Verify"
-            Resource: "*"
-
-  #SignJwtKmsKey Alias
-  SignJwtKmsKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: "alias/sqs/SignJwtKmsKey"
-      TargetKeyId: !Ref SignJwtKmsKey
 
 
 
