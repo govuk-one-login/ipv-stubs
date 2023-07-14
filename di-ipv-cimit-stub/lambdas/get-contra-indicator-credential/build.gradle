@@ -21,6 +21,9 @@ dependencies {
 			"com.amazonaws:aws-lambda-java-events:3.11.0",
 			"com.google.code.gson:gson:2.8.9"
 
+	compileOnly "org.projectlombok:lombok:1.18.22"
+	annotationProcessor "org.projectlombok:lombok:1.18.22"
+
 	testImplementation "org.junit.jupiter:junit-jupiter:5.9.3",
 			"org.mockito:mockito-junit-jupiter:5.4.0"
 }

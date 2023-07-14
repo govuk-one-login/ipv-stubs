@@ -1,7 +1,6 @@
 package uk.gov.di.ipv.core.postmitigations;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +12,6 @@ public class PostMitigationsHandler implements RequestHandler<PostMitigationsReq
 
     @Override
     public String handleRequest(PostMitigationsRequest event, Context context) {
-        LambdaLogger logger = context.getLogger();
         LOGGER.info("EVENT TYPE: " + event.getClass().toString());
         return "Success";
     }
