@@ -1,0 +1,10 @@
+applications:
+  - name: create-a-public-jwk
+    path: build/distributions/public-jwk-creator-1.0-SNAPSHOT.zip
+    memory: 128M
+    buildpack: java_buildpack
+    command: public-jwk-creator-1.0-SNAPSHOT/bin/public-jwk-creator
+    env:
+      JAVA_HOME: ".java-buildpack/open_jdk_jre"
+      JBP_CONFIG_OPEN_JDK_JRE: '{ jre: { version: 17.+}, memory_calculator: {stack_threads: 200}}'
+      JAVA_OPTS: '-Xss200k -XX:ReservedCodeCacheSize=50M -XX:MaxMetaspaceSize=100M'
