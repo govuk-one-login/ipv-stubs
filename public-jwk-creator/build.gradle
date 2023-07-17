@@ -1,0 +1,28 @@
+plugins {
+	id 'java'
+	id 'application'
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'com.sparkjava:spark-core:2.9.3',
+			'com.sparkjava:spark-template-mustache:2.7.1',
+			'com.nimbusds:nimbus-jose-jwt:9.21',
+			'org.slf4j:slf4j-simple:1.7.36'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+}
+
+application {
+	mainClass = 'Main'
+}
+
+test {
+	useJUnitPlatform()
+}
