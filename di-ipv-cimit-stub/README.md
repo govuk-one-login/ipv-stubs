@@ -1,22 +1,22 @@
 ### CIMIT lambda stubs
-This will create stub lambda's for CIMIT lambda's getContraIndicators, getContraIndicatorCredential,
+This will create stubs for the CIMIT lambdas getContraIndicators, getContraIndicatorCredential,
 putContraIndicators and postMitigations
-The format of the postMitigations POST request should look like
+Sample postMitigations POST request should look like
 ```
 {
 }
 ```
-The format of the putContraIndicators PUT request should look like
+Sample putContraIndicators PUT request should look like
 ```
 {
 }
 ```
-The format of the getContraIndicators GET request should look like
+Sample getContraIndicators GET request should look like
 ```
 {
 }
 ```
-The format of the getContraIndicatorCredential GET request should look like
+Sample getContraIndicatorCredential GET request should look like
 ```
 {
   "govuk_signin_journey_id": "value1",

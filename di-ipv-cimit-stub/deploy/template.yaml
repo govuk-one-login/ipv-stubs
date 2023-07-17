@@ -6,7 +6,7 @@ Globals:
     Timeout: 30
 
 Description: >-
-  This creates the lambda function to stub CIMIT lambda's for getContraIndicators, getContraIndicatorCredential, 
+  This creates the lambda functions to stub CIMIT lambdas for getContraIndicators, getContraIndicatorCredential, 
   putContraIndicators and postMitigations.
 
 Parameters:
