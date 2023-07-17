@@ -1,0 +1,10 @@
+<h1>Convert your PEM EC public key to a JWK</h1>
+
+<form method=post>
+    <textarea id="publickey" name="publickey" rows="4" cols="64">Public key goes here</textarea>
+    <br>
+    <br>
+    <input type="submit">
+</form>
+
+<pre>{{jwk}}</pre>
