@@ -6,9 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.di.ipv.core.putcontraindicatorcredential.domain.PutContraIndicatorCredentialRequest;
 
-public class PutContraIndicatorCredentialHandler implements RequestHandler<PutContraIndicatorCredentialRequest, String> {
+public class PutContraIndicatorCredentialHandler
+        implements RequestHandler<PutContraIndicatorCredentialRequest, String> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PutContraIndicatorCredentialHandler.class);
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(PutContraIndicatorCredentialHandler.class);
 
     @Override
     public String handleRequest(PutContraIndicatorCredentialRequest event, Context context) {

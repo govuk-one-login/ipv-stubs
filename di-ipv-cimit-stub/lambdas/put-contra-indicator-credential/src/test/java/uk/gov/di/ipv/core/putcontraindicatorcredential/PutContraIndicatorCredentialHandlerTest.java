@@ -26,6 +26,8 @@ class PutContraIndicatorCredentialHandlerTest {
                         .signedJwt("signed_jwts")
                         .build();
 
-        assertEquals("Success", classToTest.handleRequest(putContraIndicatorCredentialRequest, mockContext));
+        assertEquals(
+                "Success",
+                classToTest.handleRequest(putContraIndicatorCredentialRequest, mockContext));
     }
 }
