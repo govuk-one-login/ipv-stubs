@@ -6,7 +6,7 @@ Globals:
     Timeout: 30
 
 Description: >-
-  This creates the lambda function to stub CIMIT lambda's for getContraIndicators, getContraIndicatorCredential, 
+  This creates the lambda functions to stub CIMIT lambdas for getContraIndicators, getContraIndicatorCredential, 
   putContraIndicators and postMitigations.
 
 Parameters:
@@ -21,8 +21,8 @@ Parameters:
     AllowedPattern: ((production)|(build)|(dev.*))
 
 Resources:
-  # lambda to replicate cimit getContraIndicators
-  GetContraIndicatorsLambda:
+  # lambda to stub cimit getContraIndicators
+  GetContraIndicatorsFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
     DependsOn:
@@ -46,16 +46,11 @@ Resources:
           - !GetAtt CimitLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
-        - Statement:
-            - Sid: AllowGetSSMParam
-              Effect: Allow
-              Action:
-                - "ssm:GetParameter"
-              Resource:
-                - !Sub "arn:aws:ssm:eu-west-2:${AWS::AccountId}:parameter/stubs/*"
+        - SSMParameterReadPolicy:
+            ParameterName: !Sub ${Environment}/stubs/*
 
-  # lambda to replicate cimit postMitigations
-  PostMitigationsLambda:
+  # lambda to stub cimit postMitigations
+  PostMitigationsFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
     DependsOn:
@@ -79,13 +74,8 @@ Resources:
           - !GetAtt CimitLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
-        - Statement:
-            - Sid: AllowGetSSMParam
-              Effect: Allow
-              Action:
-                - "ssm:GetParameter"
-              Resource:
-                - !Sub "arn:aws:ssm:eu-west-2:${AWS::AccountId}:parameter/stubs/*"
+        - SSMParameterReadPolicy:
+            ParameterName: !Sub ${Environment}/stubs/*
 
   # lambda to replicate cimit putContraIndicators
   PutContraIndicatorslambda:
@@ -125,14 +115,14 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 14
-      LogGroupName: !Sub "/aws/lambda/get-contra-indicators-${Environment}"
+      LogGroupName: !Sub "/aws/lambda/getContraIndicators-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   PostMitigationsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 14
-      LogGroupName: !Sub "/aws/lambda/post-mitigations-${Environment}"
+      LogGroupName: !Sub "/aws/lambda/postMitigations-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   PutContraIndicatorCredentialFunctionLogGroup:
@@ -146,13 +136,7 @@ Resources:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: >-
-        CIMIT Lambda Security Group
-      SecurityGroupEgress:
-        - CidrIp: 0.0.0.0/0
-          Description: Allow egress HTTPS traffic to vpc cidr from port 443
-          FromPort: 443
-          IpProtocol: tcp
-          ToPort: 443
+        CIMIT Lambdas Security Group
       SecurityGroupIngress:
         - CidrIp:
             Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
@@ -190,7 +174,3 @@ Resources:
             Condition:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
-
-
-
-
