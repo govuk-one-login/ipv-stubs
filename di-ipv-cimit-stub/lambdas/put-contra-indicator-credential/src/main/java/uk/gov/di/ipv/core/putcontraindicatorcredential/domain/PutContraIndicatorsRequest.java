@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 @Builder
-public class PutContraIndicatorCredentialRequest {
+public class PutContraIndicatorsRequest {
 
     @JsonProperty("govuk_signin_journey_id")
     private String govukSigninJourneyId;
