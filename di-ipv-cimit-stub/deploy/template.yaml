@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Timeout: 30
+
+Description: >-
+  This creates the lambda functions to stub CIMIT lambdas for getContraIndicators, getContraIndicatorCredential, 
+  putContraIndicators and postMitigations.
+
+Parameters:
+  VpcStackName:
+    Description: >
+      The name of the stack that defines the VPC in which this container will
+      run.
+    Type: String
+  Environment:
+    Description: The name of the environment to deploy to.
+    Type: String
+    AllowedPattern: ((production)|(build)|(dev.*))
+
+Resources:
+  # lambda to stub cimit getContraIndicators
+  GetContraIndicatorsFunction:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    DependsOn:
+      - "GetContraIndicatorsFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "getContraIndicators-${Environment}"
+      CodeUri: "../lambdas/get-contra-indicators"
+      Handler: uk.gov.di.ipv.core.getcontraindicators.GetContraIndicatorsHandler::handleRequest
+      Runtime: java17
+      PackageType: Zip
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt CimitLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: !Sub ${Environment}/stubs/*
+
+  GetContraIndicatorsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/getContraIndicators-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  CimitLambdaSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: >-
+        CIMIT Lambdas Security Group
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow ingress traffic from vpc cidr to port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+
+  # kms key for logging
+  LoggingKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
