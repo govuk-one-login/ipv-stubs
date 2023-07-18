@@ -6,4 +6,4 @@ repositories {
 	mavenCentral()
 }
 
-sourceCompatibility = 17
+sourceCompatibility = 11

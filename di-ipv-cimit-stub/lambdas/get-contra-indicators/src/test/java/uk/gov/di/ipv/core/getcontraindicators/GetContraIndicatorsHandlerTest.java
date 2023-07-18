@@ -7,8 +7,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.core.getcontraindicators.domain.GetCiRequest;
+import uk.gov.di.ipv.core.getcontraindicators.domain.GetCiResponse;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class GetContraIndicatorsHandlerTest {
@@ -24,8 +25,7 @@ class GetContraIndicatorsHandlerTest {
                         .userId("user_id")
                         .build();
 
-        assertEquals(
-                "{\n" + "  \"contraIndicators\": []\n" + "}",
-                classToTest.handleRequest(getCiRequest, mockContext));
+        GetCiResponse response = classToTest.handleRequest(getCiRequest, mockContext);
+        assertTrue(response.getContraIndicators().isEmpty());
     }
 }

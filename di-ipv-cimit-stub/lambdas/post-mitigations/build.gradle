@@ -25,6 +25,7 @@ dependencies {
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.9.3",
 			"org.mockito:mockito-junit-jupiter:5.4.0"
+	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 }
 
 test {

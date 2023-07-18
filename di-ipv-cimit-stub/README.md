@@ -1,9 +1,13 @@
 ### CIMIT lambda stubs
 This will create stubs for the CIMIT lambdas getContraIndicators, getContraIndicatorCredential,
-putContraIndicators and postMitigations
+putContraIndicators and postMitigations.
+
 Sample postMitigations POST request should look like
 ```
 {
+	"govuk_signin_journey_id": "value1",
+	"ip_address": "value2",
+	"signed_jwts": ["value3"]
 }
 ```
 Sample putContraIndicators PUT request should look like

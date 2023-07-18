@@ -49,11 +49,46 @@ Resources:
         - SSMParameterReadPolicy:
             ParameterName: !Sub ${Environment}/stubs/*
 
+  # lambda to stub cimit postMitigations
+  PostMitigationsFunction:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    DependsOn:
+      - "PostMitigationsFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "postMitigations-${Environment}"
+      CodeUri: "../lambdas/post-mitigations"
+      Handler: uk.gov.di.ipv.core.postmitigations.PostMitigationsHandler::handleRequest
+      Runtime: java17
+      PackageType: Zip
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt CimitLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: !Sub ${Environment}/stubs/*
+
   GetContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 14
       LogGroupName: !Sub "/aws/lambda/getContraIndicators-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  PostMitigationsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/postMitigations-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   CimitLambdaSecurityGroup:
