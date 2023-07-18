@@ -142,6 +142,65 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 
+  CimitStubTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
+      TableName: !Sub "cimit-stub-${Environment}"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - AttributeName: "userId"
+          AttributeType: "S"
+        - AttributeName: "contraIndicatorCode"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "userId"
+          KeyType: "HASH"
+      GlobalSecondaryIndexes:
+        - IndexName: "contraIndicatorCode"
+          KeySchema:
+            - AttributeName: "contraIndicatorCode"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "ALL"
+      TimeToLiveSpecification:
+        AttributeName: "ttl"
+        Enabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+        KMSMasterKeyId: !GetAtt DynamoDBKmsKey.Arn
+
+  DynamoDBKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: "dynamodb.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                "kms:CallerAccount": !Sub "${AWS::AccountId}"
+                "kms:ViaService":
+                  - "dynamodb.amazonaws.com"
+                  - !Sub "lambda.${AWS::Region}.amazonaws.com"
+
   # kms key for logging
   LoggingKmsKey:
     Type: AWS::KMS::Key
