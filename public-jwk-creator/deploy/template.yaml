@@ -326,10 +326,10 @@ Resources:
   LoadBalancerListenerTargetGroupECS:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      HealthCheckEnabled: TRUE
+      HealthCheckEnabled: FALSE
       HealthCheckProtocol: HTTP
       Matcher:
-        HttpCode: 404
+        HttpCode: 200
       Port: 8080
       Protocol: HTTP
       TargetType: ip
