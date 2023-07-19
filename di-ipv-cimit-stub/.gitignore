@@ -25,10 +25,13 @@ git
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
+# Ignore Gradle build output directory
 build
+
+# Ignore AWS SAM folder
+deploy/.aws-sam
+deploy/cimit-stub-*.yaml
+
 .idea
 .gradle
 *.iml
-
-# Ignore dev-deploy generated file
-deploy*/**/orch-stub-*.yaml
