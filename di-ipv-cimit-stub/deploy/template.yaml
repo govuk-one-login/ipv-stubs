@@ -85,13 +85,8 @@ Resources:
       KeySchema:
         - AttributeName: "userId"
           KeyType: "HASH"
-      GlobalSecondaryIndexes:
-        - IndexName: "contraIndicatorCode"
-          KeySchema:
-            - AttributeName: "contraIndicatorCode"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "ALL"
+        - AttributeName: "contraIndicatorCode"
+          KeyType: "RANGE"
       TimeToLiveSpecification:
         AttributeName: "ttl"
         Enabled: true

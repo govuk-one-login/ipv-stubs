@@ -23,7 +23,7 @@ dependencies {
 }
 
 
-sourceCompatibility = 17
+sourceCompatibility = 11
 
 tasks.withType(Jar).configureEach { Jar jar ->
 	jar.preserveFileTimestamps = false

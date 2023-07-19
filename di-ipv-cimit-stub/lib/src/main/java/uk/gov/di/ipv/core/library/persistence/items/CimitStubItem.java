@@ -3,7 +3,7 @@ package uk.gov.di.ipv.core.library.persistence.items;
 import lombok.Data;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
 
 import java.time.Instant;
 import java.util.List;
@@ -24,7 +24,7 @@ public class CimitStubItem implements DynamodbItem {
         return userId;
     }
 
-    @DynamoDbSecondaryPartitionKey(indexNames = "contraIndicatorCode")
+    @DynamoDbSortKey
     public String getContraIndicatorCode() {
         return contraIndicatorCode;
     }
