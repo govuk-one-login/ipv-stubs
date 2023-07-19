@@ -1,0 +1,32 @@
+plugins {
+	id "java"
+	id 'io.freefair.aspectj.post-compile-weaving' version '8.0.1'
+}
+
+group "uk.gov.di.ipv"
+
+repositories {
+	mavenCentral()
+}
+
+sourceCompatibility = 11
+
+dependencies {
+	implementation "com.amazonaws:aws-lambda-java-core:1.2.1",
+			"com.fasterxml.jackson.core:jackson-annotations:2.13.1",
+			"org.apache.logging.log4j:log4j-api:2.17.1",
+			"org.apache.logging.log4j:log4j-core:2.17.1"
+
+	compileOnly "org.projectlombok:lombok:1.18.22"
+	annotationProcessor "org.projectlombok:lombok:1.18.22"
+
+	aspect "software.amazon.lambda:powertools-logging:1.15.0",
+			"software.amazon.lambda:powertools-tracing:1.15.0"
+
+	testImplementation "org.junit.jupiter:junit-jupiter:5.9.3",
+			"org.mockito:mockito-junit-jupiter:5.4.0"
+}
+
+test {
+	useJUnitPlatform ()
+}
