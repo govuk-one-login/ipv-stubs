@@ -35,6 +35,8 @@ Resources:
       PackageType: Zip
       Architectures:
         - arm64
+      MemorySize: 2048
+      Tracing: Active
       Environment:
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
