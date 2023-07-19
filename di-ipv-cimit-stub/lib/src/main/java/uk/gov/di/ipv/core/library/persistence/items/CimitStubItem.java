@@ -5,9 +5,8 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
 
-import java.util.List;
-
 import java.time.Instant;
+import java.util.List;
 
 @DynamoDbBean
 @Data
@@ -24,6 +23,7 @@ public class CimitStubItem implements DynamodbItem {
     public String getUserId() {
         return userId;
     }
+
     @DynamoDbSecondaryPartitionKey(indexNames = "contraIndicatorCode")
     public String getContraIndicatorCode() {
         return contraIndicatorCode;

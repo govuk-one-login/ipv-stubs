@@ -42,10 +42,7 @@ public class DataStore<T extends DynamodbItem> {
     }
 
     public void create(T item, Long tableTtl) {
-        item.setTtl(
-                Instant.now()
-                        .plusSeconds(tableTtl)
-                        .getEpochSecond());
+        item.setTtl(Instant.now().plusSeconds(tableTtl).getEpochSecond());
         table.putItem(item);
     }
 

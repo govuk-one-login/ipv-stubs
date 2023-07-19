@@ -33,7 +33,7 @@ tasks.withType(Jar).configureEach { Jar jar ->
 tasks.named('jar') {
 	manifest {
 		attributes('Implementation-Title': project.name,
-				'Implementation-Version': project.version)
+		'Implementation-Version': project.version)
 	}
 }
 
