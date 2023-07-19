@@ -1,0 +1,93 @@
+name: Public JWK Creator - Secure Pipeline build, push & Ship
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - public-jwk-creator/deploy/**
+      - public-jwk-creator/gradle/**
+      - public-jwk-creator/src/**
+      - public-jwk-creator/*
+      - .github/workflows/public-jwk-creator.yml
+  workflow_dispatch:
+
+jobs:
+  dockerBuildAndPush:
+    name: Docker build and push
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: eu-west-2
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+
+      - name: Set up AWS creds
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: ${{ secrets.PUB_JWK_CREATOR_GH_ACTIONS_ROLE_ARN }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Create tag
+        id: create-tag
+        run: |
+          IMAGE_TAG="${{ github.sha }}-$(date +'%Y-%m-%d-%H%M%S')"
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@main
+        with:
+          cosign-release: 'v1.9.0'
+
+      - name: Build, tag, sign and push image to Amazon ECR
+        working-directory: ./public-jwk-creator
+        env:
+          CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.PUB_JWK_CREATOR_ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          cosign sign --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Set up SAM cli
+        uses: aws-actions/setup-sam@v2
+
+      - name: sam fix https://github.com/aws/aws-sam-cli/issues/4527
+        run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
+
+      - name: SAM Validate
+        working-directory: ./public-jwk-creator/deploy
+        run: sam validate --region ${{ env.AWS_REGION }}
+
+      - name: SAM Package
+        working-directory: ./public-jwk-creator/deploy
+        env:
+          ARTIFACT_BUCKET: ${{ secrets.PUB_JWK_CREATOR_ARTIFACT_BUCKET_NAME }}
+        run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
+
+      - name: Update SAM template with ECR image
+        working-directory: ./public-jwk-creator/deploy
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.PUB_JWK_CREATOR_ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
+        run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
+
+      - name: Compress Template
+        working-directory: ./public-jwk-creator/deploy
+        run: zip template.zip cf-template.yaml
+
+      - name: Upload Compressed CloudFormation artifacts to S3
+        working-directory: ./public-jwk-creator/deploy
+        env:
+          ARTIFACT_BUCKET: ${{ secrets.PUB_JWK_CREATOR_ARTIFACT_BUCKET_NAME }}
+        run: aws s3 cp template.zip "s3://$ARTIFACT_BUCKET/template.zip" --metadata "repository=$GITHUB_REPOSITORY,commitsha=$GITHUB_SHA"
