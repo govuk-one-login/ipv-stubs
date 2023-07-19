@@ -31,7 +31,7 @@ Resources:
       FunctionName: !Sub "getContraIndicators-${Environment}"
       CodeUri: "../lambdas/get-contra-indicators"
       Handler: uk.gov.di.ipv.core.getcontraindicators.GetContraIndicatorsHandler::handleRequest
-      Runtime: java17
+      Runtime: java11
       PackageType: Zip
       Architectures:
         - arm64
@@ -59,7 +59,7 @@ Resources:
       FunctionName: !Sub "postMitigations-${Environment}"
       CodeUri: "../lambdas/post-mitigations"
       Handler: uk.gov.di.ipv.core.postmitigations.PostMitigationsHandler::handleRequest
-      Runtime: java17
+      Runtime: java11
       PackageType: Zip
       Architectures:
         - arm64
