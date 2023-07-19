@@ -56,7 +56,7 @@ jobs:
           cosign sign --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Set up SAM cli
-        uses: aws-actions/setup-sam@v1
+        uses: aws-actions/setup-sam@v2
 
       - name: sam fix https://github.com/aws/aws-sam-cli/issues/4527
         run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
