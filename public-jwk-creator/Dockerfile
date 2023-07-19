@@ -1,6 +1,11 @@
 FROM openjdk:17-jdk-slim AS build
 COPY . /home/gradle/src
 WORKDIR /home/gradle/src
+RUN apt-get update  && apt-get install -y unzip wget curl
+RUN wget https://services.gradle.org/distributions/gradle-8.0.2-bin.zip && \
+    unzip gradle-8.0.2-bin.zip && \
+    ./gradle-8.0.2/bin/gradle wrapper && \
+    rm -rf gradle-8.0.2*
 RUN ./gradlew build --no-daemon
 
 FROM openjdk:17-jdk-slim
