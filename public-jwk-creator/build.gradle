@@ -1,6 +1,7 @@
 plugins {
-	id 'java'
+	id 'idea'
 	id 'application'
+	id 'java'
 }
 
 group 'org.example'
@@ -10,8 +11,10 @@ repositories {
 	mavenCentral()
 }
 
+sourceCompatibility = 17
+
 dependencies {
-	implementation 'com.sparkjava:spark-core:2.9.3',
+	implementation  'com.sparkjava:spark-core:2.9.3',
 			'com.sparkjava:spark-template-mustache:2.7.1',
 			'com.nimbusds:nimbus-jose-jwt:9.21',
 			'org.slf4j:slf4j-simple:1.7.36'
@@ -21,6 +24,15 @@ dependencies {
 
 application {
 	mainClass = 'Main'
+}
+
+run {
+	debugOptions {
+		enabled = true
+		port = 5006
+		server = true
+		suspend = false
+	}
 }
 
 test {
