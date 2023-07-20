@@ -61,7 +61,7 @@ Resources:
       FunctionName: !Sub "postMitigations-${Environment}"
       CodeUri: "../lambdas/post-mitigations"
       Handler: uk.gov.di.ipv.core.postmitigations.PostMitigationsHandler::handleRequest
-      Runtime: java17
+      Runtime: java11
       PackageType: Zip
       Architectures:
         - arm64
