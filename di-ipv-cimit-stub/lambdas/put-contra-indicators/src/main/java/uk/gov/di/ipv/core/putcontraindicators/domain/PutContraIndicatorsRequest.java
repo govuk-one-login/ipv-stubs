@@ -1,4 +1,4 @@
-package uk.gov.di.ipv.core.putcontraindicatorcredential.domain;
+package uk.gov.di.ipv.core.putcontraindicators.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
