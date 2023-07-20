@@ -81,6 +81,36 @@ Resources:
         - SSMParameterReadPolicy:
             ParameterName: !Sub ${Environment}/stubs/*
 
+  # lambda to stub cimit putContraIndicators
+  PutContraIndicatorsFunction:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    DependsOn:
+      - "PutContraIndicatorsFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "putContraIndicators-${Environment}"
+      CodeUri: "../lambdas/put-contra-indicator-credential"
+      Handler: uk.gov.di.ipv.core.putcontraindicatorcredential.PutContraIndicatorsHandler::handleRequest
+      Runtime: java11
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      Environment:
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt CimitLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: !Sub ${Environment}/stubs/*
+
   GetContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -93,6 +123,13 @@ Resources:
     Properties:
       RetentionInDays: 14
       LogGroupName: !Sub "/aws/lambda/postMitigations-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  PutContraIndicatorsFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/putContraIndicators-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   CimitLambdaSecurityGroup:
