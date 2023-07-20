@@ -4,4 +4,6 @@ include "di-ipv-core-stub",
 		"experian-kbv-stub",
 		"experian-fraud-stub",
 		"di-ipv-cimit-stub:lambdas:get-contra-indicators",
-		"di-ipv-cimit-stub:lambdas:post-mitigations"
+		"di-ipv-cimit-stub:lambdas:post-mitigations",
+		"di-ipv-cimit-stub:lib"
+
