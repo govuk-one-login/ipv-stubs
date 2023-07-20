@@ -326,7 +326,7 @@ Resources:
   LoadBalancerListenerTargetGroupECS:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      HealthCheckEnabled: FALSE
+      HealthCheckEnabled: TRUE
       HealthCheckProtocol: HTTP
       Matcher:
         HttpCode: 200
