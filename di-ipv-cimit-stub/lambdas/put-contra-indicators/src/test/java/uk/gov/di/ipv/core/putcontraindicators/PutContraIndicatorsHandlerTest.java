@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.core.putcontraindicators;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -8,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsRequest;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsResponse;
-import com.google.gson.Gson;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -29,7 +29,8 @@ class PutContraIndicatorsHandlerTest {
                         .build();
 
         Gson gson = new Gson();
-        String expectedResponse = gson.toJson(PutContraIndicatorsResponse.builder().result("success").build());
+        String expectedResponse =
+                gson.toJson(PutContraIndicatorsResponse.builder().result("success").build());
 
         String actualResponse = classToTest.handleRequest(putContraIndicatorsRequest, mockContext);
 
