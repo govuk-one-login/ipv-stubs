@@ -26,6 +26,6 @@ class PutContraIndicatorsHandlerTest {
                         .signedJwt("signed_jwt")
                         .build();
 
-        assertEquals("Success", classToTest.handleRequest(putContraIndicatorsRequest, mockContext));
+        assertEquals("success", classToTest.handleRequest(putContraIndicatorsRequest, mockContext));
     }
 }

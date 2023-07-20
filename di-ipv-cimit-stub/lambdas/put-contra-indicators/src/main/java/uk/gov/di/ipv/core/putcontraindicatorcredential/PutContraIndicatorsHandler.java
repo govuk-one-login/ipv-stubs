@@ -15,6 +15,6 @@ public class PutContraIndicatorsHandler
     @Override
     public String handleRequest(PutContraIndicatorsRequest event, Context context) {
         LOGGER.info(new StringMapMessage().with("EVENT TYPE:", event.getClass().toString()));
-        return "Success";
+        return "success";
     }
 }

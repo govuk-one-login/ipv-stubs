@@ -89,7 +89,7 @@ Resources:
       - "PutContraIndicatorsFunctionLogGroup"
     Properties:
       FunctionName: !Sub "putContraIndicators-${Environment}"
-      CodeUri: "../lambdas/put-contra-indicator-credential"
+      CodeUri: "../lambdas/put-contra-indicators"
       Handler: uk.gov.di.ipv.core.putcontraindicatorcredential.PutContraIndicatorsHandler::handleRequest
       Runtime: java11
       PackageType: Zip
