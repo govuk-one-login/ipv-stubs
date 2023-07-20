@@ -25,7 +25,7 @@ class GetContraIndicatorsHandlerTest {
                         .userId("user_id")
                         .build();
 
-        GetCiResponse response = classToTest.handleRequest(getCiRequest, mockContext);
-        assertTrue(response.getContraIndicators().isEmpty());
+        GetCiResponse actual = classToTest.handleRequest(getCiRequest, mockContext);
+        assertTrue(actual.getContraIndicators().isEmpty());
     }
 }
