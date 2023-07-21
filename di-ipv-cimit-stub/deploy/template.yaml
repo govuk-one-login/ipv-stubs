@@ -23,10 +23,6 @@ Parameters:
     Description: "Environment Variables for lambda - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cimit/componentId"
-  CimitSigningKey:
-    Description: "Environment Variables for lambda - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cimit/signingKey"
 
 Resources:
   # lambda to stub cimit getContraIndicators
@@ -139,7 +135,7 @@ Resources:
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
           CIMIT_COMPONENT_ID: !Sub "${CimitComponentId}"
-          CIMIT_SIGNING_KEY: !Sub "${CimitSigningKey}"
+          CIMIT_SIGNING_KEY_PATH: !Sub "/stubs/core/cimit/signingKey"
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
