@@ -1,7 +1,8 @@
 package uk.gov.di.ipv.core.getcontraindicatorcredential;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -16,6 +17,9 @@ import org.apache.logging.log4j.message.StringMapMessage;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialRequest;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
@@ -29,8 +33,7 @@ import java.util.Map;
 
 import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_COMPONENT_ID;
 
-public class GetContraIndicatorCredentialHandler
-        implements RequestHandler<GetCiCredentialRequest, String> {
+public class GetContraIndicatorCredentialHandler implements RequestStreamHandler {
 
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String TYPE = "type";
@@ -38,6 +41,8 @@ public class GetContraIndicatorCredentialHandler
     private static final String VC_EVIDENCE = "evidence";
     private static final String VC = "vc";
 
+    private static final ObjectMapper mapper = new ObjectMapper();
+    public static final String FAILURE_RESPONSE = "Failure";
     private final ConfigService configService;
 
     public GetContraIndicatorCredentialHandler() {
@@ -49,22 +54,36 @@ public class GetContraIndicatorCredentialHandler
     }
 
     @Override
-    public String handleRequest(GetCiCredentialRequest event, Context context) {
-        LOGGER.info(new StringMapMessage().with("EVENT TYPE:", event.getClass().toString()));
-
-        SignedJWT signedJWT;
+    public void handleRequest(InputStream input, OutputStream output, Context context)
+            throws IOException {
+        LOGGER.info(
+                new StringMapMessage().with("Function invoked:", "GetContraIndicatorCredential"));
+        GetCiCredentialRequest event = null;
+        String response = null;
         try {
-            signedJWT = generateJWT(getValidClaimsSetValues(event.getUserId()));
-        } catch (Exception ex) {
+            event = mapper.readValue(input, GetCiCredentialRequest.class);
+        } catch (Exception e) {
             LOGGER.error(
-                    new StringMapMessage()
-                            .with(
-                                    "errorDescription",
-                                    "Failed at stub during creation of signedJwt. Error message:"
-                                            + ex.getMessage()));
-            return "Failure";
+                    new StringMapMessage().with("Unable to parse input request", e.getMessage()));
+            response = FAILURE_RESPONSE;
         }
-        return signedJWT.serialize();
+
+        if (response == null || !response.equals(FAILURE_RESPONSE)) {
+            SignedJWT signedJWT;
+            try {
+                signedJWT = generateJWT(getValidClaimsSetValues(event.getUserId()));
+                response = signedJWT.serialize();
+            } catch (Exception ex) {
+                LOGGER.error(
+                        new StringMapMessage()
+                                .with(
+                                        "errorDescription",
+                                        "Failed at stub during creation of signedJwt. Error message:"
+                                                + ex.getMessage()));
+                response = FAILURE_RESPONSE;
+            }
+        }
+        mapper.writeValue(output, response);
     }
 
     private SignedJWT generateJWT(Map<String, Object> claimsSetValues)

@@ -1,10 +1,14 @@
 package uk.gov.di.ipv.core.getcontraindicators.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class GetCiResponse {
-    private final List<ContraIndicatorItem> contraIndicators;
+    private List<ContraIndicatorItem> contraIndicators;
 }

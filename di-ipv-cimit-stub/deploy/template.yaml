@@ -53,7 +53,7 @@ Resources:
       Policies:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
-            ParameterName: !Sub ${Environment}/stubs/*
+            ParameterName: stubs/core/*
 
   # lambda to stub cimit postMitigations
   PostMitigationsFunction:
@@ -83,7 +83,7 @@ Resources:
       Policies:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
-            ParameterName: !Sub ${Environment}/stubs/*
+            ParameterName: stubs/core/*
 
   # lambda to stub cimit putContraIndicators
   PutContraIndicatorsFunction:
@@ -113,7 +113,7 @@ Resources:
       Policies:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
-            ParameterName: !Sub ${Environment}/stubs/*
+            ParameterName: stubs/core/*
 
   # lambda to stub cimit getContraIndicatorCredential
   GetContraIndicatorCredentialFunction:
@@ -135,7 +135,7 @@ Resources:
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
           CIMIT_COMPONENT_ID: !Sub "${CimitComponentId}"
-          CIMIT_SIGNING_KEY_PATH: !Sub "/stubs/core/cimit/signingKey"
+          CIMIT_SIGNING_KEY_PATH: "/stubs/core/cimit/signingKey"
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -145,7 +145,7 @@ Resources:
       Policies:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
-            ParameterName: !Sub ${Environment}/stubs/*
+            ParameterName: stubs/core/*
 
   GetContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
