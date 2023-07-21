@@ -19,7 +19,24 @@ Parameters:
     Description: The name of the environment to deploy to.
     Type: String
     AllowedPattern: ((production)|(build)|(dev.*))
+  PermissionsBoundary:
+    Description: "The ARN of the permissions boundary to apply when creating IAM roles"
+    Type: String
+    Default: "none"
 
+Conditions:
+  IsDevelopment: !Or
+    - !Equals [ !Ref AWS::AccountId, "130355686670"]
+    - !Equals [ !Ref AWS::AccountId, "175872367215"]
+  IsOldDevelopment: !Equals [ !Ref AWS::AccountId, "130355686670"]
+  IsNewDevelopment: !Equals [ !Ref AWS::AccountId, "175872367215"]
+  IsNotDevelopment: !Not [ !Condition IsDevelopment ]
+  IsProduction: !Equals [ !Ref Environment, "production"]
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
 Resources:
   # lambda to stub cimit getContraIndicators
   GetContraIndicatorsFunction:
@@ -228,3 +245,111 @@ Resources:
             Condition:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+
+  StubManagementAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
+      Name: !Sub IPV Core Stub Management API Gateway ${Environment}
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds: !If
+          - IsOldDevelopment
+          - - !ImportValue "network-shared-development-ApiGatewayVpcEndpointId"
+          - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+      DefinitionBody:
+        openapi: "3.0.3" # workaround to get `sam validate` to work
+        paths: # workaround to get `sam validate` to work
+          /foo:
+            bar: baz # workaround to get `sam validate` to work
+        Fn::Transform:
+          Name: "AWS::Include"
+          Parameters:
+            Location: "../openAPI/core-stub_management-internal.yaml"
+      # Set authentication settings
+      Auth:
+        ResourcePolicy:
+          CustomStatements:
+            - Action: 'execute-api:Invoke'
+              Effect: Allow
+              Principal: '*'
+              Resource:
+                - 'execute-api:/*'
+            - Action: 'execute-api:Invoke'
+              Effect: Deny
+              Principal: '*'
+              Resource:
+                - 'execute-api:/*'
+              Condition:
+                StringNotEquals:
+                  'aws:SourceVpce': !If
+                    - IsOldDevelopment
+                    - !ImportValue "network-shared-development-ApiGatewayVpcEndpointId"
+                    - Fn::ImportValue:
+                        !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+      # Set the API Gateway stage name, trac'g, access log settings
+      StageName: !Sub ${Environment}
+      TracingEnabled: true
+      AccessLogSetting:
+        DestinationArn: !GetAtt StubManagementAPILogGroup.Arn
+        Format: >-
+          {
+          "requestId":"$context.requestId",
+          "ip":"$context.identity.sourceIp",
+          "requestTime":"$context.requestTime",
+          "httpMethod":"$context.httpMethod",
+          "path":"$context.path",
+          "routeKey":"$context.routeKey",
+          "status":"$context.status",
+          "protocol":"$context.protocol",
+          "responseLatency":"$context.responseLatency",
+          "responseLength":"$context.responseLength"
+          }
+
+  StubManagementAPILogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      #Set the log group name based on the environment
+      LogGroupName: !If
+        - IsNewDevelopment
+        - !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-CoreCimitStubPrivate-API-GW-AccessLogs
+        - !Sub /aws/apigateway/${AWS::StackName}-CoreCimitStubPrivate-API-GW-AccessLogs
+      RetentionInDays: 14
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  StubManagementAPILogGroupSubscriptionFilter:
+    Type: AWS::Logs::SubscriptionFilter
+    Condition: IsNotDevelopment
+    Properties:
+      # Set the destination for the log filter subscription
+      DestinationArn: "arn:aws:logs:eu-west-2:885513274347:destination:csls_cw_logs_destination_prodpython"
+      FilterPattern: ""
+      LogGroupName: !Ref StubManagementAPILogGroup
+
+  StubManagementApiGateWayIamRoleStubManagementApiGateWayIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      # Define the IAM role for the API Gateway
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      #Set the policies for the IAM Role
+      Policies:
+        - PolicyName: AllowApiGatewayToInvokeStartSyncExecution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 'states:StartSyncExecution'
+                Resource:  "arn:aws:lambda:eu-west-2:175872367215:function:putContraIndicators-${Environment}"
+      # Set the permissions boundary if specified
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
