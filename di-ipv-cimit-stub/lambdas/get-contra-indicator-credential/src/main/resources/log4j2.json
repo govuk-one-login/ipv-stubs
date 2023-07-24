@@ -22,7 +22,7 @@
         }
       ],
       "Root": {
-        "level": "debug",
+        "level": "info",
         "AppenderRef": {
           "ref": "JsonAppender"
         }
