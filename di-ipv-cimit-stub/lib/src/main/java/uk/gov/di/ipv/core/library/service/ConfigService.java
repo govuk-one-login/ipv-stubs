@@ -5,10 +5,12 @@ import software.amazon.lambda.powertools.parameters.SSMProvider;
 import uk.gov.di.ipv.core.library.config.EnvironmentVariable;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
-import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_SIGNING_KEY_PATH;
+import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_PARAM_BASE_PATH;
 
 public class ConfigService {
 
+    public static final String CIMIT_SIGNING_KEY_PARAM = "signingKey";
+    public static final String CIMIT_COMPONENT_ID_PARAM = "componentId";
     private final SSMProvider ssmProvider;
 
     public ConfigService(SSMProvider ssmProvider) {
@@ -19,17 +21,18 @@ public class ConfigService {
         this(ParamManager.getSsmProvider().defaultMaxAge(3, MINUTES));
     }
 
-    public SSMProvider getSsmProvider() {
-        return ssmProvider;
-    }
-
     public String getEnvironmentVariable(EnvironmentVariable environmentVariable) {
         return System.getenv(environmentVariable.name());
     }
 
+    public String getCimitComponentId() {
+        String cimitParamBasePath = getEnvironmentVariable(CIMIT_PARAM_BASE_PATH);
+        return getSsmParameter(cimitParamBasePath + CIMIT_COMPONENT_ID_PARAM);
+    }
+
     public String getCimitSigningKey() {
-        String cimitSigningKeyPath = getEnvironmentVariable(CIMIT_SIGNING_KEY_PATH);
-        return getSsmParameter(cimitSigningKeyPath);
+        String cimitParamBasePath = getEnvironmentVariable(CIMIT_PARAM_BASE_PATH);
+        return getSsmParameter(cimitParamBasePath + CIMIT_SIGNING_KEY_PARAM);
     }
 
     private String getSsmParameter(String ssmParamKey, String... pathProperties) {

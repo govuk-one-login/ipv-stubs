@@ -14,13 +14,15 @@ import uk.org.webcompere.systemstubs.properties.SystemProperties;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
-import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_SIGNING_KEY_PATH;
+import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_PARAM_BASE_PATH;
+import static uk.gov.di.ipv.core.library.service.ConfigService.CIMIT_COMPONENT_ID_PARAM;
+import static uk.gov.di.ipv.core.library.service.ConfigService.CIMIT_SIGNING_KEY_PARAM;
 
 @ExtendWith({SystemStubsExtension.class, MockitoExtension.class})
 class ConfigServiceTest {
 
     private static final String CIMIT_SIGNING_KEY = "wwmTDFmsmsdqewxaSSDmddsds";
-    public static final String CIMIT_SIGNING_KEY_PATH_VALUE = "/stubs/core";
+    public static final String CIMIT_PARAM_BASE_PATH_VALUE = "/stubs/core/cimit/";
     public static final String CIMIT_COMPONENT_ID_VALUE = "http://cimit.test";
 
     @SystemStub private EnvironmentVariables environmentVariables;
@@ -39,27 +41,38 @@ class ConfigServiceTest {
     @Test
     void getEnvironmentVariable_success() {
         environmentVariables.set(
-                EnvironmentVariable.CIMIT_COMPONENT_ID.name(), CIMIT_COMPONENT_ID_VALUE);
+                EnvironmentVariable.CIMIT_PARAM_BASE_PATH.name(), CIMIT_PARAM_BASE_PATH_VALUE);
 
         assertEquals(
-                CIMIT_COMPONENT_ID_VALUE,
-                configService.getEnvironmentVariable(EnvironmentVariable.CIMIT_COMPONENT_ID));
+                CIMIT_PARAM_BASE_PATH_VALUE,
+                configService.getEnvironmentVariable(EnvironmentVariable.CIMIT_PARAM_BASE_PATH));
+    }
+
+    @Test
+    void getCimitComponentID_success() {
+        environmentVariables.set(CIMIT_PARAM_BASE_PATH.name(), CIMIT_PARAM_BASE_PATH_VALUE);
+
+        when(ssmProvider.get(CIMIT_PARAM_BASE_PATH_VALUE + CIMIT_COMPONENT_ID_PARAM))
+                .thenReturn(CIMIT_COMPONENT_ID_VALUE);
+
+        assertEquals(CIMIT_COMPONENT_ID_VALUE, configService.getCimitComponentId());
     }
 
     @Test
     void getCimitSigningKey_success() {
-        environmentVariables.set(CIMIT_SIGNING_KEY_PATH.name(), CIMIT_SIGNING_KEY_PATH_VALUE);
+        environmentVariables.set(CIMIT_PARAM_BASE_PATH.name(), CIMIT_PARAM_BASE_PATH_VALUE);
 
-        when(ssmProvider.get(CIMIT_SIGNING_KEY_PATH_VALUE)).thenReturn(CIMIT_SIGNING_KEY);
+        when(ssmProvider.get(CIMIT_PARAM_BASE_PATH_VALUE + CIMIT_SIGNING_KEY_PARAM))
+                .thenReturn(CIMIT_SIGNING_KEY);
 
         assertEquals(CIMIT_SIGNING_KEY, configService.getCimitSigningKey());
     }
 
     @Test
     void getCimitSigningKey_failure() {
-        environmentVariables.set(CIMIT_SIGNING_KEY_PATH.name(), CIMIT_SIGNING_KEY_PATH_VALUE);
+        environmentVariables.set(CIMIT_PARAM_BASE_PATH.name(), CIMIT_PARAM_BASE_PATH_VALUE);
 
-        when(ssmProvider.get(CIMIT_SIGNING_KEY_PATH_VALUE)).thenThrow(new RuntimeException());
+        when(ssmProvider.get(CIMIT_PARAM_BASE_PATH_VALUE)).thenThrow(new RuntimeException());
 
         assertThrows(RuntimeException.class, () -> configService.getCimitSigningKey());
     }

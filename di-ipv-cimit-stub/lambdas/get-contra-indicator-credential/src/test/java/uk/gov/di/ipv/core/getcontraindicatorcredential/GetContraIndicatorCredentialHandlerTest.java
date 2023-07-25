@@ -10,7 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialRequest;
-import uk.gov.di.ipv.core.library.config.EnvironmentVariable;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
@@ -48,8 +47,7 @@ class GetContraIndicatorCredentialHandlerTest {
     @Test
     void shouldReturnSignedJwtWhenProvidedValidRequest() throws IOException {
         when(mockConfigService.getCimitSigningKey()).thenReturn(CIMIT_PRIVATE_KEY);
-        when(mockConfigService.getEnvironmentVariable(EnvironmentVariable.CIMIT_COMPONENT_ID))
-                .thenReturn(CIMIT_COMPONENT_ID);
+        when(mockConfigService.getCimitComponentId()).thenReturn(CIMIT_COMPONENT_ID);
 
         GetCiCredentialRequest getCiCredentialRequest =
                 GetCiCredentialRequest.builder()
@@ -66,7 +64,7 @@ class GetContraIndicatorCredentialHandlerTest {
                         String.class);
 
         verify(mockConfigService).getCimitSigningKey();
-        verify(mockConfigService).getEnvironmentVariable(EnvironmentVariable.CIMIT_COMPONENT_ID);
+        verify(mockConfigService).getCimitComponentId();
 
         assertNotNull(response);
         assertTrue(!response.equals("Failure"));

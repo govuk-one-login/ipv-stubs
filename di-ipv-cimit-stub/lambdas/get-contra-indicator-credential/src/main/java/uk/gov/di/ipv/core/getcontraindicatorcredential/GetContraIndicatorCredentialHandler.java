@@ -31,8 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_COMPONENT_ID;
-
 public class GetContraIndicatorCredentialHandler implements RequestStreamHandler {
 
     private static final Logger LOGGER = LogManager.getLogger();
@@ -125,7 +123,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                 JWTClaimNames.SUBJECT,
                 userId,
                 JWTClaimNames.ISSUER,
-                configService.getEnvironmentVariable(CIMIT_COMPONENT_ID),
+                configService.getCimitComponentId(),
                 JWTClaimNames.ISSUED_AT,
                 OffsetDateTime.now().toEpochSecond(),
                 JWTClaimNames.NOT_BEFORE,
