@@ -21,6 +21,9 @@ Sample putContraIndicators PUT request should look like
 Sample getContraIndicators GET request should look like
 ```
 {
+  "govuk_signin_journey_id": "value1",
+  "ip_address": "value2",
+  "user_id": "value3"
 }
 ```
 Sample getContraIndicatorCredential GET request should look like
