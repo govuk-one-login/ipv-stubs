@@ -109,6 +109,32 @@ class GetContraIndicatorCredentialHandlerTest {
         assertClaimsJWTIsValid(contraIndicatorsVC);
     }
 
+    @Test
+    void shouldFailForWrongCimitKey() throws IOException {
+        when(mockConfigService.getCimitSigningKey()).thenReturn("Invalid_cimit_key");
+        when(mockConfigService.getCimitComponentId()).thenReturn(CIMIT_COMPONENT_ID);
+
+        GetCiCredentialRequest getCiCredentialRequest =
+                GetCiCredentialRequest.builder()
+                        .govukSigninJourneyId("govuk_signin_journey_id")
+                        .ipAddress("ip_address")
+                        .userId(USER_ID)
+                        .build();
+
+        var response =
+                makeRequest(
+                        classToTest,
+                        mapper.writeValueAsString(getCiCredentialRequest),
+                        mockContext,
+                        String.class);
+
+        verify(mockConfigService).getCimitSigningKey();
+        verify(mockConfigService).getCimitComponentId();
+
+        assertNotNull(response);
+        assertTrue(response.equals("Failure"));
+    }
+
     private <T extends String> T makeRequest(
             RequestStreamHandler handler, String request, Context context, Class<T> classType)
             throws IOException {
