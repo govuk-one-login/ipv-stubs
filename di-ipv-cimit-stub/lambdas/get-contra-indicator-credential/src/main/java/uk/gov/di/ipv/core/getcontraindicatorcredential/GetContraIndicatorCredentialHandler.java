@@ -15,6 +15,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.StringMapMessage;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialRequest;
+import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
+import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 
 import java.io.IOException;
@@ -26,6 +28,7 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,22 +36,27 @@ import java.util.Map;
 
 public class GetContraIndicatorCredentialHandler implements RequestStreamHandler {
 
+    public static final String SECURITY_CHECK_CREDENTIAL_VC_TYPE = "SecurityCheckCredential";
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String TYPE = "type";
-    private static final String SECURITY_CHECK_CREDENTIAL_VC_TYPE = "SecurityCheckCredential";
     private static final String VC_EVIDENCE = "evidence";
+    private static final String CONTRA_INDICATORS = "contraIndicator";
     private static final String VC = "vc";
 
     private static final ObjectMapper mapper = new ObjectMapper();
     public static final String FAILURE_RESPONSE = "Failure";
     private final ConfigService configService;
+    private final CimitStubItemService cimitStubItemService;
 
     public GetContraIndicatorCredentialHandler() {
         this.configService = new ConfigService();
+        this.cimitStubItemService = new CimitStubItemService(configService);
     }
 
-    public GetContraIndicatorCredentialHandler(ConfigService configService) {
+    public GetContraIndicatorCredentialHandler(
+            ConfigService configService, CimitStubItemService cimitStubItemService) {
         this.configService = configService;
+        this.cimitStubItemService = cimitStubItemService;
     }
 
     @Override
@@ -131,15 +139,39 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                 JWTClaimNames.EXPIRATION_TIME,
                 OffsetDateTime.now().plusSeconds(15 * 60).toEpochSecond(),
                 VC,
-                generateVC());
+                generateVC(userId));
     }
 
-    private Map<String, Object> generateVC() {
+    private Map<String, Object> generateVC(String userId) {
         Map<String, Object> vc = new LinkedHashMap<>();
         vc.put(TYPE, new String[] {SECURITY_CHECK_CREDENTIAL_VC_TYPE});
         Map<String, Object> evidence = new LinkedHashMap<>();
         evidence.put(TYPE, "SecurityCheck");
+        evidence.put(CONTRA_INDICATORS, getContraIndicators(userId));
         vc.put(VC_EVIDENCE, List.of(evidence));
         return vc;
+    }
+
+    private List<Map<String, Object>> getContraIndicators(String userId) {
+        List<Map<String, Object>> contraIndicators = new ArrayList<>();
+        Map<String, Object> contraIndicator = new LinkedHashMap<>();
+        List<CimitStubItem> cimitStubItems = cimitStubItemService.getCIsForUserId(userId);
+        for (CimitStubItem cimitStubItem : cimitStubItems) {
+            contraIndicator.put("code", cimitStubItem.getContraIndicatorCode());
+            contraIndicator.put("issuanceDate", cimitStubItem.getIssuanceDate());
+            contraIndicator.put("mitigation", getMitigations(cimitStubItem.getMitigations()));
+            contraIndicators.add(contraIndicator);
+        }
+        return contraIndicators;
+    }
+
+    private List<Map<String, Object>> getMitigations(List<String> mitigationCodes) {
+        List<Map<String, Object>> mitigations = new ArrayList<>();
+        Map<String, Object> mitigation = new LinkedHashMap<>();
+        for (String mitigationCode : mitigationCodes) {
+            mitigation.put("code", mitigationCode);
+            mitigations.add(mitigation);
+        }
+        return mitigations;
     }
 }
