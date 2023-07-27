@@ -34,3 +34,7 @@ Sample getContraIndicatorCredential GET request should look like
   "user_id": "value3"
 }
 ```
+
+## Environment variables
+
+* IS_LOCAL - This only needs to be assigned when running locally.

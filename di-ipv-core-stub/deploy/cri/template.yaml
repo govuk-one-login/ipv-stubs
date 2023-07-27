@@ -350,7 +350,6 @@ Resources:
 
   # http api gateway - redirects to an internal alb
   #
-
   # api domain entries / mapping
   CoreStubApiDomain:
     Type: AWS::ApiGatewayV2::DomainName
@@ -634,9 +633,9 @@ Resources:
           - Name: API_KEY_CRI_PASSPORTA_BUILD
             Value: !Ref ApiKeyCriPassportBuild
           - Name: API_KEY_CRI_TOY_BUILD
-          - Value: !Ref ApiKeyCriToyBuild
+            Value: !Ref ApiKeyCriToyBuild
           - Name: API_KEY_CRI_TOY_STAGING
-          - Value: !Ref ApiKeyCriToyStaging
+            Value: !Ref ApiKeyCriToyStaging
           - Name: API_KEY_CRI_ADDRESS_STAGING
             Value: !Ref ApiKeyCriAddressStaging
           - Name: API_KEY_CRI_KBV_STAGING

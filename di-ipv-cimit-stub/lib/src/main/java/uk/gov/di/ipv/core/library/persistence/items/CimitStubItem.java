@@ -12,10 +12,10 @@ import java.time.Instant;
 import java.util.List;
 
 @DynamoDbBean
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class CimitStubItem implements DynamodbItem {
     private String userId;
     private String contraIndicatorCode;
