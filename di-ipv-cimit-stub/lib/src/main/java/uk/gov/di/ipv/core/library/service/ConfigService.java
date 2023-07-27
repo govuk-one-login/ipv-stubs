@@ -6,6 +6,7 @@ import uk.gov.di.ipv.core.library.config.EnvironmentVariable;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_PARAM_BASE_PATH;
+import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.IS_LOCAL;
 
 public class ConfigService {
 
@@ -41,5 +42,9 @@ public class ConfigService {
 
     protected String resolvePath(String path, String... pathProperties) {
         return String.format(path, (Object[]) pathProperties);
+    }
+
+    public boolean isRunningLocally() {
+        return Boolean.parseBoolean(getEnvironmentVariable(IS_LOCAL));
     }
 }

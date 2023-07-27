@@ -11,10 +11,14 @@ import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
 import uk.gov.di.ipv.core.library.persistence.items.DynamodbItem;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -39,6 +43,25 @@ public class DataStore<T extends DynamodbItem> {
         this.table =
                 dynamoDbEnhancedClient.table(
                         tableName, TableSchema.fromBean(this.typeParameterClass));
+    }
+
+    public static DynamoDbEnhancedClient getClient(boolean isRunningLocally) {
+        DynamoDbClient client =
+                isRunningLocally
+                        ? createLocalDbClient()
+                        : DynamoDbClient.builder()
+                                .httpClient(UrlConnectionHttpClient.create())
+                                .build();
+
+        return DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
+    }
+
+    private static DynamoDbClient createLocalDbClient() {
+        return DynamoDbClient.builder()
+                .endpointOverride(URI.create(LOCALHOST_URI))
+                .httpClient(UrlConnectionHttpClient.create())
+                .region(Region.EU_WEST_2)
+                .build();
     }
 
     public void create(T item, Long tableTtl) {

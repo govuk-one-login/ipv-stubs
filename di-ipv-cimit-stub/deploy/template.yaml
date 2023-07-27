@@ -127,6 +127,7 @@ Resources:
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
           CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
+          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -137,6 +138,10 @@ Resources:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/cimit/*
+        - DynamoDBReadPolicy:
+            TableName: !Ref CimitStubTable
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
 
   GetContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -205,6 +210,7 @@ Resources:
         SSEType: KMS
         KMSMasterKeyId: !GetAtt DynamoDBKmsKey.Arn
 
+  # kms key for DynamoDB
   DynamoDBKmsKey:
     Type: AWS::KMS::Key
     Properties:
