@@ -350,7 +350,6 @@ Resources:
 
   # http api gateway - redirects to an internal alb
   #
-
   # api domain entries / mapping
   CoreStubApiDomain:
     Type: AWS::ApiGatewayV2::DomainName
