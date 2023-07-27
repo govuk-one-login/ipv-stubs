@@ -11,10 +11,16 @@ import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
+import uk.gov.di.ipv.core.library.config.ConfigurationVariable;
 import uk.gov.di.ipv.core.library.persistence.items.DynamodbItem;
+import uk.gov.di.ipv.core.library.service.ConfigService;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -27,22 +33,49 @@ public class DataStore<T extends DynamodbItem> {
     private static boolean isRunningLocally;
 
     private final Class<T> typeParameterClass;
+
+    private final ConfigService configService;
+
     private final DynamoDbTable<T> table;
 
     public DataStore(
             String tableName,
             Class<T> typeParameterClass,
             DynamoDbEnhancedClient dynamoDbEnhancedClient,
-            boolean isRunningLocally) {
+            boolean isRunningLocally,
+            ConfigService configService) {
         this.typeParameterClass = typeParameterClass;
+        this.configService = configService;
         DataStore.isRunningLocally = isRunningLocally;
         this.table =
                 dynamoDbEnhancedClient.table(
                         tableName, TableSchema.fromBean(this.typeParameterClass));
     }
 
-    public void create(T item, Long tableTtl) {
-        item.setTtl(Instant.now().plusSeconds(tableTtl).getEpochSecond());
+    public static DynamoDbEnhancedClient getClient(boolean isRunningLocally) {
+        DynamoDbClient client =
+                isRunningLocally
+                        ? createLocalDbClient()
+                        : DynamoDbClient.builder()
+                                .httpClient(UrlConnectionHttpClient.create())
+                                .build();
+
+        return DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
+    }
+
+    private static DynamoDbClient createLocalDbClient() {
+        return DynamoDbClient.builder()
+                .endpointOverride(URI.create(LOCALHOST_URI))
+                .httpClient(UrlConnectionHttpClient.create())
+                .region(Region.EU_WEST_2)
+                .build();
+    }
+
+    public void create(T item, ConfigurationVariable tableTtl) {
+        item.setTtl(
+                Instant.now()
+                        .plusSeconds(Long.parseLong(configService.getSsmParameter(tableTtl)))
+                        .getEpochSecond());
         table.putItem(item);
     }
 

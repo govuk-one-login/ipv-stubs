@@ -2,10 +2,12 @@ package uk.gov.di.ipv.core.library.service;
 
 import software.amazon.lambda.powertools.parameters.ParamManager;
 import software.amazon.lambda.powertools.parameters.SSMProvider;
+import uk.gov.di.ipv.core.library.config.ConfigurationVariable;
 import uk.gov.di.ipv.core.library.config.EnvironmentVariable;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_PARAM_BASE_PATH;
+import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.IS_LOCAL;
 
 public class ConfigService {
 
@@ -39,7 +41,16 @@ public class ConfigService {
         return ssmProvider.get(resolvePath(ssmParamKey, pathProperties));
     }
 
+    public String getSsmParameter(
+            ConfigurationVariable configurationVariable, String... pathProperties) {
+        return getSsmParameter(configurationVariable.getPath(), pathProperties);
+    }
+
     protected String resolvePath(String path, String... pathProperties) {
         return String.format(path, (Object[]) pathProperties);
+    }
+
+    public boolean isRunningLocally() {
+        return Boolean.parseBoolean(getEnvironmentVariable(IS_LOCAL));
     }
 }
