@@ -1,7 +1,7 @@
 package uk.gov.di.ipv.core.library.config;
 
 public enum ConfigurationVariable {
-    CIMIT_STUB_SESSION_TTL("/stubs/core/cimit/cimitStubTtl");
+    CIMIT_STUB_TTL("/stubs/core/cimit/cimitStubTtl");
 
     private final String path;
 

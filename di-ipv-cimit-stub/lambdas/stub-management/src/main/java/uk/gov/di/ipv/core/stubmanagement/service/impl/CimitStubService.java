@@ -7,7 +7,7 @@ import uk.gov.di.ipv.core.library.service.ConfigService;
 import java.time.Instant;
 import java.util.List;
 
-import static uk.gov.di.ipv.core.library.config.ConfigurationVariable.CIMIT_STUB_SESSION_TTL;
+import static uk.gov.di.ipv.core.library.config.ConfigurationVariable.CIMIT_STUB_TTL;
 import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_STUB_TABLE_NAME;
 
 public class CimitStubService {
@@ -49,7 +49,7 @@ public class CimitStubService {
                         .mitigations(mitigations)
                         .build();
 
-        dataStore.create(cimitStubItem, CIMIT_STUB_SESSION_TTL);
+        dataStore.create(cimitStubItem, CIMIT_STUB_TTL);
         return cimitStubItem;
     }
 

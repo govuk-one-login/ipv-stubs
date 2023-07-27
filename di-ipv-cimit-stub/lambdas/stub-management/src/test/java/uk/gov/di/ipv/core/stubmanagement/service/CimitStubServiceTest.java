@@ -28,7 +28,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.di.ipv.core.library.config.ConfigurationVariable.CIMIT_STUB_SESSION_TTL;
+import static uk.gov.di.ipv.core.library.config.ConfigurationVariable.CIMIT_STUB_TTL;
 
 @ExtendWith(MockitoExtension.class)
 public class CimitStubServiceTest {
@@ -63,7 +63,7 @@ public class CimitStubServiceTest {
                 cimitStubService.persistCimitStub(
                         userId, contraIndicatorCode, issuanceDate, mitigations);
 
-        verify(mockDataStore).create(any(), eq(CIMIT_STUB_SESSION_TTL));
+        verify(mockDataStore).create(any(), eq(CIMIT_STUB_TTL));
         verify(mockDataStore, never()).update(any());
 
         assertEquals(userId, resultItem.getUserId());
@@ -115,7 +115,7 @@ public class CimitStubServiceTest {
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
         userService.addUserCis(userId, userCisRequestList);
 
-        verify(mockDataStore, times(1)).create(any(), eq(CIMIT_STUB_SESSION_TTL));
+        verify(mockDataStore, times(1)).create(any(), eq(CIMIT_STUB_TTL));
     }
 
     @Test
