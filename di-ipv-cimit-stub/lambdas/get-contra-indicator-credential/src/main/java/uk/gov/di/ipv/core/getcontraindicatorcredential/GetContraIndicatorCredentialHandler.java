@@ -154,9 +154,9 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
 
     private List<Map<String, Object>> getContraIndicators(String userId) {
         List<Map<String, Object>> contraIndicators = new ArrayList<>();
-        Map<String, Object> contraIndicator = new LinkedHashMap<>();
         List<CimitStubItem> cimitStubItems = cimitStubItemService.getCIsForUserId(userId);
         for (CimitStubItem cimitStubItem : cimitStubItems) {
+            Map<String, Object> contraIndicator = new LinkedHashMap<>();
             contraIndicator.put("code", cimitStubItem.getContraIndicatorCode());
             contraIndicator.put("issuanceDate", cimitStubItem.getIssuanceDate());
             contraIndicator.put("mitigation", getMitigations(cimitStubItem.getMitigations()));
@@ -167,8 +167,8 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
 
     private List<Map<String, Object>> getMitigations(List<String> mitigationCodes) {
         List<Map<String, Object>> mitigations = new ArrayList<>();
-        Map<String, Object> mitigation = new LinkedHashMap<>();
         for (String mitigationCode : mitigationCodes) {
+            Map<String, Object> mitigation = new LinkedHashMap<>();
             mitigation.put("code", mitigationCode);
             mitigations.add(mitigation);
         }

@@ -1,7 +1,5 @@
 package uk.gov.di.ipv.core.library.service;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import uk.gov.di.ipv.core.library.persistence.DataStore;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 
@@ -10,7 +8,6 @@ import java.util.List;
 import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_STUB_TABLE_NAME;
 
 public class CimitStubItemService {
-    private static final Logger LOGGER = LogManager.getLogger();
 
     private final DataStore<CimitStubItem> dataStore;
 
