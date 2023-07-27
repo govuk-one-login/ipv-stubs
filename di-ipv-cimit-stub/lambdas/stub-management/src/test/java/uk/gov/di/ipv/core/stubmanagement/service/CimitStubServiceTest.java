@@ -46,7 +46,7 @@ public class CimitStubServiceTest {
 
         when(mockDataStore.getItems(userId)).thenReturn(expectedItems);
 
-        List<CimitStubItem> actualItems = cimitStubService.getCimitStubItem(userId);
+        List<CimitStubItem> actualItems = cimitStubService.getCimitStubItems(userId);
 
         verify(mockDataStore, times(1)).getItems(userId);
         assertEquals(expectedItems, actualItems);

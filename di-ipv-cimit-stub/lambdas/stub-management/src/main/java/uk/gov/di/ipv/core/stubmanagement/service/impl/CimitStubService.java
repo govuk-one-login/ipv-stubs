@@ -31,7 +31,7 @@ public class CimitStubService {
         this.configService = configService;
     }
 
-    public List<CimitStubItem> getCimitStubItem(String userId) {
+    public List<CimitStubItem> getCimitStubItems(String userId) {
         return dataStore.getItems(userId);
     }
 

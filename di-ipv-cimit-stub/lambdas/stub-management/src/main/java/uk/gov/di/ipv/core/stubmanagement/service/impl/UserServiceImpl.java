@@ -34,9 +34,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void addUserCis(String userId, List<UserCisRequest> userCisRequest) {
-        List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItem(userId);
+        List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItems(userId);
         if (!cimitStubItems.isEmpty()) {
-            throw new DataAlreadyExistException("User already exists.");
+            throw new DataAlreadyExistException(
+                    "User already exists, instead try calling update api.");
         }
         userCisRequest.forEach(
                 user -> {
@@ -51,7 +52,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUserCis(String userId, List<UserCisRequest> userCisRequest) {
-        List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItem(userId);
+        List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItems(userId);
 
         userCisRequest.forEach(
                 user -> {
@@ -73,11 +74,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public void addUserMitigation(
             String userId, String ci, UserMitigationRequest userMitigationRequest) {
-        List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItem(userId);
+        List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItems(userId);
         Optional<CimitStubItem> cimitStubItem = getUserIdAndCodeFromDatabase(cimitStubItems, ci);
         if (cimitStubItem.isPresent()) {
             if (!cimitStubItem.get().getMitigations().isEmpty()) {
-                throw new DataAlreadyExistException("Mitigations already exists.");
+                throw new DataAlreadyExistException(
+                        "Mitigations already exists, instead try calling update api.");
             }
             cimitStubItem.get().setMitigations(userMitigationRequest.getMitigations());
             cimitStubService.updateCimitStub(cimitStubItem.get());
@@ -90,7 +92,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateUserMitigation(
             String userId, String ci, UserMitigationRequest userMitigationRequest) {
-        List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItem(userId);
+        List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItems(userId);
         Optional<CimitStubItem> cimitStubItem = getUserIdAndCodeFromDatabase(cimitStubItems, ci);
         if (cimitStubItem.isPresent()) {
             cimitStubItem.get().setMitigations(userMitigationRequest.getMitigations());

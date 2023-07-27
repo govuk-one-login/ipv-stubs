@@ -148,7 +148,9 @@ public class StubManagementHandlerTest {
                         .build();
         APIGatewayV2HTTPEvent event =
                 createTestEvent("POST", "/user/123/cis", Collections.singletonList(userCisRequest));
-        doThrow(new DataAlreadyExistException("User already exists."))
+        doThrow(
+                        new DataAlreadyExistException(
+                                "User already exists, instead try calling update api."))
                 .when(userService)
                 .addUserCis(anyString(), any());
 
@@ -156,7 +158,9 @@ public class StubManagementHandlerTest {
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(409, response.getStatusCode());
-        assertTrue(response.getBody().contains("User already exists."));
+        assertTrue(
+                response.getBody()
+                        .contains("User already exists, instead try calling update api."));
     }
 
     @Test
@@ -186,7 +190,9 @@ public class StubManagementHandlerTest {
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
         APIGatewayV2HTTPEvent event =
                 createTestEvent("POST", "/user/123/mitigations/456", userMitigationRequest);
-        doThrow(new DataAlreadyExistException("User already exists."))
+        doThrow(
+                        new DataAlreadyExistException(
+                                "User already exists, instead try calling update api."))
                 .when(userService)
                 .addUserMitigation(anyString(), anyString(), any());
 
@@ -194,7 +200,9 @@ public class StubManagementHandlerTest {
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(409, response.getStatusCode());
-        assertTrue(response.getBody().contains("User already exists."));
+        assertTrue(
+                response.getBody()
+                        .contains("User already exists, instead try calling update api."));
     }
 
     @Test

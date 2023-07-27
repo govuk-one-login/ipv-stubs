@@ -52,7 +52,7 @@ public class UserServiceImplTest {
                                 .mitigations(Collections.emptyList())
                                 .build());
 
-        when(cimitStubService.getCimitStubItem(userId)).thenReturn(new ArrayList<>());
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(new ArrayList<>());
 
         assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
 
@@ -74,7 +74,7 @@ public class UserServiceImplTest {
         existingItems.add(
                 new CimitStubItem(userId, "code2", Instant.now(), 30000, new ArrayList<>()));
 
-        when(cimitStubService.getCimitStubItem(userId)).thenReturn(existingItems);
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
         assertThrows(
                 DataAlreadyExistException.class,
@@ -97,7 +97,7 @@ public class UserServiceImplTest {
         existingItems.add(
                 new CimitStubItem(userId, "code1", Instant.now(), 30000, new ArrayList<>()));
 
-        when(cimitStubService.getCimitStubItem(userId)).thenReturn(existingItems);
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
         assertDoesNotThrow(() -> userService.updateUserCis(userId, userCisRequests));
 
@@ -119,7 +119,7 @@ public class UserServiceImplTest {
         existingItems.add(
                 new CimitStubItem(userId, "code3", Instant.now(), 30000, new ArrayList<>()));
 
-        when(cimitStubService.getCimitStubItem(userId)).thenReturn(existingItems);
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
         assertThrows(
                 DataNotFoundException.class,
@@ -138,7 +138,7 @@ public class UserServiceImplTest {
         List<CimitStubItem> existingItems = new ArrayList<>();
         existingItems.add(new CimitStubItem(userId, ci, Instant.now(), 30000, new ArrayList<>()));
 
-        when(cimitStubService.getCimitStubItem(userId)).thenReturn(existingItems);
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
         assertDoesNotThrow(() -> userService.addUserMitigation(userId, ci, userMitigationRequest));
 
@@ -154,7 +154,7 @@ public class UserServiceImplTest {
 
         List<CimitStubItem> existingItems = new ArrayList<>();
 
-        when(cimitStubService.getCimitStubItem(userId)).thenReturn(existingItems);
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
         assertThrows(
                 DataNotFoundException.class,
@@ -172,7 +172,7 @@ public class UserServiceImplTest {
         List<CimitStubItem> existingItems = new ArrayList<>();
         existingItems.add(new CimitStubItem(userId, ci, Instant.now(), 30000, new ArrayList<>()));
 
-        when(cimitStubService.getCimitStubItem(userId)).thenReturn(existingItems);
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
         assertDoesNotThrow(
                 () -> userService.updateUserMitigation(userId, ci, userMitigationRequest));
@@ -189,7 +189,7 @@ public class UserServiceImplTest {
 
         List<CimitStubItem> existingItems = new ArrayList<>();
 
-        when(cimitStubService.getCimitStubItem(userId)).thenReturn(existingItems);
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
         assertThrows(
                 DataNotFoundException.class,
