@@ -10,23 +10,36 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.core.getcontraindicators.domain.GetCiRequest;
 import uk.gov.di.ipv.core.getcontraindicators.domain.GetCiResponse;
+import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
+import uk.gov.di.ipv.core.library.service.CimitStubItemService;
+import uk.gov.di.ipv.core.library.service.ConfigService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GetContraIndicatorsHandlerTest {
 
+    public static final String USER_ID = "user_id";
+    public static final String CI_V_03 = "V03";
     private static final ObjectMapper mapper = new ObjectMapper();
     @Mock private Context mockContext;
+    @Mock private ConfigService mockConfigService;
+    @Mock private CimitStubItemService mockCimitStubItemService;
     @InjectMocks private GetContraIndicatorsHandler classToTest;
 
     @Test
-    void shouldReturnGetCiResponseWhenProvidedValidRequest() throws IOException {
+    void shouldReturnEmptyCIsResponseWhenProvidedValidRequest() throws IOException {
         GetCiRequest getCiRequest =
                 GetCiRequest.builder()
                         .govukSigninJourneyId("govuk_signin_journey_id")
@@ -40,7 +53,37 @@ class GetContraIndicatorsHandlerTest {
                         mapper.writeValueAsString(getCiRequest),
                         mockContext,
                         GetCiResponse.class);
+
         assertTrue(response.getContraIndicators().isEmpty());
+    }
+
+    @Test
+    void shouldReturnGetCiResponseWhenProvidedValidRequest() throws IOException {
+        GetCiRequest getCiRequest =
+                GetCiRequest.builder()
+                        .govukSigninJourneyId("govuk_signin_journey_id")
+                        .ipAddress("ip_address")
+                        .userId("user_id")
+                        .build();
+        List<CimitStubItem> cimitStubItems = new ArrayList<>();
+        cimitStubItems.add(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(CI_V_03)
+                        .issuanceDate(Instant.now())
+                        .ttl(505L)
+                        .build());
+        when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
+
+        var response =
+                makeRequest(
+                        classToTest,
+                        mapper.writeValueAsString(getCiRequest),
+                        mockContext,
+                        GetCiResponse.class);
+
+        assertFalse(response.getContraIndicators().isEmpty());
+        assertEquals(CI_V_03, response.getContraIndicators().get(0).getCi());
     }
 
     @Test

@@ -9,7 +9,6 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.jwk.ECKey;
 import com.nimbusds.jwt.SignedJWT;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,6 +40,8 @@ import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicator
 class GetContraIndicatorCredentialHandlerTest {
 
     public static final String USER_ID = "user_id";
+    public static final String CI_V_03 = "V03";
+    public static final String MITIGATION_M_01 = "M01";
     private static final String CIMIT_PRIVATE_KEY =
             "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO";
     private static final String CIMIT_PUBLIC_JWK =
@@ -48,22 +49,12 @@ class GetContraIndicatorCredentialHandlerTest {
 
     private static final String CIMIT_COMPONENT_ID = "https://cimit.stubs.account.gov.uk";
 
-    private static final ObjectMapper mapper = new ObjectMapper();
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    public static final String CI_V_03 = "V03";
-    public static final String MITIGATION_M_01 = "M01";
 
     @Mock private Context mockContext;
     @Mock private ConfigService mockConfigService;
     @Mock private CimitStubItemService mockCimitStubItemService;
     @InjectMocks private GetContraIndicatorCredentialHandler classToTest;
-
-    @BeforeEach
-    void setUp() {
-        classToTest =
-                new GetContraIndicatorCredentialHandler(
-                        mockConfigService, mockCimitStubItemService);
-    }
 
     @SystemStub
     private final EnvironmentVariables environmentVariables =
@@ -94,7 +85,7 @@ class GetContraIndicatorCredentialHandlerTest {
         var response =
                 makeRequest(
                         classToTest,
-                        mapper.writeValueAsString(getCiCredentialRequest),
+                        objectMapper.writeValueAsString(getCiCredentialRequest),
                         mockContext,
                         String.class);
 
@@ -124,7 +115,7 @@ class GetContraIndicatorCredentialHandlerTest {
         var response =
                 makeRequest(
                         classToTest,
-                        mapper.writeValueAsString(getCiCredentialRequest),
+                        objectMapper.writeValueAsString(getCiCredentialRequest),
                         mockContext,
                         String.class);
 
@@ -141,7 +132,7 @@ class GetContraIndicatorCredentialHandlerTest {
         try (var inputStream = new ByteArrayInputStream(request.getBytes());
                 var outputStream = new ByteArrayOutputStream()) {
             handler.handleRequest(inputStream, outputStream, context);
-            return mapper.readValue(outputStream.toString(), classType);
+            return objectMapper.readValue(outputStream.toString(), classType);
         }
     }
 
