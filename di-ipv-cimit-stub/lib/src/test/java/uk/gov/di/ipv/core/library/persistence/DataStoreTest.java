@@ -53,7 +53,11 @@ class DataStoreTest {
 
         dataStore =
                 new DataStore<>(
-                        TEST_TABLE_NAME, CimitStubItem.class, mockDynamoDbEnhancedClient, false);
+                        TEST_TABLE_NAME,
+                        CimitStubItem.class,
+                        mockDynamoDbEnhancedClient,
+                        false,
+                        mockConfigService);
     }
 
     @Test

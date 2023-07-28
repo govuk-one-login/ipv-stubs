@@ -21,7 +21,6 @@ public class CimitStubItem implements DynamodbItem {
     private String contraIndicatorCode;
     private Instant issuanceDate;
     private long ttl;
-
     private List<String> mitigations;
 
     @DynamoDbPartitionKey

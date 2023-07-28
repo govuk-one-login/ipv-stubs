@@ -16,7 +16,9 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
+import uk.gov.di.ipv.core.library.config.ConfigurationVariable;
 import uk.gov.di.ipv.core.library.persistence.items.DynamodbItem;
+import uk.gov.di.ipv.core.library.service.ConfigService;
 
 import java.net.URI;
 import java.time.Instant;
@@ -31,14 +33,19 @@ public class DataStore<T extends DynamodbItem> {
     private static boolean isRunningLocally;
 
     private final Class<T> typeParameterClass;
+
+    private final ConfigService configService;
+
     private final DynamoDbTable<T> table;
 
     public DataStore(
             String tableName,
             Class<T> typeParameterClass,
             DynamoDbEnhancedClient dynamoDbEnhancedClient,
-            boolean isRunningLocally) {
+            boolean isRunningLocally,
+            ConfigService configService) {
         this.typeParameterClass = typeParameterClass;
+        this.configService = configService;
         DataStore.isRunningLocally = isRunningLocally;
         this.table =
                 dynamoDbEnhancedClient.table(
@@ -64,8 +71,11 @@ public class DataStore<T extends DynamodbItem> {
                 .build();
     }
 
-    public void create(T item, Long tableTtl) {
-        item.setTtl(Instant.now().plusSeconds(tableTtl).getEpochSecond());
+    public void create(T item, ConfigurationVariable tableTtl) {
+        item.setTtl(
+                Instant.now()
+                        .plusSeconds(Long.parseLong(configService.getSsmParameter(tableTtl)))
+                        .getEpochSecond());
         table.putItem(item);
     }
 

@@ -1,6 +1,6 @@
 ### CIMIT lambda stubs
 This will create stubs for the CIMIT lambdas getContraIndicators, getContraIndicatorCredential,
-putContraIndicators and postMitigations.
+putContraIndicators, postMitigations and stubManagement.
 
 Sample postMitigations POST request should look like
 ```

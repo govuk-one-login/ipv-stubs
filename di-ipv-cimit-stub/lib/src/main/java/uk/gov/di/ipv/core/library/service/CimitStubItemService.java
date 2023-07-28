@@ -21,7 +21,8 @@ public class CimitStubItemService {
                         this.configService.getEnvironmentVariable(CIMIT_STUB_TABLE_NAME),
                         CimitStubItem.class,
                         DataStore.getClient(isRunningLocally),
-                        isRunningLocally);
+                        isRunningLocally,
+                        configService);
     }
 
     public CimitStubItemService(DataStore<CimitStubItem> dataStore, ConfigService configService) {

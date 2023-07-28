@@ -2,6 +2,7 @@ package uk.gov.di.ipv.core.library.service;
 
 import software.amazon.lambda.powertools.parameters.ParamManager;
 import software.amazon.lambda.powertools.parameters.SSMProvider;
+import uk.gov.di.ipv.core.library.config.ConfigurationVariable;
 import uk.gov.di.ipv.core.library.config.EnvironmentVariable;
 
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -38,6 +39,11 @@ public class ConfigService {
 
     private String getSsmParameter(String ssmParamKey, String... pathProperties) {
         return ssmProvider.get(resolvePath(ssmParamKey, pathProperties));
+    }
+
+    public String getSsmParameter(
+            ConfigurationVariable configurationVariable, String... pathProperties) {
+        return getSsmParameter(configurationVariable.getPath(), pathProperties);
     }
 
     protected String resolvePath(String path, String... pathProperties) {
