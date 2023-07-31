@@ -38,13 +38,16 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
 
     public static final String SECURITY_CHECK_CREDENTIAL_VC_TYPE = "SecurityCheckCredential";
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final String TYPE = "type";
-    private static final String VC_EVIDENCE = "evidence";
-    private static final String CONTRA_INDICATORS = "contraIndicator";
-    private static final String VC = "vc";
-
-    private static final ObjectMapper mapper = new ObjectMapper();
+    public static final String TYPE = "type";
+    public static final String VC_EVIDENCE = "evidence";
+    public static final String CONTRA_INDICATORS = "ci";
+    public static final String VC = "vc";
+    public static final String CODE = "code";
     public static final String FAILURE_RESPONSE = "Failure";
+    private static final ObjectMapper mapper = new ObjectMapper();
+    public static final String MITIGATION = "mitigation";
+    public static final String ISSUANCE_DATE = "issuanceDate";
+
     private final ConfigService configService;
     private final CimitStubItemService cimitStubItemService;
 
@@ -157,9 +160,9 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         List<CimitStubItem> cimitStubItems = cimitStubItemService.getCIsForUserId(userId);
         for (CimitStubItem cimitStubItem : cimitStubItems) {
             Map<String, Object> contraIndicator = new LinkedHashMap<>();
-            contraIndicator.put("code", cimitStubItem.getContraIndicatorCode());
-            contraIndicator.put("issuanceDate", cimitStubItem.getIssuanceDate());
-            contraIndicator.put("mitigation", getMitigations(cimitStubItem.getMitigations()));
+            contraIndicator.put(CODE, cimitStubItem.getContraIndicatorCode());
+            contraIndicator.put(ISSUANCE_DATE, cimitStubItem.getIssuanceDate());
+            contraIndicator.put(MITIGATION, getMitigations(cimitStubItem.getMitigations()));
             contraIndicators.add(contraIndicator);
         }
         return contraIndicators;
@@ -169,7 +172,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         List<Map<String, Object>> mitigations = new ArrayList<>();
         for (String mitigationCode : mitigationCodes) {
             Map<String, Object> mitigation = new LinkedHashMap<>();
-            mitigation.put("code", mitigationCode);
+            mitigation.put(CODE, mitigationCode);
             mitigations.add(mitigation);
         }
         return mitigations;
