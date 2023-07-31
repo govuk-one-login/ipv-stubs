@@ -36,18 +36,18 @@ import java.util.Map;
 
 public class GetContraIndicatorCredentialHandler implements RequestStreamHandler {
 
-    public static final String SECURITY_CHECK_CREDENTIAL_VC_TYPE = "SecurityCheckCredential";
     private static final Logger LOGGER = LogManager.getLogger();
+    public static final String SECURITY_CHECK_CREDENTIAL_VC_TYPE = "SecurityCheckCredential";
     public static final String TYPE = "type";
     public static final String VC_EVIDENCE = "evidence";
     public static final String CONTRA_INDICATORS = "ci";
     public static final String VC = "vc";
     public static final String CODE = "code";
     public static final String FAILURE_RESPONSE = "Failure";
-    private static final ObjectMapper mapper = new ObjectMapper();
     public static final String MITIGATION = "mitigation";
     public static final String ISSUANCE_DATE = "issuanceDate";
 
+    private static final ObjectMapper mapper = new ObjectMapper();
     private final ConfigService configService;
     private final CimitStubItemService cimitStubItemService;
 
