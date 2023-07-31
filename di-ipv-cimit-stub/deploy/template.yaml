@@ -40,6 +40,7 @@ Resources:
       Environment:
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
+          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -48,6 +49,10 @@ Resources:
           - !GetAtt CimitLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
+        - DynamoDBReadPolicy:
+            TableName: !Ref CimitStubTable
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
 
   # lambda to stub cimit postMitigations
   PostMitigationsFunction:
