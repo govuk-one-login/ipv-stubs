@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.jwk.ECKey;
+import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.SignedJWT;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +35,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.CODE;
+import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.CONTRA_INDICATORS;
+import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.MITIGATION;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.SECURITY_CHECK_CREDENTIAL_VC_TYPE;
+import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.TYPE;
+import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.VC;
+import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.VC_EVIDENCE;
 
 @ExtendWith({SystemStubsExtension.class, MockitoExtension.class})
 class GetContraIndicatorCredentialHandlerTest {
@@ -141,19 +148,20 @@ class GetContraIndicatorCredentialHandlerTest {
         SignedJWT signedJWT = SignedJWT.parse(request);
         JsonNode claimsSet = objectMapper.readTree(signedJWT.getJWTClaimsSet().toString());
 
-        assertEquals(USER_ID, signedJWT.getJWTClaimsSet().getClaim("sub"));
-        assertEquals(CIMIT_COMPONENT_ID, signedJWT.getJWTClaimsSet().getClaim("iss"));
+        assertEquals(USER_ID, signedJWT.getJWTClaimsSet().getClaim(JWTClaimNames.SUBJECT));
+        assertEquals(
+                CIMIT_COMPONENT_ID, signedJWT.getJWTClaimsSet().getClaim(JWTClaimNames.ISSUER));
 
-        JsonNode vc = claimsSet.get("vc");
+        JsonNode vc = claimsSet.get(VC);
         assertEquals(2, vc.size());
-        assertEquals(SECURITY_CHECK_CREDENTIAL_VC_TYPE, vc.get("type").get(0).asText());
-        JsonNode contraIndicators = vc.get("evidence").get(0).get("contraIndicator");
+        assertEquals(SECURITY_CHECK_CREDENTIAL_VC_TYPE, vc.get(TYPE).get(0).asText());
+        JsonNode contraIndicators = vc.get(VC_EVIDENCE).get(0).get(CONTRA_INDICATORS);
         assertEquals(1, contraIndicators.size());
         JsonNode firstCINode = contraIndicators.get(0);
-        assertEquals(CI_V_03, firstCINode.get("code").asText());
-        JsonNode mitigations = firstCINode.get("mitigation");
+        assertEquals(CI_V_03, firstCINode.get(CODE).asText());
+        JsonNode mitigations = firstCINode.get(MITIGATION);
         assertEquals(1, mitigations.size());
-        assertEquals(MITIGATION_M_01, mitigations.get(0).get("code").asText());
+        assertEquals(MITIGATION_M_01, mitigations.get(0).get(CODE).asText());
 
         ECDSAVerifier verifier = new ECDSAVerifier(ECKey.parse(CIMIT_PUBLIC_JWK));
         assertTrue(signedJWT.verify(verifier));
