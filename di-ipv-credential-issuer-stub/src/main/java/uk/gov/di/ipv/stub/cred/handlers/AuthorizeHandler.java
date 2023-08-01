@@ -529,6 +529,37 @@ public class AuthorizeHandler {
                     gpg45Score.put(CredentialIssuerConfig.CHECK_DETAILS_PARAM, checkDetailsValue);
                 }
             }
+            case F2F_CRI_TYPE -> {
+                int strengthNum =
+                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(strengthValue) : 3;
+                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, strengthNum);
+                int validityNum =
+                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
+                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, validityNum);
+
+                if (StringUtils.isNotBlank(verificationValue)) {
+                    gpg45Score.put(
+                            CredentialIssuerConfig.VERIFICATION_PARAM,
+                            Integer.parseInt(verificationValue));
+                }
+
+                List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
+                checkDetailsValue.add(
+                        Map.of(
+                                "identityCheckPolicy",
+                                "published",
+                                "activityFrom",
+                                "1982-05-23",
+                                "checkMethod",
+                                "data"));
+
+                if (validityNum < 2) {
+                    gpg45Score.put(
+                            CredentialIssuerConfig.FAILED_CHECK_DETAILS_PARAM, checkDetailsValue);
+                } else {
+                    gpg45Score.put(CredentialIssuerConfig.CHECK_DETAILS_PARAM, checkDetailsValue);
+                }
+            }
         }
         return gpg45Score;
     }
