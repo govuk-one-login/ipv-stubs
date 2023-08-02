@@ -33,6 +33,10 @@ export const handler: Handler = async (
     let getMessageQueueUrlInput: GetQueueUrlCommandInput = {
         QueueName: body.queueName
     }
+    let delaySeconds = "0"
+    if(!!body.delaySeconds){
+        delaySeconds = body.delaySeconds
+    }
     let getMessageQueueUrlCommand = new GetQueueUrlCommand(getMessageQueueUrlInput);
     let getMessageQueueUrlOutput: GetQueueUrlCommandOutput;
     let queueUrl: string;
@@ -147,7 +151,7 @@ export const handler: Handler = async (
     let sendSqsMessageInput:SendMessageCommandInput = {
         QueueUrl: queueUrl,
         MessageBody: JSON.stringify(queueBody),
-        DelaySeconds: 30
+        DelaySeconds: parseInt(delaySeconds)
     }
 
     let sendSqsMessageCommand = new SendMessageCommand(sendSqsMessageInput);

@@ -4,7 +4,8 @@ The format of the POST request to the API gateway should look like
 ```
 {
     "queueName": "stubQueue_AnyQueueName",
-    "queueEvent": <This can be  any shape - it will be sent to the queue as a string>
+    "queueEvent": <This can be  any shape - it will be sent to the queue as a string>,
+    "delaySeconds": Optional number of seconds to wait before porting  to the queue
 }
 ```
 or
@@ -15,7 +16,8 @@ or
     "state": <the state field in the queue message body>
     "issuer": <name of the issuer you would like added to the queue>
     "customClaims" : <the vc you want this to put onto the queue>
-    "privateSiginingKeyId" : <a key ID that the lamda can access, one is provided by the stack>
+    "privateSiginingKeyId" : <a key ID that the lamda can access, one is provided by the stack>,
+    "delaySeconds": Optional number of seconds to wait before porting  to the queue
 }
 ```
 or
@@ -26,7 +28,8 @@ or
     "state": <the state field in the queue message body>
     "issuer": <name of the issuer you would like added to the queue>
     "customClaims" : <the vc you want this to put onto the queue>
-    "secretId" : <a secret string in secrets manager containing key material>
+    "secretId" : <a secret string in secrets manager containing key material>,
+    "delaySeconds": Optional number of seconds to wait before porting  to the queue
 }
 ```
 or
@@ -37,7 +40,8 @@ or
     "state": <the state field in the queue message body>
     "issuer": <name of the issuer you would like added to the queue>
     "customClaims" : <the vc you want this to put onto the queue>
-    "parameterName" : <name of a string in ssm containing key material>
+    "parameterName" : <name of a string in ssm containing key material>,
+    "delaySeconds": Optional number of seconds to wait before porting  to the queue
 }
 ```
 or
@@ -48,7 +52,8 @@ or
     "state": <the state field in the queue message body>
     "issuer": <name of the issuer you would like added to the queue>
     "customClaims" : <the vc you want this to put onto the queue>
-    "privateSiginingKey" : <a key to sign the JWT>
+    "privateSiginingKey" : <a key to sign the JWT>,
+    "delaySeconds": Optional number of seconds to wait before porting  to the queue
 }
 ```
 or
@@ -59,7 +64,8 @@ or
     "state": <the state field in the queue message body>
     "issuer": <name of the issuer you would like added to the queue>
     "error" : <the error to put onto the queue message>
-    "error_description" : <the error_description tp put in the message>
+    "error_description" : <the error_description tp put in the message>,
+    "delaySeconds": Optional number of seconds to wait before porting  to the queue
 }
 ```
 The name of the queue you are pushing to must have the `stubQueue_` prefix
