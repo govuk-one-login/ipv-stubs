@@ -262,6 +262,14 @@
           }
         ]
       }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Error f2f",
+      "payload": {
+        "error": "access_denied",
+        "error_description": "Something went wrong!"
+      }
     }
   ]
 }
