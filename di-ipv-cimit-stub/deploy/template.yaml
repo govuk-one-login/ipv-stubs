@@ -355,6 +355,9 @@ Resources:
       ApiKeySourceType: HEADER #pragma: allowlist secret
       Auth:
         ApiKeyRequired: true #pragma: allowlist secret
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          UsagePlanName: "CIMIT Usage Plan"
         #ResourcePolicy:
         #  CustomStatements: [ {
         #    "Effect": "Allow",
@@ -382,31 +385,4 @@ Resources:
           "responseLatency":"$context.responseLatency",
           "responseLength":"$context.responseLength"
           }
-
-  UsagePlan:
-    Type: AWS::ApiGateway::UsagePlan
-    Properties:
-      Description: Example usage plan with a monthly quota of 1000 calls and method-level throttling for /pets GET
-      ApiStages:
-        - ApiId: !Ref RestApiGateway
-          Stage: !Sub '${Environment}'
-      UsagePlanName: "CIMIT Usage Plan"
-
-  UsagePlanKey:
-    Type: AWS::ApiGateway::UsagePlanKey
-    Properties:
-      KeyId: !Ref RestApiKey
-      KeyType: API_KEY
-      UsagePlanId: !Ref UsagePlan
-
-  RestApiKey:
-    Type: AWS::ApiGateway::ApiKey
-    Properties:
-      Description: "Api key to access CIMIT stub"
-      Enabled: true
-      StageKeys:
-        - RestApiId: !Ref RestApiGateway
-          StageName: !Sub ${Environment}
-
-
 
