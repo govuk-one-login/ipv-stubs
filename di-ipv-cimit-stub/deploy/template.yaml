@@ -351,7 +351,7 @@ Resources:
         openapi: "3.0.3" # workaround to get `sam validate` to work
         paths: # workaround to get `sam validate` to work
           /foo:
-            bar: baz # workaround to get `sam validate` to work
+            options: {} # workaround to get `sam validate` to work
         'Fn::Transform':
           Name: "AWS::Include"
           Parameters:
