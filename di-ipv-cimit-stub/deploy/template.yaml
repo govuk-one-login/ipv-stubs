@@ -358,18 +358,6 @@ Resources:
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "CIMIT Usage Plan"
-        #ResourcePolicy:
-        #  CustomStatements: [ {
-        #    "Effect": "Allow",
-        #    "Principal": "*",
-        #    "Action": "execute-api:Invoke",
-        #    "Resource": "execute-api:/*",
-        #    "Condition": {
-        #      "StringEquals": {
-        #        "aws:PrincipalOrgID": "o-dpp53lco28"
-        #      }
-        #    }
-        #  } ]
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiLogGroup.Arn
         Format: >-
