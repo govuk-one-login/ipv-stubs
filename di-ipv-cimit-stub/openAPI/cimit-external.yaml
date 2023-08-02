@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info:
+  title: "CIMIT Stub External"
+  description: "The external api presented by CIMIT Stub for use by non CIMIT services"
+  version: "1.0.0"
+paths:
+  /healthcheck:
+    get:
+      description: "returns a 200 for Route53 health checks to use"
+      responses:
+        200:
+          description: "A healthcheck response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "MOCK"
+        requestTemplates:
+          application/json: "{\"statusCode\":200}"
+        responses:
+          200:
+            statusCode: 200
+            responseTemplates:
+              application/json: "{\"healthcheck\": \"ok\"}"

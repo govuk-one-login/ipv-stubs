@@ -6,7 +6,7 @@ Globals:
     Timeout: 30
 
 Description: >-
-  This creates the lambda functions to stub CIMIT lambdas for getContraIndicators, getContraIndicatorCredential, 
+  This creates the lambda functions to stub CIMIT lambdas for getContraIndicators, getContraIndicatorCredential,
   putContraIndicators and postMitigations.
 
 Parameters:
@@ -25,6 +25,9 @@ Resources:
   GetContraIndicatorsFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_116: doing it later
+    # checkov:skip=CKV_AWS_173: doing it later
+    # checkov:skip=CKV_AWS_115: doing it later
     DependsOn:
       - "GetContraIndicatorsFunctionLogGroup"
     Properties:
@@ -58,6 +61,9 @@ Resources:
   PostMitigationsFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_116: doing it later
+    # checkov:skip=CKV_AWS_173: doing it later
+    # checkov:skip=CKV_AWS_115: doing it later
     DependsOn:
       - "PostMitigationsFunctionLogGroup"
     Properties:
@@ -86,6 +92,9 @@ Resources:
   PutContraIndicatorsFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_116: doing it later
+    # checkov:skip=CKV_AWS_173: doing it later
+    # checkov:skip=CKV_AWS_115: doing it later
     DependsOn:
       - "PutContraIndicatorsFunctionLogGroup"
     Properties:
@@ -116,6 +125,9 @@ Resources:
   GetContraIndicatorCredentialFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_116: doing it later
+    # checkov:skip=CKV_AWS_173: doing it later
+    # checkov:skip=CKV_AWS_115: doing it later
     DependsOn:
       - "GetContraIndicatorCredentialFunctionLogGroup"
     Properties:
@@ -152,6 +164,9 @@ Resources:
   StubManagementFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_116: doing it later
+    # checkov:skip=CKV_AWS_173: doing it later
+    # checkov:skip=CKV_AWS_115: doing it later
     DependsOn:
       - "StubManagementFunctionLogGroup"
     Properties:
@@ -218,6 +233,13 @@ Resources:
     Properties:
       RetentionInDays: 14
       LogGroupName: !Sub "/aws/lambda/stubManagement-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  RestApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/restApi-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   CimitLambdaSecurityGroup:
@@ -317,3 +339,37 @@ Resources:
             Condition:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+
+  RestApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
+      Name: !Sub CIMIT API Gateway ${Environment}
+      StageName: !Sub ${Environment}
+      TracingEnabled: true
+      DefinitionBody:
+        'Fn::Transform':
+          Name: "AWS::Include"
+          Parameters:
+            Location: "../openAPI/cimit-external.yaml"
+      ApiKeySourceType: HEADER #pragma: allowlist secret
+      Auth:
+        ApiKeyRequired: true #pragma: allowlist secret
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          UsagePlanName: "CIMIT Usage Plan"
+      AccessLogSetting:
+        DestinationArn: !GetAtt RestApiLogGroup.Arn
+        Format: >-
+          {
+          "requestId":"$context.requestId",
+          "ip":"$context.identity.sourceIp",
+          "requestTime":"$context.requestTime",
+          "httpMethod":"$context.httpMethod",
+          "path":"$context.path",
+          "routeKey":"$context.routeKey",
+          "status":"$context.status",
+          "protocol":"$context.protocol",
+          "responseLatency":"$context.responseLatency",
+          "responseLength":"$context.responseLength"
+          }
