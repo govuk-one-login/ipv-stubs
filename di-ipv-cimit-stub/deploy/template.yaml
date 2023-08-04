@@ -247,6 +247,18 @@ Resources:
             Method: POST
             Path: /user/*/mitigations/*
             RestApiId: !Ref RestApiGateway
+        ApiEventPutCis:
+          Type: Api
+          Properties:
+            Method: PUT
+            Path: /user/*/cis
+            RestApiId: !Ref RestApiGateway
+        ApiEventPutMitigations:
+          Type: Api
+          Properties:
+            Method: PUT
+            Path: /user/*/mitigations/*
+            RestApiId: !Ref RestApiGateway
 
 
   GetContraIndicatorsFunctionLogGroup:
