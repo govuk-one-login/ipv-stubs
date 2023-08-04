@@ -1,3 +1,4 @@
+#file: noinspection YAMLSchemaValidation
 AWSTemplateFormatVersion: "2010-09-09"
 
 Transform: AWS::Serverless-2016-10-31
@@ -19,7 +20,6 @@ Parameters:
     Description: The name of the environment to deploy to.
     Type: String
     AllowedPattern: ((production)|(build)|(dev.*))
-
 Resources:
   # lambda to stub cimit getContraIndicators
   GetContraIndicatorsFunction:
