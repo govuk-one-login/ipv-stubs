@@ -57,6 +57,15 @@ Resources:
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
+      #Events:
+      #  ApiEvent:
+      #    Type: Api
+      #    Properties:
+      #      Method: POST
+      #      Path: /
+      #      RestApiId: !Ref RestApiGateway
+
+
 
   # lambda to stub cimit postMitigations
   PostMitigationsFunction:
@@ -89,6 +98,13 @@ Resources:
       Policies:
         - VPCAccessPolicy: { }
       AutoPublishAlias: live
+      #Events:
+      #  ApiEvent:
+      #    Type: Api
+      #    Properties:
+      #      Method: POST
+      #      Path: /
+      #      RestApiId: !Ref RestApiGateway
 
   # lambda to stub cimit putContraIndicators
   PutContraIndicatorsFunction:
@@ -123,6 +139,13 @@ Resources:
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/*
       AutoPublishAlias: live
+      #Events:
+      #  ApiEvent:
+      #    Type: Api
+      #    Properties:
+      #      Method: POST
+      #      Path: /
+      #      RestApiId: !Ref RestApiGateway
 
   # lambda to stub cimit getContraIndicatorCredential
   GetContraIndicatorCredentialFunction:
@@ -163,6 +186,13 @@ Resources:
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
+      #Events:
+      #  ApiEvent:
+      #    Type: Api
+      #    Properties:
+      #      Method: POST
+      #      Path: /
+      #      RestApiId: !Ref RestApiGateway
 
   # lambda to stub management
   StubManagementFunction:
@@ -204,6 +234,20 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref CimitStubTable
       AutoPublishAlias: live
+      Events:
+        ApiEventPostCis:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /user/*/cis
+            RestApiId: !Ref RestApiGateway
+        ApiEventPostMitigations:
+          Type: Api
+          Properties:
+            Method: POST
+            Path: /user/*/mitigations/*
+            RestApiId: !Ref RestApiGateway
+
 
   GetContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
