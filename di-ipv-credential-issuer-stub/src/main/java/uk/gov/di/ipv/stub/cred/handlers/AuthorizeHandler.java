@@ -339,7 +339,8 @@ public class AuthorizeHandler {
                                     "checked");
                     boolean F2F_SEND_ERROR_QUEUE =
                             Objects.equals(
-                                    queryParamsMap.value(RequestParamConstants.F2F_SEND_ERROR_QUEUE),
+                                    queryParamsMap.value(
+                                            RequestParamConstants.F2F_SEND_ERROR_QUEUE),
                                     "checked");
                     if (F2F_SEND_VC_QUEUE && !F2F_SEND_ERROR_QUEUE) {
                         String queueName = queryParamsMap.value(F2F_STUB_QUEUE_NAME_FIELD);
@@ -368,7 +369,11 @@ public class AuthorizeHandler {
                         F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
                                 new F2FErrorEnqueueLambdaRequest(
                                         queueName,
-                                        new F2FQueueErrorEvent(userId, state, "access_denied", "Something went wrong"),
+                                        new F2FQueueErrorEvent(
+                                                userId,
+                                                state,
+                                                "access_denied",
+                                                "Something went wrong"),
                                         10);
                         String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
                         httpRequest.setQuery(body);
