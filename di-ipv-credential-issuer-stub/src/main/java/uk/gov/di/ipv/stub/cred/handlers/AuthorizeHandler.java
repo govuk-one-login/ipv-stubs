@@ -33,9 +33,7 @@ import spark.Route;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
-import uk.gov.di.ipv.stub.cred.domain.Credential;
-import uk.gov.di.ipv.stub.cred.domain.F2FEnqueueLambdaRequest;
-import uk.gov.di.ipv.stub.cred.domain.F2FQueueEvent;
+import uk.gov.di.ipv.stub.cred.domain.*;
 import uk.gov.di.ipv.stub.cred.error.CriStubException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
@@ -339,7 +337,11 @@ public class AuthorizeHandler {
                             Objects.equals(
                                     queryParamsMap.value(RequestParamConstants.F2F_SEND_VC_QUEUE),
                                     "checked");
-                    if (F2F_SEND_VC_QUEUE) {
+                    boolean F2F_SEND_ERROR_QUEUE =
+                            Objects.equals(
+                                    queryParamsMap.value(RequestParamConstants.F2F_SEND_ERROR_QUEUE),
+                                    "checked");
+                    if (F2F_SEND_VC_QUEUE && !F2F_SEND_ERROR_QUEUE) {
                         String queueName = queryParamsMap.value(F2F_STUB_QUEUE_NAME_FIELD);
                         String signedVcJwt =
                                 verifiableCredentialGenerator.generate(credential).serialize();
@@ -351,6 +353,22 @@ public class AuthorizeHandler {
                                 new F2FEnqueueLambdaRequest(
                                         queueName,
                                         new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
+                                        10);
+                        String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
+                        httpRequest.setQuery(body);
+                        HTTPResponse httpResponse = httpRequest.send();
+                    }
+
+                    if (F2F_SEND_VC_QUEUE && F2F_SEND_ERROR_QUEUE) {
+                        String queueName = queryParamsMap.value(F2F_STUB_QUEUE_NAME_FIELD);
+                        HTTPRequest httpRequest =
+                                new HTTPRequest(
+                                        HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
+                        ObjectMapper objectMapper = new ObjectMapper();
+                        F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
+                                new F2FErrorEnqueueLambdaRequest(
+                                        queueName,
+                                        new F2FQueueErrorEvent(userId, state, "access_denied", "Something went wrong"),
                                         10);
                         String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
                         httpRequest.setQuery(body);

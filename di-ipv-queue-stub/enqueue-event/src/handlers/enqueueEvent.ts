@@ -95,7 +95,7 @@ export const handler: Handler = async (
             sub: body.sub,
             state: body.state,
             error: body.error,
-            error_description: body.errorDescription
+            error_description: body.error_description
         };
     }else{
         let buildJwtParams: SignedJwtParams;
