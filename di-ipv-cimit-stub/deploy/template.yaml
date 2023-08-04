@@ -1,4 +1,3 @@
-#file: noinspection YAMLSchemaValidation
 AWSTemplateFormatVersion: "2010-09-09"
 
 Transform: AWS::Serverless-2016-10-31
@@ -20,6 +19,7 @@ Parameters:
     Description: The name of the environment to deploy to.
     Type: String
     AllowedPattern: ((production)|(build)|(dev.*))
+
 Resources:
   # lambda to stub cimit getContraIndicators
   GetContraIndicatorsFunction:
@@ -56,6 +56,7 @@ Resources:
             TableName: !Ref CimitStubTable
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
+      AutoPublishAlias: live
 
   # lambda to stub cimit postMitigations
   PostMitigationsFunction:
@@ -87,6 +88,7 @@ Resources:
           - !GetAtt CimitLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
+      AutoPublishAlias: live
 
   # lambda to stub cimit putContraIndicators
   PutContraIndicatorsFunction:
@@ -120,6 +122,7 @@ Resources:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/*
+      AutoPublishAlias: live
 
   # lambda to stub cimit getContraIndicatorCredential
   GetContraIndicatorCredentialFunction:
@@ -159,6 +162,7 @@ Resources:
             TableName: !Ref CimitStubTable
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
+      AutoPublishAlias: live
 
   # lambda to stub management
   StubManagementFunction:
@@ -199,6 +203,7 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
         - DynamoDBCrudPolicy:
             TableName: !Ref CimitStubTable
+      AutoPublishAlias: live
 
   GetContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -362,6 +367,13 @@ Resources:
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "CIMIT Usage Plan"
+        ResourcePolicy:
+          CustomStatements:
+            - Action: 'execute-api:Invoke'
+              Effect: Allow
+              Principal: '*'
+              Resource:
+                - 'execute-api:/*'
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiLogGroup.Arn
         Format: >-
