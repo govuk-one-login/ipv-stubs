@@ -43,7 +43,12 @@ repos:
     hooks:
       - id: cfn-python-lint
         files: ^(?!\..*).*/template\.(json|yml|yaml)$
-
+  - repo: https://github.com/bridgecrewio/checkov.git
+    rev: '2.3.56'
+    hooks:
+      - id: checkov
+        args: ['--framework', 'cloudformation', '--quiet']
+        files: ^(.*/)?template\.(yml|yaml)$
   - repo: https://github.com/lovesegfault/beautysh
     rev: 'v6.2.1'
     hooks:
