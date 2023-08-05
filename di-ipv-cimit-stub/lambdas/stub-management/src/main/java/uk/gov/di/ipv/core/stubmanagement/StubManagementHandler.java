@@ -3,8 +3,8 @@ package uk.gov.di.ipv.core.stubmanagement;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class StubManagementHandler
-        implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+        implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final UserService userService;
@@ -42,13 +42,13 @@ public class StubManagementHandler
     }
 
     @Override
-    public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
-        String httpMethod = event.getRequestContext().getHttp().getMethod();
-        String path = event.getRequestContext().getHttp().getPath();
+    public APIGatewayProxyResponseEvent handleRequest(
+            APIGatewayProxyRequestEvent event, Context context) {
+        String httpMethod = event.getHttpMethod();
+        String path = event.getPath();
 
         Map<String, String> pathParameters = event.getPathParameters();
         String userId = pathParameters.get(USER_ID_PATH_PARAMS);
-
         try {
             if (httpMethod.equals(HttpMethod.POST.toString())
                     && CIS_PATTERN.matcher(path).matches()) {
@@ -97,17 +97,11 @@ public class StubManagementHandler
         }
     }
 
-    private APIGatewayV2HTTPResponse buildSuccessResponse(int statusCode) {
-        return APIGatewayV2HTTPResponse.builder()
-                .withStatusCode(statusCode)
-                .withBody("success")
-                .build();
+    private APIGatewayProxyResponseEvent buildSuccessResponse(int statusCode) {
+        return new APIGatewayProxyResponseEvent().withStatusCode(statusCode).withBody("success");
     }
 
-    private APIGatewayV2HTTPResponse buildErrorResponse(String message, int statusCode) {
-        return APIGatewayV2HTTPResponse.builder()
-                .withStatusCode(statusCode)
-                .withBody(message)
-                .build();
+    private APIGatewayProxyResponseEvent buildErrorResponse(String message, int statusCode) {
+        return new APIGatewayProxyResponseEvent().withStatusCode(statusCode).withBody(message);
     }
 }

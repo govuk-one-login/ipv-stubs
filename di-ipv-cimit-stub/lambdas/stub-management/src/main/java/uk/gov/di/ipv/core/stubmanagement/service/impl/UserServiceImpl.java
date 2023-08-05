@@ -64,11 +64,11 @@ public class UserServiceImpl implements UserService {
                                 .get()
                                 .setIssuanceDate(getIssuanceDate(user.getIssuenceDate()));
                         cimitStubService.updateCimitStub(cimitStubItem.get());
+                        LOGGER.info("Updated User CI data to the Cimit Stub DynamoDB Table.");
                     } else {
                         throw new DataNotFoundException("User and ContraIndicator not found.");
                     }
                 });
-        LOGGER.info("Updated User CI data to the Cimit Stub DynamoDB Table.");
     }
 
     @Override
@@ -83,10 +83,10 @@ public class UserServiceImpl implements UserService {
             }
             cimitStubItem.get().setMitigations(userMitigationRequest.getMitigations());
             cimitStubService.updateCimitStub(cimitStubItem.get());
+            LOGGER.info("Inserted mitigations to the Cimit Stub DynamoDB Table.");
         } else {
             throw new DataNotFoundException("User and ContraIndicator not found.");
         }
-        LOGGER.info("Inserted mitigations to the Cimit Stub DynamoDB Table.");
     }
 
     @Override
@@ -97,10 +97,10 @@ public class UserServiceImpl implements UserService {
         if (cimitStubItem.isPresent()) {
             cimitStubItem.get().setMitigations(userMitigationRequest.getMitigations());
             cimitStubService.updateCimitStub(cimitStubItem.get());
+            LOGGER.info("Updated mitigations to the Cimit Stub DynamoDB Table.");
         } else {
             throw new DataNotFoundException("User and ContraIndicator not found.");
         }
-        LOGGER.info("Updated mitigations to the Cimit Stub DynamoDB Table.");
     }
 
     private Instant getIssuanceDate(String issuenceDate) {

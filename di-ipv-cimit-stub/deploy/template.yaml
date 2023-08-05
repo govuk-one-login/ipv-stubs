@@ -24,8 +24,8 @@ Resources:
   # lambda to stub cimit getContraIndicators
   GetContraIndicatorsFunction:
     Type: AWS::Serverless::Function
-    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
     # checkov:skip=CKV_AWS_116: doing it later
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
     # checkov:skip=CKV_AWS_173: doing it later
     # checkov:skip=CKV_AWS_115: doing it later
     DependsOn:
@@ -56,6 +56,7 @@ Resources:
             TableName: !Ref CimitStubTable
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
+      AutoPublishAlias: live
 
   # lambda to stub cimit postMitigations
   PostMitigationsFunction:
@@ -87,6 +88,7 @@ Resources:
           - !GetAtt CimitLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
+      AutoPublishAlias: live
 
   # lambda to stub cimit putContraIndicators
   PutContraIndicatorsFunction:
@@ -120,6 +122,7 @@ Resources:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/*
+      AutoPublishAlias: live
 
   # lambda to stub cimit getContraIndicatorCredential
   GetContraIndicatorCredentialFunction:
@@ -159,6 +162,7 @@ Resources:
             TableName: !Ref CimitStubTable
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
+      AutoPublishAlias: live
 
   # lambda to stub management
   StubManagementFunction:
@@ -199,6 +203,7 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
         - DynamoDBCrudPolicy:
             TableName: !Ref CimitStubTable
+      AutoPublishAlias: live
 
   GetContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -362,6 +367,13 @@ Resources:
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "CIMIT Usage Plan"
+        ResourcePolicy:
+          CustomStatements:
+            - Action: 'execute-api:Invoke'
+              Effect: Allow
+              Principal: '*'
+              Resource:
+                - 'execute-api:/*'
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiLogGroup.Arn
         Format: >-

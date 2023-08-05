@@ -1,8 +1,8 @@
 package uk.gov.di.ipv.core.stubmanagement;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -52,10 +52,11 @@ public class StubManagementHandlerTest {
                                 .mitigations(Collections.emptyList())
                                 .build());
 
-        APIGatewayV2HTTPEvent event = createTestEvent("POST", "/user/123/cis", userCisRequests);
+        APIGatewayProxyRequestEvent event =
+                createTestEvent("POST", "/user/123/cis", userCisRequests);
         doNothing().when(userService).addUserCis(anyString(), anyList());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
@@ -71,11 +72,11 @@ public class StubManagementHandlerTest {
                         .issuenceDate("2023-07-25T10:00:00Z")
                         .mitigations(List.of("V01", "V03"))
                         .build();
-        APIGatewayV2HTTPEvent event =
+        APIGatewayProxyRequestEvent event =
                 createTestEvent("PUT", "/user/123/cis", Collections.singletonList(userCisRequest));
         doNothing().when(userService).updateUserCis(anyString(), anyList());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
@@ -88,11 +89,11 @@ public class StubManagementHandlerTest {
         UserMitigationRequest userMitigationRequest =
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
 
-        APIGatewayV2HTTPEvent event =
+        APIGatewayProxyRequestEvent event =
                 createTestEvent("POST", "/user/123/mitigations/456", userMitigationRequest);
         doNothing().when(userService).addUserMitigation(anyString(), anyString(), any());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
@@ -104,11 +105,11 @@ public class StubManagementHandlerTest {
     public void shouldUpdateUserMitigationSuccessWhenValidMitigationRequest() throws IOException {
         UserMitigationRequest userMitigationRequest =
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
-        APIGatewayV2HTTPEvent event =
+        APIGatewayProxyRequestEvent event =
                 createTestEvent("PUT", "/user/123/mitigations/456", userMitigationRequest);
         doNothing().when(userService).updateUserMitigation(anyString(), anyString(), any());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
@@ -118,9 +119,9 @@ public class StubManagementHandlerTest {
 
     @Test
     public void shouldReturnBadRequestWhenInvalidEndpoint() throws IOException {
-        APIGatewayV2HTTPEvent event = createTestEvent("POST", "/user/123/invalid", "{}");
+        APIGatewayProxyRequestEvent event = createTestEvent("POST", "/user/123/invalid", "{}");
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(400, response.getStatusCode());
@@ -129,9 +130,10 @@ public class StubManagementHandlerTest {
 
     @Test
     public void shouldReturnBadRequestWhenInvalidRequestBodyForMitigation() throws IOException {
-        APIGatewayV2HTTPEvent event = createTestEvent("POST", "/user/123/cis", "invalid json");
+        APIGatewayProxyRequestEvent event =
+                createTestEvent("POST", "/user/123/cis", "invalid json");
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(400, response.getStatusCode());
@@ -146,7 +148,7 @@ public class StubManagementHandlerTest {
                         .issuenceDate("2023-07-25T10:00:00Z")
                         .mitigations(List.of("V01", "V03"))
                         .build();
-        APIGatewayV2HTTPEvent event =
+        APIGatewayProxyRequestEvent event =
                 createTestEvent("POST", "/user/123/cis", Collections.singletonList(userCisRequest));
         doThrow(
                         new DataAlreadyExistException(
@@ -154,7 +156,7 @@ public class StubManagementHandlerTest {
                 .when(userService)
                 .addUserCis(anyString(), any());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(409, response.getStatusCode());
@@ -171,13 +173,13 @@ public class StubManagementHandlerTest {
                         .issuenceDate("2023-07-25T10:00:00Z")
                         .mitigations(List.of("V01", "V03"))
                         .build();
-        APIGatewayV2HTTPEvent event =
+        APIGatewayProxyRequestEvent event =
                 createTestEvent("PUT", "/user/123/cis", Collections.singletonList(userCisRequest));
         doThrow(new DataNotFoundException("User and ContraIndicator not found."))
                 .when(userService)
                 .updateUserCis(anyString(), any());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(404, response.getStatusCode());
@@ -188,7 +190,7 @@ public class StubManagementHandlerTest {
     public void shouldReturnDataAlreadyExistForUserMitigations() throws IOException {
         UserMitigationRequest userMitigationRequest =
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
-        APIGatewayV2HTTPEvent event =
+        APIGatewayProxyRequestEvent event =
                 createTestEvent("POST", "/user/123/mitigations/456", userMitigationRequest);
         doThrow(
                         new DataAlreadyExistException(
@@ -196,7 +198,7 @@ public class StubManagementHandlerTest {
                 .when(userService)
                 .addUserMitigation(anyString(), anyString(), any());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(409, response.getStatusCode());
@@ -209,13 +211,13 @@ public class StubManagementHandlerTest {
     public void shouldReturnDataNotFoundForUserMitigations() throws IOException {
         UserMitigationRequest userMitigationRequest =
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
-        APIGatewayV2HTTPEvent event =
+        APIGatewayProxyRequestEvent event =
                 createTestEvent("PUT", "/user/123/mitigations/456", userMitigationRequest);
         doThrow(new DataNotFoundException("User and ContraIndicator not found."))
                 .when(userService)
                 .updateUserMitigation(anyString(), anyString(), any());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(404, response.getStatusCode());
@@ -224,8 +226,8 @@ public class StubManagementHandlerTest {
 
     @Test
     public void shouldReturnSuccessForValidPutRequestWithNoContent() throws IOException {
-        APIGatewayV2HTTPEvent event = createTestEvent("PUT", "/user/123/cis", null);
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyRequestEvent event = createTestEvent("PUT", "/user/123/cis", null);
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(500, response.getStatusCode());
@@ -233,11 +235,11 @@ public class StubManagementHandlerTest {
 
     @Test
     public void shouldReturnSuccessForValidPutRequestWithEmptyContent() throws IOException {
-        APIGatewayV2HTTPEvent event =
+        APIGatewayProxyRequestEvent event =
                 createTestEvent("PUT", "/user/123/cis", Collections.emptyList());
         doNothing().when(userService).updateUserCis(anyString(), anyList());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
@@ -253,11 +255,11 @@ public class StubManagementHandlerTest {
                         .mitigations(List.of("V01", "V03"))
                         .build();
 
-        APIGatewayV2HTTPEvent event =
+        APIGatewayProxyRequestEvent event =
                 createTestEvent("PUT", "/user/123/cis", Collections.singletonList(userCisRequest));
         doNothing().when(userService).updateUserCis(anyString(), anyList());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
@@ -272,13 +274,13 @@ public class StubManagementHandlerTest {
                         .issuenceDate("2023-07-25T10:00:00Z")
                         .mitigations(List.of("V01", "V03"))
                         .build();
-        APIGatewayV2HTTPEvent event =
+        APIGatewayProxyRequestEvent event =
                 createTestEvent("POST", "/user/123/cis", Collections.singletonList(userCisRequest));
         doThrow(new RuntimeException("Unknown exception occurred."))
                 .when(userService)
                 .addUserCis(anyString(), anyList());
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(500, response.getStatusCode());
@@ -287,32 +289,24 @@ public class StubManagementHandlerTest {
 
     @Test
     public void shouldReturnBadRequestForInvalidMethod() throws IOException {
-        APIGatewayV2HTTPEvent event = createTestEvent("PATCH", "/user/123/cis", null);
+        APIGatewayProxyRequestEvent event = createTestEvent("PATCH", "/user/123/cis", null);
 
-        APIGatewayV2HTTPResponse response =
+        APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(400, response.getStatusCode());
         assertTrue(response.getBody().contains("Invalid endpoint"));
     }
 
-    private APIGatewayV2HTTPEvent createTestEvent(String httpMethod, String path, Object body)
+    private APIGatewayProxyRequestEvent createTestEvent(String httpMethod, String path, Object body)
             throws JsonProcessingException {
         Map<String, String> pathParameters = new HashMap<>();
         pathParameters.put("userId", "123");
         pathParameters.put("ci", "456");
 
-        APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
+        APIGatewayProxyRequestEvent event =
+                new APIGatewayProxyRequestEvent().withHttpMethod(httpMethod).withPath(path);
 
-        APIGatewayV2HTTPEvent.RequestContext.Http http =
-                new APIGatewayV2HTTPEvent.RequestContext.Http();
-        http.setMethod(httpMethod);
-        http.setPath(path);
-        APIGatewayV2HTTPEvent.RequestContext requestContext =
-                new APIGatewayV2HTTPEvent.RequestContext();
-        requestContext.setHttp(http);
-
-        event.setRequestContext(requestContext);
         event.setPathParameters(pathParameters);
         if (body != null) {
             event.setBody(objectMapper.writeValueAsString(body));
