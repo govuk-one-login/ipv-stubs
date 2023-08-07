@@ -204,6 +204,33 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref CimitStubTable
       AutoPublishAlias: live
+      Events:
+        PostCis:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/cis
+            Method: POST
+        PutCis:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/cis
+            Method: PUT
+        PostMits:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/mitigations/{ci}
+            Method: POST
+        PutMits:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/mitigations/{ci}
+            Method: PUT
+
+
 
   GetContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -347,6 +374,7 @@ Resources:
 
   RestApiGateway:
     Type: AWS::Serverless::Api
+    DependsOn: StubManagementFunction
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
       Name: !Sub CIMIT API Gateway ${Environment}
@@ -367,13 +395,6 @@ Resources:
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "CIMIT Usage Plan"
-        ResourcePolicy:
-          CustomStatements:
-            - Action: 'execute-api:Invoke'
-              Effect: Allow
-              Principal: '*'
-              Resource:
-                - 'execute-api:/*'
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiLogGroup.Arn
         Format: >-
