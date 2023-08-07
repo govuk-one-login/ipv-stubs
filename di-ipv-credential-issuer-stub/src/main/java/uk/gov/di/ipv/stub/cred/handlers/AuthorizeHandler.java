@@ -360,7 +360,7 @@ public class AuthorizeHandler {
                         HTTPResponse httpResponse = httpRequest.send();
                     }
 
-                    if (F2F_SEND_VC_QUEUE && F2F_SEND_ERROR_QUEUE) {
+                    if (F2F_SEND_ERROR_QUEUE) {
                         String queueName = queryParamsMap.value(F2F_STUB_QUEUE_NAME_FIELD);
                         HTTPRequest httpRequest =
                                 new HTTPRequest(
