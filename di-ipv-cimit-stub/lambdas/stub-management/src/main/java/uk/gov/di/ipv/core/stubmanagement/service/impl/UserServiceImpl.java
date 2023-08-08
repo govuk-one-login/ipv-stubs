@@ -105,8 +105,9 @@ public class UserServiceImpl implements UserService {
         cimitStubItems.stream()
                 .filter(item -> !codesToUndelete.contains(item.getContraIndicatorCode()))
                 .forEach(
-                        item -> cimitStubService.deleteCimitStubItem(
-                                item.getUserId(), item.getContraIndicatorCode()));
+                        item ->
+                                cimitStubService.deleteCimitStubItem(
+                                        item.getUserId(), item.getContraIndicatorCode()));
     }
 
     @Override
