@@ -26,9 +26,9 @@ public class StubManagementHandler
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final UserService userService;
 
-    private static final Pattern CIS_PATTERN = Pattern.compile("^/user/(\\d+)/cis$");
+    private static final Pattern CIS_PATTERN = Pattern.compile("^/user/[^/]+/cis$");
     private static final Pattern CIS_MITIGATIONS =
-            Pattern.compile("^/user/(\\d+)/mitigations/(\\d+)$");
+            Pattern.compile("^/user/[^/]+/mitigations/[^/]+$");
 
     private static final String USER_ID_PATH_PARAMS = "userId";
     private static final String CI_PATH_PARAMS = "ci";
