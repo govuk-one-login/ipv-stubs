@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.di.ipv.core.stubmanagement.exceptions.DataAlreadyExistException;
+import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
 import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
 import uk.gov.di.ipv.core.stubmanagement.model.UserMitigationRequest;
@@ -43,12 +43,12 @@ public class StubManagementHandlerTest {
                 List.of(
                         UserCisRequest.builder()
                                 .code("code1")
-                                .issuenceDate("2023-07-25T10:00:00Z")
+                                .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(List.of("V01", "V03"))
                                 .build(),
                         UserCisRequest.builder()
                                 .code("code2")
-                                .issuenceDate("2023-07-25T10:00:00Z")
+                                .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(Collections.emptyList())
                                 .build());
 
@@ -69,7 +69,7 @@ public class StubManagementHandlerTest {
         UserCisRequest userCisRequest =
                 UserCisRequest.builder()
                         .code("code1")
-                        .issuenceDate("2023-07-25T10:00:00Z")
+                        .issuanceDate("2023-07-25T10:00:00Z")
                         .mitigations(List.of("V01", "V03"))
                         .build();
         APIGatewayProxyRequestEvent event =
@@ -145,24 +145,20 @@ public class StubManagementHandlerTest {
         UserCisRequest userCisRequest =
                 UserCisRequest.builder()
                         .code("code1")
-                        .issuenceDate("2023-07-25T10:00:00Z")
+                        .issuanceDate("2023-07-25T10:00:00Z")
                         .mitigations(List.of("V01", "V03"))
                         .build();
         APIGatewayProxyRequestEvent event =
                 createTestEvent("POST", "/user/123/cis", Collections.singletonList(userCisRequest));
-        doThrow(
-                        new DataAlreadyExistException(
-                                "User already exists, instead try calling update api."))
+        doThrow(new BadRequestException("User's CI Code cannot be null in all CIs"))
                 .when(userService)
                 .addUserCis(anyString(), any());
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
-        assertEquals(409, response.getStatusCode());
-        assertTrue(
-                response.getBody()
-                        .contains("User already exists, instead try calling update api."));
+        assertEquals(400, response.getStatusCode());
+        assertTrue(response.getBody().contains("User's CI Code cannot be null in all CIs"));
     }
 
     @Test
@@ -170,7 +166,7 @@ public class StubManagementHandlerTest {
         UserCisRequest userCisRequest =
                 UserCisRequest.builder()
                         .code("code1")
-                        .issuenceDate("2023-07-25T10:00:00Z")
+                        .issuanceDate("2023-07-25T10:00:00Z")
                         .mitigations(List.of("V01", "V03"))
                         .build();
         APIGatewayProxyRequestEvent event =
@@ -192,19 +188,15 @@ public class StubManagementHandlerTest {
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
         APIGatewayProxyRequestEvent event =
                 createTestEvent("POST", "/user/123/mitigations/456", userMitigationRequest);
-        doThrow(
-                        new DataAlreadyExistException(
-                                "User already exists, instead try calling update api."))
+        doThrow(new BadRequestException("User's CI Code cannot be null in all CIs"))
                 .when(userService)
                 .addUserMitigation(anyString(), anyString(), any());
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
-        assertEquals(409, response.getStatusCode());
-        assertTrue(
-                response.getBody()
-                        .contains("User already exists, instead try calling update api."));
+        assertEquals(400, response.getStatusCode());
+        assertTrue(response.getBody().contains("User's CI Code cannot be null in all CIs"));
     }
 
     @Test
@@ -251,7 +243,7 @@ public class StubManagementHandlerTest {
         UserCisRequest userCisRequest =
                 UserCisRequest.builder()
                         .code("code1")
-                        .issuenceDate("2023-07-25T10:00:00Z")
+                        .issuanceDate("2023-07-25T10:00:00Z")
                         .mitigations(List.of("V01", "V03"))
                         .build();
 
@@ -271,7 +263,7 @@ public class StubManagementHandlerTest {
         UserCisRequest userCisRequest =
                 UserCisRequest.builder()
                         .code("code1")
-                        .issuenceDate("2023-07-25T10:00:00Z")
+                        .issuanceDate("2023-07-25T10:00:00Z")
                         .mitigations(List.of("V01", "V03"))
                         .build();
         APIGatewayProxyRequestEvent event =

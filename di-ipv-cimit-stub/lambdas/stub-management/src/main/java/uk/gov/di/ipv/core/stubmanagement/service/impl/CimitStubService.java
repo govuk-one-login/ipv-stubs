@@ -56,4 +56,8 @@ public class CimitStubService {
     public void updateCimitStub(CimitStubItem cimitStubItem) {
         dataStore.update(cimitStubItem);
     }
+
+    public void deleteCimitStubItem(String userId, String contraIndicatorCode) {
+        dataStore.delete(userId, contraIndicatorCode);
+    }
 }

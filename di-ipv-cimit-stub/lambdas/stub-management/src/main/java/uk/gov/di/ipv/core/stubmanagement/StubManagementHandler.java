@@ -8,7 +8,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import uk.gov.di.ipv.core.stubmanagement.exceptions.DataAlreadyExistException;
+import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
 import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
 import uk.gov.di.ipv.core.stubmanagement.model.UserMitigationRequest;
@@ -26,9 +26,9 @@ public class StubManagementHandler
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final UserService userService;
 
-    private static final Pattern CIS_PATTERN = Pattern.compile("^/user/[^/]+/cis$");
+    private static final Pattern CIS_PATTERN = Pattern.compile("^/user/[-a-zA-Z0-9_]+/cis$");
     private static final Pattern CIS_MITIGATIONS =
-            Pattern.compile("^/user/[^/]+/mitigations/[^/]+$");
+            Pattern.compile("^/user/[-a-zA-Z0-9_]+/mitigations/[-a-zA-Z0-9_]+$");
 
     private static final String USER_ID_PATH_PARAMS = "userId";
     private static final String CI_PATH_PARAMS = "ci";
@@ -81,14 +81,15 @@ public class StubManagementHandler
                         objectMapper.readValue(event.getBody(), UserMitigationRequest.class);
                 userService.updateUserMitigation(userId, ci, userMitigationRequest);
             } else {
-                return buildErrorResponse("Invalid endpoint", 400);
+                return buildErrorResponse(
+                        "Invalid endpoint. Check to url address and http method.", 400);
             }
-            return buildSuccessResponse(200);
+            return buildSuccessResponse();
         } catch (IOException e) {
             LOGGER.info("IOException :" + e.getMessage());
-            return buildErrorResponse("Invalid request body", 400);
-        } catch (DataAlreadyExistException e) {
-            return buildErrorResponse(e.getMessage(), 409);
+            return buildErrorResponse("Invalid request body.", 400);
+        } catch (BadRequestException e) {
+            return buildErrorResponse(e.getMessage(), 400);
         } catch (DataNotFoundException e) {
             return buildErrorResponse(e.getMessage(), 404);
         } catch (Exception e) {
@@ -97,8 +98,8 @@ public class StubManagementHandler
         }
     }
 
-    private APIGatewayProxyResponseEvent buildSuccessResponse(int statusCode) {
-        return new APIGatewayProxyResponseEvent().withStatusCode(statusCode).withBody("success");
+    private APIGatewayProxyResponseEvent buildSuccessResponse() {
+        return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody("success");
     }
 
     private APIGatewayProxyResponseEvent buildErrorResponse(String message, int statusCode) {

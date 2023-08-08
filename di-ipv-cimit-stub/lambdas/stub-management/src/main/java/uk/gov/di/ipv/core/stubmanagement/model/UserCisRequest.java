@@ -17,8 +17,8 @@ public class UserCisRequest {
     @JsonProperty("code")
     private String code;
 
-    @JsonProperty("issuenceDate")
-    private String issuenceDate;
+    @JsonProperty("issuanceDate")
+    private String issuanceDate;
 
     @JsonProperty("mitigations")
     private List<String> mitigations;
