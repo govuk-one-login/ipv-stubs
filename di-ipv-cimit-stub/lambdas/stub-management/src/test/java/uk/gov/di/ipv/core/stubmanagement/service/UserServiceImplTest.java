@@ -59,6 +59,22 @@ public class UserServiceImplTest {
     }
 
     @Test
+    public void shouldReturnFailedFromAddUserCisBadRequestExceptionThrown() {
+        String userId = "user123";
+        List<UserCisRequest> userCisRequests =
+                List.of(
+                        UserCisRequest.builder()
+                                .issuanceDate("2023-07-25T10:00:00Z")
+                                .mitigations(List.of("V01"))
+                                .build());
+
+        assertThrows(
+                BadRequestException.class, () -> userService.addUserCis(userId, userCisRequests));
+
+        verify(cimitStubService, never()).persistCimitStub(any(), any(), any(), any());
+    }
+
+    @Test
     public void shouldReturnSuccessFromAddUserCisForUpdateScenario() {
         String userId = "user123";
         List<UserCisRequest> userCisRequests =

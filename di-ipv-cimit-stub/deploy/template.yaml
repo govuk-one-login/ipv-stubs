@@ -217,13 +217,13 @@ Resources:
             RestApiId: !Ref RestApiGateway
             Path: /user/{userId}/cis
             Method: PUT
-        PostMits:
+        PostMitigations:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
             Path: /user/{userId}/mitigations/{ci}
             Method: POST
-        PutMits:
+        PutMitigations:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway

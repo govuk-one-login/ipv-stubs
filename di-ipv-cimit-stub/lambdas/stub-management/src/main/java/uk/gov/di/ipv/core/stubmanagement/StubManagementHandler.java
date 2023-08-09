@@ -50,39 +50,33 @@ public class StubManagementHandler
         Map<String, String> pathParameters = event.getPathParameters();
         String userId = pathParameters.get(USER_ID_PATH_PARAMS);
         try {
-            if (httpMethod.equals(HttpMethod.POST.toString())
-                    && CIS_PATTERN.matcher(path).matches()) {
+            if (CIS_PATTERN.matcher(path).matches()) {
                 List<UserCisRequest> userCisRequests =
                         objectMapper.readValue(
                                 event.getBody(),
                                 objectMapper
                                         .getTypeFactory()
                                         .constructCollectionType(List.class, UserCisRequest.class));
-                userService.addUserCis(userId, userCisRequests);
-            } else if (httpMethod.equals(HttpMethod.PUT.toString())
-                    && CIS_PATTERN.matcher(path).matches()) {
-                List<UserCisRequest> userCisRequests =
-                        objectMapper.readValue(
-                                event.getBody(),
-                                objectMapper
-                                        .getTypeFactory()
-                                        .constructCollectionType(List.class, UserCisRequest.class));
-                userService.updateUserCis(userId, userCisRequests);
-            } else if (httpMethod.equals(HttpMethod.POST.toString())
-                    && CIS_MITIGATIONS.matcher(path).matches()) {
+                if (httpMethod.equals(HttpMethod.POST.toString())) {
+                    userService.addUserCis(userId, userCisRequests);
+                } else if (httpMethod.equals(HttpMethod.PUT.toString())) {
+                    userService.updateUserCis(userId, userCisRequests);
+                } else {
+                    return buildErrorResponse("Http Method is not supported.", 400);
+                }
+            } else if (CIS_MITIGATIONS.matcher(path).matches()) {
                 String ci = pathParameters.get(CI_PATH_PARAMS);
                 UserMitigationRequest userMitigationRequest =
                         objectMapper.readValue(event.getBody(), UserMitigationRequest.class);
-                userService.addUserMitigation(userId, ci, userMitigationRequest);
-            } else if (httpMethod.equals(HttpMethod.PUT.toString())
-                    && CIS_MITIGATIONS.matcher(path).matches()) {
-                String ci = pathParameters.get(CI_PATH_PARAMS);
-                UserMitigationRequest userMitigationRequest =
-                        objectMapper.readValue(event.getBody(), UserMitigationRequest.class);
-                userService.updateUserMitigation(userId, ci, userMitigationRequest);
+                if (httpMethod.equals(HttpMethod.POST.toString())) {
+                    userService.addUserMitigation(userId, ci, userMitigationRequest);
+                } else if (httpMethod.equals(HttpMethod.PUT.toString())) {
+                    userService.updateUserMitigation(userId, ci, userMitigationRequest);
+                } else {
+                    return buildErrorResponse("Http Method is not supported.", 400);
+                }
             } else {
-                return buildErrorResponse(
-                        "Invalid endpoint. Check to url address and http method.", 400);
+                return buildErrorResponse("Invalid URI.", 400);
             }
             return buildSuccessResponse();
         } catch (IOException e) {

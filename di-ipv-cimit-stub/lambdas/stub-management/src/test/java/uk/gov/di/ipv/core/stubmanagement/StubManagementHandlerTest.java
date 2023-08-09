@@ -125,7 +125,7 @@ public class StubManagementHandlerTest {
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(400, response.getStatusCode());
-        assertTrue(response.getBody().contains("Invalid endpoint"));
+        assertTrue(response.getBody().contains("Invalid URI."));
     }
 
     @Test
@@ -281,13 +281,21 @@ public class StubManagementHandlerTest {
 
     @Test
     public void shouldReturnBadRequestForInvalidMethod() throws IOException {
-        APIGatewayProxyRequestEvent event = createTestEvent("PATCH", "/user/123/cis", null);
+        UserCisRequest userCisRequest =
+                UserCisRequest.builder()
+                        .code("code1")
+                        .issuanceDate("2023-07-25T10:00:00Z")
+                        .mitigations(List.of("V01", "V03"))
+                        .build();
+        APIGatewayProxyRequestEvent event =
+                createTestEvent(
+                        "PATCH", "/user/123/cis", Collections.singletonList(userCisRequest));
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(400, response.getStatusCode());
-        assertTrue(response.getBody().contains("Invalid endpoint"));
+        assertTrue(response.getBody().contains("Http Method is not supported."));
     }
 
     private APIGatewayProxyRequestEvent createTestEvent(String httpMethod, String path, Object body)

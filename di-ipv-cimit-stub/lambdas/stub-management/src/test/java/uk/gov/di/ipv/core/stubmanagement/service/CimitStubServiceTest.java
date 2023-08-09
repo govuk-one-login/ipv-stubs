@@ -39,6 +39,8 @@ public class CimitStubServiceTest {
 
     @InjectMocks private CimitStubService cimitStubService;
 
+    private static final String DB_TTL = "1800";
+
     @Test
     public void getCimitStubItemTest() {
         String userId = "testUserId";
@@ -82,6 +84,7 @@ public class CimitStubServiceTest {
                         .mitigations(List.of("V01", "V02", "V03"))
                         .build();
 
+        when(mockConfigService.getSsmParameter(eq(CIMIT_STUB_TTL))).thenReturn(DB_TTL);
         cimitStubService.updateCimitStub(cimitStubItem);
 
         verify(mockDataStore).update(cimitStubItem);
@@ -91,12 +94,18 @@ public class CimitStubServiceTest {
     @Test
     public void addUserCisShouldPersistUserCisRequestListWhenUserDoesNotExist() {
         String userId = "456";
-        List<UserCisRequest> userCisRequestList = Collections.singletonList(new UserCisRequest());
+        List<UserCisRequest> userCisRequests =
+                List.of(
+                        UserCisRequest.builder()
+                                .code("CI1")
+                                .issuanceDate("2023-07-25T10:00:00Z")
+                                .mitigations(List.of("V01", "V03"))
+                                .build());
 
         when(mockDataStore.getItems(userId)).thenReturn(Collections.emptyList());
 
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
-        userService.addUserCis(userId, userCisRequestList);
+        userService.addUserCis(userId, userCisRequests);
 
         verify(mockDataStore, times(1)).create(any(), eq(CIMIT_STUB_TTL));
     }
@@ -104,13 +113,17 @@ public class CimitStubServiceTest {
     @Test
     public void updateUserCisShouldThrowBadRequestExceptionWhenUserDoesNotExist() {
         String userId = "9999";
-        List<UserCisRequest> userCisRequestList = Collections.singletonList(new UserCisRequest());
-
+        List<UserCisRequest> userCisRequests =
+                List.of(
+                        UserCisRequest.builder()
+                                .issuanceDate("2023-07-25T10:00:00Z")
+                                .mitigations(List.of("V01", "V03"))
+                                .build());
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
 
         assertThrows(
                 BadRequestException.class,
-                () -> userService.updateUserCis(userId, userCisRequestList));
+                () -> userService.updateUserCis(userId, userCisRequests));
     }
 
     @Test
@@ -134,6 +147,7 @@ public class CimitStubServiceTest {
 
         when(mockDataStore.getItems(userId))
                 .thenReturn(Collections.singletonList(existingCimitStubItem));
+        when(mockConfigService.getSsmParameter(eq(CIMIT_STUB_TTL))).thenReturn(DB_TTL);
 
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
         userService.updateUserCis(userId, userCisRequests);
@@ -148,7 +162,6 @@ public class CimitStubServiceTest {
         UserMitigationRequest userMitigationRequest = new UserMitigationRequest();
 
         when(mockDataStore.getItems(userId)).thenReturn(Collections.emptyList());
-
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
 
         assertThrows(
@@ -174,6 +187,7 @@ public class CimitStubServiceTest {
 
         when(mockDataStore.getItems(userId))
                 .thenReturn(Collections.singletonList(existingCimitStubItem));
+        when(mockConfigService.getSsmParameter(eq(CIMIT_STUB_TTL))).thenReturn(DB_TTL);
 
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
         userService.addUserMitigation(userId, ci, userMitigationRequest);
@@ -214,6 +228,7 @@ public class CimitStubServiceTest {
 
         when(mockDataStore.getItems(userId))
                 .thenReturn(Collections.singletonList(existingCimitStubItem));
+        when(mockConfigService.getSsmParameter(eq(CIMIT_STUB_TTL))).thenReturn(DB_TTL);
 
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
         userService.updateUserMitigation(userId, ci, userMitigationRequest);

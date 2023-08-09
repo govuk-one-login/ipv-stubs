@@ -36,6 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void addUserCis(String userId, List<UserCisRequest> userCisRequest) {
+        checkCICodes(userCisRequest);
         List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItems(userId);
         userCisRequest.forEach(
                 user -> {
@@ -65,11 +66,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUserCis(String userId, List<UserCisRequest> userCisRequest) {
-        if (userCisRequest.stream().allMatch(user -> StringUtils.isEmpty(user.getCode()))) {
-            throw new BadRequestException("User's CI Code cannot be null in all CIs");
-        }
+        checkCICodes(userCisRequest);
         List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItems(userId);
         if (!cimitStubItems.isEmpty()) {
+            deleteOtherItems(cimitStubItems, userCisRequest);
             userCisRequest.forEach(
                     user -> {
                         if (!StringUtils.isEmpty(user.getCode())) {
@@ -91,19 +91,24 @@ public class UserServiceImpl implements UserService {
                             }
                         }
                     });
-            deleteOtherItems(cimitStubItems, userCisRequest);
+        }
+    }
+
+    private static void checkCICodes(List<UserCisRequest> userCisRequest) {
+        if (userCisRequest.stream().anyMatch(user -> StringUtils.isEmpty(user.getCode()))) {
+            throw new BadRequestException("User's CI Code cannot be null in all CIs");
         }
     }
 
     private void deleteOtherItems(
             List<CimitStubItem> cimitStubItems, List<UserCisRequest> userCisRequest) {
-        List<String> codesToUndelete =
+        List<String> cisToKeep =
                 userCisRequest.stream()
                         .map(UserCisRequest::getCode)
                         .filter(code -> !StringUtils.isEmpty(code))
-                        .toList();
+                        .collect(Collectors.toList());
         cimitStubItems.stream()
-                .filter(item -> !codesToUndelete.contains(item.getContraIndicatorCode()))
+                .filter(item -> !cisToKeep.contains(item.getContraIndicatorCode()))
                 .forEach(
                         item ->
                                 cimitStubService.deleteCimitStubItem(
@@ -150,9 +155,9 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private Instant getIssuanceDate(String issuenceDate) {
-        if (!StringUtils.isEmpty(issuenceDate)) {
-            return Instant.parse(issuenceDate);
+    private Instant getIssuanceDate(String issuanceDate) {
+        if (!StringUtils.isEmpty(issuanceDate)) {
+            return Instant.parse(issuanceDate);
         }
         return Instant.now();
     }
