@@ -31,7 +31,10 @@ java {
 	withSourcesJar()
 	sourceCompatibility = JavaVersion.VERSION_17
 	targetCompatibility = JavaVersion.VERSION_17
-	mainClassName = "uk.gov.di.ipv.stub.fraud.App"
+}
+
+application {
+	mainClass = "uk.gov.di.ipv.stub.fraud.App"
 }
 
 defaultTasks 'clean', 'build'

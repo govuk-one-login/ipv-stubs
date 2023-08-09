@@ -10,7 +10,9 @@ repositories {
 	mavenCentral()
 }
 
-sourceCompatibility = 17
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+}
 
 dependencies {
 	implementation "com.sparkjava:spark-core:2.9.3",
@@ -34,7 +36,9 @@ run {
 	}
 }
 
-mainClassName = "uk.gov.di.ipv.stub.core.App"
+application {
+	mainClass = "uk.gov.di.ipv.stub.core.App"
+}
 
 distributions {
 	main {
