@@ -95,6 +95,20 @@
                                 </td>
                             </tr>
                         {{/shared_claims}}
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">
+                                <details class="govuk-details" data-module="govuk-details">
+                                    <summary class="govuk-details__summary">
+                                            <span class="govuk-details__summary-text">
+                                                Evidence Requested:
+                                            </span>
+                                    </summary>
+                                    <div class="govuk-details__text">
+                                        <pre><code>{{evidence_requested}}</code></pre>
+                                    </div>
+                                </details>
+                            </td>
+                        </tr>
                         {{#isF2FType}}
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">
