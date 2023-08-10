@@ -1,0 +1,8 @@
+package uk.gov.di.ipv.core.stubmanagement.exceptions;
+
+public class BadRequestException extends RuntimeException {
+
+    public BadRequestException(String message) {
+        super(message);
+    }
+}

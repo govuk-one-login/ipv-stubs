@@ -5,7 +5,7 @@ import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.utils.StringUtils;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.ConfigService;
-import uk.gov.di.ipv.core.stubmanagement.exceptions.DataAlreadyExistException;
+import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
 import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
 import uk.gov.di.ipv.core.stubmanagement.model.UserMitigationRequest;
@@ -14,6 +14,8 @@ import uk.gov.di.ipv.core.stubmanagement.service.UserService;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class UserServiceImpl implements UserService {
 
@@ -34,41 +36,63 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void addUserCis(String userId, List<UserCisRequest> userCisRequest) {
+        checkCICodes(userCisRequest);
         List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItems(userId);
-        if (!cimitStubItems.isEmpty()) {
-            throw new DataAlreadyExistException(
-                    "User already exists, instead try calling update api.");
-        }
         userCisRequest.forEach(
                 user -> {
-                    cimitStubService.persistCimitStub(
-                            userId,
-                            user.getCode(),
-                            getIssuanceDate(user.getIssuenceDate()),
-                            user.getMitigations());
+                    Optional<CimitStubItem> cimitStubItem =
+                            getUserIdAndCodeFromDatabase(cimitStubItems, user.getCode());
+                    if (cimitStubItem.isEmpty()) {
+                        cimitStubService.persistCimitStub(
+                                userId,
+                                user.getCode(),
+                                getIssuanceDate(user.getIssuanceDate()),
+                                user.getMitigations());
+                    } else {
+                        cimitStubItem
+                                .get()
+                                .setMitigations(
+                                        getUpdatedMitigationsList(
+                                                cimitStubItem.get().getMitigations(),
+                                                user.getMitigations()));
+                        cimitStubItem
+                                .get()
+                                .setIssuanceDate(getIssuanceDate(user.getIssuanceDate()));
+                        cimitStubService.updateCimitStub(cimitStubItem.get());
+                    }
                 });
         LOGGER.info("Inserted User CI data to the Cimit Stub DynamoDB Table.");
     }
 
     @Override
     public void updateUserCis(String userId, List<UserCisRequest> userCisRequest) {
+        checkCICodes(userCisRequest);
         List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItems(userId);
-
+        if (!cimitStubItems.isEmpty()) {
+            deleteCimitStubItems(cimitStubItems);
+        }
         userCisRequest.forEach(
                 user -> {
-                    Optional<CimitStubItem> cimitStubItem =
-                            getUserIdAndCodeFromDatabase(cimitStubItems, user.getCode());
-                    if (cimitStubItem.isPresent()) {
-                        cimitStubItem.get().setMitigations(user.getMitigations());
-                        cimitStubItem
-                                .get()
-                                .setIssuanceDate(getIssuanceDate(user.getIssuenceDate()));
-                        cimitStubService.updateCimitStub(cimitStubItem.get());
-                    } else {
-                        throw new DataNotFoundException("User and ContraIndicator not found.");
-                    }
+                    cimitStubService.persistCimitStub(
+                            userId,
+                            user.getCode(),
+                            getIssuanceDate(user.getIssuanceDate()),
+                            user.getMitigations());
                 });
-        LOGGER.info("Updated User CI data to the Cimit Stub DynamoDB Table.");
+    }
+
+    private void deleteCimitStubItems(List<CimitStubItem> cimitStubItems) {
+        cimitStubItems.stream()
+                .forEach(
+                        item ->
+                                cimitStubService.deleteCimitStubItem(
+                                        item.getUserId(), item.getContraIndicatorCode()));
+    }
+
+    private static void checkCICodes(List<UserCisRequest> userCisRequest) {
+        if (userCisRequest.stream().anyMatch(user -> StringUtils.isEmpty(user.getCode()))) {
+            throw new BadRequestException("CI codes cannot be empty.");
+        }
     }
 
     @Override
@@ -77,16 +101,24 @@ public class UserServiceImpl implements UserService {
         List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItems(userId);
         Optional<CimitStubItem> cimitStubItem = getUserIdAndCodeFromDatabase(cimitStubItems, ci);
         if (cimitStubItem.isPresent()) {
-            if (!cimitStubItem.get().getMitigations().isEmpty()) {
-                throw new DataAlreadyExistException(
-                        "Mitigations already exists, instead try calling update api.");
-            }
-            cimitStubItem.get().setMitigations(userMitigationRequest.getMitigations());
+            cimitStubItem
+                    .get()
+                    .setMitigations(
+                            getUpdatedMitigationsList(
+                                    cimitStubItem.get().getMitigations(),
+                                    userMitigationRequest.getMitigations()));
             cimitStubService.updateCimitStub(cimitStubItem.get());
+            LOGGER.info("Inserted mitigations to the Cimit Stub DynamoDB Table.");
         } else {
             throw new DataNotFoundException("User and ContraIndicator not found.");
         }
-        LOGGER.info("Inserted mitigations to the Cimit Stub DynamoDB Table.");
+    }
+
+    private List<String> getUpdatedMitigationsList(
+            List<String> existingMitigations, List<String> newMitigations) {
+        return Stream.concat(existingMitigations.stream(), newMitigations.stream())
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -97,15 +129,15 @@ public class UserServiceImpl implements UserService {
         if (cimitStubItem.isPresent()) {
             cimitStubItem.get().setMitigations(userMitigationRequest.getMitigations());
             cimitStubService.updateCimitStub(cimitStubItem.get());
+            LOGGER.info("Updated mitigations to the Cimit Stub DynamoDB Table.");
         } else {
             throw new DataNotFoundException("User and ContraIndicator not found.");
         }
-        LOGGER.info("Updated mitigations to the Cimit Stub DynamoDB Table.");
     }
 
-    private Instant getIssuanceDate(String issuenceDate) {
-        if (!StringUtils.isEmpty(issuenceDate)) {
-            return Instant.parse(issuenceDate);
+    private Instant getIssuanceDate(String issuanceDate) {
+        if (!StringUtils.isEmpty(issuanceDate)) {
+            return Instant.parse(issuanceDate);
         }
         return Instant.now();
     }

@@ -8,7 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.core.library.persistence.DataStore;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.ConfigService;
-import uk.gov.di.ipv.core.stubmanagement.exceptions.DataAlreadyExistException;
+import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
 import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
 import uk.gov.di.ipv.core.stubmanagement.model.UserMitigationRequest;
@@ -38,6 +38,8 @@ public class CimitStubServiceTest {
     @Mock private ConfigService mockConfigService;
 
     @InjectMocks private CimitStubService cimitStubService;
+
+    private static final String DB_TTL = "1800";
 
     @Test
     public void getCimitStubItemTest() {
@@ -82,6 +84,7 @@ public class CimitStubServiceTest {
                         .mitigations(List.of("V01", "V02", "V03"))
                         .build();
 
+        when(mockConfigService.getSsmParameter(eq(CIMIT_STUB_TTL))).thenReturn(DB_TTL);
         cimitStubService.updateCimitStub(cimitStubItem);
 
         verify(mockDataStore).update(cimitStubItem);
@@ -89,77 +92,38 @@ public class CimitStubServiceTest {
     }
 
     @Test
-    public void addUserCisShouldThrowDataAlreadyExistExceptionWhenUserExists() {
-        String userId = "123";
-        List<UserCisRequest> userCisRequestList = Collections.singletonList(new UserCisRequest());
-
-        when(mockDataStore.getItems(userId))
-                .thenReturn(Collections.singletonList(new CimitStubItem()));
-
-        assertThrows(
-                DataAlreadyExistException.class,
-                () -> {
-                    UserService userService =
-                            new UserServiceImpl(mockConfigService, cimitStubService);
-                    userService.addUserCis(userId, userCisRequestList);
-                });
-    }
-
-    @Test
     public void addUserCisShouldPersistUserCisRequestListWhenUserDoesNotExist() {
         String userId = "456";
-        List<UserCisRequest> userCisRequestList = Collections.singletonList(new UserCisRequest());
+        List<UserCisRequest> userCisRequests =
+                List.of(
+                        UserCisRequest.builder()
+                                .code("CI1")
+                                .issuanceDate("2023-07-25T10:00:00Z")
+                                .mitigations(List.of("V01", "V03"))
+                                .build());
 
         when(mockDataStore.getItems(userId)).thenReturn(Collections.emptyList());
 
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
-        userService.addUserCis(userId, userCisRequestList);
+        userService.addUserCis(userId, userCisRequests);
 
         verify(mockDataStore, times(1)).create(any(), eq(CIMIT_STUB_TTL));
     }
 
     @Test
-    public void updateUserCisShouldThrowDataNotFoundExceptionWhenUserDoesNotExist() {
+    public void updateUserCisShouldThrowBadRequestExceptionWhenUserDoesNotExist() {
         String userId = "9999";
-        List<UserCisRequest> userCisRequestList = Collections.singletonList(new UserCisRequest());
-
-        when(mockDataStore.getItems(userId)).thenReturn(Collections.emptyList());
-
-        UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
-
-        assertThrows(
-                DataNotFoundException.class,
-                () -> {
-                    userService.updateUserCis(userId, userCisRequestList);
-                });
-    }
-
-    @Test
-    public void updateUserCisShouldUpdateUserCisWhenUserExists() {
-        String userId = "123";
         List<UserCisRequest> userCisRequests =
                 List.of(
                         UserCisRequest.builder()
-                                .code("CI1")
-                                .issuenceDate("2023-07-25T10:00:00Z")
+                                .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(List.of("V01", "V03"))
                                 .build());
-
-        CimitStubItem existingCimitStubItem =
-                CimitStubItem.builder()
-                        .userId(userId)
-                        .contraIndicatorCode("CI1")
-                        .issuanceDate(Instant.now())
-                        .mitigations(List.of("V01", "V02", "V03"))
-                        .build();
-
-        when(mockDataStore.getItems(userId))
-                .thenReturn(Collections.singletonList(existingCimitStubItem));
-
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
-        userService.updateUserCis(userId, userCisRequests);
 
-        verify(mockDataStore, times(1)).update(any());
+        assertThrows(
+                BadRequestException.class,
+                () -> userService.updateUserCis(userId, userCisRequests));
     }
 
     @Test
@@ -169,40 +133,11 @@ public class CimitStubServiceTest {
         UserMitigationRequest userMitigationRequest = new UserMitigationRequest();
 
         when(mockDataStore.getItems(userId)).thenReturn(Collections.emptyList());
-
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
 
         assertThrows(
                 DataNotFoundException.class,
-                () -> {
-                    userService.addUserMitigation(userId, ci, userMitigationRequest);
-                });
-    }
-
-    @Test
-    public void addUserMitigationShouldThrowDataAlreadyExistExceptionWhenMitigationsAlreadyExist() {
-        String userId = "123";
-        String ci = "CI1";
-        UserMitigationRequest userMitigationRequest = new UserMitigationRequest();
-
-        CimitStubItem existingCimitStubItem =
-                CimitStubItem.builder()
-                        .userId(userId)
-                        .contraIndicatorCode(ci)
-                        .issuanceDate(Instant.now())
-                        .mitigations(List.of("V01", "V02", "V03"))
-                        .build();
-
-        when(mockDataStore.getItems(userId))
-                .thenReturn(Collections.singletonList(existingCimitStubItem));
-
-        UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
-
-        assertThrows(
-                DataAlreadyExistException.class,
-                () -> {
-                    userService.addUserMitigation(userId, ci, userMitigationRequest);
-                });
+                () -> userService.addUserMitigation(userId, ci, userMitigationRequest));
     }
 
     @Test
@@ -223,6 +158,7 @@ public class CimitStubServiceTest {
 
         when(mockDataStore.getItems(userId))
                 .thenReturn(Collections.singletonList(existingCimitStubItem));
+        when(mockConfigService.getSsmParameter(eq(CIMIT_STUB_TTL))).thenReturn(DB_TTL);
 
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
         userService.addUserMitigation(userId, ci, userMitigationRequest);
@@ -242,9 +178,7 @@ public class CimitStubServiceTest {
 
         assertThrows(
                 DataNotFoundException.class,
-                () -> {
-                    userService.updateUserMitigation(userId, ci, userMitigationRequest);
-                });
+                () -> userService.updateUserMitigation(userId, ci, userMitigationRequest));
     }
 
     @Test
@@ -265,6 +199,7 @@ public class CimitStubServiceTest {
 
         when(mockDataStore.getItems(userId))
                 .thenReturn(Collections.singletonList(existingCimitStubItem));
+        when(mockConfigService.getSsmParameter(eq(CIMIT_STUB_TTL))).thenReturn(DB_TTL);
 
         UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
         userService.updateUserMitigation(userId, ci, userMitigationRequest);

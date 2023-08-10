@@ -3,12 +3,12 @@ package uk.gov.di.ipv.core.stubmanagement;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import uk.gov.di.ipv.core.stubmanagement.exceptions.DataAlreadyExistException;
+import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
 import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
 import uk.gov.di.ipv.core.stubmanagement.model.UserMitigationRequest;
@@ -21,14 +21,14 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class StubManagementHandler
-        implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+        implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final UserService userService;
 
-    private static final Pattern CIS_PATTERN = Pattern.compile("^/user/(\\d+)/cis$");
+    private static final Pattern CIS_PATTERN = Pattern.compile("^/user/[-a-zA-Z0-9_]+/cis$");
     private static final Pattern CIS_MITIGATIONS =
-            Pattern.compile("^/user/(\\d+)/mitigations/(\\d+)$");
+            Pattern.compile("^/user/[-a-zA-Z0-9_]+/mitigations/[-a-zA-Z0-9_]+$");
 
     private static final String USER_ID_PATH_PARAMS = "userId";
     private static final String CI_PATH_PARAMS = "ci";
@@ -42,53 +42,48 @@ public class StubManagementHandler
     }
 
     @Override
-    public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent event, Context context) {
-        String httpMethod = event.getRequestContext().getHttp().getMethod();
-        String path = event.getRequestContext().getHttp().getPath();
+    public APIGatewayProxyResponseEvent handleRequest(
+            APIGatewayProxyRequestEvent event, Context context) {
+        String httpMethod = event.getHttpMethod();
+        String path = event.getPath();
 
         Map<String, String> pathParameters = event.getPathParameters();
         String userId = pathParameters.get(USER_ID_PATH_PARAMS);
-
         try {
-            if (httpMethod.equals(HttpMethod.POST.toString())
-                    && CIS_PATTERN.matcher(path).matches()) {
+            if (CIS_PATTERN.matcher(path).matches()) {
                 List<UserCisRequest> userCisRequests =
                         objectMapper.readValue(
                                 event.getBody(),
                                 objectMapper
                                         .getTypeFactory()
                                         .constructCollectionType(List.class, UserCisRequest.class));
-                userService.addUserCis(userId, userCisRequests);
-            } else if (httpMethod.equals(HttpMethod.PUT.toString())
-                    && CIS_PATTERN.matcher(path).matches()) {
-                List<UserCisRequest> userCisRequests =
-                        objectMapper.readValue(
-                                event.getBody(),
-                                objectMapper
-                                        .getTypeFactory()
-                                        .constructCollectionType(List.class, UserCisRequest.class));
-                userService.updateUserCis(userId, userCisRequests);
-            } else if (httpMethod.equals(HttpMethod.POST.toString())
-                    && CIS_MITIGATIONS.matcher(path).matches()) {
+                if (httpMethod.equals(HttpMethod.POST.toString())) {
+                    userService.addUserCis(userId, userCisRequests);
+                } else if (httpMethod.equals(HttpMethod.PUT.toString())) {
+                    userService.updateUserCis(userId, userCisRequests);
+                } else {
+                    return buildErrorResponse("Http Method is not supported.", 400);
+                }
+            } else if (CIS_MITIGATIONS.matcher(path).matches()) {
                 String ci = pathParameters.get(CI_PATH_PARAMS);
                 UserMitigationRequest userMitigationRequest =
                         objectMapper.readValue(event.getBody(), UserMitigationRequest.class);
-                userService.addUserMitigation(userId, ci, userMitigationRequest);
-            } else if (httpMethod.equals(HttpMethod.PUT.toString())
-                    && CIS_MITIGATIONS.matcher(path).matches()) {
-                String ci = pathParameters.get(CI_PATH_PARAMS);
-                UserMitigationRequest userMitigationRequest =
-                        objectMapper.readValue(event.getBody(), UserMitigationRequest.class);
-                userService.updateUserMitigation(userId, ci, userMitigationRequest);
+                if (httpMethod.equals(HttpMethod.POST.toString())) {
+                    userService.addUserMitigation(userId, ci, userMitigationRequest);
+                } else if (httpMethod.equals(HttpMethod.PUT.toString())) {
+                    userService.updateUserMitigation(userId, ci, userMitigationRequest);
+                } else {
+                    return buildErrorResponse("Http Method is not supported.", 400);
+                }
             } else {
-                return buildErrorResponse("Invalid endpoint", 400);
+                return buildErrorResponse("Invalid URI.", 400);
             }
-            return buildSuccessResponse(200);
+            return buildSuccessResponse();
         } catch (IOException e) {
             LOGGER.info("IOException :" + e.getMessage());
-            return buildErrorResponse("Invalid request body", 400);
-        } catch (DataAlreadyExistException e) {
-            return buildErrorResponse(e.getMessage(), 409);
+            return buildErrorResponse("Invalid request body.", 400);
+        } catch (BadRequestException e) {
+            return buildErrorResponse(e.getMessage(), 400);
         } catch (DataNotFoundException e) {
             return buildErrorResponse(e.getMessage(), 404);
         } catch (Exception e) {
@@ -97,17 +92,11 @@ public class StubManagementHandler
         }
     }
 
-    private APIGatewayV2HTTPResponse buildSuccessResponse(int statusCode) {
-        return APIGatewayV2HTTPResponse.builder()
-                .withStatusCode(statusCode)
-                .withBody("success")
-                .build();
+    private APIGatewayProxyResponseEvent buildSuccessResponse() {
+        return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody("success");
     }
 
-    private APIGatewayV2HTTPResponse buildErrorResponse(String message, int statusCode) {
-        return APIGatewayV2HTTPResponse.builder()
-                .withStatusCode(statusCode)
-                .withBody(message)
-                .build();
+    private APIGatewayProxyResponseEvent buildErrorResponse(String message, int statusCode) {
+        return new APIGatewayProxyResponseEvent().withStatusCode(statusCode).withBody(message);
     }
 }

@@ -6,8 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
-import uk.gov.di.ipv.core.library.service.ConfigService;
-import uk.gov.di.ipv.core.stubmanagement.exceptions.DataAlreadyExistException;
+import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
 import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
 import uk.gov.di.ipv.core.stubmanagement.model.UserMitigationRequest;
@@ -30,8 +29,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class UserServiceImplTest {
 
-    @Mock private ConfigService configService;
-
     @Mock private CimitStubService cimitStubService;
 
     @InjectMocks private UserServiceImpl userService;
@@ -43,12 +40,12 @@ public class UserServiceImplTest {
                 List.of(
                         UserCisRequest.builder()
                                 .code("code1")
-                                .issuenceDate("2023-07-25T10:00:00Z")
+                                .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(List.of("V01", "V03"))
                                 .build(),
                         UserCisRequest.builder()
                                 .code("code2")
-                                .issuenceDate("2023-07-25T10:00:00Z")
+                                .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(Collections.emptyList())
                                 .build());
 
@@ -58,28 +55,44 @@ public class UserServiceImplTest {
 
         verify(cimitStubService, times(userCisRequests.size()))
                 .persistCimitStub(any(), any(), any(), any());
+        verify(cimitStubService, never()).updateCimitStub(any());
     }
 
     @Test
-    public void shouldReturnFailedFromAddUserCisUserAlreadyExistsExceptionThrown() {
+    public void shouldReturnFailedFromAddUserCisBadRequestExceptionThrown() {
+        String userId = "user123";
+        List<UserCisRequest> userCisRequests =
+                List.of(
+                        UserCisRequest.builder()
+                                .issuanceDate("2023-07-25T10:00:00Z")
+                                .mitigations(List.of("V01"))
+                                .build());
+
+        assertThrows(
+                BadRequestException.class, () -> userService.addUserCis(userId, userCisRequests));
+
+        verify(cimitStubService, never()).persistCimitStub(any(), any(), any(), any());
+    }
+
+    @Test
+    public void shouldReturnSuccessFromAddUserCisForUpdateScenario() {
         String userId = "user123";
         List<UserCisRequest> userCisRequests =
                 List.of(
                         UserCisRequest.builder()
                                 .code("code1")
-                                .issuenceDate("2023-07-25T10:00:00Z")
+                                .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(List.of("V01", "V03"))
                                 .build());
         List<CimitStubItem> existingItems = new ArrayList<>();
         existingItems.add(
-                new CimitStubItem(userId, "code2", Instant.now(), 30000, new ArrayList<>()));
+                new CimitStubItem(userId, "code1", Instant.now(), 30000, new ArrayList<>()));
 
         when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
-        assertThrows(
-                DataAlreadyExistException.class,
-                () -> userService.addUserCis(userId, userCisRequests));
-        verify(cimitStubService, never()).persistCimitStub(any(), any(), any(), any());
+        assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
+
+        verify(cimitStubService, times(1)).updateCimitStub(any());
     }
 
     @Test
@@ -89,7 +102,7 @@ public class UserServiceImplTest {
                 List.of(
                         UserCisRequest.builder()
                                 .code("code1")
-                                .issuenceDate("2023-07-25T10:00:00Z")
+                                .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(List.of("V01"))
                                 .build());
 
@@ -101,31 +114,51 @@ public class UserServiceImplTest {
 
         assertDoesNotThrow(() -> userService.updateUserCis(userId, userCisRequests));
 
-        verify(cimitStubService, times(1)).updateCimitStub(any());
+        verify(cimitStubService, times(userCisRequests.size()))
+                .persistCimitStub(any(), any(), any(), any());
     }
 
     @Test
-    public void shouldReturnFailedFromUpdateUserCis() {
+    public void shouldReturnFailedFromUpdateUserCisBadRequestExceptionThrown() {
+        String userId = "user123";
+        List<UserCisRequest> userCisRequests =
+                List.of(
+                        UserCisRequest.builder()
+                                .issuanceDate("2023-07-25T10:00:00Z")
+                                .mitigations(List.of("V01"))
+                                .build());
+
+        assertThrows(
+                BadRequestException.class,
+                () -> userService.updateUserCis(userId, userCisRequests));
+
+        verify(cimitStubService, never()).updateCimitStub(any());
+    }
+
+    @Test
+    public void shouldReturnSuccessWithCurrentDifferentCIsFromUpdateUserCis() {
         String userId = "user123";
         List<UserCisRequest> userCisRequests =
                 List.of(
                         UserCisRequest.builder()
                                 .code("code1")
-                                .issuenceDate("2023-07-25T10:00:00Z")
+                                .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(List.of("V01"))
                                 .build());
 
-        List<CimitStubItem> existingItems = new ArrayList<>();
-        existingItems.add(
-                new CimitStubItem(userId, "code3", Instant.now(), 30000, new ArrayList<>()));
+        List<CimitStubItem> existingItems =
+                List.of(
+                        new CimitStubItem(userId, "code1", Instant.now(), 30000, new ArrayList<>()),
+                        new CimitStubItem(userId, "code2", Instant.now(), 30000, new ArrayList<>()),
+                        new CimitStubItem(
+                                userId, "code3", Instant.now(), 30000, new ArrayList<>()));
 
         when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
-        assertThrows(
-                DataNotFoundException.class,
-                () -> userService.updateUserCis(userId, userCisRequests));
+        assertDoesNotThrow(() -> userService.updateUserCis(userId, userCisRequests));
 
-        verify(cimitStubService, never()).updateCimitStub(any());
+        verify(cimitStubService, times(userCisRequests.size()))
+                .persistCimitStub(any(), any(), any(), any());
     }
 
     @Test
@@ -133,10 +166,12 @@ public class UserServiceImplTest {
         String userId = "user123";
         String ci = "code1";
         UserMitigationRequest userMitigationRequest =
-                UserMitigationRequest.builder().mitigations(Collections.emptyList()).build();
+                UserMitigationRequest.builder().mitigations(List.of("V01", "V02")).build();
 
-        List<CimitStubItem> existingItems = new ArrayList<>();
-        existingItems.add(new CimitStubItem(userId, ci, Instant.now(), 30000, new ArrayList<>()));
+        List<CimitStubItem> existingItems =
+                List.of(
+                        new CimitStubItem(
+                                userId, ci, Instant.now(), 30000, List.of("V01", "V03", "V04")));
 
         when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
@@ -146,7 +181,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void shouldReturnFailedFromAddUserMitigationUserNotFoundExceptionThrown() {
+    public void shouldReturnFailedFromAddUserMitigationUserDataNotFoundExceptionThrown() {
         String userId = "user123";
         String ci = "code1";
         UserMitigationRequest userMitigationRequest =
@@ -159,6 +194,7 @@ public class UserServiceImplTest {
         assertThrows(
                 DataNotFoundException.class,
                 () -> userService.addUserMitigation(userId, ci, userMitigationRequest));
+
         verify(cimitStubService, never()).updateCimitStub(any());
     }
 
@@ -167,10 +203,10 @@ public class UserServiceImplTest {
         String userId = "user123";
         String ci = "code1";
         UserMitigationRequest userMitigationRequest =
-                UserMitigationRequest.builder().mitigations(List.of("V01", "V03")).build();
+                UserMitigationRequest.builder().mitigations(List.of("V01", "V02")).build();
 
-        List<CimitStubItem> existingItems = new ArrayList<>();
-        existingItems.add(new CimitStubItem(userId, ci, Instant.now(), 30000, new ArrayList<>()));
+        List<CimitStubItem> existingItems =
+                List.of(new CimitStubItem(userId, ci, Instant.now(), 30000, List.of("V03")));
 
         when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 

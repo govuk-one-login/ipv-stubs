@@ -27,6 +27,7 @@ Resources:
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
     # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
     # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    # checkov:skip=CKV_AWS_173: doing it later
     DependsOn:
       - "GetContraIndicatorsFunctionLogGroup"
     Properties:
@@ -56,6 +57,7 @@ Resources:
             TableName: !Ref CimitStubTable
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
+      AutoPublishAlias: live
 
   # lambda to stub cimit postMitigations
   PostMitigationsFunction:
@@ -87,6 +89,7 @@ Resources:
           - !GetAtt CimitLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
+      AutoPublishAlias: live
 
   # lambda to stub cimit putContraIndicators
   PutContraIndicatorsFunction:
@@ -120,6 +123,7 @@ Resources:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/*
+      AutoPublishAlias: live
 
   # lambda to stub cimit getContraIndicatorCredential
   GetContraIndicatorCredentialFunction:
@@ -159,6 +163,7 @@ Resources:
             TableName: !Ref CimitStubTable
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
+      AutoPublishAlias: live
 
   # lambda to stub management
   StubManagementFunction:
@@ -199,6 +204,34 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
         - DynamoDBCrudPolicy:
             TableName: !Ref CimitStubTable
+      AutoPublishAlias: live
+      Events:
+        PostCis:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/cis
+            Method: POST
+        PutCis:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/cis
+            Method: PUT
+        PostMitigations:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/mitigations/{ci}
+            Method: POST
+        PutMitigations:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/mitigations/{ci}
+            Method: PUT
+
+
 
   GetContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -342,6 +375,7 @@ Resources:
 
   RestApiGateway:
     Type: AWS::Serverless::Api
+    DependsOn: StubManagementFunction
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
       Name: !Sub CIMIT API Gateway ${Environment}

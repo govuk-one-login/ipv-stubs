@@ -54,6 +54,14 @@ public class CimitStubService {
     }
 
     public void updateCimitStub(CimitStubItem cimitStubItem) {
+        cimitStubItem.setTtl(
+                Instant.now()
+                        .plusSeconds(Long.parseLong(configService.getSsmParameter(CIMIT_STUB_TTL)))
+                        .getEpochSecond());
         dataStore.update(cimitStubItem);
+    }
+
+    public void deleteCimitStubItem(String userId, String contraIndicatorCode) {
+        dataStore.delete(userId, contraIndicatorCode);
     }
 }
