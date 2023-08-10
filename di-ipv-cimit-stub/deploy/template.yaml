@@ -24,8 +24,8 @@ Resources:
   # lambda to stub cimit getContraIndicators
   GetContraIndicatorsFunction:
     Type: AWS::Serverless::Function
-    # checkov:skip=CKV_AWS_116: doing it later
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_116: doing it later
     # checkov:skip=CKV_AWS_173: doing it later
     # checkov:skip=CKV_AWS_115: doing it later
     DependsOn:
@@ -34,13 +34,14 @@ Resources:
       FunctionName: !Sub "getContraIndicators-${Environment}"
       CodeUri: "../lambdas/get-contra-indicators"
       Handler: uk.gov.di.ipv.core.getcontraindicators.GetContraIndicatorsHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       PackageType: Zip
       Architectures:
         - arm64
       MemorySize: 2048
       Tracing: Active
       Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
           CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
@@ -62,22 +63,22 @@ Resources:
   PostMitigationsFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
-    # checkov:skip=CKV_AWS_116: doing it later
-    # checkov:skip=CKV_AWS_173: doing it later
-    # checkov:skip=CKV_AWS_115: doing it later
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     DependsOn:
       - "PostMitigationsFunctionLogGroup"
     Properties:
       FunctionName: !Sub "postMitigations-${Environment}"
       CodeUri: "../lambdas/post-mitigations"
       Handler: uk.gov.di.ipv.core.postmitigations.PostMitigationsHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       PackageType: Zip
       Architectures:
         - arm64
       MemorySize: 2048
       Tracing: Active
       Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
       VpcConfig:
@@ -94,22 +95,22 @@ Resources:
   PutContraIndicatorsFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
-    # checkov:skip=CKV_AWS_116: doing it later
-    # checkov:skip=CKV_AWS_173: doing it later
-    # checkov:skip=CKV_AWS_115: doing it later
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     DependsOn:
       - "PutContraIndicatorsFunctionLogGroup"
     Properties:
       FunctionName: !Sub "putContraIndicators-${Environment}"
       CodeUri: "../lambdas/put-contra-indicators"
       Handler: uk.gov.di.ipv.core.putcontraindicators.PutContraIndicatorsHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       PackageType: Zip
       Architectures:
         - arm64
       MemorySize: 2048
       Tracing: Active
       Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
       VpcConfig:
@@ -128,22 +129,22 @@ Resources:
   GetContraIndicatorCredentialFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
-    # checkov:skip=CKV_AWS_116: doing it later
-    # checkov:skip=CKV_AWS_173: doing it later
-    # checkov:skip=CKV_AWS_115: doing it later
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     DependsOn:
       - "GetContraIndicatorCredentialFunctionLogGroup"
     Properties:
       FunctionName: !Sub "getContraIndicatorCredential-${Environment}"
       CodeUri: "../lambdas/get-contra-indicator-credential"
       Handler: uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       PackageType: Zip
       Architectures:
         - arm64
       MemorySize: 2048
       Tracing: Active
       Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
           CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
@@ -168,22 +169,22 @@ Resources:
   StubManagementFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
-    # checkov:skip=CKV_AWS_116: doing it later
-    # checkov:skip=CKV_AWS_173: doing it later
-    # checkov:skip=CKV_AWS_115: doing it later
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     DependsOn:
       - "StubManagementFunctionLogGroup"
     Properties:
       FunctionName: !Sub "stubManagement-${Environment}"
       CodeUri: "../lambdas/stub-management"
       Handler: uk.gov.di.ipv.core.stubmanagement.StubManagementHandler::handleRequest
-      Runtime: java11
+      Runtime: java17
       PackageType: Zip
       Architectures:
         - arm64
       MemorySize: 2048
       Tracing: Active
       Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
           CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
@@ -291,8 +292,8 @@ Resources:
 
   CimitStubTable:
     Type: AWS::DynamoDB::Table
+    # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
     Properties:
-      # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
       TableName: !Sub "cimit-stub-${Environment}"
       BillingMode: "PAY_PER_REQUEST"
       AttributeDefinitions:

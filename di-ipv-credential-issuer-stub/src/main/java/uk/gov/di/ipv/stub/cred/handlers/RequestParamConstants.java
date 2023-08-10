@@ -22,4 +22,5 @@ public class RequestParamConstants {
     public static final String REQUESTED_OAUTH_ERROR_DESCRIPTION =
             "requested_oauth_error_description";
     public static final String F2F_SEND_VC_QUEUE = "f2f_send_vc_queue";
+    public static final String F2F_SEND_ERROR_QUEUE = "f2f_send_error_queue";
 }

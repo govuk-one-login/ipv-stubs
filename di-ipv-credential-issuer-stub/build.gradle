@@ -10,7 +10,9 @@ repositories {
 	mavenCentral()
 }
 
-sourceCompatibility = 17
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+}
 
 dependencies {
 	implementation "com.sparkjava:spark-core:2.9.3",
@@ -28,8 +30,9 @@ dependencies {
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2',
 			'org.mockito:mockito-core:4.2.0',
 			"org.mockito:mockito-junit-jupiter:4.1.0",
-			'uk.org.webcompere:system-stubs-jupiter:1.1.0',
+			'uk.org.webcompere:system-stubs-jupiter:2.0.2',
 			"org.hamcrest:hamcrest:2.2"
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 test {
@@ -45,4 +48,6 @@ run {
 	}
 }
 
-mainClassName = 'uk.gov.di.ipv.stub.cred.App'
+application {
+	mainClass = 'uk.gov.di.ipv.stub.cred.App'
+}
