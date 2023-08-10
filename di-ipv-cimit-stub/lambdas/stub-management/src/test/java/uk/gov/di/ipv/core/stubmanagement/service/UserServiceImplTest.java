@@ -114,7 +114,8 @@ public class UserServiceImplTest {
 
         assertDoesNotThrow(() -> userService.updateUserCis(userId, userCisRequests));
 
-        verify(cimitStubService, times(1)).updateCimitStub(any());
+        verify(cimitStubService, times(userCisRequests.size()))
+                .persistCimitStub(any(), any(), any(), any());
     }
 
     @Test
@@ -156,8 +157,8 @@ public class UserServiceImplTest {
 
         assertDoesNotThrow(() -> userService.updateUserCis(userId, userCisRequests));
 
-        verify(cimitStubService, times(1)).updateCimitStub(any());
-        verify(cimitStubService, times(2)).deleteCimitStubItem(any(), any());
+        verify(cimitStubService, times(userCisRequests.size()))
+                .persistCimitStub(any(), any(), any(), any());
     }
 
     @Test

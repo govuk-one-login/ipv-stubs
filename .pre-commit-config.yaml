@@ -47,7 +47,7 @@ repos:
     rev: '2.3.56'
     hooks:
       - id: checkov
-        args: ['--framework', 'cloudformation', '--quiet', '--skip-check', 'CKV_AWS_116,CKV_AWS_173,CKV_AWS_115,CKV_AWS_28,CKV_AWS_120']
+        args: ['--framework', 'cloudformation', '--quiet']
         files: ^(.*/)?template\.(yml|yaml)$
   - repo: https://github.com/lovesegfault/beautysh
     rev: 'v6.2.1'

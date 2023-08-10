@@ -69,50 +69,30 @@ public class UserServiceImpl implements UserService {
         checkCICodes(userCisRequest);
         List<CimitStubItem> cimitStubItems = cimitStubService.getCimitStubItems(userId);
         if (!cimitStubItems.isEmpty()) {
-            deleteOtherItems(cimitStubItems, userCisRequest);
-            userCisRequest.forEach(
-                    user -> {
-                        if (!StringUtils.isEmpty(user.getCode())) {
-                            Optional<CimitStubItem> cimitStubItem =
-                                    getUserIdAndCodeFromDatabase(cimitStubItems, user.getCode());
-                            if (cimitStubItem.isPresent()) {
-                                cimitStubItem
-                                        .get()
-                                        .setMitigations(
-                                                getUpdatedMitigationsList(
-                                                        cimitStubItem.get().getMitigations(),
-                                                        user.getMitigations()));
-                                cimitStubItem
-                                        .get()
-                                        .setIssuanceDate(getIssuanceDate(user.getIssuanceDate()));
-                                cimitStubService.updateCimitStub(cimitStubItem.get());
-                                LOGGER.info(
-                                        "Updated User CI data to the Cimit Stub DynamoDB Table.");
-                            }
-                        }
-                    });
+            deleteCimitStubItems(cimitStubItems);
         }
+        userCisRequest.forEach(
+                user -> {
+                    cimitStubService.persistCimitStub(
+                            userId,
+                            user.getCode(),
+                            getIssuanceDate(user.getIssuanceDate()),
+                            user.getMitigations());
+                });
     }
 
-    private static void checkCICodes(List<UserCisRequest> userCisRequest) {
-        if (userCisRequest.stream().anyMatch(user -> StringUtils.isEmpty(user.getCode()))) {
-            throw new BadRequestException("User's CI Code cannot be null in all CIs");
-        }
-    }
-
-    private void deleteOtherItems(
-            List<CimitStubItem> cimitStubItems, List<UserCisRequest> userCisRequest) {
-        List<String> cisToKeep =
-                userCisRequest.stream()
-                        .map(UserCisRequest::getCode)
-                        .filter(code -> !StringUtils.isEmpty(code))
-                        .collect(Collectors.toList());
+    private void deleteCimitStubItems(List<CimitStubItem> cimitStubItems) {
         cimitStubItems.stream()
-                .filter(item -> !cisToKeep.contains(item.getContraIndicatorCode()))
                 .forEach(
                         item ->
                                 cimitStubService.deleteCimitStubItem(
                                         item.getUserId(), item.getContraIndicatorCode()));
+    }
+
+    private static void checkCICodes(List<UserCisRequest> userCisRequest) {
+        if (userCisRequest.stream().anyMatch(user -> StringUtils.isEmpty(user.getCode()))) {
+            throw new BadRequestException("CI codes cannot be empty.");
+        }
     }
 
     @Override

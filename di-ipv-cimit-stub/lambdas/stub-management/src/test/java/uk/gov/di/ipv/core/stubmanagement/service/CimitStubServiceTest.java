@@ -127,35 +127,6 @@ public class CimitStubServiceTest {
     }
 
     @Test
-    public void updateUserCisShouldUpdateUserCisWhenUserExists() {
-        String userId = "123";
-        List<UserCisRequest> userCisRequests =
-                List.of(
-                        UserCisRequest.builder()
-                                .code("CI1")
-                                .issuanceDate("2023-07-25T10:00:00Z")
-                                .mitigations(List.of("V01", "V03"))
-                                .build());
-
-        CimitStubItem existingCimitStubItem =
-                CimitStubItem.builder()
-                        .userId(userId)
-                        .contraIndicatorCode("CI1")
-                        .issuanceDate(Instant.now())
-                        .mitigations(List.of("V01", "V02", "V03"))
-                        .build();
-
-        when(mockDataStore.getItems(userId))
-                .thenReturn(Collections.singletonList(existingCimitStubItem));
-        when(mockConfigService.getSsmParameter(eq(CIMIT_STUB_TTL))).thenReturn(DB_TTL);
-
-        UserService userService = new UserServiceImpl(mockConfigService, cimitStubService);
-        userService.updateUserCis(userId, userCisRequests);
-
-        verify(mockDataStore, times(1)).update(any());
-    }
-
-    @Test
     public void addUserMitigationShouldThrowDataNotFoundExceptionWhenUserDoesNotExist() {
         String userId = "9999";
         String ci = "CI1";
