@@ -69,6 +69,7 @@ import static uk.gov.di.ipv.stub.cred.config.CriType.USER_ASSERTED_CRI_TYPE;
 public class AuthorizeHandler {
 
     public static final String SHARED_CLAIMS = "shared_claims";
+    public static final String EVIDENCE_REQUESTED = "evidence_requested";
 
     public static final String CRI_STUB_DATA = "cri_stub_data";
     public static final String CRI_STUB_EVIDENCE_PAYLOADS = "cri_stub_evidence_payloads";
@@ -172,6 +173,17 @@ public class AuthorizeHandler {
                 Object criStubData = getCriStubData();
                 Object criStubEvidencePayloads = getCriStubEvidencePayloads();
 
+                String sharedAttributesJson;
+                String evidenceRequestedJson;
+                try {
+                    JWTClaimsSet claimsSet = getJwtClaimsSet(queryParamsMap);
+                    sharedAttributesJson = getSharedAttributes(claimsSet);
+                    evidenceRequestedJson = getEvidenceRequested(claimsSet);
+                } catch (Exception e) {
+                    sharedAttributesJson = e.getMessage();
+                    evidenceRequestedJson = e.getMessage();
+                }
+
                 CriType criType = getCriType();
                 LOGGER.info("criType: {}", criType.value);
 
@@ -194,8 +206,9 @@ public class AuthorizeHandler {
                 frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
                 frontendParams.put(IS_USER_ASSERTED_TYPE, criType.equals(USER_ASSERTED_CRI_TYPE));
                 if (!criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
-                    frontendParams.put(SHARED_CLAIMS, getSharedAttributes(queryParamsMap));
+                    frontendParams.put(SHARED_CLAIMS, sharedAttributesJson);
                 }
+                frontendParams.put(EVIDENCE_REQUESTED, evidenceRequestedJson);
                 frontendParams.put(CRI_STUB_DATA, criStubData);
                 frontendParams.put(CRI_STUB_EVIDENCE_PAYLOADS, criStubEvidencePayloads);
                 frontendParams.put(F2F_STUB_QUEUE_NAME_FIELD, F2F_STUB_QUEUE_NAME);
@@ -258,7 +271,8 @@ public class AuthorizeHandler {
                         credentialAttributesMap = attributesMap;
                     } else {
                         Map<String, Object> combinedAttributeJson =
-                                generateJsonPayload(getSharedAttributes(queryParamsMap));
+                                generateJsonPayload(
+                                        getSharedAttributes(signedJWT.getJWTClaimsSet()));
                         combinedAttributeJson.putAll(attributesMap);
                         credentialAttributesMap = combinedAttributeJson;
                     }
@@ -720,21 +734,21 @@ public class AuthorizeHandler {
         return js.get("data");
     }
 
-    private String getSharedAttributes(QueryParamsMap queryParamsMap) {
+    private JWTClaimsSet getJwtClaimsSet(QueryParamsMap queryParamsMap) throws Exception {
         String requestParam = queryParamsMap.value(RequestParamConstants.REQUEST);
         String clientIdParam = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
 
         if (MapUtils.isEmpty(CredentialIssuerConfig.getClientConfigs())) {
-            return "Error: Missing cri stub client configuration env variable";
+            throw new Exception("Error: Missing cri stub client configuration env variable");
         }
 
         ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdParam);
 
         if (clientConfig == null) {
-            return "Error: Could not find client configuration details for: " + clientIdParam;
+            throw new Exception(
+                    "Error: Could not find client configuration details for: " + clientIdParam);
         }
 
-        String sharedAttributesJson;
         if (!Validator.isNullBlankOrEmpty(requestParam)) {
             try {
                 SignedJWT signedJWT =
@@ -745,34 +759,64 @@ public class AuthorizeHandler {
                                 : clientConfig.getSigningPublicJwk();
                 if (!es256SignatureVerifier.valid(signedJWT, publicJwk)) {
                     LOGGER.error("JWT signature is invalid");
-                    return "Error: Signature of the shared attribute JWT is not valid";
+                    throw new Exception(
+                            "Error: Signature of the shared attribute JWT is not valid");
                 }
 
                 JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
-                Map<String, Object> sharedClaims = claimsSet.getJSONObjectClaim(SHARED_CLAIMS);
-
-                if (sharedClaims == null) {
-                    LOGGER.error("shared_claims not found in JWT");
-                    return "Error: shared_claims not found in JWT";
+                if (claimsSet == null) {
+                    throw new Exception("Claims set is null");
                 }
 
-                sharedAttributesJson = gson.toJson(sharedClaims);
+                return claimsSet;
             } catch (ParseException e) {
                 LOGGER.error("Failed to parse something: {}", e.getMessage());
-                sharedAttributesJson =
-                        String.format("Error: failed to parse something: %s", e.getMessage());
+                throw new Exception(
+                        String.format("Error: failed to parse something: %s", e.getMessage()));
             } catch (JOSEException e) {
                 LOGGER.error("Failed to verify the signature of the JWT", e);
-                sharedAttributesJson =
-                        "Error: failed to verify the signature of the shared attribute JWT";
+                throw new Exception(
+                        "Error: failed to verify the signature of the shared attribute JWT");
             } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
                 LOGGER.error("Failed to decrypt the JWT", e);
-                sharedAttributesJson = "Error: Failed to decrypt the JWT";
+                throw new Exception("Error: Failed to decrypt the JWT");
             }
         } else {
-            sharedAttributesJson = "Error: missing 'request' query parameter";
+            throw new Exception("Error: missing 'request' query parameter");
         }
-        return sharedAttributesJson;
+    }
+
+    private String getSharedAttributes(JWTClaimsSet claimsSet) {
+        String sharedAttributesJson;
+        try {
+            Map<String, Object> sharedAttributes = claimsSet.getJSONObjectClaim(SHARED_CLAIMS);
+            if (sharedAttributes == null) {
+                LOGGER.error("evidence_requested not found in JWT");
+                return "evidence_requested not found in JWT";
+            }
+            sharedAttributesJson = gson.toJson(sharedAttributes);
+            return sharedAttributesJson;
+        } catch (ParseException e) {
+            LOGGER.error("Failed to parse something: {}", e.getMessage());
+            return String.format("Error: failed to parse something: %s", e.getMessage());
+        }
+    }
+
+    private String getEvidenceRequested(JWTClaimsSet claimsSet) {
+        String evidenceRequestedJson;
+        try {
+            Map<String, Object> evidenceRequested =
+                    claimsSet.getJSONObjectClaim(EVIDENCE_REQUESTED);
+            if (evidenceRequested == null) {
+                LOGGER.error("evidence_requested not found in JWT");
+                return "evidence_requested not found in JWT";
+            }
+            evidenceRequestedJson = gson.toJson(evidenceRequested);
+            return evidenceRequestedJson;
+        } catch (ParseException e) {
+            LOGGER.error("Failed to parse something: {}", e.getMessage());
+            return String.format("Error: failed to parse something: %s", e.getMessage());
+        }
     }
 
     private JWEObject getJweObject(String requestParam, PrivateKey encryptionPrivateKey)
