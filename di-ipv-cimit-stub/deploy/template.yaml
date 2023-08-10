@@ -25,9 +25,9 @@ Resources:
   GetContraIndicatorsFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
-    # checkov:skip=CKV_AWS_116: doing it later
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     # checkov:skip=CKV_AWS_173: doing it later
-    # checkov:skip=CKV_AWS_115: doing it later
     DependsOn:
       - "GetContraIndicatorsFunctionLogGroup"
     Properties:
