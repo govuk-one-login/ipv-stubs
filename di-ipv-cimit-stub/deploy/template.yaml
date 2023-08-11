@@ -399,27 +399,28 @@ Resources:
             - !If [ IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId ]
       ValidationMethod: DNS
 
-  # api domain entries / mapping
+    # api domain entries / mapping
   CimitStubRestApiDomain:
-    Type: AWS::ApiGatewayV2::DomainName
+    Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !If
         - IsCoreDev
         - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
         - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
-      DomainNameConfigurations:
-        - CertificateArn: !Ref CimitStubSSLCert
-          EndpointType: REGIONAL
-          SecurityPolicy: TLS_1_2
-
+      RegionalCertificateArn: !Ref CimitStubSSLCert
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+      
   CimitStubRestApiMapping:
-    Type: AWS::ApiGatewayV2::ApiMapping
+    Type: AWS::ApiGateway::BasePathMapping
     Properties:
       DomainName: !If
         - IsCoreDev
         - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
         - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
-      ApiId: !Ref RestApiGateway
+      RestApiId: !Ref RestApiGateway
       Stage: !Ref RestApiGateway.Stage
     DependsOn:
       - CimitStubRestApiDomain
