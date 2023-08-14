@@ -58,7 +58,11 @@ public class CredentialIssuer {
                         requestedErrorResponseService);
         credentialHandler = new CredentialHandler(credentialService, tokenService, vcGenerator);
         docAppCredentialHandler =
-                new DocAppCredentialHandler(credentialService, tokenService, vcGenerator);
+                new DocAppCredentialHandler(
+                        credentialService,
+                        tokenService,
+                        vcGenerator,
+                        requestedErrorResponseService);
         jwksHandler = new JwksHandler();
         f2fHandler = new F2FHandler(credentialService, tokenService);
 
