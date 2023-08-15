@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.StringMapMessage;
 import software.amazon.awssdk.utils.StringUtils;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
+import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsRequest;
 import uk.gov.di.ipv.core.putcontraindicators.dto.ContraIndicatorDto;
@@ -28,7 +29,7 @@ import java.util.stream.Stream;
 import static uk.gov.di.ipv.core.putcontraindicators.domain.VerifiableCredentialConstants.VC_CLAIM;
 import static uk.gov.di.ipv.core.putcontraindicators.domain.VerifiableCredentialConstants.VC_EVIDENCE;
 
-public class CimitService {
+public class ContraIndicatorsService {
     private static final Logger LOGGER = LogManager.getLogger();
 
     private static final Gson gson = new Gson();
@@ -39,40 +40,80 @@ public class CimitService {
 
     private final ConfigService configService;
 
-    private final CimitStubService cimitStubService;
+    private final CimitStubItemService cimitStubItemService;
 
-    public CimitService() {
+    public ContraIndicatorsService() {
         this.configService = new ConfigService();
-        this.cimitStubService = new CimitStubService(configService);
+        this.cimitStubItemService = new CimitStubItemService(configService);
     }
 
-    public CimitService(ConfigService configService, CimitStubService cimitStubService) {
+    public ContraIndicatorsService(
+            ConfigService configService, CimitStubItemService cimitStubItemService) {
         this.configService = configService;
-        this.cimitStubService = cimitStubService;
+        this.cimitStubItemService = cimitStubItemService;
     }
 
-    public void addUserCis(PutContraIndicatorsRequest putContraIndicatorsRequest)
-            throws CiPutException {
+    public void addUserCis(PutContraIndicatorsRequest request) throws CiPutException {
         try {
-            SignedJWT signedJWT = getSignedJwt(putContraIndicatorsRequest);
+            SignedJWT signedJWT = parseSignedJwt(request);
             String userId = signedJWT.getJWTClaimsSet().getSubject();
             ContraIndicatorEvidenceDto contraIndicatorEvidenceDto =
-                    getContraIndicatorsVC(signedJWT);
+                    parseContraIndicatorEvidence(signedJWT);
             List<CimitStubItem> cimitStubItems =
                     mapToContraIndications(userId, contraIndicatorEvidenceDto);
-            addCimitStubItems(userId, cimitStubItems);
+            saveOrUpdateCimitStubItems(userId, cimitStubItems);
         } catch (Exception ex) {
             throw new CiPutException(ex.getMessage());
         }
     }
 
-    private SignedJWT getSignedJwt(PutContraIndicatorsRequest putContraIndicatorsRequest)
-            throws CiPutException {
-        return getContraIndicatorJWT(putContraIndicatorsRequest.getSignedJwt());
+    private SignedJWT parseSignedJwt(PutContraIndicatorsRequest request) throws CiPutException {
+        try {
+            return SignedJWT.parse(request.getSignedJwt());
+        } catch (ParseException e) {
+            LOGGER.error(
+                    new StringMapMessage()
+                            .with(
+                                    LOG_ERROR_DESCRIPTION,
+                                    "Failed to parse ContraIndicators JWT. Error message:"
+                                            + e.getMessage()));
+            throw new CiPutException("Failed to parse JWT");
+        }
     }
 
-    private ContraIndicatorEvidenceDto getContraIndicatorsVC(SignedJWT ciSignedJWT) {
-        return parseContraIndicatorEvidence(ciSignedJWT);
+    private ContraIndicatorEvidenceDto parseContraIndicatorEvidence(SignedJWT signedJWT)
+            throws CiPutException {
+        JSONObject vcClaim;
+        try {
+            vcClaim = (JSONObject) signedJWT.getJWTClaimsSet().getClaim(VC_CLAIM);
+        } catch (ParseException e) {
+            String message = "Failed to parse ContraIndicators response json";
+            LOGGER.error(
+                    new StringMapMessage()
+                            .with(LOG_MESSAGE_DESCRIPTION, message)
+                            .with(LOG_ERROR_DESCRIPTION, e.getMessage()));
+            throw new CiPutException(message);
+        }
+
+        JSONArray evidenceArray = (JSONArray) vcClaim.get(VC_EVIDENCE);
+        if (evidenceArray == null || evidenceArray.size() != 1) {
+            String message = "Unexpected evidence count.";
+            LOGGER.error(
+                    new StringMapMessage()
+                            .with(LOG_MESSAGE_DESCRIPTION, message)
+                            .with(
+                                    LOG_ERROR_DESCRIPTION,
+                                    String.format(
+                                            "Expected one evidence item, got %d.",
+                                            evidenceArray == null ? 0 : evidenceArray.size())));
+            throw new CiPutException(message);
+        }
+
+        List<ContraIndicatorEvidenceDto> contraIndicatorEvidenceDtos =
+                gson.fromJson(
+                        evidenceArray.toJSONString(),
+                        new TypeToken<List<ContraIndicatorEvidenceDto>>() {}.getType());
+        return contraIndicatorEvidenceDtos.get(0);
     }
 
     private List<CimitStubItem> mapToContraIndications(
@@ -110,15 +151,15 @@ public class CimitService {
                 .collect(Collectors.toList());
     }
 
-    private void addCimitStubItems(String userId, List<CimitStubItem> cimitStubItems) {
-        List<CimitStubItem> dbCimitStubItems = cimitStubService.getCimitStubItems(userId);
+    private void saveOrUpdateCimitStubItems(String userId, List<CimitStubItem> cimitStubItems) {
+        List<CimitStubItem> dbCimitStubItems = cimitStubItemService.getCIsForUserId(userId);
         cimitStubItems.forEach(
                 cimitStubItem -> {
                     Optional<CimitStubItem> dbCimitStubItem =
                             getUserIdAndCodeFromDatabase(
                                     dbCimitStubItems, cimitStubItem.getContraIndicatorCode());
                     if (dbCimitStubItem.isEmpty()) {
-                        cimitStubService.persistCimitStub(
+                        cimitStubItemService.persistCimitStub(
                                 userId,
                                 cimitStubItem.getContraIndicatorCode(),
                                 cimitStubItem.getIssuanceDate(),
@@ -131,7 +172,7 @@ public class CimitService {
                                                 dbCimitStubItem.get().getMitigations(),
                                                 cimitStubItem.getMitigations()));
                         dbCimitStubItem.get().setIssuanceDate(cimitStubItem.getIssuanceDate());
-                        cimitStubService.updateCimitStub(dbCimitStubItem.get());
+                        cimitStubItemService.updateCimitStub(dbCimitStubItem.get());
                     }
                 });
         LOGGER.info("Inserted User CI data to the Cimit Stub DynamoDB Table.");
@@ -149,57 +190,6 @@ public class CimitService {
         return cimitStubItems.stream()
                 .filter(cimitStubItem -> cimitStubItem.getContraIndicatorCode().equals(code))
                 .findAny();
-    }
-
-    private SignedJWT getContraIndicatorJWT(String contraIndicatorVC) throws CiPutException {
-        SignedJWT contraIndicatorsJwt;
-        try {
-            contraIndicatorsJwt = SignedJWT.parse(contraIndicatorVC);
-        } catch (ParseException e) {
-            LOGGER.error(
-                    new StringMapMessage()
-                            .with(
-                                    LOG_ERROR_DESCRIPTION,
-                                    "Failed to parse ContraIndicators JWT. Error message:"
-                                            + e.getMessage()));
-            throw new CiPutException("Failed to parse JWT");
-        }
-        return contraIndicatorsJwt;
-    }
-
-    private ContraIndicatorEvidenceDto parseContraIndicatorEvidence(SignedJWT signedJWT)
-            throws CiPutException {
-        JSONObject vcClaim;
-        try {
-            vcClaim = (JSONObject) signedJWT.getJWTClaimsSet().getClaim(VC_CLAIM);
-        } catch (ParseException e) {
-            String message = "Failed to parse ContraIndicators response json";
-            LOGGER.error(
-                    new StringMapMessage()
-                            .with(LOG_MESSAGE_DESCRIPTION, message)
-                            .with(LOG_ERROR_DESCRIPTION, e.getMessage()));
-            throw new CiPutException(message);
-        }
-
-        JSONArray evidenceArray = (JSONArray) vcClaim.get(VC_EVIDENCE);
-        if (evidenceArray == null || evidenceArray.size() != 1) {
-            String message = "Unexpected evidence count.";
-            LOGGER.error(
-                    new StringMapMessage()
-                            .with(LOG_MESSAGE_DESCRIPTION, message)
-                            .with(
-                                    LOG_ERROR_DESCRIPTION,
-                                    String.format(
-                                            "Expected one evidence item, got %d.",
-                                            evidenceArray == null ? 0 : evidenceArray.size())));
-            throw new CiPutException(message);
-        }
-
-        List<ContraIndicatorEvidenceDto> contraIndicatorEvidenceDtos =
-                gson.fromJson(
-                        evidenceArray.toJSONString(),
-                        new TypeToken<List<ContraIndicatorEvidenceDto>>() {}.getType());
-        return contraIndicatorEvidenceDtos.get(0);
     }
 
     private Instant getIssuanceDate(String issuanceDate) {

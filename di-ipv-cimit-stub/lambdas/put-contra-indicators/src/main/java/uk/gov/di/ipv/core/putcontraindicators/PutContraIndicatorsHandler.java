@@ -9,7 +9,7 @@ import org.apache.logging.log4j.message.StringMapMessage;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsRequest;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsResponse;
 import uk.gov.di.ipv.core.putcontraindicators.exceptions.CiPutException;
-import uk.gov.di.ipv.core.putcontraindicators.service.CimitService;
+import uk.gov.di.ipv.core.putcontraindicators.service.ContraIndicatorsService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,13 +20,13 @@ public class PutContraIndicatorsHandler implements RequestStreamHandler {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private final CimitService cimitService;
+    private final ContraIndicatorsService cimitService;
 
     public PutContraIndicatorsHandler() {
-        this.cimitService = new CimitService();
+        this.cimitService = new ContraIndicatorsService();
     }
 
-    public PutContraIndicatorsHandler(CimitService cimitService) {
+    public PutContraIndicatorsHandler(ContraIndicatorsService cimitService) {
         this.cimitService = cimitService;
     }
 
@@ -51,7 +51,7 @@ public class PutContraIndicatorsHandler implements RequestStreamHandler {
             LOGGER.error(
                     new StringMapMessage()
                             .with(
-                                    "VC CI Codes not inserted to cimit stub table.",
+                                    "CI Codes could not be inserted into the Cimit Stub Table.",
                                     ex.getMessage()));
             response = PutContraIndicatorsResponse.builder().result("fail").build();
         }

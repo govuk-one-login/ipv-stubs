@@ -12,7 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsRequest;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsResponse;
 import uk.gov.di.ipv.core.putcontraindicators.exceptions.CiPutException;
-import uk.gov.di.ipv.core.putcontraindicators.service.CimitService;
+import uk.gov.di.ipv.core.putcontraindicators.service.ContraIndicatorsService;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,16 +27,16 @@ import static org.mockito.Mockito.doThrow;
 @ExtendWith(MockitoExtension.class)
 class PutContraIndicatorsHandlerTest {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static final Gson gson = new Gson();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Gson gson = new Gson();
     @Mock private Context mockContext;
 
-    @Mock private CimitService mockCimitService;
+    @Mock private ContraIndicatorsService mockCimitService;
 
     @InjectMocks private PutContraIndicatorsHandler classToTest;
 
     @Test
-    void shouldReturnSuccessWhenProvidedValidRequest() throws IOException, CiPutException {
+    void shouldReturnSuccessForValidRequest() throws IOException, CiPutException {
         PutContraIndicatorsRequest putContraIndicatorsRequest =
                 PutContraIndicatorsRequest.builder()
                         .govukSigninJourneyId("govuk_signin_journey_id")
@@ -62,7 +62,7 @@ class PutContraIndicatorsHandlerTest {
     }
 
     @Test
-    void shouldReturnFailureWhenProvidedInValidRequest() throws IOException, CiPutException {
+    void shouldThrowExceptionForInvalidRequest() throws IOException, CiPutException {
         assertThrows(
                 IOException.class,
                 () -> {
@@ -75,7 +75,7 @@ class PutContraIndicatorsHandlerTest {
     }
 
     @Test
-    void shouldReturnExceptionWhenFromExceptionAddUserCis() throws IOException {
+    void shouldReturnExceptionWhenWhenCimitServiceThrowsException() throws IOException {
         PutContraIndicatorsRequest putContraIndicatorsRequest =
                 PutContraIndicatorsRequest.builder()
                         .govukSigninJourneyId("govuk_signin_journey_id")

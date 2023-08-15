@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.core.library.persistence.DataStore;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
+import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsRequest;
 import uk.gov.di.ipv.core.putcontraindicators.exceptions.CiPutException;
@@ -25,12 +26,12 @@ import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.core.library.config.ConfigurationVariable.CIMIT_STUB_TTL;
 
 @ExtendWith(MockitoExtension.class)
-public class CimitServiceTest {
+public class ContraIndicatorsServiceTest {
     @Mock private DataStore<CimitStubItem> mockDataStore;
 
     @Mock private ConfigService mockConfigService;
 
-    @InjectMocks private CimitStubService cimitStubService;
+    @InjectMocks private CimitStubItemService cimitStubItemService;
 
     public static final String USER_ID = "a-user-id";
     private static final String SIGNED_CONTRA_INDICATOR_VC =
@@ -64,7 +65,8 @@ public class CimitServiceTest {
         when(mockDataStore.getItems(USER_ID))
                 .thenReturn(Collections.singletonList(existingCimitStubItem));
 
-        CimitService cimitService = new CimitService(mockConfigService, cimitStubService);
+        ContraIndicatorsService cimitService =
+                new ContraIndicatorsService(mockConfigService, cimitStubItemService);
         cimitService.addUserCis(putContraIndicatorsRequest);
 
         verify(mockDataStore, times(1)).getItems(any());
@@ -73,7 +75,6 @@ public class CimitServiceTest {
 
     @Test
     public void addUserCisShouldInsertAndUpdated() {
-        String ci = "D01";
         PutContraIndicatorsRequest putContraIndicatorsRequest =
                 PutContraIndicatorsRequest.builder()
                         .govukSigninJourneyId("govuk_signin_journey_id")
@@ -94,7 +95,8 @@ public class CimitServiceTest {
         when(mockDataStore.getItems(USER_ID))
                 .thenReturn(Collections.singletonList(existingCimitStubItem));
 
-        CimitService cimitService = new CimitService(mockConfigService, cimitStubService);
+        ContraIndicatorsService cimitService =
+                new ContraIndicatorsService(mockConfigService, cimitStubItemService);
         cimitService.addUserCis(putContraIndicatorsRequest);
 
         verify(mockDataStore, times(1)).getItems(any());
@@ -104,7 +106,8 @@ public class CimitServiceTest {
 
     @Test
     public void addUserCisShouldFailedIfNoEvidence() {
-        CimitService cimitService = new CimitService(mockConfigService, cimitStubService);
+        ContraIndicatorsService cimitService =
+                new ContraIndicatorsService(mockConfigService, cimitStubItemService);
         PutContraIndicatorsRequest putContraIndicatorsRequest =
                 PutContraIndicatorsRequest.builder()
                         .govukSigninJourneyId("govuk_signin_journey_id")
@@ -120,8 +123,27 @@ public class CimitServiceTest {
     }
 
     @Test
+    public void addUserCisShouldFailedIfJWTPArsingFails() {
+        ContraIndicatorsService cimitService =
+                new ContraIndicatorsService(mockConfigService, cimitStubItemService);
+        PutContraIndicatorsRequest putContraIndicatorsRequest =
+                PutContraIndicatorsRequest.builder()
+                        .govukSigninJourneyId("govuk_signin_journey_id")
+                        .ipAddress("ip_address")
+                        .signedJwt("invalid_jwt")
+                        .build();
+
+        assertThrows(
+                CiPutException.class, () -> cimitService.addUserCis(putContraIndicatorsRequest));
+
+        verify(mockDataStore, never()).getItems(any());
+        verify(mockDataStore, never()).create(any(), eq(CIMIT_STUB_TTL));
+    }
+
+    @Test
     public void addUserCisShouldFailedIfInvalidEvidence() {
-        CimitService cimitService = new CimitService(mockConfigService, cimitStubService);
+        ContraIndicatorsService cimitService =
+                new ContraIndicatorsService(mockConfigService, cimitStubItemService);
         PutContraIndicatorsRequest putContraIndicatorsRequest =
                 PutContraIndicatorsRequest.builder()
                         .govukSigninJourneyId("govuk_signin_journey_id")
