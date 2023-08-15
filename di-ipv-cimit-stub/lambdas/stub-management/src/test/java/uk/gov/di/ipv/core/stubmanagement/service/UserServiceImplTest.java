@@ -245,8 +245,8 @@ public class UserServiceImplTest {
                                 .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(List.of("V01", "V03"))
                                 .build());
-        List<CimitStubItem> existingItems = List.of(
-                new CimitStubItem(userId, "code1", Instant.now(), 30000, null));
+        List<CimitStubItem> existingItems =
+                List.of(new CimitStubItem(userId, "code1", Instant.now(), 30000, null));
 
         when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
@@ -265,8 +265,10 @@ public class UserServiceImplTest {
                                 .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(null)
                                 .build());
-        List<CimitStubItem> existingItems = List.of(
-                new CimitStubItem(userId, "code1", Instant.now(), 30000, List.of("V01", "V03")));
+        List<CimitStubItem> existingItems =
+                List.of(
+                        new CimitStubItem(
+                                userId, "code1", Instant.now(), 30000, List.of("V01", "V03")));
 
         when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
@@ -285,8 +287,8 @@ public class UserServiceImplTest {
                                 .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(null)
                                 .build());
-        List<CimitStubItem> existingItems = List.of(
-                new CimitStubItem(userId, "code1", Instant.now(), 30000, null));
+        List<CimitStubItem> existingItems =
+                List.of(new CimitStubItem(userId, "code1", Instant.now(), 30000, null));
 
         when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
@@ -303,9 +305,7 @@ public class UserServiceImplTest {
                 UserMitigationRequest.builder().mitigations(List.of("V01", "V02")).build();
 
         List<CimitStubItem> existingItems =
-                List.of(
-                        new CimitStubItem(
-                                userId, ci, Instant.now(), 30000, null));
+                List.of(new CimitStubItem(userId, ci, Instant.now(), 30000, null));
 
         when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 
@@ -343,9 +343,7 @@ public class UserServiceImplTest {
                 UserMitigationRequest.builder().mitigations(null).build();
 
         List<CimitStubItem> existingItems =
-                List.of(
-                        new CimitStubItem(
-                                userId, ci, Instant.now(), 30000, null));
+                List.of(new CimitStubItem(userId, ci, Instant.now(), 30000, null));
 
         when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
 

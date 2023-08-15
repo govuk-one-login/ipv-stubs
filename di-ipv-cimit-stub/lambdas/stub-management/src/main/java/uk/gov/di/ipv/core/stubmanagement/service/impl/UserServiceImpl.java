@@ -117,16 +117,13 @@ public class UserServiceImpl implements UserService {
     private List<String> getUpdatedMitigationsList(
             List<String> existingMitigations, List<String> newMitigations) {
         Stream<String> combinedStream = Stream.empty();
-        if (existingMitigations != null ) {
+        if (existingMitigations != null) {
             combinedStream = Stream.concat(combinedStream, existingMitigations.stream());
         }
         if (newMitigations != null) {
             combinedStream = Stream.concat(combinedStream, newMitigations.stream());
         }
-        return combinedStream
-                .distinct()
-                .map(String::toUpperCase)
-                .collect(Collectors.toList());
+        return combinedStream.distinct().map(String::toUpperCase).collect(Collectors.toList());
     }
 
     @Override
@@ -157,11 +154,9 @@ public class UserServiceImpl implements UserService {
                 .findAny();
     }
 
-    public List<String> convertListToUppercase(List<String> codes){
-        if (codes != null && !codes.isEmpty()){
-            return codes.stream()
-                    .map(String::toUpperCase)
-                    .collect(Collectors.toList());
+    public List<String> convertListToUppercase(List<String> codes) {
+        if (codes != null && !codes.isEmpty()) {
+            return codes.stream().map(String::toUpperCase).collect(Collectors.toList());
         }
         return codes;
     }
