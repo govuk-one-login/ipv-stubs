@@ -11,6 +11,8 @@ import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
+import org.eclipse.jetty.http.HttpStatus;
 import spark.QueryParamsMap;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
@@ -47,6 +49,9 @@ public class RequestedErrorResponseService {
         parmsValuesMap.put(
                 RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
                 queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION));
+        parmsValuesMap.put(
+                RequestParamConstants.REQUESTED_USERINFO_ERROR,
+                queryParamsMap.value(RequestParamConstants.REQUESTED_USERINFO_ERROR));
 
         errorResponsesRequested.put(authCode, parmsValuesMap);
     }
@@ -97,6 +102,35 @@ public class RequestedErrorResponseService {
                                 error,
                                 requestedErrorResponse.get(
                                         RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION)));
+            }
+        }
+        return null;
+    }
+
+    public void persistUserInfoErrorAgainstToken(String authCode, String accessToken) {
+        Map<String, String> requestedErrorResponse = errorResponsesRequested.get(authCode);
+        if (requestedErrorResponse != null) {
+            String error =
+                    requestedErrorResponse.get(RequestParamConstants.REQUESTED_USERINFO_ERROR);
+            if (error != null) {
+                Map<String, String> parmsValuesMap = new HashMap<>();
+                parmsValuesMap.put(RequestParamConstants.REQUESTED_USERINFO_ERROR, error);
+                errorResponsesRequested.put(accessToken, parmsValuesMap);
+            }
+        }
+    }
+
+    public UserInfoErrorResponse getUserInfoErrorByToken(String accessToken) {
+        Map<String, String> requestedErrorResponse = errorResponsesRequested.get(accessToken);
+        if (requestedErrorResponse != null) {
+            String error =
+                    requestedErrorResponse.get(RequestParamConstants.REQUESTED_USERINFO_ERROR);
+            if (error.equals("404")) {
+                return new UserInfoErrorResponse(
+                        new ErrorObject(
+                                error,
+                                "UserInfo endpoint 404 triggered by stub",
+                                HttpStatus.NOT_FOUND_404));
             }
         }
         return null;
