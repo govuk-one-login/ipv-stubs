@@ -19,7 +19,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -231,5 +233,123 @@ public class UserServiceImplTest {
                 DataNotFoundException.class,
                 () -> userService.updateUserMitigation(userId, ci, userMitigationRequest));
         verify(cimitStubService, never()).updateCimitStub(any());
+    }
+
+    @Test
+    public void shouldReturnSuccessFromAddUserCisWhenExistingMitigationsIsNull() {
+        String userId = "user123";
+        List<UserCisRequest> userCisRequests =
+                List.of(
+                        UserCisRequest.builder()
+                                .code("code1")
+                                .issuanceDate("2023-07-25T10:00:00Z")
+                                .mitigations(List.of("V01", "V03"))
+                                .build());
+        List<CimitStubItem> existingItems =
+                List.of(new CimitStubItem(userId, "code1", Instant.now(), 30000, null));
+
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+
+        assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
+
+        verify(cimitStubService, times(1)).updateCimitStub(any());
+    }
+
+    @Test
+    public void shouldReturnSuccessFromAddUserCisWhenNewMitigationsIsNull() {
+        String userId = "user123";
+        List<UserCisRequest> userCisRequests =
+                List.of(
+                        UserCisRequest.builder()
+                                .code("code1")
+                                .issuanceDate("2023-07-25T10:00:00Z")
+                                .mitigations(null)
+                                .build());
+        List<CimitStubItem> existingItems =
+                List.of(
+                        new CimitStubItem(
+                                userId, "code1", Instant.now(), 30000, List.of("V01", "V03")));
+
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+
+        assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
+
+        verify(cimitStubService, times(1)).updateCimitStub(any());
+    }
+
+    @Test
+    public void shouldReturnSuccessFromAddUserCisWhenExistingAndNewMitigationsIsNull() {
+        String userId = "user123";
+        List<UserCisRequest> userCisRequests =
+                List.of(
+                        UserCisRequest.builder()
+                                .code("code1")
+                                .issuanceDate("2023-07-25T10:00:00Z")
+                                .mitigations(null)
+                                .build());
+        List<CimitStubItem> existingItems =
+                List.of(new CimitStubItem(userId, "code1", Instant.now(), 30000, null));
+
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+
+        assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
+
+        verify(cimitStubService, times(1)).updateCimitStub(any());
+    }
+
+    @Test
+    void shouldReturnSuccessFromAddUserMitigationWhenExistingMitigationsIsNull() {
+        String userId = "user123";
+        String ci = "code1";
+        UserMitigationRequest userMitigationRequest =
+                UserMitigationRequest.builder().mitigations(List.of("V01", "V02")).build();
+
+        List<CimitStubItem> existingItems =
+                List.of(new CimitStubItem(userId, ci, Instant.now(), 30000, null));
+
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+
+        assertDoesNotThrow(() -> userService.addUserMitigation(userId, ci, userMitigationRequest));
+
+        verify(cimitStubService, times(1)).updateCimitStub(any());
+        assertEquals(existingItems.get(0).getMitigations(), List.of("V01", "V02"));
+    }
+
+    @Test
+    void shouldReturnSuccessFromAddUserMitigationWhenNewMitigationsIsNull() {
+        String userId = "user123";
+        String ci = "code1";
+        UserMitigationRequest userMitigationRequest =
+                UserMitigationRequest.builder().mitigations(null).build();
+
+        List<CimitStubItem> existingItems =
+                List.of(
+                        new CimitStubItem(
+                                userId, ci, Instant.now(), 30000, List.of("v01", "v03", "V04")));
+
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+
+        assertDoesNotThrow(() -> userService.addUserMitigation(userId, ci, userMitigationRequest));
+
+        verify(cimitStubService, times(1)).updateCimitStub(any());
+        assertEquals(existingItems.get(0).getMitigations(), List.of("V01", "V03", "V04"));
+    }
+
+    @Test
+    void shouldReturnSuccessFromAddUserMitigationWhenExistingAndNewMitigationsIsNull() {
+        String userId = "user123";
+        String ci = "CODE1";
+        UserMitigationRequest userMitigationRequest =
+                UserMitigationRequest.builder().mitigations(null).build();
+
+        List<CimitStubItem> existingItems =
+                List.of(new CimitStubItem(userId, ci, Instant.now(), 30000, null));
+
+        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+
+        assertDoesNotThrow(() -> userService.addUserMitigation(userId, ci, userMitigationRequest));
+
+        verify(cimitStubService, times(1)).updateCimitStub(any());
+        assertTrue(existingItems.get(0).getMitigations().isEmpty());
     }
 }
