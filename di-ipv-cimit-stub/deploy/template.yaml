@@ -154,6 +154,9 @@ Resources:
         # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
+          CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
+          IS_LOCAL: false
+          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -164,6 +167,10 @@ Resources:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/*
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CimitStubTable
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
   # lambda to stub cimit getContraIndicatorCredential
@@ -439,7 +446,7 @@ Resources:
         Types:
           - REGIONAL
       SecurityPolicy: TLS_1_2
-      
+
   CimitStubRestApiMapping:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:

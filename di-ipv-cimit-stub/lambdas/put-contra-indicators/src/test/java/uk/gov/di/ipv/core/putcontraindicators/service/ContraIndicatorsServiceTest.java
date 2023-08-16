@@ -105,6 +105,37 @@ public class ContraIndicatorsServiceTest {
     }
 
     @Test
+    public void addUserCisShouldInsertAndUpdatedWhenExistingMitigationIsNull() {
+        PutContraIndicatorsRequest putContraIndicatorsRequest =
+                PutContraIndicatorsRequest.builder()
+                        .govukSigninJourneyId("govuk_signin_journey_id")
+                        .ipAddress("ip_address")
+                        .signedJwt(SIGNED_CONTRA_INDICATOR_VC)
+                        .build();
+
+        CimitStubItem existingCimitStubItem =
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode("D01")
+                        .issuanceDate(Instant.now())
+                        .mitigations(null)
+                        .ttl(1800)
+                        .build();
+
+        when(mockConfigService.getSsmParameter(CIMIT_STUB_TTL)).thenReturn(DB_TTL);
+        when(mockDataStore.getItems(USER_ID))
+                .thenReturn(Collections.singletonList(existingCimitStubItem));
+
+        ContraIndicatorsService cimitService =
+                new ContraIndicatorsService(mockConfigService, cimitStubItemService);
+        cimitService.addUserCis(putContraIndicatorsRequest);
+
+        verify(mockDataStore, times(1)).getItems(any());
+        verify(mockDataStore, never()).create(any(), eq(CIMIT_STUB_TTL));
+        verify(mockDataStore, times(1)).update(any());
+    }
+
+    @Test
     public void addUserCisShouldFailedIfNoEvidence() {
         ContraIndicatorsService cimitService =
                 new ContraIndicatorsService(mockConfigService, cimitStubItemService);
@@ -123,7 +154,7 @@ public class ContraIndicatorsServiceTest {
     }
 
     @Test
-    public void addUserCisShouldFailedIfJWTPArsingFails() {
+    public void addUserCisShouldFailedIfJWTParsingFails() {
         ContraIndicatorsService cimitService =
                 new ContraIndicatorsService(mockConfigService, cimitStubItemService);
         PutContraIndicatorsRequest putContraIndicatorsRequest =

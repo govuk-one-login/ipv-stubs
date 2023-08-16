@@ -161,9 +161,9 @@ public class ContraIndicatorsService {
                     if (dbCimitStubItem.isEmpty()) {
                         cimitStubItemService.persistCimitStub(
                                 userId,
-                                cimitStubItem.getContraIndicatorCode(),
+                                cimitStubItem.getContraIndicatorCode().toUpperCase(),
                                 cimitStubItem.getIssuanceDate(),
-                                cimitStubItem.getMitigations());
+                                convertListToUppercase(cimitStubItem.getMitigations()));
                     } else {
                         dbCimitStubItem
                                 .get()
@@ -180,9 +180,14 @@ public class ContraIndicatorsService {
 
     private List<String> getUpdatedMitigationsList(
             List<String> existingMitigations, List<String> newMitigations) {
-        return Stream.concat(existingMitigations.stream(), newMitigations.stream())
-                .distinct()
-                .collect(Collectors.toList());
+        Stream<String> combinedStream = Stream.empty();
+        if (existingMitigations != null) {
+            combinedStream = Stream.concat(combinedStream, existingMitigations.stream());
+        }
+        if (newMitigations != null) {
+            combinedStream = Stream.concat(combinedStream, newMitigations.stream());
+        }
+        return combinedStream.distinct().map(String::toUpperCase).collect(Collectors.toList());
     }
 
     private Optional<CimitStubItem> getUserIdAndCodeFromDatabase(
@@ -197,5 +202,12 @@ public class ContraIndicatorsService {
             return Instant.parse(issuanceDate);
         }
         return Instant.now();
+    }
+
+    public List<String> convertListToUppercase(List<String> codes) {
+        if (codes != null && !codes.isEmpty()) {
+            return codes.stream().map(String::toUpperCase).collect(Collectors.toList());
+        }
+        return codes;
     }
 }
