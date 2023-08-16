@@ -3,8 +3,10 @@ package uk.gov.di.ipv.core.library.service;
 import uk.gov.di.ipv.core.library.persistence.DataStore;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 
+import java.time.Instant;
 import java.util.List;
 
+import static uk.gov.di.ipv.core.library.config.ConfigurationVariable.CIMIT_STUB_TTL;
 import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.CIMIT_STUB_TABLE_NAME;
 
 public class CimitStubItemService {
@@ -32,5 +34,35 @@ public class CimitStubItemService {
 
     public List<CimitStubItem> getCIsForUserId(String userId) {
         return dataStore.getItems(userId);
+    }
+
+    public CimitStubItem persistCimitStub(
+            String userId,
+            String contraIndicatorCode,
+            Instant issuanceDate,
+            List<String> mitigations) {
+
+        CimitStubItem cimitStubItem =
+                CimitStubItem.builder()
+                        .userId(userId)
+                        .contraIndicatorCode(contraIndicatorCode)
+                        .issuanceDate(issuanceDate)
+                        .mitigations(mitigations)
+                        .build();
+
+        dataStore.create(cimitStubItem, CIMIT_STUB_TTL);
+        return cimitStubItem;
+    }
+
+    public void updateCimitStub(CimitStubItem cimitStubItem) {
+        cimitStubItem.setTtl(
+                Instant.now()
+                        .plusSeconds(Long.parseLong(configService.getSsmParameter(CIMIT_STUB_TTL)))
+                        .getEpochSecond());
+        dataStore.update(cimitStubItem);
+    }
+
+    public void deleteCimitStubItem(String userId, String contraIndicatorCode) {
+        dataStore.delete(userId, contraIndicatorCode);
     }
 }
