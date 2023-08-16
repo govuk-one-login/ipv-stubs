@@ -248,11 +248,11 @@ public class UserServiceImplTest {
         List<CimitStubItem> existingItems =
                 List.of(new CimitStubItem(userId, "code1", Instant.now(), 30000, null));
 
-        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
         assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
 
-        verify(cimitStubService, times(1)).updateCimitStub(any());
+        verify(cimitStubItemService, times(1)).updateCimitStub(any());
     }
 
     @Test
@@ -270,11 +270,11 @@ public class UserServiceImplTest {
                         new CimitStubItem(
                                 userId, "code1", Instant.now(), 30000, List.of("V01", "V03")));
 
-        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
         assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
 
-        verify(cimitStubService, times(1)).updateCimitStub(any());
+        verify(cimitStubItemService, times(1)).updateCimitStub(any());
     }
 
     @Test
@@ -290,11 +290,11 @@ public class UserServiceImplTest {
         List<CimitStubItem> existingItems =
                 List.of(new CimitStubItem(userId, "code1", Instant.now(), 30000, null));
 
-        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
         assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
 
-        verify(cimitStubService, times(1)).updateCimitStub(any());
+        verify(cimitStubItemService, times(1)).updateCimitStub(any());
     }
 
     @Test
@@ -307,11 +307,11 @@ public class UserServiceImplTest {
         List<CimitStubItem> existingItems =
                 List.of(new CimitStubItem(userId, ci, Instant.now(), 30000, null));
 
-        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
         assertDoesNotThrow(() -> userService.addUserMitigation(userId, ci, userMitigationRequest));
 
-        verify(cimitStubService, times(1)).updateCimitStub(any());
+        verify(cimitStubItemService, times(1)).updateCimitStub(any());
         assertEquals(existingItems.get(0).getMitigations(), List.of("V01", "V02"));
     }
 
@@ -327,11 +327,11 @@ public class UserServiceImplTest {
                         new CimitStubItem(
                                 userId, ci, Instant.now(), 30000, List.of("v01", "v03", "V04")));
 
-        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
         assertDoesNotThrow(() -> userService.addUserMitigation(userId, ci, userMitigationRequest));
 
-        verify(cimitStubService, times(1)).updateCimitStub(any());
+        verify(cimitStubItemService, times(1)).updateCimitStub(any());
         assertEquals(existingItems.get(0).getMitigations(), List.of("V01", "V03", "V04"));
     }
 
@@ -345,11 +345,11 @@ public class UserServiceImplTest {
         List<CimitStubItem> existingItems =
                 List.of(new CimitStubItem(userId, ci, Instant.now(), 30000, null));
 
-        when(cimitStubService.getCimitStubItems(userId)).thenReturn(existingItems);
+        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
         assertDoesNotThrow(() -> userService.addUserMitigation(userId, ci, userMitigationRequest));
 
-        verify(cimitStubService, times(1)).updateCimitStub(any());
+        verify(cimitStubItemService, times(1)).updateCimitStub(any());
         assertTrue(existingItems.get(0).getMitigations().isEmpty());
     }
 }
