@@ -499,8 +499,13 @@ public class AuthorizeHandler {
             }
             case ACTIVITY_CRI_TYPE -> gpg45Score.put(
                     CredentialIssuerConfig.ACTIVITY_PARAM, Integer.parseInt(activityValue));
-            case FRAUD_CRI_TYPE -> gpg45Score.put(
-                    CredentialIssuerConfig.FRAUD_PARAM, Integer.parseInt(fraudValue));
+            case FRAUD_CRI_TYPE -> {
+                gpg45Score.put(CredentialIssuerConfig.FRAUD_PARAM, Integer.parseInt(fraudValue));
+                if (StringUtils.isNotBlank(activityValue)) {
+                    gpg45Score.put(
+                            CredentialIssuerConfig.ACTIVITY_PARAM, Integer.parseInt(activityValue));
+                }
+            }
             case VERIFICATION_CRI_TYPE -> gpg45Score.put(
                     CredentialIssuerConfig.VERIFICATION_PARAM, Integer.parseInt(verificationValue));
             case DOC_CHECK_APP_CRI_TYPE -> {
