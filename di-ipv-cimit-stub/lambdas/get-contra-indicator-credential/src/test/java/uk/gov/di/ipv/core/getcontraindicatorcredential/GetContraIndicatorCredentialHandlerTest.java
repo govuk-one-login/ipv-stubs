@@ -16,6 +16,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialRequest;
+import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialResponse;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
@@ -40,8 +41,8 @@ import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicator
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.MITIGATION;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.SECURITY_CHECK_CREDENTIAL_VC_TYPE;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.TYPE;
-import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.VC;
-import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.VC_EVIDENCE;
+import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
+import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_EVIDENCE;
 
 @ExtendWith({SystemStubsExtension.class, MockitoExtension.class})
 class GetContraIndicatorCredentialHandlerTest {
@@ -94,7 +95,7 @@ class GetContraIndicatorCredentialHandlerTest {
                         classToTest,
                         objectMapper.writeValueAsString(getCiCredentialRequest),
                         mockContext,
-                        String.class);
+                        GetCiCredentialResponse.class);
 
         verify(mockConfigService).getCimitSigningKey();
         verify(mockConfigService).getCimitComponentId();
@@ -102,7 +103,8 @@ class GetContraIndicatorCredentialHandlerTest {
         assertNotNull(response);
         assertTrue(!response.equals("Failure"));
 
-        final String contraIndicatorsVC = new String(response.getBytes(), StandardCharsets.UTF_8);
+        final String contraIndicatorsVC =
+                new String(response.getVc().getBytes(), StandardCharsets.UTF_8);
 
         assertClaimsJWTIsValid(contraIndicatorsVC);
     }
@@ -124,16 +126,16 @@ class GetContraIndicatorCredentialHandlerTest {
                         classToTest,
                         objectMapper.writeValueAsString(getCiCredentialRequest),
                         mockContext,
-                        String.class);
+                        GetCiCredentialResponse.class);
 
         verify(mockConfigService).getCimitSigningKey();
         verify(mockConfigService).getCimitComponentId();
 
         assertNotNull(response);
-        assertTrue(response.equals("Failure"));
+        assertTrue(response.getVc().equals("Failure"));
     }
 
-    private <T extends String> T makeRequest(
+    private <T extends GetCiCredentialResponse> T makeRequest(
             RequestStreamHandler handler, String request, Context context, Class<T> classType)
             throws IOException {
         try (var inputStream = new ByteArrayInputStream(request.getBytes());
@@ -152,7 +154,7 @@ class GetContraIndicatorCredentialHandlerTest {
         assertEquals(
                 CIMIT_COMPONENT_ID, signedJWT.getJWTClaimsSet().getClaim(JWTClaimNames.ISSUER));
 
-        JsonNode vc = claimsSet.get(VC);
+        JsonNode vc = claimsSet.get(VC_CLAIM);
         assertEquals(2, vc.size());
         assertEquals(SECURITY_CHECK_CREDENTIAL_VC_TYPE, vc.get(TYPE).get(0).asText());
         JsonNode contraIndicators = vc.get(VC_EVIDENCE).get(0).get(CONTRA_INDICATORS);
