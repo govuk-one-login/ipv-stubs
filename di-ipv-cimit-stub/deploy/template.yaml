@@ -4,6 +4,14 @@ Transform: AWS::Serverless-2016-10-31
 Globals:
   Function:
     Timeout: 30
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
 
 Description: >-
   This creates the lambda functions to stub CIMIT lambdas for getContraIndicators, getContraIndicatorCredential,
@@ -19,6 +27,39 @@ Parameters:
     Description: The name of the environment to deploy to.
     Type: String
     AllowedPattern: ((production)|(build)|(dev.*))
+  PermissionsBoundary:
+    Description: The ARN of the permissions boundary to apply when creating IAM roles
+    Type: String
+    Default: "none"
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+
+Conditions:
+  IsDevelopment: !Not
+    - !Or
+      - !Equals [ !Ref Environment, "build"]
+      - !Equals [ !Ref Environment, "production"]
+  IsCoreDev: !Or
+    - !Equals [ !Ref AWS::AccountId, "130355686670"]
+    - !Equals [ !Ref AWS::AccountId, "175872367215"]
+  IsProduction: !Equals [ !Ref Environment, "production" ]
+  IsNonProd: !Not
+    - !Or
+      - !Condition IsDevelopment
+      - !Condition IsProduction
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
 
 Resources:
   # lambda to stub cimit getContraIndicators
@@ -268,13 +309,6 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/stubManagement-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
-  RestApiLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 14
-      LogGroupName: !Sub "/aws/lambda/restApi-${Environment}"
-      KmsKeyId: !GetAtt LoggingKmsKey.Arn
-
   CimitLambdaSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
@@ -373,6 +407,69 @@ Resources:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
 
+  # ssl cert
+  CimitStubSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsCoreDev
+            - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
+            - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
+          HostedZoneId: !If
+            - IsCoreDev
+            - !ImportValue DevPublicHostedZoneId
+            - !If [ IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId ]
+      ValidationMethod: DNS
+
+    # api domain entries / mapping
+  CimitStubRestApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
+      RegionalCertificateArn: !Ref CimitStubSSLCert
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+      
+  CimitStubRestApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
+      RestApiId: !Ref RestApiGateway
+      Stage: !Ref RestApiGateway.Stage
+    DependsOn:
+      - CimitStubRestApiDomain
+      - RestApiGateway
+
+  # dns record
+  CimitStubDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !If
+        - IsCoreDev
+        - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
+      HostedZoneId: !If
+        - IsCoreDev
+        - !ImportValue DevPublicHostedZoneId
+        - !If [ IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId ]
+      AliasTarget:
+        DNSName: !GetAtt CimitStubRestApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt CimitStubRestApiDomain.RegionalHostedZoneId
+
   RestApiGateway:
     Type: AWS::Serverless::Api
     DependsOn: StubManagementFunction
@@ -411,3 +508,17 @@ Resources:
           "responseLatency":"$context.responseLatency",
           "responseLength":"$context.responseLength"
           }
+
+  RestApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/restApi-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+Outputs:
+  RestApiGatewayID:
+    Description: Cimit API Gateway ID
+    Export:
+      Name: !Sub "RestApiGatewayID-${Environment}"
+    Value: !Ref RestApiGateway

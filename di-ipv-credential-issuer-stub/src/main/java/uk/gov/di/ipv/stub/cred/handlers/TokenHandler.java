@@ -39,7 +39,7 @@ public class TokenHandler {
     private AuthCodeService authCodeService;
     private Validator validator;
     private ClientJwtVerifier clientJwtVerifier;
-    private final RequestedErrorResponseService requestedErrorResponseService;
+    private RequestedErrorResponseService requestedErrorResponseService;
 
     public TokenHandler(
             AuthCodeService authCodeService,
@@ -124,6 +124,9 @@ public class TokenHandler {
                 String payloadAssociatedWithCode = authCodeService.getPayload(code);
                 authCodeService.revoke(code);
                 tokenService.persist(accessToken, payloadAssociatedWithCode);
+
+                requestedErrorResponseService.persistUserInfoErrorAgainstToken(
+                        code, accessToken.toString());
 
                 response.status(HttpServletResponse.SC_OK);
                 return tokenResponse.toJSONObject().toJSONString();
