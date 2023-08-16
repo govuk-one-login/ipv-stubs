@@ -38,18 +38,6 @@ Parameters:
     Default: "none"
 
 Conditions:
-  UsePermissionsBoundary:
-    Fn::Not:
-      - Fn::Equals:
-          - !Ref PermissionsBoundary
-          - "none"
-  UseCodeSigning:
-    Fn::Not:
-      - Fn::Equals:
-          - !Ref CodeSigningConfigArn
-          - "none"
-
-Conditions:
   IsDevelopment: !Not
     - !Or
       - !Equals [ !Ref Environment, "build"]
@@ -62,6 +50,16 @@ Conditions:
     - !Or
       - !Condition IsDevelopment
       - !Condition IsProduction
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
 
 Resources:
   # lambda to stub cimit getContraIndicators
