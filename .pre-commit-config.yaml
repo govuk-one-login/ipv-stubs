@@ -10,6 +10,17 @@ repos:
       - id: mixed-line-ending
       - id: trailing-whitespace
       - id: check-merge-conflict
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: .*/keys/.*|
+              (
+                     ^package-lock.json$|
+                     ^Pipfile|
+                     ^pyproject.toml
+              )
   - repo: https://github.com/Lucas-C/pre-commit-hooks
     rev: v1.4.2
     hooks:
@@ -32,6 +43,12 @@ repos:
     hooks:
       - id: cfn-python-lint
         files: ^(?!\..*).*/template\.(json|yml|yaml)$
+  - repo: https://github.com/bridgecrewio/checkov.git
+    rev: '2.3.56'
+    hooks:
+      - id: checkov
+        args: ['--framework', 'cloudformation', '--quiet']
+        files: ^(.*/)?template\.(yml|yaml)$
   - repo: https://github.com/lovesegfault/beautysh
     rev: 'v6.2.1'
     hooks:
