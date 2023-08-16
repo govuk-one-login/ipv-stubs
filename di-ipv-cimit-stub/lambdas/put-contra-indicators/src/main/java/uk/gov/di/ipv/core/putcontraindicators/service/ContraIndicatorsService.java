@@ -87,7 +87,7 @@ public class ContraIndicatorsService {
         try {
             vcClaim = (JSONObject) signedJWT.getJWTClaimsSet().getClaim(VC_CLAIM);
         } catch (ParseException e) {
-            String message = "Failed to parse ContraIndicators response json";
+            String message = "Failed to parse VC claim";
             LOGGER.error(
                     new StringMapMessage()
                             .with(LOG_MESSAGE_DESCRIPTION, message)

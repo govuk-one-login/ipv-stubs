@@ -39,7 +39,7 @@ public class PutContraIndicatorsHandler implements RequestStreamHandler {
 
         try {
             putContraIndicatorsRequest = mapper.readValue(input, PutContraIndicatorsRequest.class);
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             LOGGER.error(
                     new StringMapMessage().with("Unable to parse input request", ex.getMessage()));
             throw ex;
