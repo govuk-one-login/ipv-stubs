@@ -173,5 +173,4 @@ public class ContraIndicatorsService {
                 .filter(cimitStubItem -> cimitStubItem.getContraIndicatorCode().equals(code))
                 .findAny();
     }
-
 }

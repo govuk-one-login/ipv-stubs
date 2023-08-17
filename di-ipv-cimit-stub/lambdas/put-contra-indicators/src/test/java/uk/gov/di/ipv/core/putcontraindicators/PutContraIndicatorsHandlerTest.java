@@ -112,5 +112,4 @@ class PutContraIndicatorsHandlerTest {
             throw ex;
         }
     }
-
 }
