@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.StringMapMessage;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialRequest;
+import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialResponse;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
@@ -34,14 +35,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
+import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_EVIDENCE;
+
 public class GetContraIndicatorCredentialHandler implements RequestStreamHandler {
 
     private static final Logger LOGGER = LogManager.getLogger();
     public static final String SECURITY_CHECK_CREDENTIAL_VC_TYPE = "SecurityCheckCredential";
     public static final String TYPE = "type";
-    public static final String VC_EVIDENCE = "evidence";
-    public static final String CONTRA_INDICATORS = "ci";
-    public static final String VC = "vc";
+    public static final String CONTRA_INDICATORS = "contraIndicator";
     public static final String CODE = "code";
     public static final String FAILURE_RESPONSE = "Failure";
     public static final String MITIGATION = "mitigation";
@@ -92,7 +94,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                 response = FAILURE_RESPONSE;
             }
         }
-        mapper.writeValue(output, response);
+        mapper.writeValue(output, new GetCiCredentialResponse(response));
     }
 
     private SignedJWT generateJWT(Map<String, Object> claimsSetValues)
@@ -125,7 +127,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                 .claim(
                         JWTClaimNames.EXPIRATION_TIME,
                         claimsSetValues.get(JWTClaimNames.EXPIRATION_TIME))
-                .claim(VC, claimsSetValues.get(VC))
+                .claim(VC_CLAIM, claimsSetValues.get(VC_CLAIM))
                 .build();
     }
 
@@ -141,7 +143,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                 OffsetDateTime.now().toEpochSecond(),
                 JWTClaimNames.EXPIRATION_TIME,
                 OffsetDateTime.now().plusSeconds(15 * 60).toEpochSecond(),
-                VC,
+                VC_CLAIM,
                 generateVC(userId));
     }
 

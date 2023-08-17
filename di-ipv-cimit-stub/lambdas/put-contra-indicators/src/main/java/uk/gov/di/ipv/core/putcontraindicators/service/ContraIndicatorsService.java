@@ -26,8 +26,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static uk.gov.di.ipv.core.putcontraindicators.domain.VerifiableCredentialConstants.VC_CLAIM;
-import static uk.gov.di.ipv.core.putcontraindicators.domain.VerifiableCredentialConstants.VC_EVIDENCE;
+import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
+import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_EVIDENCE;
 
 public class ContraIndicatorsService {
     private static final Logger LOGGER = LogManager.getLogger();

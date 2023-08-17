@@ -1,4 +1,4 @@
-package uk.gov.di.ipv.core.putcontraindicators.domain;
+package uk.gov.di.ipv.core.library.vc;
 
 public class VerifiableCredentialConstants {
     private VerifiableCredentialConstants() {
