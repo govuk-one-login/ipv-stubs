@@ -61,6 +61,13 @@ Conditions:
           - !Ref CodeSigningConfigArn
           - "none"
 
+Mappings:
+  CoreAccounts:
+    dev:
+      accountId: "175872367215"
+    build:
+      accountId: "457601271792"
+
 Resources:
   # lambda to stub cimit getContraIndicators
   GetContraIndicatorsFunction:
@@ -100,6 +107,20 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
+  GetContraIndicatorsFunctionCoreDevInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetContraIndicatorsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev, accountId ]
+
+  GetContraIndicatorsFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetContraIndicatorsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
+
   # lambda to stub cimit postMitigations
   PostMitigationsFunction:
     Type: AWS::Serverless::Function
@@ -131,6 +152,20 @@ Resources:
       Policies:
         - VPCAccessPolicy: { }
       AutoPublishAlias: live
+
+  PostMitigationsFunctionCoreDevInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PostMitigationsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev, accountId ]
+
+  PostMitigationsFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PostMitigationsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
   # lambda to stub cimit putContraIndicators
   PutContraIndicatorsFunction:
@@ -173,6 +208,20 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
+  PutContraIndicatorsFunctionCoreDevInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PutContraIndicatorsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev, accountId ]
+
+  PutContraIndicatorsFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PutContraIndicatorsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
+
   # lambda to stub cimit getContraIndicatorCredential
   GetContraIndicatorCredentialFunction:
     Type: AWS::Serverless::Function
@@ -212,6 +261,20 @@ Resources:
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
+
+  GetContraIndicatorCredentialFunctionCoreDevInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetContraIndicatorCredentialFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev, accountId ]
+
+  GetContraIndicatorCredentialFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetContraIndicatorCredentialFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
   # lambda to stub management
   StubManagementFunction:
@@ -278,8 +341,6 @@ Resources:
             RestApiId: !Ref RestApiGateway
             Path: /user/{userId}/mitigations/{ci}
             Method: PUT
-
-
 
   GetContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
