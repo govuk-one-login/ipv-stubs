@@ -8,23 +8,20 @@ import com.nimbusds.jwt.SignedJWT;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.StringMapMessage;
-import software.amazon.awssdk.utils.StringUtils;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsRequest;
-import uk.gov.di.ipv.core.putcontraindicators.dto.ContraIndicatorDto;
 import uk.gov.di.ipv.core.putcontraindicators.dto.ContraIndicatorEvidenceDto;
-import uk.gov.di.ipv.core.putcontraindicators.dto.MitigationDto;
 import uk.gov.di.ipv.core.putcontraindicators.exceptions.CiPutException;
 
 import java.text.ParseException;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_EVIDENCE;
@@ -60,7 +57,10 @@ public class ContraIndicatorsService {
             ContraIndicatorEvidenceDto contraIndicatorEvidenceDto =
                     parseContraIndicatorEvidence(signedJWT);
             List<CimitStubItem> cimitStubItems =
-                    mapToContraIndications(userId, contraIndicatorEvidenceDto);
+                    mapToContraIndications(
+                            userId,
+                            contraIndicatorEvidenceDto,
+                            getIssuanceDate(signedJWT.getJWTClaimsSet().getNotBeforeTime()));
             saveOrUpdateCimitStubItems(userId, cimitStubItems);
         } catch (Exception ex) {
             throw new CiPutException(ex.getMessage());
@@ -117,38 +117,33 @@ public class ContraIndicatorsService {
     }
 
     private List<CimitStubItem> mapToContraIndications(
-            String userId, ContraIndicatorEvidenceDto contraIndicatorEvidenceDto) {
+            String userId,
+            ContraIndicatorEvidenceDto contraIndicatorEvidenceDto,
+            Instant issuanceDate) {
         if (contraIndicatorEvidenceDto.getCi().isEmpty()) {
             String message = "CI cannot be empty.";
             LOGGER.error(new StringMapMessage().with(LOG_MESSAGE_DESCRIPTION, message));
             throw new CiPutException(message);
         }
 
-        Map<String, List<ContraIndicatorDto>> groupedByCICode =
-                contraIndicatorEvidenceDto.getCi().stream()
-                        .filter(ci -> ci != null && ci.getCode() != null)
-                        .collect(Collectors.groupingBy(ContraIndicatorDto::getCode));
-
-        return groupedByCICode.entrySet().stream()
+        return contraIndicatorEvidenceDto.getCi().stream()
+                .distinct()
                 .map(
-                        ciEntry -> {
-                            String contraIndicatorCode = ciEntry.getKey();
-                            List<ContraIndicatorDto> contraIndicatorList = ciEntry.getValue();
-                            List<String> mitigationCodes =
-                                    contraIndicatorList.stream()
-                                            .flatMap(ci -> ci.getMitigation().stream())
-                                            .map(MitigationDto::getCode)
-                                            .collect(Collectors.toList());
-                            Instant issuanceDate =
-                                    getIssuanceDate(contraIndicatorList.get(0).getIssuanceDate());
+                        ciCode -> {
                             return CimitStubItem.builder()
                                     .userId(userId)
-                                    .contraIndicatorCode(contraIndicatorCode)
+                                    .contraIndicatorCode(ciCode)
                                     .issuanceDate(issuanceDate)
-                                    .mitigations(mitigationCodes)
                                     .build();
                         })
                 .collect(Collectors.toList());
+    }
+
+    private Instant getIssuanceDate(Date nbf) {
+        if (nbf != null) {
+            return nbf.toInstant();
+        }
+        return Instant.now();
     }
 
     private void saveOrUpdateCimitStubItems(String userId, List<CimitStubItem> cimitStubItems) {
@@ -163,31 +158,13 @@ public class ContraIndicatorsService {
                                 userId,
                                 cimitStubItem.getContraIndicatorCode().toUpperCase(),
                                 cimitStubItem.getIssuanceDate(),
-                                convertListToUppercase(cimitStubItem.getMitigations()));
+                                Collections.emptyList());
                     } else {
-                        dbCimitStubItem
-                                .get()
-                                .setMitigations(
-                                        getUpdatedMitigationsList(
-                                                dbCimitStubItem.get().getMitigations(),
-                                                cimitStubItem.getMitigations()));
                         dbCimitStubItem.get().setIssuanceDate(cimitStubItem.getIssuanceDate());
                         cimitStubItemService.updateCimitStub(dbCimitStubItem.get());
                     }
                 });
         LOGGER.info("Inserted User CI data to the Cimit Stub DynamoDB Table.");
-    }
-
-    private List<String> getUpdatedMitigationsList(
-            List<String> existingMitigations, List<String> newMitigations) {
-        Stream<String> combinedStream = Stream.empty();
-        if (existingMitigations != null) {
-            combinedStream = Stream.concat(combinedStream, existingMitigations.stream());
-        }
-        if (newMitigations != null) {
-            combinedStream = Stream.concat(combinedStream, newMitigations.stream());
-        }
-        return combinedStream.distinct().map(String::toUpperCase).collect(Collectors.toList());
     }
 
     private Optional<CimitStubItem> getUserIdAndCodeFromDatabase(
@@ -197,17 +174,4 @@ public class ContraIndicatorsService {
                 .findAny();
     }
 
-    private Instant getIssuanceDate(String issuanceDate) {
-        if (!StringUtils.isEmpty(issuanceDate)) {
-            return Instant.parse(issuanceDate);
-        }
-        return Instant.now();
-    }
-
-    public List<String> convertListToUppercase(List<String> codes) {
-        if (codes != null && !codes.isEmpty()) {
-            return codes.stream().map(String::toUpperCase).collect(Collectors.toList());
-        }
-        return codes;
-    }
 }
