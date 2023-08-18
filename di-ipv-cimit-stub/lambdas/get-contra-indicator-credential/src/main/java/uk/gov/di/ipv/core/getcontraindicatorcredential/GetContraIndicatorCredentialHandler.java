@@ -163,7 +163,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         for (CimitStubItem cimitStubItem : cimitStubItems) {
             Map<String, Object> contraIndicator = new LinkedHashMap<>();
             contraIndicator.put(CODE, cimitStubItem.getContraIndicatorCode());
-            contraIndicator.put(ISSUANCE_DATE, cimitStubItem.getIssuanceDate().toString());
+            contraIndicator.put(ISSUANCE_DATE, cimitStubItem.getIssuanceDate());
             contraIndicator.put(MITIGATION, getMitigations(cimitStubItem.getMitigations()));
             contraIndicators.add(contraIndicator);
         }
