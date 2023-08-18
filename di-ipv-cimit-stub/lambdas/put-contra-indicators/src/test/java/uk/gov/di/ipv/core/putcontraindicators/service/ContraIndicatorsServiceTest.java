@@ -104,8 +104,7 @@ public class ContraIndicatorsServiceTest {
                         .signedJwt(SIGNED_CONTRA_INDICATOR_VC_NO_EVIDENCE)
                         .build();
 
-        assertThrows(
-                CiPutException.class, () -> cimitService.addUserCis(putContraIndicatorsRequest));
+        cimitService.addUserCis(putContraIndicatorsRequest);
 
         verify(mockDataStore, never()).getItems(any());
         verify(mockDataStore, never()).create(any(), eq(CIMIT_STUB_TTL));
@@ -140,8 +139,7 @@ public class ContraIndicatorsServiceTest {
                         .signedJwt(SIGNED_CONTRA_INDICATOR_VC_INVALID_EVIDENCE)
                         .build();
 
-        assertThrows(
-                CiPutException.class, () -> cimitService.addUserCis(putContraIndicatorsRequest));
+        cimitService.addUserCis(putContraIndicatorsRequest);
 
         verify(mockDataStore, never()).getItems(any());
         verify(mockDataStore, never()).create(any(), eq(CIMIT_STUB_TTL));

@@ -56,12 +56,21 @@ public class ContraIndicatorsService {
             String userId = signedJWT.getJWTClaimsSet().getSubject();
             ContraIndicatorEvidenceDto contraIndicatorEvidenceDto =
                     parseContraIndicatorEvidence(signedJWT);
-            List<CimitStubItem> cimitStubItems =
-                    mapToContraIndications(
-                            userId,
-                            contraIndicatorEvidenceDto,
-                            getIssuanceDate(signedJWT.getJWTClaimsSet().getNotBeforeTime()));
-            saveOrUpdateCimitStubItems(userId, cimitStubItems);
+            if (contraIndicatorEvidenceDto != null) {
+                if (contraIndicatorEvidenceDto.getCi() == null
+                        || contraIndicatorEvidenceDto.getCi().isEmpty()) {
+                    String message = "CI cannot be empty.";
+                    LOGGER.info(new StringMapMessage().with(LOG_MESSAGE_DESCRIPTION, message));
+                } else {
+                    List<CimitStubItem> cimitStubItems =
+                            mapToContraIndications(
+                                    userId,
+                                    contraIndicatorEvidenceDto,
+                                    getIssuanceDate(
+                                            signedJWT.getJWTClaimsSet().getNotBeforeTime()));
+                    saveOrUpdateCimitStubItems(userId, cimitStubItems);
+                }
+            }
         } catch (Exception ex) {
             throw new CiPutException(ex.getMessage());
         }
@@ -88,17 +97,17 @@ public class ContraIndicatorsService {
             vcClaim = (JSONObject) signedJWT.getJWTClaimsSet().getClaim(VC_CLAIM);
         } catch (ParseException e) {
             String message = "Failed to parse VC claim";
-            LOGGER.error(
+            LOGGER.info(
                     new StringMapMessage()
                             .with(LOG_MESSAGE_DESCRIPTION, message)
                             .with(LOG_ERROR_DESCRIPTION, e.getMessage()));
-            throw new CiPutException(message);
+            return null;
         }
 
         JSONArray evidenceArray = (JSONArray) vcClaim.get(VC_EVIDENCE);
         if (evidenceArray == null || evidenceArray.size() != 1) {
             String message = "Unexpected evidence count.";
-            LOGGER.error(
+            LOGGER.info(
                     new StringMapMessage()
                             .with(LOG_MESSAGE_DESCRIPTION, message)
                             .with(
@@ -106,7 +115,7 @@ public class ContraIndicatorsService {
                                     String.format(
                                             "Expected one evidence item, got %d.",
                                             evidenceArray == null ? 0 : evidenceArray.size())));
-            throw new CiPutException(message);
+            return null;
         }
 
         List<ContraIndicatorEvidenceDto> contraIndicatorEvidenceDtos =
@@ -120,11 +129,6 @@ public class ContraIndicatorsService {
             String userId,
             ContraIndicatorEvidenceDto contraIndicatorEvidenceDto,
             Instant issuanceDate) {
-        if (contraIndicatorEvidenceDto.getCi().isEmpty()) {
-            String message = "CI cannot be empty.";
-            LOGGER.error(new StringMapMessage().with(LOG_MESSAGE_DESCRIPTION, message));
-            throw new CiPutException(message);
-        }
 
         return contraIndicatorEvidenceDto.getCi().stream()
                 .distinct()

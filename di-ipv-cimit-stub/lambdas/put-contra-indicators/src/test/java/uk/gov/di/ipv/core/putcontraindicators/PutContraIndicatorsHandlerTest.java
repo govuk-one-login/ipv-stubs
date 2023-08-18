@@ -75,7 +75,7 @@ class PutContraIndicatorsHandlerTest {
     }
 
     @Test
-    void shouldReturnExceptionWhenWhenCimitServiceThrowsException() throws IOException {
+    void shouldReturnExceptionWhenCimitServiceThrowsException() throws IOException {
         PutContraIndicatorsRequest putContraIndicatorsRequest =
                 PutContraIndicatorsRequest.builder()
                         .govukSigninJourneyId("govuk_signin_journey_id")
