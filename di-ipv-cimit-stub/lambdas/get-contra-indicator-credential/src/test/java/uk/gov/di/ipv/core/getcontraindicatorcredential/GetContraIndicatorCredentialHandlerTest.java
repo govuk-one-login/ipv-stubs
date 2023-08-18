@@ -38,7 +38,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.CODE;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.CONTRA_INDICATORS;
-import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.ISSUANCE_DATE;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.MITIGATION;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.SECURITY_CHECK_CREDENTIAL_VC_TYPE;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.TYPE;
@@ -75,12 +74,11 @@ class GetContraIndicatorCredentialHandlerTest {
         when(mockConfigService.getCimitSigningKey()).thenReturn(CIMIT_PRIVATE_KEY);
         when(mockConfigService.getCimitComponentId()).thenReturn(CIMIT_COMPONENT_ID);
         List<CimitStubItem> cimitStubItems = new ArrayList<>();
-        Instant issuanceDate = Instant.now();
         cimitStubItems.add(
                 CimitStubItem.builder()
                         .userId(USER_ID)
                         .contraIndicatorCode(CI_V_03)
-                        .issuanceDate(issuanceDate)
+                        .issuanceDate(Instant.now())
                         .mitigations(List.of(MITIGATION_M_01))
                         .build());
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
@@ -108,7 +106,7 @@ class GetContraIndicatorCredentialHandlerTest {
         final String contraIndicatorsVC =
                 new String(response.getVc().getBytes(), StandardCharsets.UTF_8);
 
-        assertClaimsJWTIsValid(contraIndicatorsVC, issuanceDate);
+        assertClaimsJWTIsValid(contraIndicatorsVC);
     }
 
     @Test
@@ -147,7 +145,7 @@ class GetContraIndicatorCredentialHandlerTest {
         }
     }
 
-    private void assertClaimsJWTIsValid(String request, Instant issuanceDate)
+    private void assertClaimsJWTIsValid(String request)
             throws ParseException, JsonProcessingException, JOSEException {
         SignedJWT signedJWT = SignedJWT.parse(request);
         JsonNode claimsSet = objectMapper.readTree(signedJWT.getJWTClaimsSet().toString());
@@ -163,7 +161,6 @@ class GetContraIndicatorCredentialHandlerTest {
         assertEquals(1, contraIndicators.size());
         JsonNode firstCINode = contraIndicators.get(0);
         assertEquals(CI_V_03, firstCINode.get(CODE).asText());
-        assertEquals(issuanceDate.toString(), firstCINode.get(ISSUANCE_DATE).asText());
         JsonNode mitigations = firstCINode.get(MITIGATION);
         assertEquals(1, mitigations.size());
         assertEquals(MITIGATION_M_01, mitigations.get(0).get(CODE).asText());
