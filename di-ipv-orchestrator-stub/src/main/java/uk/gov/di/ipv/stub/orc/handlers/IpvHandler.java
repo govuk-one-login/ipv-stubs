@@ -196,11 +196,17 @@ public class IpvHandler {
     }
 
     private List<Map<String, Object>> buildMustacheData(JSONObject credentials)
-            throws ParseException, JsonSyntaxException, java.text.ParseException {
+            throws ParseException, JsonSyntaxException, java.text.ParseException,
+                    OrchestratorStubException {
         List<Map<String, Object>> moustacheDataModel = new ArrayList<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         List<String> vcJwts = (List<String>) credentials.get(CREDENTIALS_URL_PROPERTY);
+
+        if (vcJwts == null) {
+            logger.error("The list of VC JWTs is null.");
+            throw new OrchestratorStubException("The list of VC JWTs is null.");
+        }
 
         for (String vc : vcJwts) {
             SignedJWT signedJWT = SignedJWT.parse(vc);
