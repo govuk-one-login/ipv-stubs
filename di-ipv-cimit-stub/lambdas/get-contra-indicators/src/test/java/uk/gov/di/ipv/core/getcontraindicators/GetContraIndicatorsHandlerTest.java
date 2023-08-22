@@ -31,8 +31,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class GetContraIndicatorsHandlerTest {
 
-    public static final String USER_ID = "user_id";
-    public static final String CI_V_03 = "V03";
+    private static final String USER_ID = "user_id";
+    private static final String CI_V_03 = "V03";
+    private static final String CIMIT_COMPONENT_ID = "https://cimit.stubs.account.gov.uk";
     private static final ObjectMapper mapper = new ObjectMapper();
     @Mock private Context mockContext;
     @Mock private ConfigService mockConfigService;
@@ -75,6 +76,7 @@ class GetContraIndicatorsHandlerTest {
                         .ttl(505L)
                         .build());
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
+        when(mockConfigService.getCimitComponentId()).thenReturn(CIMIT_COMPONENT_ID);
 
         var response =
                 makeRequest(
@@ -85,6 +87,7 @@ class GetContraIndicatorsHandlerTest {
 
         assertFalse(response.getContraIndicators().isEmpty());
         assertEquals(CI_V_03, response.getContraIndicators().get(0).getCi());
+        assertEquals(CIMIT_COMPONENT_ID, response.getContraIndicators().get(0).getIss());
     }
 
     @Test

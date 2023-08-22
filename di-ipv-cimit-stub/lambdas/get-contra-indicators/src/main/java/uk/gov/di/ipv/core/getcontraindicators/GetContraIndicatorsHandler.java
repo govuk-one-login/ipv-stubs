@@ -67,6 +67,7 @@ public class GetContraIndicatorsHandler implements RequestStreamHandler {
                                 ContraIndicatorItem.builder()
                                         .ci(item.getContraIndicatorCode())
                                         .ttl(Long.toString(item.getTtl()))
+                                        .iss(configService.getCimitComponentId())
                                         .userId(userId)
                                         .build())
                 .collect(Collectors.toList());

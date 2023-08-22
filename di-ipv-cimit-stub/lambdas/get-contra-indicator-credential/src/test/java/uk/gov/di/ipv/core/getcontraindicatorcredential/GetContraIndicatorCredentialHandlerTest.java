@@ -48,9 +48,9 @@ import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_EVI
 @ExtendWith({SystemStubsExtension.class, MockitoExtension.class})
 class GetContraIndicatorCredentialHandlerTest {
 
-    public static final String USER_ID = "user_id";
-    public static final String CI_V_03 = "V03";
-    public static final String MITIGATION_M_01 = "M01";
+    private static final String USER_ID = "user_id";
+    private static final String CI_V_03 = "V03";
+    private static final String MITIGATION_M_01 = "M01";
     private static final String CIMIT_PRIVATE_KEY =
             "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO";
     private static final String CIMIT_PUBLIC_JWK =
