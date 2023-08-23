@@ -188,6 +188,15 @@ public class IpvHandler {
 
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest.toHTTPRequest());
 
+        int statusCode = userInfoHttpResponse.getStatusCode();
+        if (statusCode != HTTPResponse.SC_OK) {
+            logger.error(
+                    "User info request failed with status code {}: {} ",
+                    statusCode,
+                    userInfoHttpResponse.getContent());
+            throw new RuntimeException("User info request failed with status code " + statusCode);
+        }
+
         try {
             return userInfoHttpResponse.getContentAsJSONObject();
         } catch (ParseException e) {
@@ -196,17 +205,11 @@ public class IpvHandler {
     }
 
     private List<Map<String, Object>> buildMustacheData(JSONObject credentials)
-            throws ParseException, JsonSyntaxException, java.text.ParseException,
-                    OrchestratorStubException {
+            throws ParseException, JsonSyntaxException, java.text.ParseException {
         List<Map<String, Object>> moustacheDataModel = new ArrayList<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         List<String> vcJwts = (List<String>) credentials.get(CREDENTIALS_URL_PROPERTY);
-
-        if (vcJwts == null) {
-            logger.error("The list of VC JWTs is null.");
-            throw new OrchestratorStubException("The list of VC JWTs is null.");
-        }
 
         for (String vc : vcJwts) {
             SignedJWT signedJWT = SignedJWT.parse(vc);
