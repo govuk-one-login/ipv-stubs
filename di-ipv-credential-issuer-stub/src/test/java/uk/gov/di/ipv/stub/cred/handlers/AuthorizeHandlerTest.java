@@ -22,6 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
@@ -42,6 +44,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -70,11 +75,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CRI_MITIGATION_ENABLED_PARAM;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 
-@ExtendWith(SystemStubsExtension.class)
+@ExtendWith({SystemStubsExtension.class, MockitoExtension.class})
 class AuthorizeHandlerTest {
 
     public static final String BASE64_ENCRYPTION_PUBLIC_CERT =
@@ -97,8 +104,10 @@ class AuthorizeHandlerTest {
     private static final String VALID_REDIRECT_URI = "https://valid.example.com";
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+    @Mock private HttpClient httpClient;
+
     @SystemStub
-    private final EnvironmentVariables environmentVariables =
+    private EnvironmentVariables environmentVariables =
             new EnvironmentVariables("CLIENT_CONFIG", TestFixtures.CLIENT_CONFIG);
 
     @BeforeEach
@@ -111,6 +120,7 @@ class AuthorizeHandlerTest {
         mockAuthCodeService = mock(AuthCodeService.class);
         mockCredentialService = mock(CredentialService.class);
         mockVcGenerator = mock(VerifiableCredentialGenerator.class);
+        httpClient = mock(HttpClient.class);
 
         authorizeHandler =
                 new AuthorizeHandler(
@@ -118,7 +128,8 @@ class AuthorizeHandlerTest {
                         mockAuthCodeService,
                         mockCredentialService,
                         requestedErrorResponseService,
-                        mockVcGenerator);
+                        mockVcGenerator,
+                        httpClient);
     }
 
     @Test
@@ -133,6 +144,7 @@ class AuthorizeHandlerTest {
 
         assertEquals(renderOutput, result);
         verify(mockViewHelper).render(anyMap(), eq("authorize.mustache"));
+        verify(httpClient, times(0)).send(any(), any());
     }
 
     @Test
@@ -261,6 +273,37 @@ class AuthorizeHandlerTest {
                                 .toJSONObject()
                                 .get(SHARED_CLAIMS);
         assertEquals(gson.toJson(claims), frontendParamsCaptor.getValue().get("shared_claims"));
+        assertFalse((Boolean) frontendParamsCaptor.getValue().get(CRI_MITIGATION_ENABLED_PARAM));
+    }
+
+    @Test
+    void doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithMitigationEnabled()
+            throws Exception {
+        environmentVariables.set("MITIGATION_ENABLED", "True");
+        QueryParamsMap queryParamsMap = toQueryParamsMap(validEncryptedDoAuthorizeQueryParams());
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String renderOutput = "rendered output";
+        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
+
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        assertEquals(renderOutput, result);
+
+        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor =
+                ArgumentCaptor.forClass(Map.class);
+        verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
+
+        assertTrue(
+                Boolean.parseBoolean(
+                        frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
+
+        Map<String, Object> claims =
+                (Map<String, Object>)
+                        validRequestJWT(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI)
+                                .toJSONObject()
+                                .get(SHARED_CLAIMS);
+        assertTrue((Boolean) frontendParamsCaptor.getValue().get(CRI_MITIGATION_ENABLED_PARAM));
     }
 
     @Test
@@ -372,6 +415,69 @@ class AuthorizeHandlerTest {
         assertNotNull(persistedEvidence.get("strengthScore"));
         assertNotNull(persistedEvidence.get("validityScore"));
         assertNull(persistedCredential.getValue().getExp());
+    }
+
+    @Test
+    void generateResponseShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled()
+            throws Exception {
+        environmentVariables.set("MITIGATION_ENABLED", "True");
+        Map<String, String[]> queryParams = validGenerateResponseQueryParams();
+        queryParams.put(
+                CredentialIssuerConfig.MITIGATED_CONTRAINDICATORS_PARAM, new String[] {"V03"});
+        queryParams.put(
+                CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM,
+                new String[] {"http://test.com"});
+        queryParams.put(
+                CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM, new String[] {"api:key"});
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        HttpResponse httpResponse = mock(HttpResponse.class);
+        when(httpResponse.statusCode()).thenReturn(200);
+        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(httpResponse);
+
+        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+
+        verify(httpClient, times(1)).send(any(), any());
+
+        ArgumentCaptor<Credential> persistedCredential = ArgumentCaptor.forClass(Credential.class);
+
+        verify(mockCredentialService)
+                .persist(persistedCredential.capture(), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
+
+        assertNotNull(persistedCredential.getValue().getExp());
+    }
+
+    @Test
+    void
+            generateResponseShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled_postFailed()
+                    throws Exception {
+        environmentVariables.set("MITIGATION_ENABLED", "True");
+        Map<String, String[]> queryParams = validGenerateResponseQueryParams();
+        queryParams.put(
+                CredentialIssuerConfig.MITIGATED_CONTRAINDICATORS_PARAM, new String[] {"V03"});
+        queryParams.put(
+                CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM,
+                new String[] {"http://test.com"});
+        queryParams.put(
+                CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM, new String[] {"api:key"});
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        HttpResponse httpResponse = mock(HttpResponse.class);
+        when(httpResponse.statusCode()).thenReturn(403);
+        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(httpResponse);
+
+        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+
+        verify(httpClient, times(1)).send(any(), any());
+
+        verify(mockResponse)
+                .redirect(
+                        VALID_REDIRECT_URI
+                                + "?error=failed_to_post&iss=Credential+Issuer+Stub&error_description=Failed+to+post+CI+mitigation+to+management+stub+api.");
     }
 
     @Test

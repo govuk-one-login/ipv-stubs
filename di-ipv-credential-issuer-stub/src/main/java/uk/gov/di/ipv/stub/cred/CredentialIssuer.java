@@ -18,6 +18,8 @@ import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
+import java.net.http.HttpClient;
+
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
 
 public class CredentialIssuer {
@@ -48,7 +50,8 @@ public class CredentialIssuer {
                         authCodeService,
                         credentialService,
                         requestedErrorResponseService,
-                        vcGenerator);
+                        vcGenerator,
+                        HttpClient.newHttpClient());
         tokenHandler =
                 new TokenHandler(
                         authCodeService,
