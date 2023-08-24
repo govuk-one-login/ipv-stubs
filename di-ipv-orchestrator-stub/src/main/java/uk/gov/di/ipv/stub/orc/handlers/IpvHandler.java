@@ -190,11 +190,13 @@ public class IpvHandler {
 
         int statusCode = userInfoHttpResponse.getStatusCode();
         if (statusCode != HTTPResponse.SC_OK) {
-            logger.error(
-                    "User info request failed with status code {}: {} ",
-                    statusCode,
-                    userInfoHttpResponse.getContent());
-            throw new RuntimeException("User info request failed with status code " + statusCode);
+            var errorMessage =
+                    "User info request failed with status code "
+                            + statusCode
+                            + ": "
+                            + userInfoHttpResponse.getContent();
+            logger.error(errorMessage);
+            throw new RuntimeException(errorMessage);
         }
 
         try {
