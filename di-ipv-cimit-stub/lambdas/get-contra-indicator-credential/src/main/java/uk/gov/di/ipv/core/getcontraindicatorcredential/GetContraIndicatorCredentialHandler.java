@@ -47,6 +47,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
     public static final String CODE = "code";
     public static final String FAILURE_RESPONSE = "Failure";
     public static final String MITIGATION = "mitigation";
+    public static final String MITIGATION_CREDENTIAL = "mitigatingCredential";
     public static final String ISSUANCE_DATE = "issuanceDate";
 
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -175,8 +176,14 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         for (String mitigationCode : mitigationCodes) {
             Map<String, Object> mitigation = new LinkedHashMap<>();
             mitigation.put(CODE, mitigationCode);
+            mitigation.put(MITIGATION_CREDENTIAL, getMitigationCredentials());
             mitigations.add(mitigation);
         }
         return mitigations;
+    }
+
+    private List<Map<String, Object>> getMitigationCredentials() {
+        List<Map<String, Object>> mitigationCredentials = new ArrayList<>();
+        return mitigationCredentials;
     }
 }

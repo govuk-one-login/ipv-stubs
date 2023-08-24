@@ -382,6 +382,33 @@
                             </td>
                         </tr>
 
+                        {{#isCriMitigationEnabled}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <div class="govuk-form-group">
+                                        <h1 class="govuk-label-wrapper">
+                                            <label class="govuk-label govuk-label--l" for="ciMitigated">
+                                                Mitigations (optional)
+                                            </label>
+                                        </h1>
+                                        <div id="ci-miti-more-detail-hint" class="govuk-hint">
+                                            Please provide a comma-separated mitigated CI list e.g. A01,D02
+                                        </div>
+                                        <textarea class="govuk-textarea" id="ciMitigated" name="ciMitigated" rows="1" aria-describedby="ci-miti-more-detail-hint"></textarea>
+                                        <div id="ci-miti-base-url-hint" class="govuk-hint">
+                                            Please provide base URL of the CIMIT stub management API e.g for dev-> https://cimit-dev-{user}.core.dev.stubs.account.gov.uk,
+                                            for build-> https://cimit.build.stubs.account.gov.uk
+                                        </div>
+                                        <textarea class="govuk-textarea" id="ciMitiBaseUrl" name="ciMitiBaseUrl" rows="1" aria-describedby="ci-miti-base-url-hint"></textarea>
+                                        <div id="ci-miti-api-key-hint" class="govuk-hint">
+                                            Please provide corresponding API key
+                                        </div>
+                                        <textarea class="govuk-textarea" id="ciMitiApiKey" name="ciMitiApiKey" rows="1" aria-describedby="ci-miti-api-key-hint"></textarea>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/isCriMitigationEnabled}}
+
                         {{^isUserAssertedType}}
                             <tr class="govuk-table__row">
                                 <td class="govuk-table__cell">

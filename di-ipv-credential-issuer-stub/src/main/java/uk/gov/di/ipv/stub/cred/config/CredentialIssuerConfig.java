@@ -38,7 +38,10 @@ public class CredentialIssuerConfig {
     public static final String FAILED_CHECK_DETAILS_PARAM = "failedCheckDetails";
     public static final String BIOMETRICK_VERIFICATION_PARAM = "biometricVerificationScore";
     public static final String EVIDENCE_CONTRAINDICATOR_PARAM = "ci";
-
+    public static final String MITIGATED_CONTRAINDICATORS_PARAM = "ciMitigated";
+    public static final String BASE_STUB_MANAGED_POST_URL_PARAM = "ciMitiBaseUrl";
+    public static final String STUB_MANAGEMENT_API_KEY_PARAM = "ciMitiApiKey";
+    public static final String CRI_MITIGATION_ENABLED = "MITIGATION_ENABLED";
     public static final String EXPIRY_FLAG_CHK_BOX_VALUE = "on";
     public static final String EXPIRY_FLAG = "vcExpiryFlg";
     public static final String EXPIRY_HOURS = "expHours";
@@ -100,6 +103,10 @@ public class CredentialIssuerConfig {
         }
 
         return envValue;
+    }
+
+    public static boolean isEnabled(String key, String defaultValue) {
+        return Boolean.parseBoolean(getConfigValue(key, defaultValue));
     }
 
     private static Map<String, ClientConfig> parseClientConfigs() {

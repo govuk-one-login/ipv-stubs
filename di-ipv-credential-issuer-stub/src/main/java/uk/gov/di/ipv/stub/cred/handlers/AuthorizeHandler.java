@@ -46,8 +46,13 @@ import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
@@ -59,6 +64,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME;
@@ -74,6 +81,7 @@ public class AuthorizeHandler {
     public static final String CRI_STUB_DATA = "cri_stub_data";
     public static final String CRI_STUB_EVIDENCE_PAYLOADS = "cri_stub_evidence_payloads";
     public static final String F2F_STUB_QUEUE_NAME_FIELD = "f2f_stub_queue_name";
+    public static final String CRI_MITIGATION_ENABLED_PARAM = "isCriMitigationEnabled";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
 
@@ -104,19 +112,22 @@ public class AuthorizeHandler {
     private final ES256SignatureVerifier es256SignatureVerifier = new ES256SignatureVerifier();
     private ViewHelper viewHelper;
     private VerifiableCredentialGenerator verifiableCredentialGenerator;
+    private HttpClient httpClient;
 
     public AuthorizeHandler(
             ViewHelper viewHelper,
             AuthCodeService authCodeService,
             CredentialService credentialService,
             RequestedErrorResponseService requestedErrorResponseService,
-            VerifiableCredentialGenerator verifiableCredentialGenerator) {
+            VerifiableCredentialGenerator verifiableCredentialGenerator,
+            HttpClient httpClient) {
         Objects.requireNonNull(viewHelper);
         this.viewHelper = viewHelper;
         this.authCodeService = authCodeService;
         this.credentialService = credentialService;
         this.requestedErrorResponseService = requestedErrorResponseService;
         this.verifiableCredentialGenerator = verifiableCredentialGenerator;
+        this.httpClient = httpClient;
     }
 
     public Route doAuthorize =
@@ -204,6 +215,10 @@ public class AuthorizeHandler {
                 frontendParams.put(
                         IS_DOC_CHECKING_TYPE_PARAM, criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE));
                 frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
+                frontendParams.put(
+                        CRI_MITIGATION_ENABLED_PARAM,
+                        CredentialIssuerConfig.isEnabled(
+                                CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false"));
                 frontendParams.put(IS_USER_ASSERTED_TYPE, criType.equals(USER_ASSERTED_CRI_TYPE));
                 if (!criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
                     frontendParams.put(SHARED_CLAIMS, sharedAttributesJson);
@@ -312,6 +327,11 @@ public class AuthorizeHandler {
                         gpgMap.put(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, ciList);
                     }
 
+                    if (CredentialIssuerConfig.isEnabled(
+                            CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
+                        processMitigatedCIs(userId, queryParamsMap);
+                    }
+
                     String expFlag = queryParamsMap.value(CredentialIssuerConfig.EXPIRY_FLAG);
                     int expHours =
                             Integer.parseInt(
@@ -411,6 +431,62 @@ public class AuthorizeHandler {
                 }
                 return null;
             };
+
+    private void processMitigatedCIs(String userId, QueryParamsMap queryParamsMap)
+            throws CriStubException {
+        String mitigatedCIsString =
+                queryParamsMap
+                        .value(CredentialIssuerConfig.MITIGATED_CONTRAINDICATORS_PARAM)
+                        .replaceAll("\\s", "");
+
+        if (!mitigatedCIsString.isEmpty()) {
+            LOGGER.info("Processing mitigated CI's");
+            String baseStubManagedPostUrl =
+                    queryParamsMap.value(CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM);
+            String stubManagementApiKey =
+                    queryParamsMap.value(CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM);
+            List<String> mitigatedCiList =
+                    Stream.of(mitigatedCIsString.split(",", -1)).collect(Collectors.toList());
+            String postUrlTemplate = "/user/%s/mitigations/%s";
+            for (String ciCode : mitigatedCiList) {
+                String postUrl =
+                        baseStubManagedPostUrl + String.format(postUrlTemplate, userId, ciCode);
+                LOGGER.info("Managed cimit stub postUrl:{}", postUrl);
+                try {
+                    HttpRequest request =
+                            HttpRequest.newBuilder()
+                                    .uri(new URI(postUrl))
+                                    .header("Content-Type", "application/json")
+                                    .header("x-api-key", stubManagementApiKey)
+                                    .POST(
+                                            HttpRequest.BodyPublishers.ofString(
+                                                    "{\"mitigations\": [\"M01\"]}"))
+                                    .build();
+                    HttpResponse response =
+                            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                    int responseStatusCode = response.statusCode();
+                    LOGGER.info("Processed mitigated CI's with response:{}", responseStatusCode);
+                    if (responseStatusCode != 200) {
+                        String msg = "Failed to post CI mitigation to management stub api.";
+                        LOGGER.info(msg);
+                        throw new CriStubException("failed_to_post", msg);
+                    }
+                } catch (URISyntaxException e) {
+                    LOGGER.info(
+                            "Unable to generate request for post cimit stub. Error message:{}",
+                            e.getMessage());
+                    throw new CriStubException(
+                            "invalid_posturl", "Unable to generate request for post cimit stub", e);
+                } catch (IOException | InterruptedException e) {
+                    LOGGER.info(
+                            "Unable to make post cimit management stub call. Error message:{}",
+                            e.getMessage());
+                    throw new CriStubException(
+                            "failed_to_post", "Unable to make post cimit management stub call", e);
+                }
+            }
+        }
+    }
 
     private AuthorizationSuccessResponse generateAuthCode(String state, String redirectUri) {
         AuthorizationCode authorizationCode = new AuthorizationCode();

@@ -40,6 +40,7 @@ import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicator
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.CONTRA_INDICATORS;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.ISSUANCE_DATE;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.MITIGATION;
+import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.MITIGATION_CREDENTIAL;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.SECURITY_CHECK_CREDENTIAL_VC_TYPE;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.TYPE;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
@@ -167,6 +168,8 @@ class GetContraIndicatorCredentialHandlerTest {
         JsonNode mitigations = firstCINode.get(MITIGATION);
         assertEquals(1, mitigations.size());
         assertEquals(MITIGATION_M_01, mitigations.get(0).get(CODE).asText());
+        JsonNode mitigationCredentials = mitigations.get(0).get(MITIGATION_CREDENTIAL);
+        assertEquals(0, mitigationCredentials.size());
 
         ECDSAVerifier verifier = new ECDSAVerifier(ECKey.parse(CIMIT_PUBLIC_JWK));
         assertTrue(signedJWT.verify(verifier));
