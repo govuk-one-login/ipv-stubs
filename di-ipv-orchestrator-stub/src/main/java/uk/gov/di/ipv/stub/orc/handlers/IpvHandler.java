@@ -188,6 +188,17 @@ public class IpvHandler {
 
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest.toHTTPRequest());
 
+        int statusCode = userInfoHttpResponse.getStatusCode();
+        if (statusCode != HTTPResponse.SC_OK) {
+            var errorMessage =
+                    "User info request failed with status code "
+                            + statusCode
+                            + ": "
+                            + userInfoHttpResponse.getContent();
+            logger.error(errorMessage);
+            throw new RuntimeException(errorMessage);
+        }
+
         try {
             return userInfoHttpResponse.getContentAsJSONObject();
         } catch (ParseException e) {
