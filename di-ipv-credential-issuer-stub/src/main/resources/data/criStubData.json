@@ -1021,6 +1021,37 @@
           }
         ]
       }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Kenneth Decerqueira (Valid Experian) Passport",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "321654987",
+            "expiryDate": "2030-01-01"
+          }
+        ]
+      }
     }
   ]
 }
