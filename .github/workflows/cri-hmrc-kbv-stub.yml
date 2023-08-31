@@ -4,7 +4,7 @@ on:
     branches:
       - main
     paths:
-      - di-ipv-credential-issuer-stub/deploy/hmrcKbv/*
+      - di-ipv-credential-issuer-stub/deploy/hmrc-kbv/*
       - di-ipv-credential-issuer-stub/gradle/**
       - di-ipv-credential-issuer-stub/src/**
       - di-ipv-credential-issuer-stub/*
