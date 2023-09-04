@@ -8,6 +8,7 @@ import uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler;
 import uk.gov.di.ipv.stub.cred.handlers.CredentialHandler;
 import uk.gov.di.ipv.stub.cred.handlers.DocAppCredentialHandler;
 import uk.gov.di.ipv.stub.cred.handlers.F2FHandler;
+import uk.gov.di.ipv.stub.cred.handlers.HealthCheckHandler;
 import uk.gov.di.ipv.stub.cred.handlers.JwksHandler;
 import uk.gov.di.ipv.stub.cred.handlers.TokenHandler;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
@@ -30,6 +31,7 @@ public class CredentialIssuer {
     private final DocAppCredentialHandler docAppCredentialHandler;
     private final JwksHandler jwksHandler;
     private final F2FHandler f2fHandler;
+    private final HealthCheckHandler healthCheckHandler;
 
     public CredentialIssuer() {
         Spark.staticFileLocation("/public");
@@ -68,12 +70,14 @@ public class CredentialIssuer {
                         requestedErrorResponseService);
         jwksHandler = new JwksHandler();
         f2fHandler = new F2FHandler(credentialService, tokenService);
+        healthCheckHandler = new HealthCheckHandler();
 
         initRoutes();
         initErrorMapping();
     }
 
     private void initRoutes() {
+        Spark.get("/", healthCheckHandler.healthy);
         Spark.get("/authorize", authorizeHandler.doAuthorize);
         Spark.post("/authorize", authorizeHandler.generateResponse);
         Spark.post("/token", tokenHandler.issueAccessToken);
