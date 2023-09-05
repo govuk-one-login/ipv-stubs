@@ -406,7 +406,6 @@ Outputs:
         - IsNonProd
         - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
         - queue-build.stubs.account.gov.uk
-      - "/prod"
   SignJwtKmsKeyId:
     Description: A key ID for signing JWTs
     Value: !Ref SignJwtKmsKey
