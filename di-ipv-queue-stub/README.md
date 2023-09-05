@@ -80,4 +80,4 @@ If the queue doesn't exist it will be created. The queues and the KMS keys to re
 are only accessible from the IPV Core dev and build accounts.
 The API gateway URL is in the outputs of the cloudformation stack.
 There is an API gateway deployed in the stubs build account here:
-https://96d4sab539.execute-api.eu-west-2.amazonaws.com/prod
+https://queue-build.build.stubs.account.gov.uk
