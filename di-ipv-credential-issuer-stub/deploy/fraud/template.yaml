@@ -371,7 +371,7 @@ Resources:
       HealthCheckEnabled: TRUE
       HealthCheckProtocol: HTTP
       Matcher:
-        HttpCode: 404
+        HttpCode: 200
       Port: 8080
       Protocol: HTTP
       TargetType: ip
