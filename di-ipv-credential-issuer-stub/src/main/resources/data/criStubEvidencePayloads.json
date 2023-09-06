@@ -262,6 +262,30 @@
           }
         ]
       }
+    },
+    {
+      "criType": "National Insurance Number Verification (Stub)",
+      "label": "Passed National Insurance Number Verification (Stub)",
+      "payload": {
+        "type": "IdentityCheck",
+        "checkDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number Verification (Stub)",
+      "label": "Failed National Insurance Number Verification (Stub)",
+      "payload": {
+        "type": "IdentityCheck",
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
     }
   ]
 }
