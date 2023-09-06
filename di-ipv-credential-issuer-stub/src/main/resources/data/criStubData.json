@@ -1302,6 +1302,130 @@
           }
         ]
       }
+    },
+    {
+      "criType": "National Insurance Number Verification (Stub)",
+      "label": "Alice Parker (Valid) National Insurance",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "socialSecurityRecord": [
+          {
+            "personalNumber": "AA000003D"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number Verification (Stub)",
+      "label": "Mary Watson (Valid) National Insurance",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
+          }
+        ],
+        "socialSecurityRecord": [
+          {
+            "personalNumber": "AA000003D"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number Verification (Stub)",
+      "label": "Kenneth Decerqueira (Valid) National Insurance",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "socialSecurityRecord": [
+          {
+            "personalNumber": "AA000003D"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number Verification (Stub)",
+      "label": "Bob Parker (Valid) National Insurance",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Böb",
+                "type": "GivenName"
+              },
+              {
+                "value": "Pârker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
+          }
+        ],
+        "socialSecurityRecord": [
+          {
+            "personalNumber": "AA000003D"
+          }
+        ]
+      }
     }
   ]
 }
