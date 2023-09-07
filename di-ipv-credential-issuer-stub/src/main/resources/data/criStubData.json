@@ -1304,7 +1304,7 @@
       }
     },
     {
-      "criType": "National Insurance Number Verification (Stub)",
+      "criType": "National Insurance Number (Stub)",
       "label": "Alice Parker (Valid) National Insurance",
       "payload": {
         "name": [
@@ -1338,7 +1338,7 @@
       }
     },
     {
-      "criType": "National Insurance Number Verification (Stub)",
+      "criType": "National Insurance Number (Stub)",
       "label": "Mary Watson (Valid) National Insurance",
       "payload": {
         "name": [
@@ -1368,7 +1368,7 @@
       }
     },
     {
-      "criType": "National Insurance Number Verification (Stub)",
+      "criType": "National Insurance Number (Stub)",
       "label": "Kenneth Decerqueira (Valid) National Insurance",
       "payload": {
         "name": [
@@ -1398,7 +1398,7 @@
       }
     },
     {
-      "criType": "National Insurance Number Verification (Stub)",
+      "criType": "National Insurance Number (Stub)",
       "label": "Bob Parker (Valid) National Insurance",
       "payload": {
         "name": [

@@ -264,8 +264,8 @@
       }
     },
     {
-      "criType": "National Insurance Number Verification (Stub)",
-      "label": "Passed National Insurance Number Verification (Stub)",
+      "criType": "National Insurance Number (Stub)",
+      "label": "Passed National Insurance Number (Stub)",
       "payload": {
         "type": "IdentityCheck",
         "checkDetails": [
@@ -276,8 +276,8 @@
       }
     },
     {
-      "criType": "National Insurance Number Verification (Stub)",
-      "label": "Failed National Insurance Number Verification (Stub)",
+      "criType": "National Insurance Number (Stub)",
+      "label": "Failed National Insurance Number (Stub)",
       "payload": {
         "type": "IdentityCheck",
         "failedCheckDetails": [

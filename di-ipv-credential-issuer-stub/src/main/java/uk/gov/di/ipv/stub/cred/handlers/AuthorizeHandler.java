@@ -100,6 +100,8 @@ public class AuthorizeHandler {
     private static final String IS_DOC_CHECKING_TYPE_PARAM = "isDocCheckingType";
     private static final String IS_USER_ASSERTED_TYPE = "isUserAssertedType";
     private static final String IS_F2F_TYPE = "isF2FType";
+
+    private static final String IS_NINO_TYPE = "isNINOType";
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
@@ -215,6 +217,7 @@ public class AuthorizeHandler {
                 frontendParams.put(
                         IS_DOC_CHECKING_TYPE_PARAM, criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE));
                 frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
+                frontendParams.put(IS_NINO_TYPE, criType.equals(CriType.NINO_CRI_TYPE));
                 frontendParams.put(
                         CRI_MITIGATION_ENABLED_PARAM,
                         CredentialIssuerConfig.isEnabled(
