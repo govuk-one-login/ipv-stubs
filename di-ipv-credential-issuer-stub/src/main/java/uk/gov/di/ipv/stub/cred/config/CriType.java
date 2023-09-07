@@ -8,7 +8,8 @@ public enum CriType {
     VERIFICATION_CRI_TYPE("VERIFICATION"),
     USER_ASSERTED_CRI_TYPE("USER_ASSERTED"),
     DOC_CHECK_APP_CRI_TYPE("DOC_CHECK_APP"),
-    F2F_CRI_TYPE("F2F");
+    F2F_CRI_TYPE("F2F"),
+    NINO_CRI_TYPE("NINO");
 
     public final String value;
 
