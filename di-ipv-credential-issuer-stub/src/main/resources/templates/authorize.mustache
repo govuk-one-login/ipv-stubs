@@ -415,7 +415,7 @@
                                     <div class="govuk-form-group">
                                         <h1 class="govuk-label-wrapper">
                                             <label class="govuk-label govuk-label--l" for="evidenceJsonPayload">
-                                                Override evidence block (optional)
+                                                Override evidence block {{#isNINOType}}(required){{/isNINOType}}{{^isNINOType}}(optional){{/isNINOType}}
                                             </label>
                                         </h1>
                                         <div class="govuk-checkboxes" data-module="govuk-checkboxes">
