@@ -82,6 +82,8 @@ Conditions:
     - !Or
       - !Equals [ !Ref Environment, "build"]
       - !Equals [ !Ref Environment, "production"]
+  IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
+  IsDev02: !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsNotDevelopment: !Not [ !Condition IsDevelopment ]
 
   UsePermissionsBoundary:
@@ -134,17 +136,29 @@ Resources:
   OrchStubSSLCert:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub "orch-${Environment}.core.dev.stubs.account.gov.uk"
+      DomainName: !If
+        - IsDev01
+        - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
       DomainValidationOptions:
-        - DomainName: !Sub "orch-${Environment}.core.dev.stubs.account.gov.uk"
-          HostedZoneId: !ImportValue DevPublicHostedZoneId
+        - DomainName: !If
+            - IsDev01
+            - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
+            - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+          HostedZoneId: !If
+            - IsDev01
+            - !ImportValue Dev01StubsHostedZoneId
+            - !If [IsDev02, Dev02StubsHostedZoneId, DevStubHostedZoneId]
       ValidationMethod: DNS
 
   # api domain entries / mapping
   OrchStubApiDomain:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
-      DomainName: !Sub "orch-${Environment}.core.dev.stubs.account.gov.uk"
+      DomainName: !If
+        - IsDev01
+        - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
       DomainNameConfigurations:
         - CertificateArn: !Ref OrchStubSSLCert
           EndpointType: REGIONAL
@@ -153,7 +167,10 @@ Resources:
   OrchStubApiMapping:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
-      DomainName: !Sub "orch-${Environment}.core.dev.stubs.account.gov.uk"
+      DomainName: !If
+        - IsDev01
+        - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -165,8 +182,14 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       Type: A
-      Name: !Sub "orch-${Environment}.core.dev.stubs.account.gov.uk"
-      HostedZoneId: !ImportValue DevPublicHostedZoneId
+      Name: !If
+        - IsDev01
+        - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+      HostedZoneId: !If
+        - IsDev01
+        - !ImportValue Dev01StubsHostedZoneId
+        - !If [IsDev02, Dev02StubsHostedZoneId, DevStubHostedZoneId]
       AliasTarget:
         DNSName: !GetAtt OrchStubApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt OrchStubApiDomain.RegionalHostedZoneId
