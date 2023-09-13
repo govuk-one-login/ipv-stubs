@@ -148,7 +148,7 @@ Resources:
           HostedZoneId: !If
             - IsDev01
             - !ImportValue Dev01StubsHostedZoneId
-            - !If [IsDev02, Dev02StubsHostedZoneId, DevStubHostedZoneId]
+            - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, !ImportValue DevStubHostedZoneId]
       ValidationMethod: DNS
 
   # api domain entries / mapping
@@ -189,7 +189,7 @@ Resources:
       HostedZoneId: !If
         - IsDev01
         - !ImportValue Dev01StubsHostedZoneId
-        - !If [IsDev02, Dev02StubsHostedZoneId, DevStubHostedZoneId]
+        - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, !ImportValue DevStubHostedZoneId]
       AliasTarget:
         DNSName: !GetAtt OrchStubApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt OrchStubApiDomain.RegionalHostedZoneId
