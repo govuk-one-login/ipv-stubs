@@ -63,7 +63,9 @@ Conditions:
 
 Mappings:
   CoreAccounts:
-    dev:
+    dev01:
+      accountId: "130355686670"
+    dev02:
       accountId: "175872367215"
     build:
       accountId: "457601271792"
@@ -107,12 +109,19 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
-  GetContraIndicatorsFunctionCoreDevInvokePermission:
+  GetContraIndicatorsFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref GetContraIndicatorsFunction
       Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev, accountId ]
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+
+  GetContraIndicatorsFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetContraIndicatorsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
   GetContraIndicatorsFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
@@ -153,12 +162,19 @@ Resources:
         - VPCAccessPolicy: { }
       AutoPublishAlias: live
 
-  PostMitigationsFunctionCoreDevInvokePermission:
+  PostMitigationsFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref PostMitigationsFunction
       Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev, accountId ]
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+
+  PostMitigationsFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PostMitigationsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
   PostMitigationsFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
@@ -208,12 +224,19 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
-  PutContraIndicatorsFunctionCoreDevInvokePermission:
+  PutContraIndicatorsFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref PutContraIndicatorsFunction
       Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev, accountId ]
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+
+  PutContraIndicatorsFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PutContraIndicatorsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
   PutContraIndicatorsFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
@@ -262,12 +285,19 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
-  GetContraIndicatorCredentialFunctionCoreDevInvokePermission:
+  GetContraIndicatorCredentialFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref GetContraIndicatorCredentialFunction
       Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev, accountId ]
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+
+  GetContraIndicatorCredentialFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetContraIndicatorCredentialFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
   GetContraIndicatorCredentialFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
