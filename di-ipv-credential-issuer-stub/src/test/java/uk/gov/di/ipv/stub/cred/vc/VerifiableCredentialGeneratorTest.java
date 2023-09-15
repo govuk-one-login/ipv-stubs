@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.nimbusds.jwt.JWTClaimNames.AUDIENCE;
 import static com.nimbusds.jwt.JWTClaimNames.EXPIRATION_TIME;
@@ -45,6 +47,7 @@ import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_EVIDEN
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VERIFIABLE_CREDENTIAL_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator.EC_ALGO;
+import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator.JTI_SCHEME_AND_PATH_PREFIX;
 
 @ExtendWith(SystemStubsExtension.class)
 public class VerifiableCredentialGeneratorTest {
@@ -52,6 +55,9 @@ public class VerifiableCredentialGeneratorTest {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static final VerifiableCredentialGenerator vcGenerator =
             new VerifiableCredentialGenerator();
+
+    private static final Pattern JTI_PATTERN =
+            Pattern.compile(String.format("%s:(?<uuid>[^:]+)", JTI_SCHEME_AND_PATH_PREFIX));
 
     @SystemStub
     private final EnvironmentVariables environmentVariables =
@@ -127,7 +133,10 @@ public class VerifiableCredentialGeneratorTest {
                 300000,
                 claimsSetTree.path(EXPIRATION_TIME).asLong()
                         - claimsSetTree.path(NOT_BEFORE).asLong());
-        assertDoesNotThrow(() -> UUID.fromString(claimsSetTree.path(JWT_ID).asText()));
+
+        final Matcher uuidMatcher = JTI_PATTERN.matcher(claimsSetTree.path(JWT_ID).asText());
+        assertTrue(uuidMatcher.matches());
+        assertDoesNotThrow(() -> UUID.fromString(uuidMatcher.group("uuid")));
 
         JsonNode vcClaimTree = claimsSetTree.path(VC_CLAIM);
         assertEquals(VERIFIABLE_CREDENTIAL_TYPE, vcClaimTree.path(VC_TYPE).path(0).asText());
