@@ -40,6 +40,7 @@ import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VERIFIABL
 public class VerifiableCredentialGenerator {
 
     public static final String EC_ALGO = "EC";
+    static final String JTI_SCHEME_AND_PATH_PREFIX = "urn:uuid";
 
     public SignedJWT generate(Credential credential)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
@@ -103,7 +104,11 @@ public class VerifiableCredentialGenerator {
                                 CredentialIssuerConfig.getClientConfig(credential.getClientId())
                                         .getAudienceForVcJwt())
                         .claim(NOT_BEFORE, now.getEpochSecond())
-                        .claim(JWT_ID, UUID.randomUUID().toString())
+                        .claim(
+                                JWT_ID,
+                                String.format(
+                                        "%s:%s",
+                                        JTI_SCHEME_AND_PATH_PREFIX, UUID.randomUUID().toString()))
                         .claim(VC_CLAIM, vc);
         if (!Objects.isNull(credential.getExp())) {
             claim = claim.claim(EXPIRATION_TIME, credential.getExp());
