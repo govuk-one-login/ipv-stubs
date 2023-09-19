@@ -65,6 +65,8 @@ Conditions:
   IsCoreDev: !Or
     - !Equals [ !Ref AWS::AccountId, "130355686670"]
     - !Equals [ !Ref AWS::AccountId, "175872367215"]
+  IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
+  IsDev02: !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsNotDevelopment: !Not [ !Condition IsDevelopment ]
   IsProduction: !Equals [ !Ref Environment, "production" ]
   IsNonProd: !Not
@@ -122,18 +124,36 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "passport-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "passport-cri.${Environment}.stubs.account.gov.uk", passport-cri.stubs.account.gov.uk]
+        - IsDev01
+        - !Sub "passport-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "passport-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If
+            - IsNonProd
+            - !Sub "passport-cri.${Environment}.stubs.account.gov.uk"
+            - passport-cri.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
-            - IsCoreDev
-            - !Sub "passport-${Environment}.core.dev.stubs.account.gov.uk"
-            - !If [IsNonProd, !Sub "passport-cri.${Environment}.stubs.account.gov.uk", passport-cri.stubs.account.gov.uk]
+            - IsDev01
+            - !Sub "passport-${Environment}.01.core.dev.stubs.account.gov.uk"
+            - !If
+              - IsDev02
+              - !Sub "passport-${Environment}.02.core.dev.stubs.account.gov.uk"
+              - !If
+                - IsNonProd
+                - !Sub "passport-cri.${Environment}.stubs.account.gov.uk"
+                - passport-cri.stubs.account.gov.uk
           HostedZoneId: !If
-            - IsCoreDev
-            - !ImportValue DevPublicHostedZoneId
-            - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
+            - IsDev01
+            - !ImportValue Dev01StubsHostedZoneId
+            - !If
+              - IsDev02
+              - !ImportValue Dev02StubsHostedZoneId
+              - !If
+                - IsNonProd
+                - !ImportValue BuildPublicHostedZoneId
+                - !ImportValue RootPublicHostedZoneId
       ValidationMethod: DNS
 
   # api domain entries / mapping
@@ -141,9 +161,15 @@ Resources:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "passport-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "passport-cri.${Environment}.stubs.account.gov.uk", passport-cri.stubs.account.gov.uk]
+        - IsDev01
+        - !Sub "passport-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "passport-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If
+            - IsNonProd
+            - !Sub "passport-cri.${Environment}.stubs.account.gov.uk"
+            - passport-cri.stubs.account.gov.uk
       DomainNameConfigurations:
         - CertificateArn: !Ref CriStubSSLCert
           EndpointType: REGIONAL
@@ -153,9 +179,15 @@ Resources:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "passport-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "passport-cri.${Environment}.stubs.account.gov.uk", passport-cri.stubs.account.gov.uk]
+        - IsDev01
+        - !Sub "passport-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "passport-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If
+            - IsNonProd
+            - !Sub "passport-cri.${Environment}.stubs.account.gov.uk"
+            - passport-cri.stubs.account.gov.uk
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -168,13 +200,25 @@ Resources:
     Properties:
       Type: A
       Name: !If
-        - IsCoreDev
-        - !Sub "passport-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "passport-cri.${Environment}.stubs.account.gov.uk", passport-cri.stubs.account.gov.uk]
+        - IsDev01
+        - !Sub "passport-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "passport-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If
+            - IsNonProd
+            - !Sub "passport-cri.${Environment}.stubs.account.gov.uk"
+            - passport-cri.stubs.account.gov.uk
       HostedZoneId: !If
-        - IsCoreDev
-        - !ImportValue DevPublicHostedZoneId
-        - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
+        - IsDev01
+        - !ImportValue Dev01StubsHostedZoneId
+        - !If
+          - IsDev02
+          - !ImportValue Dev02StubsHostedZoneId
+          - !If
+            - IsNonProd
+            - !ImportValue BuildPublicHostedZoneId
+            - !ImportValue RootPublicHostedZoneId
       AliasTarget:
         DNSName: !GetAtt CriStubApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CriStubApiDomain.RegionalHostedZoneId
