@@ -50,9 +50,11 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
@@ -452,8 +454,15 @@ public class AuthorizeHandler {
                     Stream.of(mitigatedCIsString.split(",", -1)).collect(Collectors.toList());
             String postUrlTemplate = "/user/%s/mitigations/%s";
             for (String ciCode : mitigatedCiList) {
+                String encodedUserId;
+                try {
+                    encodedUserId = URLEncoder.encode(userId, StandardCharsets.UTF_8.toString());
+                } catch (UnsupportedEncodingException e) {
+                    throw new CriStubException("Unable to URL encode userId", e);
+                }
                 String postUrl =
-                        baseStubManagedPostUrl + String.format(postUrlTemplate, userId, ciCode);
+                        baseStubManagedPostUrl
+                                + String.format(postUrlTemplate, encodedUserId, ciCode);
                 LOGGER.info("Managed cimit stub postUrl:{}", postUrl);
                 try {
                     HttpRequest request =

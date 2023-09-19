@@ -2,11 +2,15 @@ package uk.gov.di.ipv.stub.cred.error;
 
 public class CriStubException extends Exception {
 
-    private final String description;
+    private String description;
 
     public CriStubException(String message, String description) {
         super(message);
         this.description = description;
+    }
+
+    public CriStubException(String message, Throwable cause) {
+        super(message, cause);
     }
 
     public CriStubException(String message, String description, Throwable cause) {
