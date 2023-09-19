@@ -467,6 +467,7 @@ class AuthorizeHandlerTest {
 
         HttpResponse httpResponse = mock(HttpResponse.class);
         when(httpResponse.statusCode()).thenReturn(403);
+        when(httpResponse.body()).thenReturn("Access denied");
         when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                 .thenReturn(httpResponse);
 
