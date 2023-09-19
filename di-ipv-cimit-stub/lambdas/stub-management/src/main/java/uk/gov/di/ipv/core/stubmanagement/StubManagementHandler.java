@@ -16,6 +16,8 @@ import uk.gov.di.ipv.core.stubmanagement.service.UserService;
 import uk.gov.di.ipv.core.stubmanagement.service.impl.UserServiceImpl;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -48,8 +50,11 @@ public class StubManagementHandler
         String path = event.getPath();
 
         Map<String, String> pathParameters = event.getPathParameters();
-        String userId = pathParameters.get(USER_ID_PATH_PARAMS);
         try {
+            String userId =
+                    URLDecoder.decode(
+                            pathParameters.get(USER_ID_PATH_PARAMS),
+                            StandardCharsets.UTF_8.toString());
             if (CIS_PATTERN.matcher(path).matches()) {
                 List<UserCisRequest> userCisRequests =
                         objectMapper.readValue(
