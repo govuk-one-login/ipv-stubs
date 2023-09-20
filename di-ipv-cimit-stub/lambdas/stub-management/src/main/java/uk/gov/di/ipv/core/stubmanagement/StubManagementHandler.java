@@ -28,9 +28,9 @@ public class StubManagementHandler
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final UserService userService;
 
-    private static final Pattern CIS_PATTERN = Pattern.compile("^/user/[-a-zA-Z0-9_]+/cis$");
+    private static final Pattern CIS_PATTERN = Pattern.compile("^/user/[-a-zA-Z0-9_:]+/cis$");
     private static final Pattern CIS_MITIGATIONS =
-            Pattern.compile("^/user/[-a-zA-Z0-9_]+/mitigations/[-a-zA-Z0-9_]+$");
+            Pattern.compile("^/user/[-a-zA-Z0-9_:]+/mitigations/[-a-zA-Z0-9_]+$");
 
     private static final String USER_ID_PATH_PARAMS = "userId";
     private static final String CI_PATH_PARAMS = "ci";
@@ -47,12 +47,10 @@ public class StubManagementHandler
     public APIGatewayProxyResponseEvent handleRequest(
             APIGatewayProxyRequestEvent event, Context context) {
         String httpMethod = event.getHttpMethod();
-        String path = event.getPath();
-
-        LOGGER.info("Received '{}' event with path '{}'", httpMethod, path);
-
-        Map<String, String> pathParameters = event.getPathParameters();
         try {
+            String path = URLDecoder.decode(event.getPath(), StandardCharsets.UTF_8.toString());
+            LOGGER.info("Received '{}' event with path '{}'", httpMethod, path);
+            Map<String, String> pathParameters = event.getPathParameters();
             String userId =
                     URLDecoder.decode(
                             pathParameters.get(USER_ID_PATH_PARAMS),

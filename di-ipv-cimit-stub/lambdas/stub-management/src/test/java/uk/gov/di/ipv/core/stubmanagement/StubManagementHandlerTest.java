@@ -38,7 +38,6 @@ public class StubManagementHandlerTest {
 
     @Test
     public void shouldAddUserCisSuccessWhenValidCiRequestList() throws IOException {
-
         List<UserCisRequest> userCisRequests =
                 List.of(
                         UserCisRequest.builder()
@@ -115,6 +114,51 @@ public class StubManagementHandlerTest {
         assertEquals(200, response.getStatusCode());
         assertTrue(response.getBody().contains("success"));
         verify(userService).updateUserMitigation(eq("123"), eq("456"), eq(userMitigationRequest));
+    }
+
+    @Test
+    void cisPatternShouldHandleDefaultUserIdFormat() throws Exception {
+        String urlEncodedUserId = "urn%3Auuid%3Ac08630f8-330e-43f8-a782-21432a197fc5";
+        List<UserCisRequest> userCisRequests =
+                List.of(
+                        UserCisRequest.builder()
+                                .code("code1")
+                                .issuanceDate("2023-07-25T10:00:00Z")
+                                .mitigations(List.of("V01", "V03"))
+                                .build());
+
+        APIGatewayProxyRequestEvent event =
+                createTestEvent(
+                        "POST", String.format("/user/%s/cis", urlEncodedUserId), userCisRequests);
+        doNothing().when(userService).addUserCis(anyString(), anyList());
+
+        APIGatewayProxyResponseEvent response =
+                stubManagementHandler.handleRequest(event, mock(Context.class));
+
+        assertEquals(200, response.getStatusCode());
+        assertTrue(response.getBody().contains("success"));
+        verify(userService, times(1)).addUserCis(anyString(), anyList());
+    }
+
+    @Test
+    void mitigationsPatternShouldHandleDefaultUserIdFormat() throws Exception {
+        String urlEncodedUserId = "urn%3Auuid%3Ac08630f8-330e-43f8-a782-21432a197fc5";
+        UserMitigationRequest userMitigationRequest =
+                UserMitigationRequest.builder().mitigations(List.of("V01")).build();
+
+        APIGatewayProxyRequestEvent event =
+                createTestEvent(
+                        "POST",
+                        String.format("/user/%s/mitigations/456", urlEncodedUserId),
+                        userMitigationRequest);
+        doNothing().when(userService).addUserMitigation(anyString(), anyString(), any());
+
+        APIGatewayProxyResponseEvent response =
+                stubManagementHandler.handleRequest(event, mock(Context.class));
+
+        assertEquals(200, response.getStatusCode());
+        assertTrue(response.getBody().contains("success"));
+        verify(userService).addUserMitigation(eq("123"), eq("456"), eq(userMitigationRequest));
     }
 
     @Test
