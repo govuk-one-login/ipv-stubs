@@ -49,6 +49,8 @@ public class StubManagementHandler
         String httpMethod = event.getHttpMethod();
         String path = event.getPath();
 
+        LOGGER.info("Received '{}' event with path '{}'", httpMethod, path);
+
         Map<String, String> pathParameters = event.getPathParameters();
         try {
             String userId =
@@ -85,9 +87,10 @@ public class StubManagementHandler
             }
             return buildSuccessResponse();
         } catch (IOException e) {
-            LOGGER.info("IOException :" + e.getMessage());
+            LOGGER.error("IOException :" + e.getMessage());
             return buildErrorResponse("Invalid request body.", 400);
         } catch (BadRequestException e) {
+            LOGGER.error(e.getMessage());
             return buildErrorResponse(e.getMessage(), 400);
         } catch (DataNotFoundException e) {
             return buildErrorResponse(e.getMessage(), 404);

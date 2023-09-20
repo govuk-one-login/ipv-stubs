@@ -66,7 +66,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
@@ -450,8 +449,7 @@ public class AuthorizeHandler {
                     queryParamsMap.value(CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM);
             String stubManagementApiKey =
                     queryParamsMap.value(CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM);
-            List<String> mitigatedCiList =
-                    Stream.of(mitigatedCIsString.split(",", -1)).collect(Collectors.toList());
+            List<String> mitigatedCiList = Stream.of(mitigatedCIsString.split(",", -1)).toList();
             String postUrlTemplate = "/user/%s/mitigations/%s";
             for (String ciCode : mitigatedCiList) {
                 String encodedUserId;
@@ -477,10 +475,11 @@ public class AuthorizeHandler {
                     HttpResponse response =
                             httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                     int responseStatusCode = response.statusCode();
-                    LOGGER.info("Processed mitigated CI's with response:{}", responseStatusCode);
+                    LOGGER.info("Processed mitigated CI's with response: {}", responseStatusCode);
                     if (responseStatusCode != 200) {
                         String msg = "Failed to post CI mitigation to management stub api.";
-                        LOGGER.info(msg);
+                        LOGGER.error(msg);
+                        LOGGER.error(response.body().toString());
                         throw new CriStubException("failed_to_post", msg);
                     }
                 } catch (URISyntaxException e) {
