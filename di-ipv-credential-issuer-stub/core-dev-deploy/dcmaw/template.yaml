@@ -60,6 +60,9 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/dcmaw/env/MITIGATION_ENABLED" #pragma: allowlist secret
+  DevDomain:
+    Description: "Environment Variables for ECS - overrides the development domain name"
+    Default: ".dev.identity.account.gov.uk"
 
 Conditions:
   IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
@@ -459,6 +462,8 @@ Resources:
             Value: !Ref CredentialIssuerName
           - Name: CREDENTIAL_ISSUER_TYPE
             Value: !Ref CredentialIssuerType
+          - Name: DEV_DOMAIN
+            Value: !Ref DevDomain
           - Name: MITIGATION_ENABLED
             Value: !Ref CredentialMitigationEnabled
           - Name: CLIENT_CONFIG_FILE
