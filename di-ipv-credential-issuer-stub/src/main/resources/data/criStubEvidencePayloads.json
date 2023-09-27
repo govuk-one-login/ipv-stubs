@@ -94,7 +94,7 @@
           },
           {
             "checkMethod": "bvr",
-            "biometricVerificationProcessLevel": 2
+            "biometricVerificationProcessLevel": 3
           }
         ]
       }
