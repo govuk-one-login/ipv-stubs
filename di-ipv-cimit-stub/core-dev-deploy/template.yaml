@@ -38,18 +38,8 @@ Parameters:
     Default: "none"
 
 Conditions:
-  IsDevelopment: !Not
-    - !Or
-      - !Equals [ !Ref Environment, "build"]
-      - !Equals [ !Ref Environment, "production"]
-  IsCoreDev: !Or
-    - !Equals [ !Ref AWS::AccountId, "130355686670"]
-    - !Equals [ !Ref AWS::AccountId, "175872367215"]
-  IsProduction: !Equals [ !Ref Environment, "production" ]
-  IsNonProd: !Not
-    - !Or
-      - !Condition IsDevelopment
-      - !Condition IsProduction
+  IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
+  IsDev02: !Equals [ !Ref AWS::AccountId, "175872367215"]
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
