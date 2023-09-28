@@ -79,10 +79,11 @@ public class IpvHandler {
                 String signInJourneyIdText = request.queryMap().get("signInJourneyIdText").value();
 
                 String userId = getUserIdValue(userIdTextValue);
-                String journeyId = getSignInJourneyId(signInJourneyIdText);
 
                 JWTClaimsSet claims =
-                        JwtBuilder.buildAuthorizationRequestClaims(userId, journeyId, errorType);
+                        JwtBuilder.buildAuthorizationRequestClaims(
+                                userId, signInJourneyIdText, errorType);
+
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
                 EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt);
                 var authRequest =
@@ -267,13 +268,5 @@ public class IpvHandler {
         }
 
         return URN_UUID + UUID.randomUUID();
-    }
-
-    private String getSignInJourneyId(String signInJourneyId) {
-        if (signInJourneyId.isEmpty()) {
-            return URN_UUID + UUID.randomUUID();
-        }
-
-        return signInJourneyId;
     }
 }
