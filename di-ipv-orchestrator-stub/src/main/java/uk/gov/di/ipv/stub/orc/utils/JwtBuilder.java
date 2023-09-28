@@ -44,7 +44,8 @@ public class JwtBuilder {
     public static final String INVALID_AUDIENCE = "invalid-audience";
     public static final String INVALID_REDIRECT_URI = "http://example.com";
 
-    public static JWTClaimsSet buildAuthorizationRequestClaims(String userId, String signInJourneyId, String errorType) {
+    public static JWTClaimsSet buildAuthorizationRequestClaims(
+            String userId, String signInJourneyId, String errorType) {
         String audience = IPV_CORE_AUDIENCE;
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
