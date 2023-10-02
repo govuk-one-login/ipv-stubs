@@ -17,7 +17,10 @@ public class HomeHandler {
                 Map<String, Object> moustacheDataModel = new HashMap<>();
 
                 String journeyId = UUID.randomUUID().toString();
+                String userId = NON_APP_JOURNEY_USER_ID_PREFIX + UUID.randomUUID();
+
                 moustacheDataModel.put("signInJourneyId", journeyId);
+                moustacheDataModel.put("uuid", userId);
 
                 return ViewHelper.render(moustacheDataModel, "home.mustache");
             };
