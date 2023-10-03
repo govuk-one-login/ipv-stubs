@@ -15,8 +15,13 @@ public class HomeHandler {
     public static Route serveHomePage =
             (Request request, Response response) -> {
                 Map<String, Object> moustacheDataModel = new HashMap<>();
-                String uuid = NON_APP_JOURNEY_USER_ID_PREFIX + UUID.randomUUID();
-                moustacheDataModel.put("uuid", uuid);
+
+                String journeyId = UUID.randomUUID().toString();
+                String userId = NON_APP_JOURNEY_USER_ID_PREFIX + UUID.randomUUID();
+
+                moustacheDataModel.put("signInJourneyId", journeyId);
+                moustacheDataModel.put("uuid", userId);
+
                 return ViewHelper.render(moustacheDataModel, "home.mustache");
             };
 }

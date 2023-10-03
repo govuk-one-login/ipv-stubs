@@ -76,9 +76,14 @@ public class IpvHandler {
 
                 String errorType = request.queryMap().get("error").value();
                 String userIdTextValue = request.queryMap().get("userIdText").value();
+                String signInJourneyIdText = request.queryMap().get("signInJourneyIdText").value();
+
                 String userId = getUserIdValue(userIdTextValue);
 
-                JWTClaimsSet claims = JwtBuilder.buildAuthorizationRequestClaims(userId, errorType);
+                JWTClaimsSet claims =
+                        JwtBuilder.buildAuthorizationRequestClaims(
+                                userId, signInJourneyIdText, errorType);
+
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
                 EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt);
                 var authRequest =

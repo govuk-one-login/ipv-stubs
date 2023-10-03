@@ -44,9 +44,11 @@ public class JwtBuilder {
     public static final String INVALID_AUDIENCE = "invalid-audience";
     public static final String INVALID_REDIRECT_URI = "http://example.com";
 
-    public static JWTClaimsSet buildAuthorizationRequestClaims(String userId, String errorType) {
+    public static JWTClaimsSet buildAuthorizationRequestClaims(
+            String userId, String signInJourneyId, String errorType) {
         String audience = IPV_CORE_AUDIENCE;
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
+
         if (errorType != null) {
             if (errorType.equals("recoverable")) {
                 audience = INVALID_AUDIENCE;
@@ -67,7 +69,7 @@ public class JwtBuilder {
                 .claim("response_type", ResponseType.Value.CODE.toString())
                 .claim("redirect_uri", redirectUri)
                 .claim("state", UUID.randomUUID().toString())
-                .claim("govuk_signin_journey_id", UUID.randomUUID().toString())
+                .claim("govuk_signin_journey_id", signInJourneyId)
                 .claim("persistent_session_id", UUID.randomUUID().toString())
                 .claim("email_address", "dev-platform-testing@digital.cabinet-office.gov.uk")
                 .build();
