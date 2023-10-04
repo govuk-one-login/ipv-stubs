@@ -76,6 +76,14 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/build/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+  OrchestratorEnableBasicAuth:
+    Description: "Environment Variables for ECS"
+    Type: String
+    Default: "true" #pragma: allowlist secret
+  OrchestratorBasicAuthCredentials:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_CREDENTIALS" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -522,6 +530,10 @@ Resources:
               Value: !Ref IpvEndpoint
             - Name: IPV_CORE_AUDIENCE
               Value: !Ref IpvCoreAudience
+            - Name: ORCHESTRATOR_ENABLE_BASIC_AUTH
+              Value: !Ref OrchestratorEnableBasicAuth
+            - Name: ORCHESTRATOR_BASIC_AUTH_CREDENTIALS
+              Value: !Ref OrchestratorBasicAuthCredentials
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
