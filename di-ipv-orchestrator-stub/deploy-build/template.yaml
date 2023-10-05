@@ -392,7 +392,8 @@ Resources:
       HealthCheckEnabled: TRUE
       HealthCheckProtocol: HTTP
       Matcher:
-        HttpCode: 200
+        # If basic auth is on then the site will return a 401
+        HttpCode: "200,401"
       Port: 8080
       Protocol: HTTP
       TargetType: ip
