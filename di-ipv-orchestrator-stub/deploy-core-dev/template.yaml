@@ -82,8 +82,8 @@ Parameters:
     Default: "true" #pragma: allowlist secret
   OrchestratorBasicAuthCredentials:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_CREDENTIALS" #pragma: allowlist secret
+    Type: String
+    Default: "{ \"username\": \"dev\", \"password\": \"dev\" }" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
