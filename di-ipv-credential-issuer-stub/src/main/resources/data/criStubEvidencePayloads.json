@@ -170,6 +170,27 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
+      "label": "Passed BRC check",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "11111111-1111-1111-1111-111111111111",
+        "strengthScore": 4,
+        "validityScore": 3,
+        "checkDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published",
+            "activityFrom": "2019-01-01"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
       "label": "Failed DCMAW driving licence biometric check",
       "payload": {
         "type": "IdentityCheck",
