@@ -124,6 +124,52 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
+      "label": "Passed BRP check",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "11111111-1111-1111-1111-111111111111",
+        "strengthScore": 4,
+        "validityScore": 3,
+        "checkDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published",
+            "activityFrom": "2019-01-01"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Failed BRP check",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "bcd2346",
+        "strengthScore": 4,
+        "validityScore": 0,
+        "ci": [
+          "D06",
+          "D05"
+        ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published",
+            "activityFrom": "undefined"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
       "label": "Failed DCMAW driving licence biometric check",
       "payload": {
         "type": "IdentityCheck",
