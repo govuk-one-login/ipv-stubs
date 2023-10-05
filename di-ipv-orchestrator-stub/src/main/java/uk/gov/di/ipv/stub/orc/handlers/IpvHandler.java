@@ -92,8 +92,8 @@ public class IpvHandler {
                                         new ClientID(ORCHESTRATOR_CLIENT_ID))
                                 .state(state)
                                 .scope(new Scope("openid"))
-                                .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
-                                .endpointURI(new URI(IPV_ENDPOINT).resolve("/oauth2/authorize"))
+                                .redirectionURI(new URI("https://orch-dev-amrits.01.core.dev.stubs.account.gov.uk/callback"))
+                                .endpointURI(new URI("https://dev-amrits.01.dev.identity.account.gov.uk/").resolve("/oauth2/authorize"))
                                 .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
                                 .build();
 
