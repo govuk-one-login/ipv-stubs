@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_JWT_TTL;
@@ -57,8 +58,9 @@ public class JwtBuilder {
             String[] vtr,
             String errorType,
             String userEmailAddress,
-            ReproveIdentityClaimValue reproveIdentityValue) {
-        String audience = IPV_CORE_AUDIENCE;
+            ReproveIdentityClaimValue reproveIdentityValue,
+            String environment) {
+        String audience = getIpvCoreAudience(environment);
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
         if (errorType != null) {
@@ -95,11 +97,11 @@ public class JwtBuilder {
         return claimSetBuilder.build();
     }
 
-    public static JWTClaimsSet buildClientAuthenticationClaims() {
+    public static JWTClaimsSet buildClientAuthenticationClaims(String targetEnvironment) {
         Instant now = Instant.now();
         return new JWTClaimsSet.Builder()
                 .subject(ORCHESTRATOR_CLIENT_ID)
-                .audience(IPV_CORE_AUDIENCE)
+                .audience(getIpvCoreAudience(targetEnvironment))
                 .issuer(ORCHESTRATOR_CLIENT_ID)
                 .expirationTime(generateExpirationTime(now))
                 .jwtID(UUID.randomUUID().toString())
@@ -114,7 +116,7 @@ public class JwtBuilder {
         return signedJwt;
     }
 
-    public static EncryptedJWT encryptJwt(SignedJWT signedJwt)
+    public static EncryptedJWT encryptJwt(SignedJWT signedJwt, String targetEnvironment)
             throws ParseException, JOSEException {
         JWEObject jweObject =
                 new JWEObject(
@@ -122,7 +124,7 @@ public class JwtBuilder {
                                 .contentType("JWT")
                                 .build(),
                         new Payload(signedJwt));
-        jweObject.encrypt(new RSAEncrypter(getEncryptionKey()));
+        jweObject.encrypt(new RSAEncrypter(getEncryptionKey(targetEnvironment)));
         return EncryptedJWT.parse(jweObject.serialize());
     }
 
@@ -134,9 +136,18 @@ public class JwtBuilder {
         return (ECPrivateKey) factory.generatePrivate(privateKeySpec);
     }
 
-    private static RSAPublicKey getEncryptionKey() throws java.text.ParseException, JOSEException {
+    private static RSAPublicKey getEncryptionKey(String targetEnvironment) throws java.text.ParseException, JOSEException {
         byte[] binaryKey = Base64.getDecoder().decode(ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY);
         return RSAKey.parse(new String(binaryKey)).toRSAPublicKey();
+    }
+
+    private static String getIpvCoreAudience(String targetEnvironment) {
+        return switch (targetEnvironment) {
+            case ("BUILD") -> "https://identity.build.account.gov.uk";
+            case ("STAGING") -> "https://identity.staging.account.gov.uk";
+            case ("INTEGRATION") -> "https://identity.integration.account.gov.uk";
+            default -> IPV_CORE_AUDIENCE;
+        };
     }
 
     private static JWSHeader generateHeader() {
