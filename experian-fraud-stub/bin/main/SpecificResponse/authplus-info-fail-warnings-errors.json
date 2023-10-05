@@ -1,0 +1,94 @@
+{
+  "responseHeader": {
+    "requestType": "Authenticateplus-Standalone",
+    "clientReferenceId": "123c45d6-7d89-12db-b3aa-f4e56e78a9b0",
+    "expRequestId": "0",
+    "messageTime": "2023-01-05T13:20:44Z",
+    "overallResponse": {
+      "decision": "NODECISION",
+      "decisionText": "Check the response for details",
+      "decisionReasons": [
+        "Framework Mapper Error : Mapper exception."
+      ],
+      "recommendedNextActions": [],
+      "spareObjects": []
+    },
+    "responseCode": "R0201",
+    "responseType": "WARNING",
+    "responseMessage": "Workflow Complete.",
+    "tenantID": "X246M3WS"
+  },
+  "clientResponsePayload": {
+    "orchestrationDecisions": [
+      {
+        "sequenceId": "1",
+        "decisionSource": "Authenticateplus",
+        "decision": "NODECISION",
+        "decisionReasons": [
+          "Framework Mapper Error : Mapper exception."
+        ],
+        "score": 0,
+        "decisionText": "Check the response for details",
+        "nextAction": "Continue",
+        "decisionTime": "2023-01-05T13:20:45Z"
+      }
+    ],
+    "decisionElements": [
+      {
+        "serviceName": "Authenticateplus",
+        "warningsErrors": [
+          {
+            "responseType": "ERROR",
+            "responseMessage": "Stub Simulated AuthPlus Warning Error"
+          }
+        ]
+      }
+    ]
+  },
+  "originalRequestData": {
+    "application": {
+      "applicants": [
+        {
+          "applicantType": "MAIN_APPLICANT",
+          "consent": true,
+          "contactId": "MAINCONTACT_1",
+          "id": "APPLICANT_1",
+          "type": "INDIVIDUAL"
+        }
+      ]
+    },
+    "contacts": [
+      {
+        "addresses": [
+          {
+            "addressIdentifier": "ADDRESS_1",
+            "addressType": "CURRENT",
+            "buildingNumber": "3",
+            "id": "MAINAPPADDRESS_1",
+            "postTown": "",
+            "postal": "",
+            "street": ""
+          }
+        ],
+        "id": "MAINCONTACT_1",
+        "person": {
+          "names": [
+            {
+              "firstName": "",
+              "id": "MAINPERSONNAME_1",
+              "middleNames": "",
+              "surName": "",
+              "title": "null",
+              "type": "CURRENT"
+            }
+          ],
+          "personDetails": {
+            "dateOfBirth": ""
+          },
+          "personIdentifier": "MAINPERSON_1"
+        }
+      }
+    ],
+    "source": "WEB"
+  }
+}

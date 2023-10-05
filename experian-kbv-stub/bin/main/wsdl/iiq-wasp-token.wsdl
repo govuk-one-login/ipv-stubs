@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+                  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+                  xmlns:tns="http://www.uk.experian.com/WASP/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://www.uk.experian.com/WASP/">
+    <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Experian Token Service</wsdl:documentation>
+    <wsdl:types>
+        <s:schema elementFormDefault="qualified" targetNamespace="http://www.uk.experian.com/WASP/">
+            <s:element name="STS">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="authenticationBlock" type="s:string"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:element name="STSResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="STSResult" type="s:string"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:element name="LoginWithCertificate">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="application" type="s:string"/>
+                        <s:element minOccurs="1" maxOccurs="1" name="checkIP" type="s:boolean"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:element name="LoginWithCertificateResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="LoginWithCertificateResult" type="s:string"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:element name="LoginWithUsernamePassword">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="application" type="s:string"/>
+                        <s:element minOccurs="0" maxOccurs="1" name="username" type="s:string"/>
+                        <s:element minOccurs="0" maxOccurs="1" name="password" type="s:string"/>
+                        <s:element minOccurs="1" maxOccurs="1" name="checkIP" type="s:boolean"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:element name="LoginWithUsernamePasswordResponse">
+                <s:complexType>
+                    <s:sequence>
+                        <s:element minOccurs="0" maxOccurs="1" name="LoginWithUsernamePasswordResult" type="s:string"/>
+                    </s:sequence>
+                </s:complexType>
+            </s:element>
+            <s:element name="string" nillable="true" type="s:string"/>
+        </s:schema>
+    </wsdl:types>
+    <wsdl:message name="STSSoapIn">
+        <wsdl:part name="parameters" element="tns:STS"/>
+    </wsdl:message>
+    <wsdl:message name="STSSoapOut">
+        <wsdl:part name="parameters" element="tns:STSResponse"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithCertificateSoapIn">
+        <wsdl:part name="parameters" element="tns:LoginWithCertificate"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithCertificateSoapOut">
+        <wsdl:part name="parameters" element="tns:LoginWithCertificateResponse"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithUsernamePasswordSoapIn">
+        <wsdl:part name="parameters" element="tns:LoginWithUsernamePassword"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithUsernamePasswordSoapOut">
+        <wsdl:part name="parameters" element="tns:LoginWithUsernamePasswordResponse"/>
+    </wsdl:message>
+    <wsdl:message name="STSHttpGetIn">
+        <wsdl:part name="authenticationBlock" type="s:string"/>
+    </wsdl:message>
+    <wsdl:message name="STSHttpGetOut">
+        <wsdl:part name="Body" element="tns:string"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithCertificateHttpGetIn">
+        <wsdl:part name="application" type="s:string"/>
+        <wsdl:part name="checkIP" type="s:string"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithCertificateHttpGetOut">
+        <wsdl:part name="Body" element="tns:string"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithUsernamePasswordHttpGetIn">
+        <wsdl:part name="application" type="s:string"/>
+        <wsdl:part name="username" type="s:string"/>
+        <wsdl:part name="password" type="s:string"/>
+        <wsdl:part name="checkIP" type="s:string"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithUsernamePasswordHttpGetOut">
+        <wsdl:part name="Body" element="tns:string"/>
+    </wsdl:message>
+    <wsdl:message name="STSHttpPostIn">
+        <wsdl:part name="authenticationBlock" type="s:string"/>
+    </wsdl:message>
+    <wsdl:message name="STSHttpPostOut">
+        <wsdl:part name="Body" element="tns:string"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithCertificateHttpPostIn">
+        <wsdl:part name="application" type="s:string"/>
+        <wsdl:part name="checkIP" type="s:string"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithCertificateHttpPostOut">
+        <wsdl:part name="Body" element="tns:string"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithUsernamePasswordHttpPostIn">
+        <wsdl:part name="application" type="s:string"/>
+        <wsdl:part name="username" type="s:string"/>
+        <wsdl:part name="password" type="s:string"/>
+        <wsdl:part name="checkIP" type="s:string"/>
+    </wsdl:message>
+    <wsdl:message name="LoginWithUsernamePasswordHttpPostOut">
+        <wsdl:part name="Body" element="tns:string"/>
+    </wsdl:message>
+    <wsdl:portType name="TokenServiceSoap">
+        <wsdl:operation name="STS">
+            <wsdl:input message="tns:STSSoapIn"/>
+            <wsdl:output message="tns:STSSoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithCertificate">
+            <wsdl:input message="tns:LoginWithCertificateSoapIn"/>
+            <wsdl:output message="tns:LoginWithCertificateSoapOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithUsernamePassword">
+            <wsdl:input message="tns:LoginWithUsernamePasswordSoapIn"/>
+            <wsdl:output message="tns:LoginWithUsernamePasswordSoapOut"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:portType name="TokenServiceHttpGet">
+        <wsdl:operation name="STS">
+            <wsdl:input message="tns:STSHttpGetIn"/>
+            <wsdl:output message="tns:STSHttpGetOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithCertificate">
+            <wsdl:input message="tns:LoginWithCertificateHttpGetIn"/>
+            <wsdl:output message="tns:LoginWithCertificateHttpGetOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithUsernamePassword">
+            <wsdl:input message="tns:LoginWithUsernamePasswordHttpGetIn"/>
+            <wsdl:output message="tns:LoginWithUsernamePasswordHttpGetOut"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:portType name="TokenServiceHttpPost">
+        <wsdl:operation name="STS">
+            <wsdl:input message="tns:STSHttpPostIn"/>
+            <wsdl:output message="tns:STSHttpPostOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithCertificate">
+            <wsdl:input message="tns:LoginWithCertificateHttpPostIn"/>
+            <wsdl:output message="tns:LoginWithCertificateHttpPostOut"/>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithUsernamePassword">
+            <wsdl:input message="tns:LoginWithUsernamePasswordHttpPostIn"/>
+            <wsdl:output message="tns:LoginWithUsernamePasswordHttpPostOut"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="TokenServiceSoap" type="tns:TokenServiceSoap">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="STS">
+            <soap:operation soapAction="http://www.uk.experian.com/WASP/STS" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithCertificate">
+            <soap:operation soapAction="http://www.uk.experian.com/WASP/LoginWithCertificate" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithUsernamePassword">
+            <soap:operation soapAction="http://www.uk.experian.com/WASP/LoginWithUsernamePassword" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:binding name="TokenServiceSoap12" type="tns:TokenServiceSoap">
+        <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="STS">
+            <soap12:operation soapAction="http://www.uk.experian.com/WASP/STS" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithCertificate">
+            <soap12:operation soapAction="http://www.uk.experian.com/WASP/LoginWithCertificate" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithUsernamePassword">
+            <soap12:operation soapAction="http://www.uk.experian.com/WASP/LoginWithUsernamePassword" style="document"/>
+            <wsdl:input>
+                <soap12:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap12:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:binding name="TokenServiceHttpGet" type="tns:TokenServiceHttpGet">
+        <http:binding verb="GET"/>
+        <wsdl:operation name="STS">
+            <http:operation location="/STS"/>
+            <wsdl:input>
+                <http:urlEncoded/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:mimeXml part="Body"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithCertificate">
+            <http:operation location="/LoginWithCertificate"/>
+            <wsdl:input>
+                <http:urlEncoded/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:mimeXml part="Body"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithUsernamePassword">
+            <http:operation location="/LoginWithUsernamePassword"/>
+            <wsdl:input>
+                <http:urlEncoded/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:mimeXml part="Body"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:binding name="TokenServiceHttpPost" type="tns:TokenServiceHttpPost">
+        <http:binding verb="POST"/>
+        <wsdl:operation name="STS">
+            <http:operation location="/STS"/>
+            <wsdl:input>
+                <mime:content type="application/x-www-form-urlencoded"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:mimeXml part="Body"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithCertificate">
+            <http:operation location="/LoginWithCertificate"/>
+            <wsdl:input>
+                <mime:content type="application/x-www-form-urlencoded"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:mimeXml part="Body"/>
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="LoginWithUsernamePassword">
+            <http:operation location="/LoginWithUsernamePassword"/>
+            <wsdl:input>
+                <mime:content type="application/x-www-form-urlencoded"/>
+            </wsdl:input>
+            <wsdl:output>
+                <mime:mimeXml part="Body"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="TokenService">
+        <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Experian Token Service</wsdl:documentation>
+        <wsdl:port name="TokenServiceSoap" binding="tns:TokenServiceSoap">
+            <soap:address location="https://secure.wasp.uat.uk.experian.com/WASPAuthenticator/tokenService.asmx"/>
+        </wsdl:port>
+        <wsdl:port name="TokenServiceSoap12" binding="tns:TokenServiceSoap12">
+            <soap12:address location="https://secure.wasp.uat.uk.experian.com/WASPAuthenticator/tokenService.asmx"/>
+        </wsdl:port>
+        <wsdl:port name="TokenServiceHttpGet" binding="tns:TokenServiceHttpGet">
+            <http:address location="https://secure.wasp.uat.uk.experian.com/WASPAuthenticator/tokenService.asmx"/>
+        </wsdl:port>
+        <wsdl:port name="TokenServiceHttpPost" binding="tns:TokenServiceHttpPost">
+            <http:address location="https://secure.wasp.uat.uk.experian.com/WASPAuthenticator/tokenService.asmx"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

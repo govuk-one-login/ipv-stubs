@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en" class="govuk-template ">
+<head>
+    <title>Example - GOV.UK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0b0c0c">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <link rel="shortcut icon" sizes="16x16 32x32 48x48" href="/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="mask-icon" href="/assets/images/govuk-mask-icon.svg" color="#0b0c0c">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/govuk-apple-touch-icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/assets/images/govuk-apple-touch-icon-167x167.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/images/govuk-apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" href="/assets/images/govuk-apple-touch-icon.png">
+
+    <!--[if !IE 8]><!-->
+    <link rel="stylesheet" href="/govuk-frontend-4.7.0.min.css">
+    <!--<![endif]-->
+    <!--[if IE 8]>
+    <link rel="stylesheet" href="/govuk-frontend-ie8-4.7.0.min.css">
+    <![endif]-->
+</head>
+<body class="govuk-template__body ">
+<script>
+    document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');
+</script>
+<script
+        src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous">
+
+</script>
+<a href="#main-content" class="govuk-skip-link">Skip to main content</a>
+
+<header class="govuk-header " role="banner" data-module="govuk-header">
+    <div class="govuk-header__container govuk-width-container">
+        <div class="govuk-header__logo">
+            <a href="/" class="govuk-header__link govuk-header__link--homepage">
+          <span class="govuk-header__logotype">
+            <svg aria-hidden="true" focusable="false" class="govuk-header__logotype-crown" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 132 97" height="30" width="36">
+              <path fill="currentColor" fill-rule="evenodd" d="M25 30.2c3.5 1.5 7.7-.2 9.1-3.7 1.5-3.6-.2-7.8-3.9-9.2-3.6-1.4-7.6.3-9.1 3.9-1.4 3.5.3 7.5 3.9 9zM9 39.5c3.6 1.5 7.8-.2 9.2-3.7 1.5-3.6-.2-7.8-3.9-9.1-3.6-1.5-7.6.2-9.1 3.8-1.4 3.5.3 7.5 3.8 9zM4.4 57.2c3.5 1.5 7.7-.2 9.1-3.8 1.5-3.6-.2-7.7-3.9-9.1-3.5-1.5-7.6.3-9.1 3.8-1.4 3.5.3 7.6 3.9 9.1zm38.3-21.4c3.5 1.5 7.7-.2 9.1-3.8 1.5-3.6-.2-7.7-3.9-9.1-3.6-1.5-7.6.3-9.1 3.8-1.3 3.6.4 7.7 3.9 9.1zm64.4-5.6c-3.6 1.5-7.8-.2-9.1-3.7-1.5-3.6.2-7.8 3.8-9.2 3.6-1.4 7.7.3 9.2 3.9 1.3 3.5-.4 7.5-3.9 9zm15.9 9.3c-3.6 1.5-7.7-.2-9.1-3.7-1.5-3.6.2-7.8 3.7-9.1 3.6-1.5 7.7.2 9.2 3.8 1.5 3.5-.3 7.5-3.8 9zm4.7 17.7c-3.6 1.5-7.8-.2-9.2-3.8-1.5-3.6.2-7.7 3.9-9.1 3.6-1.5 7.7.3 9.2 3.8 1.3 3.5-.4 7.6-3.9 9.1zM89.3 35.8c-3.6 1.5-7.8-.2-9.2-3.8-1.4-3.6.2-7.7 3.9-9.1 3.6-1.5 7.7.3 9.2 3.8 1.4 3.6-.3 7.7-3.9 9.1zM69.7 17.7l8.9 4.7V9.3l-8.9 2.8c-.2-.3-.5-.6-.9-.9L72.4 0H59.6l3.5 11.2c-.3.3-.6.5-.9.9l-8.8-2.8v13.1l8.8-4.7c.3.3.6.7.9.9l-5 15.4v.1c-.2.8-.4 1.6-.4 2.4 0 4.1 3.1 7.5 7 8.1h.2c.3 0 .7.1 1 .1.4 0 .7 0 1-.1h.2c4-.6 7.1-4.1 7.1-8.1 0-.8-.1-1.7-.4-2.4V34l-5.1-15.4c.4-.2.7-.6 1-.9zM66 92.8c16.9 0 32.8 1.1 47.1 3.2 4-16.9 8.9-26.7 14-33.5l-9.6-3.4c1 4.9 1.1 7.2 0 10.2-1.5-1.4-3-4.3-4.2-8.7L108.6 76c2.8-2 5-3.2 7.5-3.3-4.4 9.4-10 11.9-13.6 11.2-4.3-.8-6.3-4.6-5.6-7.9 1-4.7 5.7-5.9 8-.5 4.3-8.7-3-11.4-7.6-8.8 7.1-7.2 7.9-13.5 2.1-21.1-8 6.1-8.1 12.3-4.5 20.8-4.7-5.4-12.1-2.5-9.5 6.2 3.4-5.2 7.9-2 7.2 3.1-.6 4.3-6.4 7.8-13.5 7.2-10.3-.9-10.9-8-11.2-13.8 2.5-.5 7.1 1.8 11 7.3L80.2 60c-4.1 4.4-8 5.3-12.3 5.4 1.4-4.4 8-11.6 8-11.6H55.5s6.4 7.2 7.9 11.6c-4.2-.1-8-1-12.3-5.4l1.4 16.4c3.9-5.5 8.5-7.7 10.9-7.3-.3 5.8-.9 12.8-11.1 13.8-7.2.6-12.9-2.9-13.5-7.2-.7-5 3.8-8.3 7.1-3.1 2.7-8.7-4.6-11.6-9.4-6.2 3.7-8.5 3.6-14.7-4.6-20.8-5.8 7.6-5 13.9 2.2 21.1-4.7-2.6-11.9.1-7.7 8.8 2.3-5.5 7.1-4.2 8.1.5.7 3.3-1.3 7.1-5.7 7.9-3.5.7-9-1.8-13.5-11.2 2.5.1 4.7 1.3 7.5 3.3l-4.7-15.4c-1.2 4.4-2.7 7.2-4.3 8.7-1.1-3-.9-5.3 0-10.2l-9.5 3.4c5 6.9 9.9 16.7 14 33.5 14.8-2.1 30.8-3.2 47.7-3.2z"></path>
+              <image src="/assets/images/govuk-logotype-crown.png" xlink:href="data:," display="none" class="govuk-header__logotype-crown-fallback-image" width="36" height="32"></image>
+            </svg>
+            <span class="govuk-header__logotype-text">
+              GOV.UK
+            </span>
+          </span>
+            </a>
+        </div>
+    </div>
+</header>
+
+<div class="govuk-width-container ">
+    <main class="govuk-main-wrapper>" id="main-content" role="main">
+        <div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
+            <h1 class="govuk-heading-xl">
+                {{cri-name}}
+            </h1>
+        </div>
+
+        <div class="govuk-tabs" data-module="govuk-tabs">
+            <h2 class="govuk-tabs__title">
+                Stubs
+            </h2>
+            <ul class="govuk-tabs__list">
+                <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                    <a class="govuk-tabs__tab" href="#authCode">
+                        AuthCode response
+                    </a>
+                </li>
+                <li class="govuk-tabs__list-item">
+                    <a class="govuk-tabs__tab" href="#oauthError">
+                        Oauth error
+                    </a>
+                </li>
+            </ul>
+            <form method="POST">
+                <div class="govuk-tabs__panel" id="authCode">
+                    <table class="govuk-table">
+                        <tbody class="govuk-table__body">
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">
+                                <p><strong>Request scope:</strong> {{scope}}</p>
+                            </td>
+                        </tr>
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">
+                                <p><strong>Request context:</strong> {{context}}</p>
+                            </td>
+                        </tr>
+                        {{#shared_claims}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <details class="govuk-details" data-module="govuk-details">
+                                        <summary class="govuk-details__summary">
+                                            <span class="govuk-details__summary-text">
+                                                Shared Attributes:
+                                            </span>
+                                        </summary>
+                                        <div class="govuk-details__text">
+                                            <pre><code>{{shared_claims}}</code></pre>
+                                        </div>
+                                    </details>
+                                </td>
+                            </tr>
+                        {{/shared_claims}}
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">
+                                <details class="govuk-details" data-module="govuk-details">
+                                    <summary class="govuk-details__summary">
+                                            <span class="govuk-details__summary-text">
+                                                Evidence Requested:
+                                            </span>
+                                    </summary>
+                                    <div class="govuk-details__text">
+                                        <pre><code>{{evidence_requested}}</code></pre>
+                                    </div>
+                                </details>
+                            </td>
+                        </tr>
+                        {{#isF2FType}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                                        <div class="govuk-checkboxes__item">
+                                            <input class="govuk-checkboxes__input" type="checkbox" name="f2f_send_vc_queue" id="f2f_send_vc_queue" value="checked">
+                                            <label class="govuk-label govuk-checkboxes__label" for="f2f_send_vc_queue">
+                                                Send VC to async queue
+                                            </label>
+                                        </div>
+                                        <div class="govuk-form-group">
+                                            <label class="govuk-label" for="f2f_stub_queue_name">
+                                                Queue name:
+                                            </label>
+                                            <input type="text" class="govuk-textarea" id="f2f_stub_queue_name" name="f2f_stub_queue_name" value="{{f2f_stub_queue_name}}">
+                                        </div>
+                                        <div class="govuk-checkboxes__item">
+                                            <input class="govuk-checkboxes__input" type="checkbox" name="f2f_send_error_queue" id="f2f_send_error_queue" value="checked">
+                                            <label class="govuk-label govuk-checkboxes__label" for="f2f_send_error_queue">
+                                                Send Error to async queue
+                                            </label>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                   <fieldset class="govuk-fieldset">
+                                        <div class="govuk-date-input" id="gpg45">
+                                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                                                <h1 class="govuk-fieldset__heading">
+                                                    GPG45 Evidence
+                                                </h1>
+                                            </legend>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label" for="strength">
+                                                        Strength
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="strength" name="strengthScore" type="number" min="0" max="5" step="1">
+                                                </div>
+                                            </div>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label govuk-date-input__label" for="validity">
+                                                        Validity
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="validity" name="validityScore" type="number" min="0" max="5" step="1">
+                                                </div>
+                                            </div>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label govuk-date-input__label" for="verification">
+                                                        Verification
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="verification" name="verificationScore" type="number" min="0" max="5" step="1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </td>
+                            </tr>
+                        {{/isF2FType}}
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">
+                                {{#hasError}}
+                                    <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+                                        <h2 class="govuk-error-summary__title" id="error-summary-title">
+                                            There is a problem
+                                        </h2>
+                                        <div class="govuk-error-summary__body">
+                                            <ul class="govuk-list govuk-error-summary__list">
+                                                <li>
+                                                    <a href="#jsonPayload">The JSON entered is not valid</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                {{/hasError}}
+                                {{^hasError}}
+                                    <div class="govuk-form-group">
+                                        <h1 class="govuk-label-wrapper">
+                                            <label class="govuk-label govuk-label--l" for="jsonPayload">
+                                                Please supply data in JSON format
+                                            </label>
+                                        </h1>
+                                        <div class="govuk-form-group" id="test_data_block"></div><br>
+                                        <textarea class="govuk-textarea" id="jsonPayload" name="jsonPayload" rows="5" aria-describedby="more-detail-hint"></textarea>
+                                    </div>
+                                {{/hasError}}
+                                {{#hasError}}
+                                    <div class="govuk-form-group govuk-form-group--error">
+                                        <h1 class="govuk-label-wrapper">
+                                            <label class="govuk-label govuk-label--l" for="jsonPayload">
+                                                Please supply data in JSON format
+                                            </label>
+                                        </h1>
+                                        <div id="more-detail-hint" class="govuk-hint">
+                                            { "test" : "example" }
+                                        </div>
+                                        <p id="more-detail-error" class="govuk-error-message">
+                                            <span class="govuk-visually-hidden">Error:</span> {{error}}
+                                        </p>
+                                        <textarea class="govuk-textarea govuk-textarea--error" id="jsonPayload" name="jsonPayload" rows="5" aria-describedby="more-detail-hint more-detail-error"></textarea>
+                                    </div>
+                                {{/hasError}}
+                            </td>
+                        </tr>
+
+                        {{#isEvidenceType}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <fieldset class="govuk-fieldset">
+                                        <div class="govuk-date-input" id="gpg45">
+                                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                                                <h1 class="govuk-fieldset__heading">
+                                                    GPG45 Evidence
+                                                </h1>
+                                            </legend>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label" for="strength">
+                                                        Strength
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="strength" name="strengthScore" type="number" min="0" max="5" step="1">
+                                                </div>
+                                            </div>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label govuk-date-input__label" for="validity">
+                                                        Validity
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="validity" name="validityScore" type="number" min="0" max="5" step="1">
+                                                </div>
+                                            </div>
+                                            {{#isEvidenceDrivingLicenceType}}
+                                                <div class="govuk-date-input__item">
+                                                    <div class="govuk-form-group">
+                                                        <label class="govuk-label govuk-date-input__label" for="activityHistory">
+                                                            Activity History
+                                                        </label>
+                                                        <input class="govuk-input govuk-input--width-2" id="activityHistory" name="activityHistoryScore" type="number" min="0" max="5" step="1">
+                                                    </div>
+                                                </div>
+                                            {{/isEvidenceDrivingLicenceType}}
+                                        </div>
+                                    </fieldset>
+                                </td>
+                            </tr>
+                        {{/isEvidenceType}}
+
+                        {{#isDocCheckingType}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <fieldset class="govuk-fieldset">
+                                        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                                            <h1 class="govuk-fieldset__heading">
+                                                GPG45 Evidence
+                                            </h1>
+                                        </legend>
+                                        <div class="govuk-form-group">
+                                            <label class="govuk-label" for="strength">
+                                                Strength
+                                            </label>
+                                            <input class="govuk-input govuk-input--width-2" id="strength" name="strengthScore" type="number" min="0" max="5" step="1">
+                                        </div>
+                                        <div class="govuk-form-group">
+                                            <label class="govuk-label" for="validity">
+                                                Validity
+                                            </label>
+                                            <input class="govuk-input govuk-input--width-2" id="validity" name="validityScore" type="number" min="0" max="5" step="1">
+                                        </div>
+                                        <div class="govuk-form-group">
+                                            <label class="govuk-label" for="activityHistory">
+                                                Activity History
+                                            </label>
+                                            <input class="govuk-input govuk-input--width-2" id="activityHistory" name="activityHistoryScore" type="number" min="0" max="5" step="1">
+                                        </div>
+                                        <div class="govuk-form-group">
+                                            <label class="govuk-label" for="verification">
+                                                Biometric Verification Process Level
+                                            </label>
+                                            <input class="govuk-input govuk-input--width-2" id="verification" name="biometricVerificationScore" type="number" min="0" max="5" step="1">
+                                        </div>
+                                    </fieldset>
+                                </td>
+                            </tr>
+                        {{/isDocCheckingType}}
+
+                        {{#isActivityType}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <div class="govuk-form-group">
+                                        <h1 class="govuk-label-wrapper">
+                                            <label class="govuk-label govuk-label--l" for="activity">
+                                                GPG45 Activity
+                                            </label>
+                                        </h1>
+                                        <label class="govuk-label" for="activity">
+                                            Activity
+                                        </label>
+                                        <input class="govuk-input govuk-input--width-2" id="activity" name="activityHistoryScore" type="number" min="0" max="5" step="1">
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/isActivityType}}
+
+                        {{#isFraudType}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <fieldset class="govuk-fieldset">
+                                        <div class="govuk-date-input" id="gpg45">
+                                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                                                <h1 class="govuk-fieldset__heading">
+                                                    GPG45 Evidence
+                                                </h1>
+                                            </legend>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label" for="fraud">
+                                                        Fraud
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="fraud" name="identityFraudScore" type="number" min="0" max="5" step="1">
+                                                </div>
+                                            </div>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label govuk-date-input__label" for="activity">
+                                                        Activity
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="activity" name="activityHistoryScore" type="number" min="0" max="5" step="1">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                </td>
+                            </tr>
+                        {{/isFraudType}}
+
+                        {{#isVerificationType}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <div class="govuk-form-group">
+                                        <h1 class="govuk-label-wrapper">
+                                            <label class="govuk-label govuk-label--l" for="verification">
+                                                GPG45 Verification
+                                            </label>
+                                        </h1>
+                                        <label class="govuk-label" for="verification">
+                                            Verification
+                                        </label>
+                                        <input class="govuk-input govuk-input--width-2" id="verification" name="verificationScore" type="number" min="0" max="5" step="1">
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/isVerificationType}}
+
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">
+                                <div class="govuk-form-group">
+                                    <h1 class="govuk-label-wrapper">
+                                        <label class="govuk-label govuk-label--l" for="ci">
+                                            Contra-indicators
+                                        </label>
+                                    </h1>
+                                    <div id="ci-more-detail-hint" class="govuk-hint">
+                                        Please provide a comma-separated list e.g. A01,D02
+                                    </div>
+                                    <textarea class="govuk-textarea" id="ci" name="ci" rows="1" aria-describedby="ci-more-detail-hint"></textarea>
+                                </div>
+                            </td>
+                        </tr>
+
+                        {{#isCriMitigationEnabled}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <div class="govuk-form-group">
+                                        <h1 class="govuk-label-wrapper">
+                                            <label class="govuk-label govuk-label--l" for="ciMitigated">
+                                                Mitigations (optional)
+                                            </label>
+                                        </h1>
+                                        <div id="ci-miti-more-detail-hint" class="govuk-hint">
+                                            Please provide a comma-separated list of CIs to mitigate e.g. X01,X02
+                                        </div>
+                                        <textarea class="govuk-textarea" id="ciMitigated" name="ciMitigated" rows="1" aria-describedby="ci-miti-more-detail-hint"></textarea>
+                                        <div id="ci-miti-base-url-hint" class="govuk-hint">
+                                            Please provide base URL of the CIMIT stub management API e.g for dev-> https://cimit-dev-{user}.core.dev.stubs.account.gov.uk,
+                                            for build-> https://cimit.stubs.account.gov.uk
+                                        </div>
+                                        <textarea class="govuk-textarea" id="ciMitiBaseUrl" name="ciMitiBaseUrl" rows="1" aria-describedby="ci-miti-base-url-hint">https://cimit.stubs.account.gov.uk</textarea>
+                                        <div id="ci-miti-api-key-hint" class="govuk-hint">
+                                            Please provide corresponding API key
+                                        </div>
+                                        <textarea class="govuk-textarea" id="ciMitiApiKey" name="ciMitiApiKey" rows="1" aria-describedby="ci-miti-api-key-hint"></textarea>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/isCriMitigationEnabled}}
+
+                        {{^isUserAssertedType}}
+                            <tr class="govuk-table__row">
+                                <td class="govuk-table__cell">
+                                    <div class="govuk-form-group">
+                                        <h1 class="govuk-label-wrapper">
+                                            <label class="govuk-label govuk-label--l" for="evidenceJsonPayload">
+                                                Override evidence block {{#isNINOType}}(required){{/isNINOType}}{{^isNINOType}}(optional){{/isNINOType}}
+                                            </label>
+                                        </h1>
+                                        <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                                            <div class="govuk-checkboxes__item">
+                                                <input class="govuk-checkboxes__input" type="checkbox" name="expand_evidence" id="expand_evidence">
+                                                <label class="govuk-label govuk-checkboxes__label" for="expand_evidence">
+                                                    Include evidence block
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="govuk-form-group" id="custom_evidence_block" style="display:none"><br></div>
+                                        <br id="custom_evidence_block_break" style="display:none;" />
+                                        <textarea class="govuk-textarea" id="evidenceJsonPayload" name="evidenceJsonPayload" rows="5" style="display:none"></textarea>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{/isUserAssertedType}}
+
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">
+                                <fieldset class="govuk-fieldset">
+                                    <div class="govuk-date-input" id="vcJwtExpiry">
+                                        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                                            <h1 class="govuk-fieldset__heading">
+                                                VC Jwt Expiry
+                                            </h1>
+                                        </legend>
+                                        <div class="govuk-form-group">
+                                            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                                                <div class="govuk-checkboxes__item">
+                                                    <input class="govuk-checkboxes__input" type="checkbox" name="vcExpiryFlg" id="vcExpiryFlg">
+                                                    <label class="govuk-label govuk-checkboxes__label" for="vc_expiry">Include VC expiry</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="govuk-form-group" id="additionalInputs" style="display: none;">
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label" for="strength">
+                                                        Hours
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="expHours" name="expHours" type="number" min="0" step="1" value="0">
+                                                </div>
+                                            </div>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label" for="validity">
+                                                        Minutes
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="expMins" name="expMinutes" type="number" min="0" step="1" value="0">
+                                                </div>
+                                            </div>
+                                            <div class="govuk-date-input__item">
+                                                <div class="govuk-form-group">
+                                                    <label class="govuk-label" for="activityHistory">
+                                                        Seconds
+                                                    </label>
+                                                    <input class="govuk-input govuk-input--width-2" id="expSeconds" name="expSeconds" type="number" min="0" step="1" value="0">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="govuk-tabs__panel govuk-tabs__panel--hidden" id="oauthError">
+                    <table class="govuk-table">
+                        <tbody class="govuk-table__body">
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">
+                                <fieldset class="govuk-fieldset">
+                                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                                        <h1 class="govuk-fieldset__heading">
+                                            Force an OAuth error response
+                                        </h1>
+                                    </legend>
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label" for="requested_oauth_error_endpoint">
+                                            Endpoint to return the error from
+                                        </label>
+                                        <div class="govuk-radios" data-module="govuk-radios">
+                                            <div class="govuk-radios__item">
+                                                <input class="govuk-radios__input" id="endpoint" name="requested_oauth_error_endpoint" type="radio" value="auth">
+                                                <label class="govuk-label govuk-radios__label" for="requested_oauth_error_endpoint">
+                                                    Authorization
+                                                </label>
+                                            </div>
+                                            <div class="govuk-radios__item">
+                                                <input class="govuk-radios__input" id="requested_oauth_error_endpoint_2" name="requested_oauth_error_endpoint" type="radio" value="token">
+                                                <label class="govuk-label govuk-radios__label" for="requested_oauth_error_endpoint_2">
+                                                    Access Token
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label" for="requested_oauth_error">
+                                            OAuth error
+                                        </label>
+                                        <select class="govuk-select" id="requested_oauth_error" name="requested_oauth_error">
+                                            <option value="none" selected>none</option>
+                                            <option value="invalid_request">invalid_request</option>
+                                            <option value="unauthorized_client">unauthorized_client</option>
+                                            <option value="access_denied">access_denied</option>
+                                            <option value="unsupported_response_type">unsupported_response_type</option>
+                                            <option value="invalid_scope">invalid_scope</option>
+                                            <option value="server_error">server_error</option>
+                                            <option value="temporarily_unavailable">temporarily_unavailable</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label" for="requested_oauth_error_description">
+                                            OAuth error description
+                                        </label>
+                                        <input class="govuk-input" id="requested_oauth_error_description" name="requested_oauth_error_description" type="text" value="This error was triggered manually in the stub CRI">
+                                    </div>
+                                    {{#isDocCheckingType}}
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label" for="userinfo_error">
+                                            User Info (Credential) endpoint error
+                                        </label>
+                                        <select class="govuk-select" id="userinfo_error" name="requested_userinfo_error">
+                                            <option value="none" selected>none</option>
+                                            <option value="404">404</option>
+                                        </select>
+                                    </div>
+                                    {{/isDocCheckingType}}
+                                </fieldset>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <br>
+                <input type="hidden" name="resourceId" value="{{resourceId}}">
+                <input class="govuk-button" data-module="govuk-button" type="submit" name="submit" value="Submit data and generate auth code">
+            </form>
+        </div>
+    </main>
+</div>
+
+<footer class="govuk-footer " role="contentinfo">
+    <div class="govuk-width-container ">
+        <div class="govuk-footer__meta">
+            <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
+
+                <svg aria-hidden="true" focusable="false" class="govuk-footer__licence-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 483.2 195.7" height="17" width="41">
+                    <path fill="currentColor" d="M421.5 142.8V.1l-50.7 32.3v161.1h112.4v-50.7zm-122.3-9.6A47.12 47.12 0 0 1 221 97.8c0-26 21.1-47.1 47.1-47.1 16.7 0 31.4 8.7 39.7 21.8l42.7-27.2A97.63 97.63 0 0 0 268.1 0c-36.5 0-68.3 20.1-85.1 49.7A98 98 0 0 0 97.8 0C43.9 0 0 43.9 0 97.8s43.9 97.8 97.8 97.8c36.5 0 68.3-20.1 85.1-49.7a97.76 97.76 0 0 0 149.6 25.4l19.4 22.2h3v-87.8h-80l24.3 27.5zM97.8 145c-26 0-47.1-21.1-47.1-47.1s21.1-47.1 47.1-47.1 47.2 21 47.2 47S123.8 145 97.8 145" />
+                </svg>
+                <span class="govuk-footer__licence-description">
+            All content is available under the
+            <a class="govuk-footer__link" href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/" rel="license">Open Government Licence v3.0</a>, except where otherwise stated
+          </span>
+            </div>
+            <div class="govuk-footer__meta-item">
+                <a class="govuk-footer__link govuk-footer__copyright-logo" href="https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/">© Crown copyright</a>
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="/govuk-frontend-4.7.0.min.js"></script>
+<script>
+    window.GOVUKFrontend.initAll();
+</script>
+<script>
+    var dropdownData = {{{cri_stub_data}}}
+    var filtered = dropdownData.filter(x => x.criType === "{{cri-name}}")
+    $(document).ready(function() {
+        var select = $('<select class="govuk-select" id="test_data" name="sort">')
+        select.append($("<option selected disabled hidden value=''>").text('Select from dropdown...'))
+        $(filtered).each(function() {
+            select.append($("<option>")
+            .prop('value', this.label)
+            .text(this.label));
+        });
+
+        var label = $('<label class="govuk-label" for="sort">').text("Select CRI stub data: ");
+        $('#test_data_block').append(label).append(select);
+        $("#test_data").on("change", function(event) {
+            var val = $(event.target).val();
+            var {payload} = filtered.find(x => x.label === val)
+            $("#jsonPayload").val(JSON.stringify(payload, undefined, 4))
+        });
+    });
+
+    var evidenceDropdownData = {{{cri_stub_evidence_payloads}}}
+    var evidenceBlocksFiltered = evidenceDropdownData.filter(x => x.criType === "{{cri-name}}")
+    $(document).ready(function() {
+        var select = $('<select class="govuk-select" id="custom_evidence" name="sort">')
+        select.append($("<option selected disabled hidden value=''>").text('Select from dropdown...'))
+        $(evidenceBlocksFiltered).each(function() {
+            select.append($("<option>")
+            .prop('value', this.label)
+            .text(this.label));
+        });
+
+        var label = $('<label class="govuk-label" for="sort">').text("Select evidence block: ");
+        $('#custom_evidence_block').append(label).append(select);
+        $("#custom_evidence").on("change", function(event) {
+            var val = $(event.target).val();
+            var {payload} = evidenceBlocksFiltered.find(x => x.label === val)
+            $("#evidenceJsonPayload").val(JSON.stringify(payload, undefined, 4))
+        });
+    });
+
+    const checkbox = document.getElementById('vcExpiryFlg');
+    const additionalInputs = document.getElementById('additionalInputs');
+
+    checkbox.addEventListener('change', function() {
+      if(this.checked) {
+        additionalInputs.style.display = 'block';
+      } else {
+        additionalInputs.style.display = 'none';
+      }
+    });
+
+    const expandCheckbox = document.getElementById("expand_evidence");
+    const evidenceTextarea = document.getElementById("evidenceJsonPayload");
+    const customEvidenceBlock = document.getElementById("custom_evidence_block");
+    const breakElement = document.getElementById('custom_evidence_block_break');
+
+    expandCheckbox.addEventListener("change", () => {
+      if (expandCheckbox.checked) {
+        evidenceTextarea.style.display = "block";
+        customEvidenceBlock.style.display = "block";
+          breakElement.style.display = 'block';
+      } else {
+        evidenceTextarea.style.display = "none";
+        customEvidenceBlock.style.display = "none";
+          breakElement.style.display = 'none';
+      }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,455 @@
+{
+  "data": [
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Passed fraud check (M1A)",
+      "payload": {
+        "type": "IdentityCheck",
+        "identityFraudScore": 2
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Passed fraud check with activity history (M1B)",
+      "payload": {
+        "type": "IdentityCheck",
+        "identityFraudScore": 2,
+        "activityHistoryScore": 1,
+        "checkDetails": [
+          {
+            "checkMethod": "data",
+            "identityCheckPolicy": "published",
+            "activityFrom": "2019-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "UK Passport (Stub)",
+      "label": "Passed passport check (M1A)",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 2,
+        "strengthScore": 4
+      }
+    },
+    {
+      "criType": "Knowledge Based Verification (Stub)",
+      "label": "Passed verification (M1A) with checkDetails",
+      "payload": {
+        "type": "IdentityCheck",
+        "verificationScore": 2,
+        "checkDetails": [
+          {
+            "kbvResponseMode": "multiple_choice",
+            "kbvQuality": 3,
+            "checkMethod": "kbv"
+          },
+          {
+            "kbvResponseMode": "multiple_choice",
+            "kbvQuality": 3,
+            "checkMethod": "kbv"
+          },
+          {
+            "kbvResponseMode": "multiple_choice",
+            "kbvQuality": 2,
+            "checkMethod": "kbv"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Knowledge Based Verification (Stub)",
+      "label": "Failed verification with failedCheckDetails",
+      "payload": {
+        "type": "IdentityCheck",
+        "verificationScore": 0,
+        "failedCheckDetails": [
+          {
+            "kbvResponseMode": "multiple_choice",
+            "checkMethod": "kbv"
+          },
+          {
+            "kbvResponseMode": "multiple_choice",
+            "checkMethod": "kbv"
+          },
+          {
+            "kbvResponseMode": "multiple_choice",
+            "checkMethod": "kbv"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Passed DCMAW driving licence check (M1B)",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 2,
+        "strengthScore": 3,
+        "activityHistoryScore": 1,
+        "checkDetails": [
+          {
+            "checkMethod": "vri"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Failed DCMAW NFC chipped passport check",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 0,
+        "strengthScore": 4,
+        "ci": [
+          "D06",
+          "D05"
+        ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Passed BRP check",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "11111111-1111-1111-1111-111111111111",
+        "strengthScore": 4,
+        "validityScore": 3,
+        "checkDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published",
+            "activityFrom": "2019-01-01"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Passed BRC/FWP check",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "61160890-69c6-4313-81a5-6a345a14e613",
+        "strengthScore": 4,
+        "validityScore": 3,
+        "checkDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published",
+            "activityFrom": null
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Failed BRP check",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "bcd2346",
+        "strengthScore": 4,
+        "validityScore": 0,
+        "ci": [
+          "D06",
+          "D05"
+        ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published",
+            "activityFrom": "undefined"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Passed BRC check",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "11111111-1111-1111-1111-111111111111",
+        "strengthScore": 4,
+        "validityScore": 3,
+        "checkDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published",
+            "activityFrom": "2019-01-01"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Failed DCMAW driving licence biometric check",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 0,
+        "strengthScore": 3,
+        "activityHistoryScore": 0,
+        "ci": [
+          "D06",
+          "D05"
+        ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vri",
+            "identityCheckPolicy": "published"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Failed DCMAW driving licence liveness/likeness check",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 0,
+        "strengthScore": 3,
+        "activityHistoryScore": 0,
+        "ci": [],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vri",
+            "identityCheckPolicy": "published",
+            "activityFrom": "2019-01-01"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Passed driving licence check",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 2,
+        "strengthScore": 3,
+        "activityHistoryScore": 1,
+        "checkDetails": [
+          {
+            "identityCheckPolicy": "published",
+            "activityFrom": "1982-05-23",
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Failed driving licence check with CI",
+      "payload": {
+        "type": "IdentityCheck",
+        "validityScore": 0,
+        "strengthScore": 3,
+        "activityHistoryScore": 0,
+        "ci": ["D02"],
+        "failedCheckDetails": [
+          {
+            "identityCheckPolicy": "published",
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Passed f2f passport check",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 4,
+        "validityScore": 2,
+        "verificationScore": 3,
+        "checkDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Failed f2f passport check",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 4,
+        "validityScore": 0,
+        "verificationScore": 3,
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Failed f2f passport check with CI",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 4,
+        "validityScore": 0,
+        "verificationScore": 3,
+        "ci": ["D14"],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published"
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Passed National Insurance Number - no scope",
+      "payload": {
+        "type": "IdentityCheck",
+        "checkDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Failed National Insurance Number - no scope",
+      "payload": {
+        "type": "IdentityCheck",
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Bank account verification (Stub)",
+      "label": "Passed Bank account verification (Stub)",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "Vlj6bIQYFtTGODUyX5HrstSgfoE",
+        "strengthScore": 3,
+        "validityScore": 2,
+        "checkDetails": [
+          {
+            "checkMethod": "data",
+            "identityCheckPolicy": "none"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Bank account verification (Stub)",
+      "label": "Failed Bank account verification (Stub)",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "Vlj6bIQYFtTGODUyX5HrstSgfoE",
+        "strengthScore": 3,
+        "validityScore": 0,
+        "ci": ["D15"],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data",
+            "identityCheckPolicy": "none"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Passed National Insurance Number - 'identityCheck' scope",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 2,
+        "validityScore": 2,
+        "checkDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Failed National Insurance Number - 'identityCheck' scope",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 2,
+        "validityScore": 0,
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Failed National Insurance Number with CI - 'identityCheck' scope",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 2,
+        "validityScore": 0,
+        "ci": ["QQQ"],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    }
+  ]
+}
