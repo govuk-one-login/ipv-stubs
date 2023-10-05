@@ -32,7 +32,6 @@ public class OrchestratorConfig {
     public static final boolean ENABLE_BASIC_AUTH =
             Boolean.parseBoolean(getConfigValue("ORCHESTRATOR_ENABLE_BASIC_AUTH", "false"));
 
-
     private static String getConfigValue(String key, String defaultValue) {
         var envValue = System.getenv(key);
         if (envValue == null) {
