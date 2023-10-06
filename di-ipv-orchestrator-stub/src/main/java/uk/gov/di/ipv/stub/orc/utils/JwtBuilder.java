@@ -46,7 +46,7 @@ public class JwtBuilder {
 
     public static JWTClaimsSet buildAuthorizationRequestClaims(
             String userId, String signInJourneyId, String errorType) {
-        String audience = IPV_CORE_AUDIENCE;
+        String audience = "https://dev-shivp.02.dev.identity.account.gov.uk";
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
         if (errorType != null) {
