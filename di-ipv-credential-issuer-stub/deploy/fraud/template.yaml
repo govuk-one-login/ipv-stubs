@@ -106,8 +106,8 @@ Mappings:
       environment: build
       platform: stubs
     "388905755587": #Stubs Prod
-      fargateCPUsize: "2048"
-      fargateRAMsize: "4096"
+      fargateCPUsize: "4096"
+      fargateRAMsize: "8192"
       desiredTaskCount: 1
       environment: production
       platform: stubs
