@@ -1319,11 +1319,7 @@
                 "type": "GivenName"
               },
               {
-                "value": "Laura",
-                "type": "GivenName"
-              },
-              {
-                "value": "Doe",
+                "value": "Parker",
                 "type": "FamilyName"
               }
             ]
@@ -1360,11 +1356,7 @@
                 "type": "GivenName"
               },
               {
-                "value": "Laura",
-                "type": "GivenName"
-              },
-              {
-                "value": "Doe",
+                "value": "Parker",
                 "type": "FamilyName"
               }
             ]
@@ -1401,11 +1393,7 @@
                 "type": "GivenName"
               },
               {
-                "value": "Laura",
-                "type": "GivenName"
-              },
-              {
-                "value": "Doe",
+                "value": "Parker",
                 "type": "FamilyName"
               }
             ]
