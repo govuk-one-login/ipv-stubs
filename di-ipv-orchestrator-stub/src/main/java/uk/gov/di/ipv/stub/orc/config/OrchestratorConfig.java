@@ -1,7 +1,5 @@
 package uk.gov.di.ipv.stub.orc.config;
 
-import com.google.gson.Gson;
-
 public class OrchestratorConfig {
     public static final String PORT = getConfigValue("ORCHESTRATOR_PORT", "8083");
     public static final String IPV_ENDPOINT =
