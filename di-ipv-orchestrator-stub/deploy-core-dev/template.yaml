@@ -48,6 +48,18 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/build/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+  OrchestratorBasicAuthEnable:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_ENABLE" #pragma: allowlist secret
+  OrchestratorBasicAuthUsername:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME" #pragma: allowlist secret
+  OrchestratorBasicAuthPassword:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSWORD" #pragma: allowlist secret
   IpvBackchannelEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -76,14 +88,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/build/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
-  OrchestratorEnableBasicAuth:
-    Description: "Environment Variables for ECS"
-    Type: String
-    Default: "true" #pragma: allowlist secret
-  OrchestratorBasicAuthCredentials:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: String
-    Default: "{ \"username\": \"dev\", \"password\": \"dev\" }" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -531,10 +535,12 @@ Resources:
               Value: !Ref IpvEndpoint
             - Name: IPV_CORE_AUDIENCE
               Value: !Ref IpvCoreAudience
-            - Name: ORCHESTRATOR_ENABLE_BASIC_AUTH
-              Value: !Ref OrchestratorEnableBasicAuth
-            - Name: ORCHESTRATOR_BASIC_AUTH_CREDENTIALS
-              Value: !Ref OrchestratorBasicAuthCredentials
+            - Name: ORCHESTRATOR_BASIC_AUTH_ENABLE
+              Value: !Ref OrchestratorBasicAuthEnable
+            - Name: ORCHESTRATOR_BASIC_AUTH_USERNAME
+              Value: !Ref OrchestratorBasicAuthUsername
+            - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
+              Value: !Ref OrchestratorBasicAuthPassword
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp

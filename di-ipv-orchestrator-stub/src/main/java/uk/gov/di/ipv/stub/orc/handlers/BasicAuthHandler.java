@@ -36,8 +36,8 @@ public class BasicAuthHandler {
         if (submittedCredentials.length == NUMBER_OF_AUTHENTICATION_FIELDS) {
             String submittedUsername = submittedCredentials[0];
             String submittedPassword = submittedCredentials[1];
-            String username = OrchestratorConfig.BASIC_AUTH_CREDENTIALS.getUsername();
-            String password = OrchestratorConfig.BASIC_AUTH_CREDENTIALS.getPassword();
+            String username = OrchestratorConfig.BASIC_AUTH_USERNAME;
+            String password = OrchestratorConfig.BASIC_AUTH_PASSWORD;
             return submittedUsername.equals(username) && submittedPassword.equals(password);
         }
         return false;
