@@ -882,6 +882,80 @@
     },
     {
       "criType": "Address (Stub)",
+      "label": "Saul Goodman Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "29",
+            "streetName": "CHURCH LANE",
+            "postalCode": "TN61 8PQ",
+            "addressLocality": "TUNBRIDGE WELLS",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Saul Goodman (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "SAUL"
+              },
+              {
+                "type": "FamilyName",
+                "value": "GOODMAN"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1995-08-16"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "29",
+            "streetName": "CHURCH LANE",
+            "postalCode": "TN61 8PQ",
+            "addressLocality": "TUNBRIDGE WELLS",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity (Stub)",
+      "label": "Saul Goodman",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "SAUL"
+              },
+              {
+                "type": "FamilyName",
+                "value": "GOODMAN"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1995-08-16"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
       "label": "Alice Parker Valid Address",
       "payload": {
         "address": [
@@ -894,7 +968,8 @@
           }
         ]
       }
-    },    {
+    },
+    {
       "criType": "Claimed Identity (Stub)",
       "label": "Alice Parker",
       "payload": {
@@ -1410,6 +1485,39 @@
             "icaoIssuerCode": "GBR",
             "documentNumber": "ZR8016200",
             "expiryDate": "2024-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Saul Goodman (Valid) BRC",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "SAUL"
+              },
+              {
+                "type": "FamilyName",
+                "value": "GOODMAN"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1995-08-16"
+          }
+        ],
+        "residencePermit": [
+          {
+            "documentNumber": "AX66K69P2",
+            "expiryDate": "2030-07-13",
+            "icaoIssuerCode": "UTO",
+            "documentType": "CR"
           }
         ]
       }
