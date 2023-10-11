@@ -20,7 +20,7 @@ public class Orchestrator {
     }
 
     public void initRoutes() {
-        if (OrchestratorConfig.ENABLE_BASIC_AUTH) {
+        if (OrchestratorConfig.BASIC_AUTH_ENABLE) {
             BasicAuthHandler basicAuthHandler = new BasicAuthHandler();
             Spark.before(basicAuthHandler.authFilter);
         }
