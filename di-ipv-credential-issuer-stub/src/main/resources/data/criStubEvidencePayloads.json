@@ -145,6 +145,27 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
+      "label": "Passed BRC/FWP check",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "61160890-69c6-4313-81a5-6a345a14e613",
+        "strengthScore": 4,
+        "validityScore": 3,
+        "checkDetails": [
+          {
+            "checkMethod": "vcrypt",
+            "identityCheckPolicy": "published",
+            "activityFrom": null
+          },
+          {
+            "checkMethod": "bvr",
+            "biometricVerificationProcessLevel": 3
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
       "label": "Failed BRP check",
       "payload": {
         "type": "IdentityCheck",
