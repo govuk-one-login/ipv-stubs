@@ -12,6 +12,9 @@ The Orchestrator Stub allows the user to select desired attributes then initiate
 
 On completion of the user journey the Orchestrator Stub receives an authorisation code which it will exchange for an access token and in turn use to access the protected resource in the IPV system. Finally the Orchestrator Stub will display the contents of the protected resource.
 
+By default the orchestrator stub is protected by HTTP basic authentication. The username and password are configured in SSM under `/stubs/<environment>/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME` and`/stubs/<environment>/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSOWRD`.
+To turn off HTTP basic authentication override the `OrchestratorBasicAuthEnable` deployment template parameter with the value `false` (note that the SSM username and password value must still exist even when HTTP basic authentication is disabled or deployments will fail.)
+
 ## Credential Issuer Stub
 `di-ipv-credential-issuer-stub` [/di-ipv-credential-issuer-stub](/di-ipv-credential-issuer-stub)
 

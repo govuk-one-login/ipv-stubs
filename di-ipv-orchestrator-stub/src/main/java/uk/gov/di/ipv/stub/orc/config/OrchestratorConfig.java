@@ -26,6 +26,12 @@ public class OrchestratorConfig {
             getConfigValue(
                     "IPV_CORE_AUDIENCE",
                     "https://build-di-ipv-cri-uk-passport-front.london.cloudapps.digital");
+    public static final boolean BASIC_AUTH_ENABLE =
+            Boolean.parseBoolean(getConfigValue("ORCHESTRATOR_BASIC_AUTH_ENABLE", "false"));
+    public static final String BASIC_AUTH_USERNAME =
+            getConfigValue("ORCHESTRATOR_BASIC_AUTH_USERNAME", null);
+    public static final String BASIC_AUTH_PASSWORD =
+            getConfigValue("ORCHESTRATOR_BASIC_AUTH_PASSWORD", null);
 
     private static String getConfigValue(String key, String defaultValue) {
         var envValue = System.getenv(key);

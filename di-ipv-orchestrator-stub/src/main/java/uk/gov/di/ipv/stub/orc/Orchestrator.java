@@ -2,6 +2,7 @@ package uk.gov.di.ipv.stub.orc;
 
 import spark.Spark;
 import uk.gov.di.ipv.stub.orc.config.OrchestratorConfig;
+import uk.gov.di.ipv.stub.orc.handlers.BasicAuthHandler;
 import uk.gov.di.ipv.stub.orc.handlers.HomeHandler;
 import uk.gov.di.ipv.stub.orc.handlers.IpvHandler;
 
@@ -19,6 +20,10 @@ public class Orchestrator {
     }
 
     public void initRoutes() {
+        if (OrchestratorConfig.BASIC_AUTH_ENABLE) {
+            BasicAuthHandler basicAuthHandler = new BasicAuthHandler();
+            Spark.before(basicAuthHandler.authFilter);
+        }
         Spark.get("/", HomeHandler.serveHomePage);
         Spark.get("/authorize", ipvHandler.doAuthorize);
         Spark.get("/callback", ipvHandler.doCallback);
