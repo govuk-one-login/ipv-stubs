@@ -63,6 +63,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri/env/API_KEY_CRI_DL_BUILD" #pragma: allowlist secret
+  ApiKeyCriToyDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_TOY_DEV" #pragma: allowlist secret
   ApiKeyCriToyBuild:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -644,6 +648,8 @@ Resources:
             Value: !Ref ApiKeyCriDrivingPermitBuild
           - Name: API_KEY_CRI_PASSPORTA_BUILD
             Value: !Ref ApiKeyCriPassportBuild
+          - Name: API_KEY_CRI_TOY_DEV
+            Value: !Ref ApiKeyCriToyDev
           - Name: API_KEY_CRI_TOY_BUILD
             Value: !Ref ApiKeyCriToyBuild
           - Name: API_KEY_CRI_TOY_STAGING
