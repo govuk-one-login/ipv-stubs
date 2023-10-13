@@ -76,6 +76,7 @@ import static uk.gov.di.ipv.stub.cred.config.CriType.USER_ASSERTED_CRI_TYPE;
 
 public class AuthorizeHandler {
 
+    public static final String REQUEST_SCOPE = "scope";
     public static final String SHARED_CLAIMS = "shared_claims";
     public static final String EVIDENCE_REQUESTED = "evidence_requested";
 
@@ -189,11 +190,16 @@ public class AuthorizeHandler {
 
                 String sharedAttributesJson;
                 String evidenceRequestedJson;
+                String requestScope;
                 try {
                     JWTClaimsSet claimsSet = getJwtClaimsSet(queryParamsMap);
+                    requestScope = claimsSet.getStringClaim(REQUEST_SCOPE);
+                    requestScope =
+                            requestScope == null ? "No scope provided in request" : requestScope;
                     sharedAttributesJson = getSharedAttributes(claimsSet);
                     evidenceRequestedJson = getEvidenceRequested(claimsSet);
                 } catch (Exception e) {
+                    requestScope = e.getMessage();
                     sharedAttributesJson = e.getMessage();
                     evidenceRequestedJson = e.getMessage();
                 }
@@ -224,6 +230,7 @@ public class AuthorizeHandler {
                         CredentialIssuerConfig.isEnabled(
                                 CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false"));
                 frontendParams.put(IS_USER_ASSERTED_TYPE, criType.equals(USER_ASSERTED_CRI_TYPE));
+                frontendParams.put(REQUEST_SCOPE, requestScope);
                 if (!criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
                     frontendParams.put(SHARED_CLAIMS, sharedAttributesJson);
                 }
@@ -883,8 +890,8 @@ public class AuthorizeHandler {
         try {
             Map<String, Object> sharedAttributes = claimsSet.getJSONObjectClaim(SHARED_CLAIMS);
             if (sharedAttributes == null) {
-                LOGGER.error("evidence_requested not found in JWT");
-                return "evidence_requested not found in JWT";
+                LOGGER.error("shared_claims not found in JWT");
+                return "shared_claims not found in JWT";
             }
             sharedAttributesJson = gson.toJson(sharedAttributes);
             return sharedAttributesJson;
