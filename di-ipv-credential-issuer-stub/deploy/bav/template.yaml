@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >-
-  This creates the necessary components to deploy IPV Bank account verification Credential Issuer
+  This creates the necessary components to deploy IPV BAV Credential Issuer
   Stub onto ECS Fargate within the dev platform VPC and private subnets
   (provided as parameters).
 
@@ -45,7 +45,7 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/bav/env/CLIENT_CONFIG_FILE" #pragma: allowlist secret
   ClientAudience:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store" #pragma: allowlist secret
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/bav/env/CLIENT_AUDIENCE" #pragma: allowlist secret
   VcIssuer:
@@ -62,6 +62,9 @@ Conditions:
     - !Or
       - !Equals [ !Ref Environment, "build"]
       - !Equals [ !Ref Environment, "production"]
+  IsCoreDev: !Or
+    - !Equals [ !Ref AWS::AccountId, "130355686670"]
+    - !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsNotDevelopment: !Not [ !Condition IsDevelopment ]
   IsProduction: !Equals [ !Ref Environment, "production" ]
   IsNonProd: !Not
@@ -119,18 +122,18 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !If
-        - IsNonProd
-        - !Sub "bav-cri.${Environment}.stubs.account.gov.uk"
-        - bav-cri.stubs.account.gov.uk
+        - IsCoreDev
+        - !Sub "bav-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "bav-cri.${Environment}.stubs.account.gov.uk", bav-cri.stubs.account.gov.uk]
       DomainValidationOptions:
         - DomainName: !If
-            - IsNonProd
-            - !Sub "bav-cri.${Environment}.stubs.account.gov.uk"
-            - bav-cri.stubs.account.gov.uk
+            - IsCoreDev
+            - !Sub "bav-${Environment}.core.dev.stubs.account.gov.uk"
+            - !If [IsNonProd, !Sub "bav-cri.${Environment}.stubs.account.gov.uk", bav-cri.stubs.account.gov.uk]
           HostedZoneId: !If
-            - IsNonProd
-            - !ImportValue BuildPublicHostedZoneId
-            - !ImportValue RootPublicHostedZoneId
+            - IsCoreDev
+            - !ImportValue DevPublicHostedZoneId
+            - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
       ValidationMethod: DNS
 
   # api domain entries / mapping
@@ -138,9 +141,9 @@ Resources:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
       DomainName: !If
-        - IsNonProd
-        - !Sub "bav-cri.${Environment}.stubs.account.gov.uk"
-        - bav-cri.stubs.account.gov.uk
+        - IsCoreDev
+        - !Sub "bav-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "bav-cri.${Environment}.stubs.account.gov.uk", bav-cri.stubs.account.gov.uk]
       DomainNameConfigurations:
         - CertificateArn: !Ref CriStubSSLCert
           EndpointType: REGIONAL
@@ -150,9 +153,9 @@ Resources:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
       DomainName: !If
-        - IsNonProd
-        - !Sub "bav-cri.${Environment}.stubs.account.gov.uk"
-        - bav-cri.stubs.account.gov.uk
+        - IsCoreDev
+        - !Sub "bav-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "bav-cri.${Environment}.stubs.account.gov.uk", bav-cri.stubs.account.gov.uk]
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -165,13 +168,13 @@ Resources:
     Properties:
       Type: A
       Name: !If
-        - IsNonProd
-        - !Sub "bav-cri.${Environment}.stubs.account.gov.uk"
-        - bav-cri.stubs.account.gov.uk
+        - IsCoreDev
+        - !Sub "bav-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "bav-cri.${Environment}.stubs.account.gov.uk", bav-cri.stubs.account.gov.uk]
       HostedZoneId: !If
-        - IsNonProd
-        - !ImportValue BuildPublicHostedZoneId
-        - !ImportValue RootPublicHostedZoneId
+        - IsCoreDev
+        - !ImportValue DevPublicHostedZoneId
+        - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
       AliasTarget:
         DNSName: !GetAtt CriStubApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CriStubApiDomain.RegionalHostedZoneId
@@ -313,7 +316,10 @@ Resources:
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-bav-cri-api-gw-accesslogs
+      LogGroupName: !If
+        - IsCoreDev
+        - !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-bav-cri-api-gw-accesslogs
+        - !Sub /aws/apigateway/${AWS::StackName}-bav-cri-api-gw-accesslogs
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
