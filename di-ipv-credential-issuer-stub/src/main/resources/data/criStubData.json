@@ -1645,6 +1645,140 @@
           }
         ]
       }
+    },
+    {
+      "criType": "Bank account verification (Stub)",
+      "label": "Kenneth Decerqueira BAV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "bankAccount": [
+          {
+            "sortCode": "103233",
+            "accountNumber": "12345678"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Bank account verification (Stub)",
+      "label": "James Moriarty BAV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "James",
+                "type": "GivenName"
+              },
+              {
+                "value": "Moriarty",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "bankAccount": [
+          {
+            "sortCode": "103233",
+            "accountNumber": "12345678"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Bank account verification (Stub)",
+      "label": "Mary Watson BAV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "bankAccount": [
+          {
+            "sortCode": "103233",
+            "accountNumber": "12345678"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Bank account verification (Stub)",
+      "label": "Alice Parker BAV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Aliçe",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parkér",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "bankAccount": [
+          {
+            "sortCode": "103233",
+            "accountNumber": "12345678"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Bank account verification (Stub)",
+      "label": "Bob Parker BAV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Böb",
+                "type": "GivenName"
+              },
+              {
+                "value": "Pârker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "bankAccount": [
+          {
+            "sortCode": "103233",
+            "accountNumber": "12345678"
+          }
+        ]
+      }
     }
   ]
 }
