@@ -16,8 +16,8 @@ The stub application to simulate the credential issuers to be used during the IP
 |-------------------------|-------------------------------------------------------|------------------------|
 | CREDENTIAL_ISSUER_PORT  | The port number the credential issuer should run on   | `8084`                 |
 | CREDENTIAL_ISSUER_NAME  | The name of the credential issuer, displayed to users | `UK Passport CRI Stub` |
-| CREDENTIAL_ISSUER_TYPE  | The name of the credential issuer                     | `CRI`                  |
 | CLIENT_CONFIG           | Configuration of accepted clients                     | See [test fixtures](https://github.com/alphagov/di-ipv-stubs/blob/main/di-ipv-credential-issuer-stub/src/test/java/uk/gov/di/ipv/stub/cred/fixtures/TestFixtures.java#L6) for example values                       |
+| CREDENTIAL_ISSUER_TYPE  | The type of the credential issuer                     | `EVIDENCE`             |
 | CLIENT_AUDIENCE         | Hostname that the credential issue should run on      | `http://localhost:8084` |
 | VC_ISSUER               | Hostname of the VC issuer                             | `http://localhost:8084` |
 | VC_SIGNING_KEY          | Signing key for the VC issuer | See [test fixtures](https://github.com/alphagov/di-ipv-stubs/blob/main/di-ipv-credential-issuer-stub/src/test/java/uk/gov/di/ipv/stub/cred/fixtures/TestFixtures.java#L6) for example values      |
