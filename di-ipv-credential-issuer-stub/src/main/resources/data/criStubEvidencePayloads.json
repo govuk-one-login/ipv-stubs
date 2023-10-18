@@ -353,7 +353,7 @@
     },
     {
       "criType": "National Insurance Number (Stub)",
-      "label": "Passed National Insurance Number (Stub)",
+      "label": "Passed National Insurance Number - no scope",
       "payload": {
         "type": "IdentityCheck",
         "checkDetails": [
@@ -365,7 +365,7 @@
     },
     {
       "criType": "National Insurance Number (Stub)",
-      "label": "Failed National Insurance Number (Stub)",
+      "label": "Failed National Insurance Number - no scope",
       "payload": {
         "type": "IdentityCheck",
         "failedCheckDetails": [
@@ -403,6 +403,49 @@
           {
             "checkMethod": "data",
             "identityCheckPolicy": "none"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Passed National Insurance Number - 'identityCheck' scope",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 2,
+        "validityScore": 2,
+        "checkDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Failed National Insurance Number - 'identityCheck' scope",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 2,
+        "validityScore": 0,
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Failed National Insurance Number with CI - 'identityCheck' scope",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 2,
+        "validityScore": 0,
+        "ci": ["QQQ"],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data"
           }
         ]
       }

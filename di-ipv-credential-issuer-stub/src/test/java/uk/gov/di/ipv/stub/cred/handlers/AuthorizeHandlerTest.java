@@ -22,6 +22,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import spark.QueryParamsMap;
@@ -109,6 +110,8 @@ class AuthorizeHandlerTest {
     @SystemStub
     private EnvironmentVariables environmentVariables =
             new EnvironmentVariables("CLIENT_CONFIG", TestFixtures.CLIENT_CONFIG);
+
+    @Captor ArgumentCaptor<Map<String, Object>> viewParamsCaptor;
 
     @BeforeEach
     void setup() {
@@ -230,20 +233,13 @@ class AuthorizeHandlerTest {
 
         assertEquals(renderOutput, result);
 
-        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor =
-                ArgumentCaptor.forClass(Map.class);
-        verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
+        verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
 
         assertTrue(
-                Boolean.parseBoolean(
-                        frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
+                Boolean.parseBoolean(viewParamsCaptor.getValue().get("isEvidenceType").toString()));
 
-        Map<String, Object> claims =
-                (Map<String, Object>)
-                        validRequestJWT(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI)
-                                .toJSONObject()
-                                .get(SHARED_CLAIMS);
-        assertEquals(gson.toJson(claims), frontendParamsCaptor.getValue().get("shared_claims"));
+        Map<String, Object> claims = DefaultSharedClaims();
+        assertEquals(gson.toJson(claims), viewParamsCaptor.getValue().get("shared_claims"));
     }
 
     @Test
@@ -259,21 +255,14 @@ class AuthorizeHandlerTest {
 
         assertEquals(renderOutput, result);
 
-        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor =
-                ArgumentCaptor.forClass(Map.class);
-        verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
+        verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
 
         assertTrue(
-                Boolean.parseBoolean(
-                        frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
+                Boolean.parseBoolean(viewParamsCaptor.getValue().get("isEvidenceType").toString()));
 
-        Map<String, Object> claims =
-                (Map<String, Object>)
-                        validRequestJWT(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI)
-                                .toJSONObject()
-                                .get(SHARED_CLAIMS);
-        assertEquals(gson.toJson(claims), frontendParamsCaptor.getValue().get("shared_claims"));
-        assertFalse((Boolean) frontendParamsCaptor.getValue().get(CRI_MITIGATION_ENABLED_PARAM));
+        Map<String, Object> claims = DefaultSharedClaims();
+        assertEquals(gson.toJson(claims), viewParamsCaptor.getValue().get("shared_claims"));
+        assertFalse((Boolean) viewParamsCaptor.getValue().get(CRI_MITIGATION_ENABLED_PARAM));
     }
 
     @Test
@@ -290,20 +279,12 @@ class AuthorizeHandlerTest {
 
         assertEquals(renderOutput, result);
 
-        ArgumentCaptor<Map<String, Object>> frontendParamsCaptor =
-                ArgumentCaptor.forClass(Map.class);
-        verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
+        verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
 
         assertTrue(
-                Boolean.parseBoolean(
-                        frontendParamsCaptor.getValue().get("isEvidenceType").toString()));
+                Boolean.parseBoolean(viewParamsCaptor.getValue().get("isEvidenceType").toString()));
 
-        Map<String, Object> claims =
-                (Map<String, Object>)
-                        validRequestJWT(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI)
-                                .toJSONObject()
-                                .get(SHARED_CLAIMS);
-        assertTrue((Boolean) frontendParamsCaptor.getValue().get(CRI_MITIGATION_ENABLED_PARAM));
+        assertTrue((Boolean) viewParamsCaptor.getValue().get(CRI_MITIGATION_ENABLED_PARAM));
     }
 
     @Test
@@ -311,9 +292,7 @@ class AuthorizeHandlerTest {
             doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWhenSignatureVerificationFails()
                     throws Exception {
         Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-        String signedJWT =
-                signedRequestJwt(validRequestJWT(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI))
-                        .serialize();
+        String signedJWT = signedRequestJwt(DefaultClaimSetBuilder().build()).serialize();
         String invalidSignatureJwt = signedJWT.substring(0, signedJWT.length() - 4) + "Nope";
         queryParams.put(RequestParamConstants.REQUEST, new String[] {invalidSignatureJwt});
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
@@ -325,12 +304,10 @@ class AuthorizeHandlerTest {
         String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
 
         assertEquals(renderOutput, result);
-        ArgumentCaptor<Map<String, String>> frontendParamsCaptor =
-                ArgumentCaptor.forClass(Map.class);
-        verify(mockViewHelper).render(frontendParamsCaptor.capture(), eq("authorize.mustache"));
+        verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
         assertEquals(
                 "Error: Signature of the shared attribute JWT is not valid",
-                frontendParamsCaptor.getValue().get("shared_claims"));
+                viewParamsCaptor.getValue().get("shared_claims"));
     }
 
     @Test
@@ -503,6 +480,46 @@ class AuthorizeHandlerTest {
                                 + "?iss=Credential+Issuer+Stub&state=test-state&error=invalid_request&error_description=An+error+description");
     }
 
+    @Test
+    void doAuthorizeShouldUseDefaultScopeValueWhenNoScopeInRequest() throws Exception {
+
+        // Arrange
+        QueryParamsMap queryParamsMap = toQueryParamsMap(validEncryptedDoAuthorizeQueryParams());
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String renderOutput = "rendered output";
+        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
+
+        // Act
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        // Assert
+        verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+        assertEquals(
+                "No scope provided in request",
+                viewParamsCaptor.getValue().get("scope").toString());
+    }
+
+    @Test
+    void doAuthorizeShouldUseRequestScopeValueWhenScopeInRequest() throws Exception {
+
+        // Arrange
+        var claimsSet = DefaultClaimSetBuilder().claim("scope", "test scope").build();
+        QueryParamsMap queryParamsMap =
+                toQueryParamsMap(validEncryptedDoAuthorizeQueryParams(claimsSet));
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String renderOutput = "rendered output";
+        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
+
+        // Act
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        // Assert
+        verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+        assertEquals("test scope", viewParamsCaptor.getValue().get("scope").toString());
+    }
+
     private String createExpectedErrorQueryStringParams(ErrorObject error) {
         return createExpectedErrorQueryStringParams(error.getCode(), error.getDescription());
     }
@@ -549,26 +566,22 @@ class AuthorizeHandlerTest {
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
         queryParams.put(
                 RequestParamConstants.REQUEST,
-                new String[] {
-                    signedRequestJwt(validRequestJWT(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI))
-                            .serialize()
-                });
+                new String[] {signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()});
         return queryParams;
     }
 
     private Map<String, String[]> validEncryptedDoAuthorizeQueryParams() throws Exception {
+        return validEncryptedDoAuthorizeQueryParams(DefaultClaimSetBuilder().build());
+    }
+
+    private Map<String, String[]> validEncryptedDoAuthorizeQueryParams(JWTClaimsSet claimsSet)
+            throws Exception {
         Map<String, String[]> queryParams = new HashMap<>();
         queryParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"none"});
         queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
         queryParams.put(
                 RequestParamConstants.REQUEST,
-                new String[] {
-                    encryptedRequestJwt(
-                                    signedRequestJwt(
-                                            validRequestJWT(
-                                                    VALID_RESPONSE_TYPE, VALID_REDIRECT_URI)))
-                            .serialize()
-                });
+                new String[] {encryptedRequestJwt(signedRequestJwt(claimsSet)).serialize()});
         return queryParams;
     }
 
@@ -596,7 +609,10 @@ class AuthorizeHandlerTest {
         queryParams.put(
                 RequestParamConstants.REQUEST,
                 new String[] {
-                    signedRequestJwt(validRequestJWT(INVALID_RESPONSE_TYPE, VALID_REDIRECT_URI))
+                    signedRequestJwt(
+                                    DefaultClaimSetBuilder(
+                                                    INVALID_RESPONSE_TYPE, VALID_REDIRECT_URI)
+                                            .build())
                             .serialize()
                 });
         return queryParams;
@@ -609,7 +625,10 @@ class AuthorizeHandlerTest {
         queryParams.put(
                 RequestParamConstants.REQUEST,
                 new String[] {
-                    signedRequestJwt(validRequestJWT(VALID_RESPONSE_TYPE, INVALID_REDIRECT_URI))
+                    signedRequestJwt(
+                                    DefaultClaimSetBuilder(
+                                                    VALID_RESPONSE_TYPE, INVALID_REDIRECT_URI)
+                                            .build())
                             .serialize()
                 });
         return queryParams;
@@ -635,9 +654,27 @@ class AuthorizeHandlerTest {
         return queryParams;
     }
 
-    private JWTClaimsSet validRequestJWT(String responseType, String redirectUri) {
+    private JWTClaimsSet.Builder DefaultClaimSetBuilder() {
+        return DefaultClaimSetBuilder(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI);
+    }
+
+    private JWTClaimsSet.Builder DefaultClaimSetBuilder(String responseType, String redirectUri) {
         Instant instant = Instant.now();
 
+        return new JWTClaimsSet.Builder()
+                .issuer("issuer")
+                .audience("audience")
+                .subject("subject")
+                .claim("redirect_uri", redirectUri)
+                .claim("response_type", responseType)
+                .claim("state", "test-state")
+                .expirationTime(Date.from(instant.plus(1L, ChronoUnit.HOURS)))
+                .notBeforeTime(Date.from(instant))
+                .issueTime(Date.from(instant))
+                .claim(SHARED_CLAIMS, DefaultSharedClaims());
+    }
+
+    private Map<String, Object> DefaultSharedClaims() {
         Map<String, Object> sharedClaims = new LinkedHashMap<>();
         sharedClaims.put("addresses", Collections.singletonList("123 random street, M13 7GE"));
         sharedClaims.put(
@@ -651,18 +688,7 @@ class AuthorizeHandlerTest {
                                         Map.of("value", "Danny")))));
         sharedClaims.put("birthDate", List.of(Map.of("value", "01/01/1980")));
 
-        return new JWTClaimsSet.Builder()
-                .issuer("issuer")
-                .audience("audience")
-                .subject("subject")
-                .claim("redirect_uri", redirectUri)
-                .claim("response_type", responseType)
-                .claim("state", "test-state")
-                .expirationTime(Date.from(instant.plus(1L, ChronoUnit.HOURS)))
-                .notBeforeTime(Date.from(instant))
-                .issueTime(Date.from(instant))
-                .claim(SHARED_CLAIMS, sharedClaims)
-                .build();
+        return sharedClaims;
     }
 
     private SignedJWT signedRequestJwt(JWTClaimsSet claimsSet) throws Exception {
