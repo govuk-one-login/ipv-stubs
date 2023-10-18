@@ -376,6 +376,38 @@
       }
     },
     {
+      "criType": "Bank account verification (Stub)",
+      "label": "Passed Bank account verification (Stub)",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "Vlj6bIQYFtTGODUyX5HrstSgfoE",
+        "strengthScore": 3,
+        "validityScore": 2,
+        "checkDetails": [
+          {
+            "checkMethod": "data",
+            "identityCheckPolicy": "none"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Bank account verification (Stub)",
+      "label": "Failed Bank account verification (Stub)",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "Vlj6bIQYFtTGODUyX5HrstSgfoE",
+        "strengthScore": 3,
+        "validityScore": 0,
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data",
+            "identityCheckPolicy": "none"
+          }
+        ]
+      }
+    },
+    {
       "criType": "National Insurance Number (Stub)",
       "label": "Passed National Insurance Number - 'identityCheck' scope",
       "payload": {
