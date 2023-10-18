@@ -397,7 +397,7 @@
       "payload": {
         "type": "IdentityCheck",
         "txn": "Vlj6bIQYFtTGODUyX5HrstSgfoE",
-        "strengthScore": 0,
+        "strengthScore": 3,
         "validityScore": 0,
         "failedCheckDetails": [
           {
