@@ -60,6 +60,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/f2f/env/F2F_STUB_QUEUE_URL" #pragma: allowlist secret
+  CredentialMitigationEnabled:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/credential-issuer/f2f/env/MITIGATION_ENABLED" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -69,6 +73,8 @@ Conditions:
   IsCoreDev: !Or
     - !Equals [ !Ref AWS::AccountId, "130355686670"]
     - !Equals [ !Ref AWS::AccountId, "175872367215"]
+  IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670" ]
+  IsDev02: !Equals [ !Ref AWS::AccountId, "175872367215" ]
   IsNotDevelopment: !Not [ !Condition IsDevelopment ]
   IsProduction: !Equals [ !Ref Environment, "production" ]
   IsNonProd: !Not
@@ -126,18 +132,27 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "f2f-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "f2f-cri.${Environment}.stubs.account.gov.uk", f2f-cri.stubs.account.gov.uk]
+        - IsDev01
+        - !Sub "f2f-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "f2f-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If [IsNonProd, !Sub 'f2f-cri.${Environment}.stubs.account.gov.uk', f2f-cri.stubs.account.gov.uk]
       DomainValidationOptions:
         - DomainName: !If
-            - IsCoreDev
-            - !Sub "f2f-${Environment}.core.dev.stubs.account.gov.uk"
-            - !If [IsNonProd, !Sub "f2f-cri.${Environment}.stubs.account.gov.uk", f2f-cri.stubs.account.gov.uk]
+            - IsDev01
+            - !Sub "f2f-${Environment}.01.core.dev.stubs.account.gov.uk"
+            - !If
+              - IsDev02
+              - !Sub "f2f-${Environment}.02.core.dev.stubs.account.gov.uk"
+              - !If [IsNonProd, !Sub 'f2f-cri.${Environment}.stubs.account.gov.uk', f2f-cri.stubs.account.gov.uk]
           HostedZoneId: !If
-            - IsCoreDev
-            - !ImportValue DevPublicHostedZoneId
-            - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
+            - IsDev01
+            - !ImportValue Dev01StubsHostedZoneId
+            - !If
+              - IsDev02
+              - !ImportValue Dev02StubsHostedZoneId
+              - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
       ValidationMethod: DNS
 
   # api domain entries / mapping
@@ -145,9 +160,12 @@ Resources:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "f2f-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "f2f-cri.${Environment}.stubs.account.gov.uk", f2f-cri.stubs.account.gov.uk]
+        - IsDev01
+        - !Sub "f2f-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "f2f-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If [IsNonProd, !Sub 'f2f-cri.${Environment}.stubs.account.gov.uk', f2f-cri.stubs.account.gov.uk]
       DomainNameConfigurations:
         - CertificateArn: !Ref CriStubSSLCert
           EndpointType: REGIONAL
@@ -157,9 +175,12 @@ Resources:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "f2f-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "f2f-cri.${Environment}.stubs.account.gov.uk", f2f-cri.stubs.account.gov.uk]
+        - IsDev01
+        - !Sub "f2f-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "f2f-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If [IsNonProd, !Sub 'f2f-cri.${Environment}.stubs.account.gov.uk', f2f-cri.stubs.account.gov.uk]
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -172,13 +193,16 @@ Resources:
     Properties:
       Type: A
       Name: !If
-        - IsCoreDev
-        - !Sub "f2f-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "f2f-cri.${Environment}.stubs.account.gov.uk", f2f-cri.stubs.account.gov.uk]
+        - IsDev01
+        - !Sub "f2f-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "f2f-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
       HostedZoneId: !If
-        - IsCoreDev
-        - !ImportValue DevPublicHostedZoneId
-        - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
+        - IsDev01
+        - !ImportValue Dev01StubsHostedZoneId
+        - !If
+          - IsDev02
+          - !ImportValue Dev02StubsHostedZoneId
+          - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
       AliasTarget:
         DNSName: !GetAtt CriStubApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CriStubApiDomain.RegionalHostedZoneId
@@ -320,10 +344,7 @@ Resources:
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !If
-        - IsCoreDev
-        - !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-f2f-cri-api-gw-accesslogs
-        - !Sub /aws/apigateway/${AWS::StackName}-f2f-cri-api-gw-accesslogs
+      LogGroupName: !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-f2f-cri-api-gw-accesslogs
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -489,28 +510,30 @@ Resources:
           Image: CONTAINER-IMAGE-PLACEHOLDER
           Name: app
           Environment:
-          - Name: JBP_CONFIG_OPEN_JDK_JRE
-            Value: !Ref JbpConfigOpenJdkJre
-          - Name: JAVA_OPTS
-            Value: !Ref JavaOpts
-          - Name: CREDENTIAL_ISSUER_PORT
-            Value: !Ref CredentialIssuerPort
-          - Name: CREDENTIAL_ISSUER_NAME
-            Value: !Ref CredentialIssuerName
-          - Name: CREDENTIAL_ISSUER_TYPE
-            Value: !Ref CredentialIssuerType
-          - Name: CLIENT_CONFIG_FILE
-            Value: !Ref ClientConfigFile
-          - Name: CLIENT_AUDIENCE
-            Value: !Ref ClientAudience
-          - Name: VC_ISSUER
-            Value: !Ref VcIssuer
-          - Name: VC_TTL_SECONDS
-            Value: !Ref VcTtlSeconds
-          - Name: F2F_STUB_QUEUE_URL
-            Value: !Ref F2fStubQueueUrl
-          - Name: F2F_STUB_QUEUE_NAME
-            Value: !If [IsCoreDev, !Sub "stubQueue_F2FQueue_${Environment}", "stubQueue_F2FQueue_build"]
+            - Name: JBP_CONFIG_OPEN_JDK_JRE
+              Value: !Ref JbpConfigOpenJdkJre
+            - Name: JAVA_OPTS
+              Value: !Ref JavaOpts
+            - Name: CREDENTIAL_ISSUER_PORT
+              Value: !Ref CredentialIssuerPort
+            - Name: CREDENTIAL_ISSUER_NAME
+              Value: !Ref CredentialIssuerName
+            - Name: CREDENTIAL_ISSUER_TYPE
+              Value: !Ref CredentialIssuerType
+            - Name: MITIGATION_ENABLED
+              Value: !Ref CredentialMitigationEnabled
+            - Name: CLIENT_CONFIG_FILE
+              Value: !Ref ClientConfigFile
+            - Name: CLIENT_AUDIENCE
+              Value: !Ref ClientAudience
+            - Name: VC_ISSUER
+              Value: !Ref VcIssuer
+            - Name: VC_TTL_SECONDS
+              Value: !Ref VcTtlSeconds
+            - Name: F2F_STUB_QUEUE_URL
+              Value: !Ref F2fStubQueueUrl
+            - Name: F2F_STUB_QUEUE_NAME
+              Value: !If [IsCoreDev, !Sub "stubQueue_F2FQueue_${Environment}", "stubQueue_F2FQueue_build"]
           Secrets:
             - Name: "VC_SIGNING_KEY"
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/f2f/env/VC_SIGNING_KEY"
