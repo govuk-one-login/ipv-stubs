@@ -60,6 +60,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/f2f/env/F2F_STUB_QUEUE_URL" #pragma: allowlist secret
+  CredentialMitigationEnabled:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/credential-issuer/f2f/env/MITIGATION_ENABLED" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -499,6 +503,8 @@ Resources:
             Value: !Ref CredentialIssuerName
           - Name: CREDENTIAL_ISSUER_TYPE
             Value: !Ref CredentialIssuerType
+          - Name: MITIGATION_ENABLED
+            Value: !Ref CredentialMitigationEnabled
           - Name: CLIENT_CONFIG_FILE
             Value: !Ref ClientConfigFile
           - Name: CLIENT_AUDIENCE
