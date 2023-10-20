@@ -119,6 +119,16 @@ Conditions:
 # if this is built out differently.
 Mappings:
   EnvironmentConfiguration:
+    dev:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    build:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    staging:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    integration:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    production:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables 
     "130355686670": # Development
       fargateCPUsize: "256"
       fargateRAMsize: "512"
@@ -553,6 +563,22 @@ Resources:
             Value: !Ref OrchestratorBasicAuthUsername
           - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
             Value: !Ref OrchestratorBasicAuthPassword
+          Secrets:
+            - Name: DT_TENANT
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ]
+                  - ':DT_TENANT::'
+            - Name: DT_TENANTTOKEN
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ]
+                  - ':DT_TENANTTOKEN::'
+            - Name: DT_CONNECTION_POINT
+              ValueFrom: !Join
+              - ''
+              - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ]
+                - ':DT_CONNECTION_POINT::'
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -609,6 +635,19 @@ Resources:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/staging/orch/*"
+        - PolicyName: GetDynatraceSecret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow
+                Action: secretsmanager:ListSecrets
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -639,6 +678,19 @@ Resources:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/orch/core/*" #pragma: allowlist secret
+        - PolicyName: GetDynatraceSecret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow
+                Action: secretsmanager:ListSecrets
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
