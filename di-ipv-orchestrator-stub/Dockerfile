@@ -15,6 +15,9 @@ COPY --from=build \
     /home/gradle/build/distributions/di-ipv-orchestrator-stub.tar \
     /app/
 
+COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules-musl:nodejs / /
+ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
+
 WORKDIR /app
 RUN tar -xvf di-ipv-orchestrator-stub.tar \
     && rm di-ipv-orchestrator-stub.tar
