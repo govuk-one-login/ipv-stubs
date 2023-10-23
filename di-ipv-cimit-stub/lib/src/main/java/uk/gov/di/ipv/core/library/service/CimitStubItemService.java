@@ -36,6 +36,10 @@ public class CimitStubItemService {
         return dataStore.getItems(userId);
     }
 
+    public CimitStubItem getCiForUserId(String userId, String ci) {
+        return dataStore.getItem(userId, ci.toUpperCase());
+    }
+
     public CimitStubItem persistCimitStub(
             String userId,
             String contraIndicatorCode,
