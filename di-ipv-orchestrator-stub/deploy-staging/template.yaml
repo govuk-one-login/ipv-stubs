@@ -119,40 +119,34 @@ Conditions:
 # if this is built out differently.
 Mappings:
   EnvironmentConfiguration:
-    dev:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
-    build:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
-    staging:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
-    integration:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
-    production:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables 
     "130355686670": # Development
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: dev
       platform: core
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
     "826978934233": #Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: build
       platform: core-stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
     "616199614141": #Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: build
       platform: stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
     "388905755587": #Stubs Prod
       fargateCPUsize: "512"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: production
       platform: stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
   SecurityGroups:
     PrefixListIds:
       dynamodb: "pl-b3a742da"
@@ -541,12 +535,6 @@ Resources:
             Value: !Ref OrchestratorClientSigningKey
           - Name: ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY
             Value: !Ref OrchestratorJarEncryptionPublicKey
-          - Name: ORCHESTRATOR_BASIC_AUTH_ENABLE
-            Value: !Ref OrchestratorBasicAuthEnable
-          - Name: ORCHESTRATOR_BASIC_AUTH_USERNAME
-            Value: !Ref OrchestratorBasicAuthUsername
-          - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
-            Value: !Ref OrchestratorBasicAuthPassword
           - Name: IPV_BACKCHANNEL_ENDPOINT
             Value: !Ref IpvBackchannelEndpoint
           - Name: IPV_BACKCHANNEL_TOKEN_PATH
@@ -639,15 +627,15 @@ Resources:
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              - Effect: Allow
-                Action: secretsmanager:GetSecretValue
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
-              - Effect: Allow
-                Action: secretsmanager:ListSecrets
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* # pragma: allowlist secret
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* # pragma: allowlist secret
               - Effect: Allow
                 Action: kms:Decrypt
-                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/* #pragma: allowlist secret
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -682,12 +670,12 @@ Resources:
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              - Effect: Allow
-                Action: secretsmanager:GetSecretValue
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
-              - Effect: Allow
-                Action: secretsmanager:ListSecrets
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
               - Effect: Allow
                 Action: kms:Decrypt
                 Resource: arn:aws:kms:eu-west-2:216552277552:key/*
