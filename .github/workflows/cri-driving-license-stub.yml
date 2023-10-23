@@ -45,6 +45,13 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Login to GDS Dev Dynatrace Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: khw46367.live.dynatrace.com
+          username: khw46367
+          password: ${{ secrets.DYNATRACE_PAAS_TOKEN }}
+
       - name: Create tag
         id: create-tag
         run: |
