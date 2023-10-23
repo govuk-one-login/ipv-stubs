@@ -33,23 +33,23 @@ Parameters:
   ApiKeyCriAddressPreProd:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_ADDRESS_PRE_PROD"
+    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_ADDRESS_PRE_PROD" #pragma: allowlist secret
   ApiKeyCriKbvPreProd:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_KBV_PRE_PROD"
+    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_KBV_PRE_PROD" #pragma: allowlist secret
   ApiKeyCriFraudPreProd:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_FRAUD_PRE_PROD"
+    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_FRAUD_PRE_PROD" #pragma: allowlist secret
   ApiKeyCriDlPreProd:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_DL_PRE_PROD"
+    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_DL_PRE_PROD" #pragma: allowlist secret
   ApiKeyCriPassportaPreProd:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_PASSPORTA_PRE_PROD"
+    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_PASSPORTA_PRE_PROD" #pragma: allowlist secret
   CodeSigningConfigArn:
     Type: String
     Description: >
@@ -144,24 +144,28 @@ Mappings:
       desiredTaskCount: 1
       environment: dev
       platform: core
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "826978934233": #Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: build
       platform: core-stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "616199614141": #Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: build
       platform: stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "388905755587": #Stubs Prod
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: production
       platform: stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
   SecurityGroups:
     PrefixListIds:
       dynamodb: "pl-b3a742da"
@@ -580,6 +584,21 @@ Resources:
           Secrets:
             - Name: "CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/cri-preprod/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
+            - Name: DT_TENANT
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                  - ':DT_TENANT::'
+            - Name: DT_TENANTTOKEN
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                  - ':DT_TENANTTOKEN::'
+            - Name: DT_CONNECTION_POINT
+              ValueFrom: !Join
+              - ''
+              - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                - ':DT_CONNECTION_POINT::'
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -644,6 +663,19 @@ Resources:
                   - 'ssm:GetParameters'
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
+        - PolicyName: GetDynatraceSecret #pragma: allowlist secret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -678,6 +710,19 @@ Resources:
                   - 'ssm:GetParameters'
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
+        - PolicyName: GetDynatraceSecret #pragma: allowlist secret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
