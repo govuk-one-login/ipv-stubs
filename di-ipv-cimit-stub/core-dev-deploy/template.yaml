@@ -142,6 +142,8 @@ Resources:
         # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
+          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
+          PENDING_MITIGATIONS_TABLE: !Ref PendingMitigationsTable
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -150,6 +152,14 @@ Resources:
           - !GetAtt CimitLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/*
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CimitStubTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PendingMitigationsTable
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
   PostMitigationsFunctionCoreDev01InvokePermission:
@@ -321,6 +331,7 @@ Resources:
           CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
           IS_LOCAL: false
           CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
+          PENDING_MITIGATIONS_TABLE: !Ref PendingMitigationsTable
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -335,6 +346,8 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
         - DynamoDBCrudPolicy:
             TableName: !Ref CimitStubTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PendingMitigationsTable
       AutoPublishAlias: live
       Events:
         PostCis:
@@ -428,6 +441,26 @@ Resources:
           KeyType: "HASH"
         - AttributeName: "contraIndicatorCode"
           KeyType: "RANGE"
+      TimeToLiveSpecification:
+        AttributeName: "ttl"
+        Enabled: true
+      SSESpecification:
+        SSEEnabled: true
+        SSEType: KMS
+        KMSMasterKeyId: !GetAtt DynamoDBKmsKey.Arn
+
+  PendingMitigationsTable:
+    Type: AWS::DynamoDB::Table
+    # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
+    Properties:
+      TableName: !Sub "cimit-stub-pending-mitigations-${Environment}"
+      BillingMode: "PAY_PER_REQUEST"
+      AttributeDefinitions:
+        - AttributeName: "vcJti"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "vcJti"
+          KeyType: "HASH"
       TimeToLiveSpecification:
         AttributeName: "ttl"
         Enabled: true

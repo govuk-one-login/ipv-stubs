@@ -7,13 +7,18 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.di.ipv.core.library.model.UserMitigationRequest;
+import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
+import uk.gov.di.ipv.core.library.service.CimitStubItemService;
+import uk.gov.di.ipv.core.library.service.PendingMitigationService;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
 import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
-import uk.gov.di.ipv.core.stubmanagement.model.UserMitigationRequest;
 import uk.gov.di.ipv.core.stubmanagement.service.UserService;
 
 import java.io.IOException;
@@ -31,7 +36,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class StubManagementHandlerTest {
 
-    @Mock private UserService userService;
+    @Mock private UserService mockUserService;
+    @Mock private PendingMitigationService mockPendingMitigationService;
+    @Mock private CimitStubItemService mockCimitStubItemService;
     @InjectMocks private StubManagementHandler stubManagementHandler;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -53,14 +60,14 @@ public class StubManagementHandlerTest {
 
         APIGatewayProxyRequestEvent event =
                 createTestEvent("POST", "/user/123/cis", userCisRequests);
-        doNothing().when(userService).addUserCis(anyString(), anyList());
+        doNothing().when(mockUserService).addUserCis(anyString(), anyList());
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
         assertTrue(response.getBody().contains("success"));
-        verify(userService, times(1)).addUserCis(anyString(), anyList());
+        verify(mockUserService, times(1)).addUserCis(anyString(), anyList());
     }
 
     @Test
@@ -73,47 +80,55 @@ public class StubManagementHandlerTest {
                         .build();
         APIGatewayProxyRequestEvent event =
                 createTestEvent("PUT", "/user/123/cis", Collections.singletonList(userCisRequest));
-        doNothing().when(userService).updateUserCis(anyString(), anyList());
+        doNothing().when(mockUserService).updateUserCis(anyString(), anyList());
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
         assertTrue(response.getBody().contains("success"));
-        verify(userService).updateUserCis(eq("123"), eq(Collections.singletonList(userCisRequest)));
+        verify(mockUserService)
+                .updateUserCis(eq("123"), eq(Collections.singletonList(userCisRequest)));
     }
 
-    @Test
-    public void shouldAddUserMitigationSuccessWhenValidMitigationRequest() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {"POST", "PUT"})
+    void shouldAddPendingMitigationWhenValidMitigationRequest(String method) throws IOException {
+        when(mockCimitStubItemService.getCiForUserId("123", "456")).thenReturn(new CimitStubItem());
+
         UserMitigationRequest userMitigationRequest =
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
 
         APIGatewayProxyRequestEvent event =
-                createTestEvent("POST", "/user/123/mitigations/456", userMitigationRequest);
-        doNothing().when(userService).addUserMitigation(anyString(), anyString(), any());
+                createTestEvent(method, "/user/123/mitigations/456", userMitigationRequest);
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
         assertTrue(response.getBody().contains("success"));
-        verify(userService).addUserMitigation(eq("123"), eq("456"), eq(userMitigationRequest));
+        verify(mockPendingMitigationService)
+                .persistPendingMitigation(userMitigationRequest, "456", method);
     }
 
-    @Test
-    public void shouldUpdateUserMitigationSuccessWhenValidMitigationRequest() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {"POST", "PUT"})
+    void shouldReturn404IfCiItemNotFoundForMitigationRequest(String method) throws Exception {
+        when(mockCimitStubItemService.getCiForUserId("123", "456")).thenReturn(null);
+
         UserMitigationRequest userMitigationRequest =
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
+
         APIGatewayProxyRequestEvent event =
-                createTestEvent("PUT", "/user/123/mitigations/456", userMitigationRequest);
-        doNothing().when(userService).updateUserMitigation(anyString(), anyString(), any());
+                createTestEvent(method, "/user/123/mitigations/456", userMitigationRequest);
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
-        assertEquals(200, response.getStatusCode());
-        assertTrue(response.getBody().contains("success"));
-        verify(userService).updateUserMitigation(eq("123"), eq("456"), eq(userMitigationRequest));
+        assertEquals(404, response.getStatusCode());
+        assertTrue(response.getBody().contains("not found"));
+        verify(mockPendingMitigationService, times(0))
+                .persistPendingMitigation(userMitigationRequest, "456", method);
     }
 
     @Test
@@ -130,18 +145,20 @@ public class StubManagementHandlerTest {
         APIGatewayProxyRequestEvent event =
                 createTestEvent(
                         "POST", String.format("/user/%s/cis", urlEncodedUserId), userCisRequests);
-        doNothing().when(userService).addUserCis(anyString(), anyList());
+        doNothing().when(mockUserService).addUserCis(anyString(), anyList());
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
         assertTrue(response.getBody().contains("success"));
-        verify(userService, times(1)).addUserCis(anyString(), anyList());
+        verify(mockUserService, times(1)).addUserCis(anyString(), anyList());
     }
 
     @Test
     void mitigationsPatternShouldHandleDefaultUserIdFormat() throws Exception {
+        when(mockCimitStubItemService.getCiForUserId("123", "456")).thenReturn(new CimitStubItem());
+
         String urlEncodedUserId = "urn%3Auuid%3Ac08630f8-330e-43f8-a782-21432a197fc5";
         UserMitigationRequest userMitigationRequest =
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
@@ -151,14 +168,14 @@ public class StubManagementHandlerTest {
                         "POST",
                         String.format("/user/%s/mitigations/456", urlEncodedUserId),
                         userMitigationRequest);
-        doNothing().when(userService).addUserMitigation(anyString(), anyString(), any());
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
         assertTrue(response.getBody().contains("success"));
-        verify(userService).addUserMitigation(eq("123"), eq("456"), eq(userMitigationRequest));
+        verify(mockPendingMitigationService)
+                .persistPendingMitigation(userMitigationRequest, "456", "POST");
     }
 
     @Test
@@ -195,7 +212,7 @@ public class StubManagementHandlerTest {
         APIGatewayProxyRequestEvent event =
                 createTestEvent("POST", "/user/123/cis", Collections.singletonList(userCisRequest));
         doThrow(new BadRequestException("User's CI Code cannot be null in all CIs"))
-                .when(userService)
+                .when(mockUserService)
                 .addUserCis(anyString(), any());
 
         APIGatewayProxyResponseEvent response =
@@ -216,42 +233,8 @@ public class StubManagementHandlerTest {
         APIGatewayProxyRequestEvent event =
                 createTestEvent("PUT", "/user/123/cis", Collections.singletonList(userCisRequest));
         doThrow(new DataNotFoundException("User and ContraIndicator not found."))
-                .when(userService)
+                .when(mockUserService)
                 .updateUserCis(anyString(), any());
-
-        APIGatewayProxyResponseEvent response =
-                stubManagementHandler.handleRequest(event, mock(Context.class));
-
-        assertEquals(404, response.getStatusCode());
-        assertTrue(response.getBody().contains("User and ContraIndicator not found."));
-    }
-
-    @Test
-    public void shouldReturnDataAlreadyExistForUserMitigations() throws IOException {
-        UserMitigationRequest userMitigationRequest =
-                UserMitigationRequest.builder().mitigations(List.of("V01")).build();
-        APIGatewayProxyRequestEvent event =
-                createTestEvent("POST", "/user/123/mitigations/456", userMitigationRequest);
-        doThrow(new BadRequestException("User's CI Code cannot be null in all CIs"))
-                .when(userService)
-                .addUserMitigation(anyString(), anyString(), any());
-
-        APIGatewayProxyResponseEvent response =
-                stubManagementHandler.handleRequest(event, mock(Context.class));
-
-        assertEquals(400, response.getStatusCode());
-        assertTrue(response.getBody().contains("User's CI Code cannot be null in all CIs"));
-    }
-
-    @Test
-    public void shouldReturnDataNotFoundForUserMitigations() throws IOException {
-        UserMitigationRequest userMitigationRequest =
-                UserMitigationRequest.builder().mitigations(List.of("V01")).build();
-        APIGatewayProxyRequestEvent event =
-                createTestEvent("PUT", "/user/123/mitigations/456", userMitigationRequest);
-        doThrow(new DataNotFoundException("User and ContraIndicator not found."))
-                .when(userService)
-                .updateUserMitigation(anyString(), anyString(), any());
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
@@ -273,13 +256,13 @@ public class StubManagementHandlerTest {
     public void shouldReturnSuccessForValidPutRequestWithEmptyContent() throws IOException {
         APIGatewayProxyRequestEvent event =
                 createTestEvent("PUT", "/user/123/cis", Collections.emptyList());
-        doNothing().when(userService).updateUserCis(anyString(), anyList());
+        doNothing().when(mockUserService).updateUserCis(anyString(), anyList());
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
-        verify(userService).updateUserCis(eq("123"), eq(Collections.emptyList()));
+        verify(mockUserService).updateUserCis(eq("123"), eq(Collections.emptyList()));
     }
 
     @Test
@@ -293,13 +276,14 @@ public class StubManagementHandlerTest {
 
         APIGatewayProxyRequestEvent event =
                 createTestEvent("PUT", "/user/123/cis", Collections.singletonList(userCisRequest));
-        doNothing().when(userService).updateUserCis(anyString(), anyList());
+        doNothing().when(mockUserService).updateUserCis(anyString(), anyList());
 
         APIGatewayProxyResponseEvent response =
                 stubManagementHandler.handleRequest(event, mock(Context.class));
 
         assertEquals(200, response.getStatusCode());
-        verify(userService).updateUserCis(eq("123"), eq(Collections.singletonList(userCisRequest)));
+        verify(mockUserService)
+                .updateUserCis(eq("123"), eq(Collections.singletonList(userCisRequest)));
     }
 
     @Test
@@ -313,7 +297,7 @@ public class StubManagementHandlerTest {
         APIGatewayProxyRequestEvent event =
                 createTestEvent("POST", "/user/123/cis", Collections.singletonList(userCisRequest));
         doThrow(new RuntimeException("Unknown exception occurred."))
-                .when(userService)
+                .when(mockUserService)
                 .addUserCis(anyString(), anyList());
 
         APIGatewayProxyResponseEvent response =

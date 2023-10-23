@@ -8,12 +8,14 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.gov.di.ipv.core.library.model.UserMitigationRequest;
+import uk.gov.di.ipv.core.library.service.CimitStubItemService;
+import uk.gov.di.ipv.core.library.service.ConfigService;
+import uk.gov.di.ipv.core.library.service.PendingMitigationService;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
 import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
-import uk.gov.di.ipv.core.stubmanagement.model.UserMitigationRequest;
 import uk.gov.di.ipv.core.stubmanagement.service.UserService;
-import uk.gov.di.ipv.core.stubmanagement.service.impl.UserServiceImpl;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -27,20 +29,32 @@ public class StubManagementHandler
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final UserService userService;
+    private final PendingMitigationService pendingMitigationService;
+    private final CimitStubItemService cimitStubItemService;
 
     private static final Pattern CIS_PATTERN = Pattern.compile("^/user/[-a-zA-Z0-9_:]+/cis$");
     private static final Pattern CIS_MITIGATIONS =
             Pattern.compile("^/user/[-a-zA-Z0-9_:]+/mitigations/[-a-zA-Z0-9_]+$");
+    private static final List<String> SUPPORTED_MITIGATION_METHODS =
+            List.of(HttpMethod.POST.toString(), HttpMethod.PUT.toString());
 
     private static final String USER_ID_PATH_PARAMS = "userId";
     private static final String CI_PATH_PARAMS = "ci";
 
     public StubManagementHandler() {
-        userService = new UserServiceImpl();
+        this.userService = new UserService();
+        ConfigService configService = new ConfigService();
+        this.pendingMitigationService = new PendingMitigationService(configService);
+        this.cimitStubItemService = new CimitStubItemService(configService);
     }
 
-    public StubManagementHandler(UserService userService) {
+    public StubManagementHandler(
+            UserService userService,
+            PendingMitigationService pendingMitigationService,
+            CimitStubItemService cimitStubItemService) {
         this.userService = userService;
+        this.pendingMitigationService = pendingMitigationService;
+        this.cimitStubItemService = cimitStubItemService;
     }
 
     @Override
@@ -73,10 +87,12 @@ public class StubManagementHandler
                 String ci = pathParameters.get(CI_PATH_PARAMS);
                 UserMitigationRequest userMitigationRequest =
                         objectMapper.readValue(event.getBody(), UserMitigationRequest.class);
-                if (httpMethod.equals(HttpMethod.POST.toString())) {
-                    userService.addUserMitigation(userId, ci, userMitigationRequest);
-                } else if (httpMethod.equals(HttpMethod.PUT.toString())) {
-                    userService.updateUserMitigation(userId, ci, userMitigationRequest);
+                if (SUPPORTED_MITIGATION_METHODS.contains(httpMethod)) {
+                    if (cimitStubItemService.getCiForUserId(userId, ci) == null) {
+                        throw new DataNotFoundException("User and ContraIndicator not found.");
+                    }
+                    pendingMitigationService.persistPendingMitigation(
+                            userMitigationRequest, ci, httpMethod);
                 } else {
                     return buildErrorResponse("Http Method is not supported.", 400);
                 }

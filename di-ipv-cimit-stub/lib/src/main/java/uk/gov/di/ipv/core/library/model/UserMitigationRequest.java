@@ -1,4 +1,4 @@
-package uk.gov.di.ipv.core.stubmanagement.model;
+package uk.gov.di.ipv.core.library.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -16,4 +16,6 @@ public class UserMitigationRequest {
 
     @JsonProperty("mitigations")
     private List<String> mitigations;
+
+    private String vcJti;
 }
