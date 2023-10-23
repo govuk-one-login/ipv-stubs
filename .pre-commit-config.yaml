@@ -2,7 +2,7 @@
 default_stages: [commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: detect-private-key
       - id: detect-aws-credentials
@@ -39,12 +39,12 @@ repos:
         args: ['--verbose']
         verbose: true
   - repo: https://github.com/aws-cloudformation/cfn-python-lint
-    rev: v0.79.11
+    rev: v0.82.2
     hooks:
       - id: cfn-python-lint
         files: ^(?!\..*).*/template\.(json|yml|yaml)$
   - repo: https://github.com/bridgecrewio/checkov.git
-    rev: '2.4.39'
+    rev: '2.5.18'
     hooks:
       - id: checkov
         args: ['--framework', 'cloudformation', '--quiet']
