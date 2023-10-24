@@ -631,6 +631,9 @@ Resources:
               - Effect: Allow #pragma: allowlist secret
                 Action: secretsmanager:GetSecretValue #pragma: allowlist secret
                 Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
               - Effect: Allow
                 Action: kms:Decrypt
                 Resource: arn:aws:kms:eu-west-2:216552277552:key/*
@@ -670,6 +673,9 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
                 Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
               - Effect: Allow
                 Action: kms:Decrypt
