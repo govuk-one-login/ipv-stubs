@@ -42,9 +42,8 @@ Conditions:
     - !Or
       - !Equals [ !Ref Environment, "build"]
       - !Equals [ !Ref Environment, "production"]
-  IsCoreDev: !Or
-    - !Equals [ !Ref AWS::AccountId, "130355686670"]
-    - !Equals [ !Ref AWS::AccountId, "175872367215"]
+  IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
+  IsDev02: !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsProduction: !Equals [ !Ref Environment, "production" ]
   IsNonProd: !Not
     - !Or
@@ -510,18 +509,36 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
+        - IsDev01
+        - !Sub "cimit-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If
+            - IsNonProd
+            - !Sub "cimit.${Environment}.stubs.account.gov.uk"
+            - cimit.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
-            - IsCoreDev
-            - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
-            - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
+            - IsDev01
+            - !Sub "cimit-${Environment}.01.core.dev.stubs.account.gov.uk"
+            - !If
+              - IsDev02
+              - !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk"
+              - !If
+                - IsNonProd
+                - !Sub "cimit.${Environment}.stubs.account.gov.uk"
+                - cimit.stubs.account.gov.uk
           HostedZoneId: !If
-            - IsCoreDev
-            - !ImportValue DevPublicHostedZoneId
-            - !If [ IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId ]
+            - IsDev01
+            - !ImportValue Dev01StubsHostedZoneId
+            - !If
+              - IsDev02
+              - !ImportValue Dev02StubsHostedZoneId
+              - !If
+                - IsNonProd
+                - !ImportValue BuildPublicHostedZoneId
+                - !ImportValue RootPublicHostedZoneId
       ValidationMethod: DNS
 
     # api domain entries / mapping
@@ -529,9 +546,15 @@ Resources:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
+        - IsDev01
+        - !Sub "cimit-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If
+            - IsNonProd
+            - !Sub "cimit.${Environment}.stubs.account.gov.uk"
+            - cimit.stubs.account.gov.uk
       RegionalCertificateArn: !Ref CimitStubSSLCert
       EndpointConfiguration:
         Types:
@@ -542,9 +565,15 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
+        - IsDev01
+        - !Sub "cimit-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If
+            - IsNonProd
+            - !Sub "cimit.${Environment}.stubs.account.gov.uk"
+            - cimit.stubs.account.gov.uk
       RestApiId: !Ref RestApiGateway
       Stage: !Ref RestApiGateway.Stage
     DependsOn:
@@ -557,13 +586,25 @@ Resources:
     Properties:
       Type: A
       Name: !If
-        - IsCoreDev
-        - !Sub "cimit-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [ IsNonProd, !Sub "cimit.${Environment}.stubs.account.gov.uk", cimit.stubs.account.gov.uk ]
+        - IsDev01
+        - !Sub "cimit-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If
+          - IsDev02
+          - !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk"
+          - !If
+            - IsNonProd
+            - !Sub "cimit.${Environment}.stubs.account.gov.uk"
+            - cimit.stubs.account.gov.uk
       HostedZoneId: !If
-        - IsCoreDev
-        - !ImportValue DevPublicHostedZoneId
-        - !If [ IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId ]
+        - IsDev01
+        - !ImportValue Dev01StubsHostedZoneId
+        - !If
+          - IsDev02
+          - !ImportValue Dev02StubsHostedZoneId
+          - !If
+            - IsNonProd
+            - !ImportValue BuildPublicHostedZoneId
+            - !ImportValue RootPublicHostedZoneId
       AliasTarget:
         DNSName: !GetAtt CimitStubRestApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CimitStubRestApiDomain.RegionalHostedZoneId
