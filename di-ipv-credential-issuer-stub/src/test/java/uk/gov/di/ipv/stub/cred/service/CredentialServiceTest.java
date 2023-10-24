@@ -2,13 +2,9 @@ package uk.gov.di.ipv.stub.cred.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.gov.di.ipv.stub.cred.domain.Credential;
-
-import java.time.Instant;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
 
 public class CredentialServiceTest {
     private CredentialService credentialService;
@@ -20,18 +16,9 @@ public class CredentialServiceTest {
 
     @Test
     void shouldPersistAndGetPayload() {
-        Credential credential =
-                new Credential(
-                        Map.of("an", "attribute"),
-                        Map.of("a", "gpg45Score"),
-                        "user-id",
-                        "client-id",
-                        Instant.now().getEpochSecond());
+        credentialService.persist(DCMAW_VC, "1234");
 
-        credentialService.persist(credential, "1234");
-
-        Credential resultantCredential = credentialService.getCredential("1234");
-        assertNotNull(resultantCredential);
-        assertEquals(credential, resultantCredential);
+        String resultantCredential = credentialService.getCredentialSignedJwt("1234");
+        assertEquals(DCMAW_VC, resultantCredential);
     }
 }

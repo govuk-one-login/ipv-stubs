@@ -79,6 +79,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CRI_MITIGATION_ENABLED_PARAM;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 
@@ -106,6 +107,7 @@ class AuthorizeHandlerTest {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Mock private HttpClient httpClient;
+    @Mock private SignedJWT mockSignedJwt;
 
     @SystemStub
     private EnvironmentVariables environmentVariables =
@@ -315,6 +317,7 @@ class AuthorizeHandlerTest {
             throws Exception {
         QueryParamsMap queryParamsMap = toQueryParamsMap(validGenerateResponseQueryParams());
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+        when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
         String result =
                 (String) authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
@@ -349,13 +352,13 @@ class AuthorizeHandlerTest {
     void generateResponseShouldPersistSharedAttributesCombinedWithJsonInput() throws Exception {
         QueryParamsMap queryParamsMap = toQueryParamsMap(validGenerateResponseQueryParams());
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+        when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
         authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
 
         ArgumentCaptor<Credential> persistedCredential = ArgumentCaptor.forClass(Credential.class);
 
-        verify(mockCredentialService)
-                .persist(persistedCredential.capture(), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
+        verify(mockVcGenerator).generate(persistedCredential.capture());
         Map<String, Object> persistedAttributes = persistedCredential.getValue().getAttributes();
         Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
         assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
@@ -366,6 +369,9 @@ class AuthorizeHandlerTest {
         assertNotNull(persistedEvidence.get("strengthScore"));
         assertNotNull(persistedEvidence.get("validityScore"));
         assertNotNull(persistedCredential.getValue().getExp());
+
+        verify(mockCredentialService)
+                .persist(eq(mockSignedJwt.serialize()), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
     }
 
     @Test
@@ -375,13 +381,13 @@ class AuthorizeHandlerTest {
         queryParams.remove(CredentialIssuerConfig.EXPIRY_FLAG);
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+        when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
         authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
 
         ArgumentCaptor<Credential> persistedCredential = ArgumentCaptor.forClass(Credential.class);
 
-        verify(mockCredentialService)
-                .persist(persistedCredential.capture(), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
+        verify(mockVcGenerator).generate(persistedCredential.capture());
         Map<String, Object> persistedAttributes = persistedCredential.getValue().getAttributes();
         Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
         assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
@@ -392,6 +398,9 @@ class AuthorizeHandlerTest {
         assertNotNull(persistedEvidence.get("strengthScore"));
         assertNotNull(persistedEvidence.get("validityScore"));
         assertNull(persistedCredential.getValue().getExp());
+
+        verify(mockCredentialService)
+                .persist(eq(mockSignedJwt.serialize()), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
     }
 
     @Test
@@ -413,15 +422,26 @@ class AuthorizeHandlerTest {
         when(httpResponse.statusCode()).thenReturn(200);
         when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                 .thenReturn(httpResponse);
+        when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
+        when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
         authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
 
-        verify(httpClient, times(1)).send(any(), any());
+        ArgumentCaptor<HttpRequest> requestArgumentCaptor =
+                ArgumentCaptor.forClass(HttpRequest.class);
+        verify(httpClient, times(1)).send(requestArgumentCaptor.capture(), any());
+        // This is a poor proxy for checking the content of the request. We can't access the content
+        // directly.
+        // The content is:
+        // '{"mitigations":["M01"],"vcJti","urn:uuid:e937e812-dafe-42e4-a094-6c9d41fee50c\n"}'
+        // If this changes, this test will fail.
+        assertEquals(79, requestArgumentCaptor.getValue().bodyPublisher().get().contentLength());
 
         ArgumentCaptor<Credential> persistedCredential = ArgumentCaptor.forClass(Credential.class);
 
+        verify(mockVcGenerator).generate(persistedCredential.capture());
         verify(mockCredentialService)
-                .persist(persistedCredential.capture(), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
+                .persist(eq(mockSignedJwt.serialize()), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
 
         assertNotNull(persistedCredential.getValue().getExp());
     }
@@ -441,6 +461,8 @@ class AuthorizeHandlerTest {
                 CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM, new String[] {"api:key"});
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+        when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
+        when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
         HttpResponse httpResponse = mock(HttpResponse.class);
         when(httpResponse.statusCode()).thenReturn(403);
