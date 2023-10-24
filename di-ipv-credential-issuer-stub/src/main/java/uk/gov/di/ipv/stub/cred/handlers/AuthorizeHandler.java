@@ -19,7 +19,6 @@ import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
-import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
@@ -338,11 +337,6 @@ public class AuthorizeHandler {
                         gpgMap.put(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, ciList);
                     }
 
-                    if (CredentialIssuerConfig.isEnabled(
-                            CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
-                        processMitigatedCIs(userId, queryParamsMap);
-                    }
-
                     String expFlag = queryParamsMap.value(CredentialIssuerConfig.EXPIRY_FLAG);
                     int expHours =
                             Integer.parseInt(
@@ -374,9 +368,21 @@ public class AuthorizeHandler {
                         }
                     }
 
-                    Credential credential =
-                            new Credential(
-                                    credentialAttributesMap, gpgMap, userId, clientIdValue, exp);
+                    String signedVcJwt =
+                            verifiableCredentialGenerator
+                                    .generate(
+                                            new Credential(
+                                                    credentialAttributesMap,
+                                                    gpgMap,
+                                                    userId,
+                                                    clientIdValue,
+                                                    exp))
+                                    .serialize();
+
+                    if (CredentialIssuerConfig.isEnabled(
+                            CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
+                        processMitigatedCIs(userId, queryParamsMap, signedVcJwt);
+                    }
 
                     boolean F2F_SEND_VC_QUEUE =
                             Objects.equals(
@@ -389,8 +395,6 @@ public class AuthorizeHandler {
                                     "checked");
                     if (F2F_SEND_VC_QUEUE && !F2F_SEND_ERROR_QUEUE) {
                         String queueName = queryParamsMap.value(F2F_STUB_QUEUE_NAME_FIELD);
-                        String signedVcJwt =
-                                verifiableCredentialGenerator.generate(credential).serialize();
                         HTTPRequest httpRequest =
                                 new HTTPRequest(
                                         HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
@@ -402,7 +406,7 @@ public class AuthorizeHandler {
                                         10);
                         String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
                         httpRequest.setQuery(body);
-                        HTTPResponse httpResponse = httpRequest.send();
+                        httpRequest.send();
                     }
 
                     if (F2F_SEND_ERROR_QUEUE) {
@@ -422,7 +426,7 @@ public class AuthorizeHandler {
                                         10);
                         String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
                         httpRequest.setQuery(body);
-                        HTTPResponse httpResponse = httpRequest.send();
+                        httpRequest.send();
                     }
 
                     AuthorizationSuccessResponse successResponse =
@@ -430,7 +434,7 @@ public class AuthorizeHandler {
                     persistData(
                             queryParamsMap,
                             successResponse.getAuthorizationCode(),
-                            credential,
+                            signedVcJwt,
                             redirectUri);
 
                     response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
@@ -443,7 +447,8 @@ public class AuthorizeHandler {
                 return null;
             };
 
-    private void processMitigatedCIs(String userId, QueryParamsMap queryParamsMap)
+    private void processMitigatedCIs(
+            String userId, QueryParamsMap queryParamsMap, String signedVcJwt)
             throws CriStubException {
         String mitigatedCIsString =
                 queryParamsMap
@@ -459,6 +464,13 @@ public class AuthorizeHandler {
             List<String> mitigatedCiList = Stream.of(mitigatedCIsString.split(",", -1)).toList();
             String postUrlTemplate = "/user/%s/mitigations/%s";
             for (String ciCode : mitigatedCiList) {
+                String jwtId;
+                try {
+                    jwtId = SignedJWT.parse(signedVcJwt).getJWTClaimsSet().getJWTID();
+                } catch (ParseException e) {
+                    throw new CriStubException("Unable to parse signed JWT", e);
+                }
+
                 String encodedUserId;
                 try {
                     encodedUserId = URLEncoder.encode(userId, StandardCharsets.UTF_8.toString());
@@ -477,8 +489,11 @@ public class AuthorizeHandler {
                                     .header("x-api-key", stubManagementApiKey)
                                     .POST(
                                             HttpRequest.BodyPublishers.ofString(
-                                                    "{\"mitigations\": [\"M01\"]}"))
+                                                    String.format(
+                                                            "{\"mitigations\":[\"M01\"],\"vcJti\":\"%s\"}",
+                                                            jwtId)))
                                     .build();
+
                     HttpResponse response =
                             httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                     int responseStatusCode = response.statusCode();
@@ -530,11 +545,11 @@ public class AuthorizeHandler {
     private void persistData(
             QueryParamsMap queryParamsMap,
             AuthorizationCode authorizationCode,
-            Credential credential,
+            String signedVcJwt,
             String redirectUri) {
         String resourceId = queryParamsMap.value(RequestParamConstants.RESOURCE_ID);
         this.authCodeService.persist(authorizationCode, resourceId, redirectUri);
-        this.credentialService.persist(credential, resourceId);
+        this.credentialService.persist(signedVcJwt, resourceId);
         this.requestedErrorResponseService.persist(authorizationCode.getValue(), queryParamsMap);
     }
 
