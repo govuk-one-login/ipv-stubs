@@ -55,7 +55,7 @@ public class UserService {
                         cimitStubItem
                                 .get()
                                 .setIssuanceDate(getIssuanceDate(user.getIssuanceDate()));
-                        cimitStubItemService.updateCimitStub(cimitStubItem.get());
+                        cimitStubItemService.updateCimitStubItem(cimitStubItem.get());
                     }
                 });
         LOGGER.info("Inserted User CI data to the Cimit Stub DynamoDB Table.");

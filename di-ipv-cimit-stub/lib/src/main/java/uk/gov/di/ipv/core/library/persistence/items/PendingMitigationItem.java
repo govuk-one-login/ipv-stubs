@@ -21,7 +21,7 @@ public class PendingMitigationItem implements DynamodbItem {
         return this.vcJti;
     }
 
-    public static PendingMitigationItem fromMitigationRequestAndVerb(
+    public static PendingMitigationItem fromMitigationRequestAndMethod(
             UserMitigationRequest request, String ci, String method) {
         PendingMitigationItem item = new PendingMitigationItem();
         item.setVcJti(request.getVcJti());

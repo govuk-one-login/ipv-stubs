@@ -58,7 +58,7 @@ public class CimitStubItemService {
         return cimitStubItem;
     }
 
-    public void updateCimitStub(CimitStubItem cimitStubItem) {
+    public void updateCimitStubItem(CimitStubItem cimitStubItem) {
         cimitStubItem.setTtl(
                 Instant.now()
                         .plusSeconds(Long.parseLong(configService.getSsmParameter(CIMIT_STUB_TTL)))
