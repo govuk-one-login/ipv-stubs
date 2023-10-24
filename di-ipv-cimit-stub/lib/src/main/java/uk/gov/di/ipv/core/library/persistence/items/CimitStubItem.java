@@ -10,6 +10,8 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @DynamoDbBean
 @AllArgsConstructor
@@ -31,5 +33,20 @@ public class CimitStubItem implements DynamodbItem {
     @DynamoDbSortKey
     public String getContraIndicatorCode() {
         return contraIndicatorCode;
+    }
+
+    public void addMitigations(List<String> newMitigations) {
+        if (this.mitigations == null) {
+            this.mitigations = newMitigations;
+            return;
+        }
+        if (newMitigations == null) {
+            return;
+        }
+        this.mitigations =
+                Stream.concat(this.mitigations.stream(), newMitigations.stream())
+                        .sorted()
+                        .distinct()
+                        .collect(Collectors.toList());
     }
 }
