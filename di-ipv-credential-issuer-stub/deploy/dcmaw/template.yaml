@@ -91,30 +91,35 @@ Mappings:
       desiredTaskCount: 1
       environment: dev
       platform: core
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "175872367215": # New Core Development
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: dev
       platform: core
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "826978934233": #Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: build
       platform: core-stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "616199614141": #Stubs Build
       fargateCPUsize: "512"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: build
       platform: stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "388905755587": #Stubs Prod
       fargateCPUsize: "4096"
       fargateRAMsize: "8192"
       desiredTaskCount: 1
       environment: production
       platform: stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
   SecurityGroups:
     PrefixListIds:
       dynamodb: "pl-b3a742da"
@@ -512,6 +517,21 @@ Resources:
           Secrets:
             - Name: "VC_SIGNING_KEY"
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/dcmaw/env/VC_SIGNING_KEY"
+            - Name: DT_TENANT
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                  - ':DT_TENANT::'
+            - Name: DT_TENANTTOKEN
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                  - ':DT_TENANTTOKEN::'
+            - Name: DT_CONNECTION_POINT
+              ValueFrom: !Join
+              - ''
+              - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                - ':DT_CONNECTION_POINT::'
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -566,8 +586,8 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/cri/*"
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/credential-issuer/*"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/cri/*"  #pragma: allowlist secret
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/credential-issuer/*"  #pragma: allowlist secret
         - PolicyName: CriStubGetSSMParams
           PolicyDocument:
             Version: "2012-10-17"
@@ -578,6 +598,19 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/cri/*"
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/*"
+        - PolicyName: GetDynatraceSecret #pragma: allowlist secret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -602,8 +635,8 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/cri/*"
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/credential-issuer/*"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/cri/*"  #pragma: allowlist secret
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/credential-issuer/*" #pragma: allowlist secret
         - PolicyName: CriStubGetSSMParams
           PolicyDocument:
             Version: "2012-10-17"
@@ -614,6 +647,19 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/cri/*"
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/*"
+        - PolicyName: GetDynatraceSecret #pragma: allowlist secret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
