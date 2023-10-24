@@ -1,20 +1,15 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
-import com.nimbusds.jose.JOSEException;
 import org.eclipse.jetty.http.HttpHeader;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
 import javax.servlet.http.HttpServletResponse;
-
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 
 public class CredentialHandler {
 
@@ -46,16 +41,7 @@ public class CredentialHandler {
                 }
 
                 String resourceId = tokenService.getPayload(accessTokenString);
-                Credential credential = credentialService.getCredential(resourceId);
-
-                String verifiableCredential;
-                try {
-                    verifiableCredential =
-                            verifiableCredentialGenerator.generate(credential).serialize();
-                } catch (NoSuchAlgorithmException | InvalidKeySpecException | JOSEException e) {
-                    response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    return String.format("Error: Unable to generate VC - '%s'", e.getMessage());
-                }
+                String verifiableCredential = credentialService.getCredentialSignedJwt(resourceId);
 
                 tokenService.revoke(accessTokenString);
 

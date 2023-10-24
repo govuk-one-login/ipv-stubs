@@ -14,7 +14,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import spark.Request;
 import spark.Response;
-import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
@@ -27,11 +26,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
 
 @ExtendWith(MockitoExtension.class)
 public class F2FHandlerTest {
     private static final String JSON_RESPONSE_TYPE = "application/json;charset=UTF-8";
-    private static final String SUBJECT = "test-subject";
+    private static final String SUBJECT = "urn:uuid:5d6d6833-8512-4e37-b5ea-be7de77948dd";
 
     private static final ValidationResult INVALID_REQUEST =
             new ValidationResult(false, OAuth2Error.INVALID_REQUEST);
@@ -44,12 +44,12 @@ public class F2FHandlerTest {
     @Mock private CredentialService mockCredentialService;
     private F2FHandler resourceHandler;
     private AccessToken accessToken;
-    private Credential credential;
+    private String credential;
 
     @BeforeEach
     void setup() {
+        credential = DCMAW_VC;
         accessToken = new BearerAccessToken();
-        credential = new Credential(null, null, SUBJECT, "test-client", null);
         resourceHandler = new F2FHandler(mockCredentialService, mockTokenService);
     }
 
@@ -60,7 +60,8 @@ public class F2FHandlerTest {
         when(mockTokenService.validateAccessToken(Mockito.anyString()))
                 .thenReturn(ValidationResult.createValidResult());
         when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
-        when(mockCredentialService.getCredential(Mockito.anyString())).thenReturn(credential);
+        when(mockCredentialService.getCredentialSignedJwt(Mockito.anyString()))
+                .thenReturn(credential);
 
         JSONObject jsonResponse =
                 JSONObjectUtils.parse(

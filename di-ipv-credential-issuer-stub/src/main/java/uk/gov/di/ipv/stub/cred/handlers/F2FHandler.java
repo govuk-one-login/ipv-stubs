@@ -1,12 +1,12 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.id.Subject;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import org.eclipse.jetty.http.HttpHeader;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
@@ -36,14 +36,16 @@ public class F2FHandler {
                 }
 
                 String resourceId = tokenService.getPayload(accessTokenString);
-                Credential credential = credentialService.getCredential(resourceId);
+                String credentialSignedJwt = credentialService.getCredentialSignedJwt(resourceId);
+                String subject =
+                        SignedJWT.parse(credentialSignedJwt).getJWTClaimsSet().getSubject();
 
                 tokenService.revoke(accessTokenString);
 
                 response.type(JSON_RESPONSE_TYPE);
                 response.status(HttpServletResponse.SC_ACCEPTED);
 
-                var userInfo = new UserInfo(new Subject(credential.getUserId()));
+                var userInfo = new UserInfo(new Subject(subject));
                 userInfo.setClaim("https://vocab.account.gov.uk/v1/credentialStatus", "pending");
 
                 return userInfo.toJSONString();

@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
@@ -69,17 +68,8 @@ public class DocAppCredentialHandler {
                             .toJSONString();
                 }
 
-                String verifiableCredential;
-                try {
-                    String resourceId = tokenService.getPayload(accessTokenHeaderValue);
-                    Credential credential = credentialService.getCredential(resourceId);
-                    verifiableCredential =
-                            verifiableCredentialGenerator.generate(credential).serialize();
-                } catch (Exception e) {
-                    LOGGER.error("Exception: ", e);
-                    response.status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    return String.format("Error: Unable to generate VC - '%s'", e.getMessage());
-                }
+                String resourceId = tokenService.getPayload(accessTokenHeaderValue);
+                String verifiableCredential = credentialService.getCredentialSignedJwt(resourceId);
 
                 tokenService.revoke(accessTokenHeaderValue);
 
