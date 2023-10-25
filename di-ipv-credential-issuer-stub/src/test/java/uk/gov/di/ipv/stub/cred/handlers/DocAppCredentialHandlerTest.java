@@ -1,7 +1,5 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
@@ -25,15 +23,12 @@ import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 import javax.servlet.http.HttpServletResponse;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.startsWithIgnoringCase;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -52,7 +47,6 @@ public class DocAppCredentialHandlerTest {
     @Mock private TokenService mockTokenService;
     @Mock private VerifiableCredentialGenerator mockVerifiableCredentialGenerator;
     @Mock private RequestedErrorResponseService mockRequestedErrorResponseService;
-    @Mock private SignedJWT mockSignedJwt;
     private DocAppCredentialHandler resourceHandler;
     private AccessToken accessToken;
 
@@ -70,12 +64,12 @@ public class DocAppCredentialHandlerTest {
     @Test
     public void shouldReturn201AndUserInfoWhenValidRequestReceived() throws Exception {
         when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
-                .thenReturn(UUID.randomUUID().toString());
+                .thenReturn("aResourceId");
         when(mockTokenService.validateAccessToken(Mockito.anyString()))
                 .thenReturn(ValidationResult.createValidResult());
         when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
-        when(mockSignedJwt.serialize()).thenReturn("A.VERIFIABLE.CREDENTIAL");
-        when(mockVerifiableCredentialGenerator.generate(any())).thenReturn(mockSignedJwt);
+        when(mockCredentialService.getCredentialSignedJwt("aResourceId"))
+                .thenReturn("A.VERIFIABLE.CREDENTIAL");
 
         JSONObject jsonResponse =
                 JSONObjectUtils.parse(
@@ -131,20 +125,5 @@ public class DocAppCredentialHandlerTest {
 
         assertEquals("Client authentication failed", result);
         verify(mockResponse).status(HttpServletResponse.SC_UNAUTHORIZED);
-    }
-
-    @Test
-    void shouldReturn500WhenErrorGeneratingVerifiableCredential() throws Exception {
-        when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
-                .thenReturn(UUID.randomUUID().toString());
-        when(mockTokenService.validateAccessToken(Mockito.anyString()))
-                .thenReturn(ValidationResult.createValidResult());
-        when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
-        when(mockVerifiableCredentialGenerator.generate(any())).thenThrow(JOSEException.class);
-
-        String response = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
-
-        assertTrue(response.contains("Error: Unable to generate VC -"));
-        verify(mockResponse).status(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 }
