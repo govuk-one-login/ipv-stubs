@@ -17,14 +17,18 @@ RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser
 RUN mkdir /app
 RUN apt-get update && apt-get install -y curl
 COPY --from=build \
-	/home/gradle/src/build/distributions/src.tar \
-	/app/
+    /home/gradle/src/build/distributions/src.tar \
+    /app/
+
+# Add in dynatrace layer
+COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules-musl:nodejs / /
+ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
 
 WORKDIR /app
 ADD config config
 
 RUN tar -xvf src.tar \
-	&& rm src.tar
+    && rm src.tar
 
 RUN chown -R appuser:appgroup /app/
 USER appuser

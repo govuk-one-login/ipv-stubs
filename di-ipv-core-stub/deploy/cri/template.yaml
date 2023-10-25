@@ -215,6 +215,7 @@ Mappings:
       environment: dev
       platform: core
       dnsZoneId: "Z10093761FBZNR80Q938M"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "175872367215": # Core New Development Account
       fargateCPUsize: "256"
       fargateRAMsize: "512"
@@ -222,6 +223,7 @@ Mappings:
       environment: dev
       platform: core
       dnsZoneId: "Z10093761FBZNR80Q938M"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "826978934233": # Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "512"
@@ -229,6 +231,7 @@ Mappings:
       environment: build
       platform: core-stubs
       dnsZoneId: "NOT-NEEDED"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "616199614141": # Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "512"
@@ -236,6 +239,7 @@ Mappings:
       environment: build
       platform: stubs
       dnsZoneId: "NOT-NEEDED"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "388905755587": # Stubs Prod
       fargateCPUsize: "4096"
       fargateRAMsize: "8192"
@@ -243,6 +247,7 @@ Mappings:
       environment: production
       platform: stubs
       dnsZoneId: "NOT-NEEDED"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
   SecurityGroups:
     PrefixListIds:
       dynamodb: "pl-b3a742da"
@@ -691,6 +696,21 @@ Resources:
           Secrets:
             - Name: "CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/cri/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
+            - Name: DT_TENANT
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                  - ':DT_TENANT::'
+            - Name: DT_TENANTTOKEN
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                  - ':DT_TENANTTOKEN::'
+            - Name: DT_CONNECTION_POINT
+              ValueFrom: !Join
+              - ''
+              - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                - ':DT_CONNECTION_POINT::'
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -745,7 +765,7 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*" #pragma: allowlist secret
         - PolicyName: CoreStubGetSSMParams
           PolicyDocument:
             Version: "2012-10-17"
@@ -755,6 +775,19 @@ Resources:
                   - 'ssm:GetParameters'
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
+        - PolicyName: GetDynatraceSecret #pragma: allowlist secret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -779,7 +812,7 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret -- how can this be a secret ?
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*" #pragma: allowlist secret
         - PolicyName: CoreStubGetSSMParams
           PolicyDocument:
             Version: "2012-10-17"
@@ -789,6 +822,19 @@ Resources:
                   - 'ssm:GetParameters'
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
+        - PolicyName: GetDynatraceSecret #pragma: allowlist secret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
