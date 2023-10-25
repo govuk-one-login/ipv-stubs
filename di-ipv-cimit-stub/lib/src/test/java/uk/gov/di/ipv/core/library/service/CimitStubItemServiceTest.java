@@ -84,7 +84,7 @@ class CimitStubItemServiceTest {
                         .issuanceDate(Instant.now())
                         .build();
         when(mockConfigService.getSsmParameter(CIMIT_STUB_TTL)).thenReturn(DB_TTL);
-        classToTest.updateCimitStub(cimitStubItem);
+        classToTest.updateCimitStubItem(cimitStubItem);
         verify(mockDataStore, times(1)).update(any());
     }
 

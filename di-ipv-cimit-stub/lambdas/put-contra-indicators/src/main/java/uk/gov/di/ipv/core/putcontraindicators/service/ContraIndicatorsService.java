@@ -165,7 +165,7 @@ public class ContraIndicatorsService {
                                 Collections.emptyList());
                     } else {
                         dbCimitStubItem.get().setIssuanceDate(cimitStubItem.getIssuanceDate());
-                        cimitStubItemService.updateCimitStub(dbCimitStubItem.get());
+                        cimitStubItemService.updateCimitStubItem(dbCimitStubItem.get());
                     }
                 });
         LOGGER.info("Inserted User CI data to the Cimit Stub DynamoDB Table.");

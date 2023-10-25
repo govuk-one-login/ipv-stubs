@@ -36,6 +36,10 @@ public class CimitStubItemService {
         return dataStore.getItems(userId);
     }
 
+    public CimitStubItem getCiForUserId(String userId, String ci) {
+        return dataStore.getItem(userId, ci.toUpperCase());
+    }
+
     public CimitStubItem persistCimitStub(
             String userId,
             String contraIndicatorCode,
@@ -54,7 +58,7 @@ public class CimitStubItemService {
         return cimitStubItem;
     }
 
-    public void updateCimitStub(CimitStubItem cimitStubItem) {
+    public void updateCimitStubItem(CimitStubItem cimitStubItem) {
         cimitStubItem.setTtl(
                 Instant.now()
                         .plusSeconds(Long.parseLong(configService.getSsmParameter(CIMIT_STUB_TTL)))
