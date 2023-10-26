@@ -1,5 +1,5 @@
 FROM openjdk:17-jdk-slim AS build
-COPY . /home/gradle/src
+COPY ../ /home/gradle/src
 WORKDIR /home/gradle/src
 RUN ./gradlew build --no-daemon
 
