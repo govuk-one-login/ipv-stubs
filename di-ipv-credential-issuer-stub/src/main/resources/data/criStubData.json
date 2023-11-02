@@ -1274,6 +1274,72 @@
       }
     },
     {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Saul Goodman (Valid BRP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Saul",
+                "type": "GivenName"
+              },
+              {
+                "value": "Goodman",
+                "type": "GivenName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1995-08-16"
+          }
+        ],
+        "residencePermit": [
+          {
+            "icaoIssuerCode": "UTO",
+            "documentType": "CR",
+            "documentNumber": "AX66K69P2",
+            "expiryDate": "2030-07-13"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Saul Goodman (Valid EEA Card)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Saul",
+                "type": "GivenName"
+              },
+              {
+                "value": "Goodman",
+                "type": "GivenName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1995-08-16"
+          }
+        ],
+        "idCard": [
+          {
+            "icaoIssuerCode": "NLD",
+            "documentNumber": "SPEC12031",
+            "expiryDate": "2031-08-02",
+            "issueDate": "2021-08-02"
+          }
+        ]
+      }
+    },
+    {
       "criType": "DOC Checking App (Stub)",
       "label": "Kenneth Decerqueira (Valid Experian) Passport",
       "payload": {
