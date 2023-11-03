@@ -81,7 +81,7 @@ public class TokenHandler {
                     try {
                         clientJwtVerifier.authenticateClient(requestParams);
                     } catch (ClientAuthenticationException e) {
-                        LOGGER.error("Failed client JWT authentication: %s", e);
+                        LOGGER.error("Failed client JWT authentication: {}", e.getMessage());
                         TokenErrorResponse errorResponse =
                                 new TokenErrorResponse(OAuth2Error.INVALID_CLIENT);
                         response.status(OAuth2Error.INVALID_CLIENT.getHTTPStatusCode());
