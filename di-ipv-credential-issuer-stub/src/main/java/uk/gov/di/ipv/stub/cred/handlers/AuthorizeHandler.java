@@ -199,7 +199,9 @@ public class AuthorizeHandler {
                             requestScope == null ? "No scope provided in request" : requestScope;
                     requestContext = claimsSet.getStringClaim(REQUEST_CONTEXT);
                     requestContext =
-                            requestContext == null ? "No context provided in request" : requestContext;
+                            requestContext == null
+                                    ? "No context provided in request"
+                                    : requestContext;
                     sharedAttributesJson = getSharedAttributes(claimsSet);
                     evidenceRequestedJson = getEvidenceRequested(claimsSet);
                 } catch (Exception e) {
