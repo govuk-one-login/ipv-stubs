@@ -542,7 +542,6 @@ class AuthorizeHandlerTest {
         assertEquals("test scope", viewParamsCaptor.getValue().get("scope").toString());
     }
 
-
     @Test
     void doAuthorizeShouldUseDefaultContextValueWhenNoContextInRequest() throws Exception {
 
