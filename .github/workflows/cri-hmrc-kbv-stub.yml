@@ -29,7 +29,7 @@ jobs:
       - name: Checkout config repo
         uses: actions/checkout@v3
         with:
-          repository: alphagov/di-ipv-config
+          repository: govuk-one-login/ipv-config
           token: ${{ secrets.IPV_CONFIG_PAT }}
           path: ./di-ipv-config
           fetch-depth: '0'
