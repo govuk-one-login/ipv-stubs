@@ -95,6 +95,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri/env/API_KEY_CRI_TOY_STAGING" #pragma: allowlist secret
+  ApiKeyCriCheckHmrcDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_CHECK_HMRC_DEV" #pragma: allowlist secret
   ApiKeyCriCheckHmrcBuild:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -667,6 +671,8 @@ Resources:
             Value: !Ref ApiKeyCriToyBuild
           - Name: API_KEY_CRI_TOY_STAGING
             Value: !Ref ApiKeyCriToyStaging
+          - Name: API_KEY_CRI_CHECK_HMRC_DEV
+            Value: !Ref ApiKeyCriCheckHmrcDev
           - Name: API_KEY_CRI_CHECK_HMRC_BUILD
             Value: !Ref ApiKeyCriCheckHmrcBuild
           - Name: API_KEY_CRI_CHECK_HMRC_STAGING
