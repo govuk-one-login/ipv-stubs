@@ -399,6 +399,7 @@
         "txn": "Vlj6bIQYFtTGODUyX5HrstSgfoE",
         "strengthScore": 3,
         "validityScore": 0,
+        "ci": ["D15"],
         "failedCheckDetails": [
           {
             "checkMethod": "data",
