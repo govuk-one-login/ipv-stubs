@@ -542,6 +542,46 @@ class AuthorizeHandlerTest {
         assertEquals("test scope", viewParamsCaptor.getValue().get("scope").toString());
     }
 
+    @Test
+    void doAuthorizeShouldUseDefaultContextValueWhenNoContextInRequest() throws Exception {
+
+        // Arrange
+        QueryParamsMap queryParamsMap = toQueryParamsMap(validEncryptedDoAuthorizeQueryParams());
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String renderOutput = "rendered output";
+        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
+
+        // Act
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        // Assert
+        verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+        assertEquals(
+                "No context provided in request",
+                viewParamsCaptor.getValue().get("context").toString());
+    }
+
+    @Test
+    void doAuthorizeShouldUseRequestContextValueWhenContextInRequest() throws Exception {
+
+        // Arrange
+        var claimsSet = DefaultClaimSetBuilder().claim("context", "test context").build();
+        QueryParamsMap queryParamsMap =
+                toQueryParamsMap(validEncryptedDoAuthorizeQueryParams(claimsSet));
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+        String renderOutput = "rendered output";
+        when(mockViewHelper.render(anyMap(), eq("authorize.mustache"))).thenReturn(renderOutput);
+
+        // Act
+        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+
+        // Assert
+        verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+        assertEquals("test context", viewParamsCaptor.getValue().get("context").toString());
+    }
+
     private String createExpectedErrorQueryStringParams(ErrorObject error) {
         return createExpectedErrorQueryStringParams(error.getCode(), error.getDescription());
     }
