@@ -30,6 +30,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
@@ -72,6 +73,7 @@ public class JwtBuilder {
                 .claim("govuk_signin_journey_id", signInJourneyId)
                 .claim("persistent_session_id", UUID.randomUUID().toString())
                 .claim("email_address", "dev-platform-testing@digital.cabinet-office.gov.uk")
+                .claim("vtr", List.of("Cl.Cm.P2", "Cl.Cm.PCL200"))
                 .build();
     }
 
