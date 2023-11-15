@@ -77,23 +77,37 @@ public class IpvHandler {
                 String errorType = request.queryMap().get("error").value();
                 String userIdTextValue = request.queryMap().get("userIdText").value();
                 String signInJourneyIdText = request.queryMap().get("signInJourneyIdText").value();
+                String[] vtr =
+                        request.queryMap().hasKey("vtrText")
+                                ? request.queryMap("vtrText").values()
+                                : new String[] {"Cl.Cm.P2"};
+                String reproveIdentityString = request.queryMap().get("reproveIdentity").value();
+                JwtBuilder.ReproveIdentityClaimValue reproveIdentityClaimValue =
+                        StringUtils.isNotBlank(reproveIdentityString)
+                                ? JwtBuilder.ReproveIdentityClaimValue.valueOf(
+                                reproveIdentityString)
+                                : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
 
                 String userId = getUserIdValue(userIdTextValue);
 
                 JWTClaimsSet claims =
                         JwtBuilder.buildAuthorizationRequestClaims(
-                                userId, signInJourneyIdText, errorType);
+                                userId,
+                                signInJourneyIdText,
+                                vtr,
+                                errorType,
+                                reproveIdentityClaimValue);
 
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
                 EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt);
                 var authRequest =
                         new AuthorizationRequest.Builder(
-                                        new ResponseType(ResponseType.Value.CODE),
-                                        new ClientID(ORCHESTRATOR_CLIENT_ID))
+                                new ResponseType(ResponseType.Value.CODE),
+                                new ClientID(ORCHESTRATOR_CLIENT_ID))
                                 .state(state)
                                 .scope(new Scope("openid"))
-                                .redirectionURI(new URI("https://orch-dev-danc.02.core.dev.stubs.account.gov.uk/callback"))
-                                .endpointURI(new URI("https://dev-danc.02.dev.identity.account.gov.uk/").resolve("/oauth2/authorize"))
+                                .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
+                                .endpointURI(new URI(IPV_ENDPOINT).resolve("/oauth2/authorize"))
                                 .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
                                 .build();
 
