@@ -33,6 +33,7 @@ import com.nimbusds.openid.connect.sdk.UserInfoResponse;
 import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -77,7 +78,13 @@ public class IpvHandler {
                 String errorType = request.queryMap().get("error").value();
                 String userIdTextValue = request.queryMap().get("userIdText").value();
                 String signInJourneyIdText = request.queryMap().get("signInJourneyIdText").value();
-                String[] vtr = request.queryMap().get("vtrText").values();
+                QueryParamsMap queryParamsMap = request.queryMap().get("vtrText");
+                String[] vtr;
+                if (queryParamsMap != null) {
+                    vtr = queryParamsMap.values();
+                } else {
+                    vtr = new String[] {};
+                }
 
                 String userId = getUserIdValue(userIdTextValue);
 
