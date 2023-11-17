@@ -78,7 +78,7 @@ public class IpvHandler {
                 String userIdTextValue = request.queryMap().get("userIdText").value();
                 String signInJourneyIdText = request.queryMap().get("signInJourneyIdText").value();
                 String[] vtr =
-                        request.queryMap("vtrText").hasKey("vtrText")
+                        request.queryMap().hasKey("vtrText")
                                 ? request.queryMap("vtrText").values()
                                 : new String[] {"Cl.Cm.P2"};
 
