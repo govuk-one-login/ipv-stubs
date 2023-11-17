@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim AS build
+FROM openjdk:17-jdk-slim@sha256:d732b25fa8a6944d312476805d086aeaaa6c9e2fbc3aefd482b819d5e0e32e10  AS build
 
 WORKDIR /home/gradle/src
 COPY gradlew .
@@ -8,7 +8,7 @@ RUN ./gradlew build --no-daemon
 COPY src src
 RUN ./gradlew build --no-daemon
 
-FROM openjdk:17-jdk-slim
+FROM openjdk:17-jdk-slim@sha256:d732b25fa8a6944d312476805d086aeaaa6c9e2fbc3aefd482b819d5e0e32e10 
 
 ENV PORT 8085
 ENV DEBUG_PORT 8087
