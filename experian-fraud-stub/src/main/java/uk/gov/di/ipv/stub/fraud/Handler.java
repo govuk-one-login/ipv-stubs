@@ -25,6 +25,9 @@ public class Handler {
     public static final String PEP_CHECK_SOURCE = "pep_check_source";
     private InMemoryDataStore pepCheckInMemoryDataStore;
 
+    // To prevent accidentally requesting the stub to wait very long
+    private static long MAX_DELAYED_RESPONSE_MS = 30000;
+
     protected Handler() {
         mapper = new ObjectMapper();
         fraudCheckInMemoryDataStore = new InMemoryDataStore(mapper, FRAUD_CHECK_SOURCE);
@@ -135,6 +138,17 @@ public class Handler {
                     }
 
                      */
+
+                    // Wait x millis before replying to Fraud Check
+                    if (requestSurnameName.contains("FWAIT_")) {
+
+                        String sWait = requestSurnameName.substring(6);
+
+                        long fwait = Math.min(Long.parseLong(sWait), MAX_DELAYED_RESPONSE_MS);
+
+                        Thread.sleep(fwait);
+                        response.status(200);
+                    }
                 } else if (requestType.equals("PepSanctions01")) {
                     // PepCheck Simulation
 
@@ -200,6 +214,17 @@ public class Handler {
                                 408); // Request Timeout (closest response to an abrupt socket
                         // close)
                         return ""; // No message returned intended
+                    }
+
+                    // Wait x millis before replying to PEP Check
+                    if (requestSurnameName.contains("PWAIT_")) {
+
+                        String sWait = requestSurnameName.substring(6);
+
+                        long pwait = Math.min(Long.parseLong(sWait), MAX_DELAYED_RESPONSE_MS);
+
+                        Thread.sleep(pwait);
+                        response.status(200);
                     }
                 } else {
                     String message = String.format("Unknown Request Type %s", requestType);
