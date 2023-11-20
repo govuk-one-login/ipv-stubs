@@ -1,0 +1,17 @@
+# Compiled class file
+# Log file
+*.log
+
+# Package Files #
+*.zip
+
+build
+.idea
+
+lambdas/node_modules
+
+# Ignore dev-deploy generated file
+core-dev-deploy/.aws-sam
+core-dev-deploy/**/ticf-stub-*.yaml
+deploy*/**/ticf-stub-*.yaml
+deploy/.aws-sam
