@@ -7,7 +7,6 @@ module.exports = {
       browser: true
     },
     globals: {
-      sinon: true,
       expect: true,
     },
     root: true,
