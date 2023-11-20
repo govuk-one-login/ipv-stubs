@@ -1,0 +1,294 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Transform: AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Timeout: 30
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+
+Description: >-
+  This creates the infrastructure for TiCF stub .
+
+Parameters:
+  VpcStackName:
+    Description: >
+      The name of the stack that defines the VPC in which this container will
+      run.
+    Type: String
+  Environment:
+    Description: The name of the environment to deploy to.
+    Type: String
+    AllowedPattern: ((production)|(build)|(dev.*))
+  PermissionsBoundary:
+    Description: The ARN of the permissions boundary to apply when creating IAM roles
+    Type: String
+    Default: "none"
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+
+Conditions:
+  IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
+  IsDev02: !Equals [ !Ref AWS::AccountId, "175872367215"]
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
+
+Mappings:
+  CoreAccounts:
+    dev01:
+      accountId: "130355686670"
+    dev02:
+      accountId: "175872367215"
+    build:
+      accountId: "457601271792"
+
+Resources:
+  # lambda to stub TiCF - getTicfVC
+  GetTicfVCFunction:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    # checkov:skip=CKV_AWS_173: doing it later
+    DependsOn:
+      - "GetTicfVCFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "getTicfVC-${Environment}"
+      CodeUri: "../lambdas"
+      Handler: ticfHandler.handler
+      Runtime: nodejs18.x
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          TICF_PARAM_BASE_PATH: "/stubs/core/ticf/"
+          ISSUER: "https://ticf-cri.stubs.account.gov.uk"
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt TicfLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/ticf/*
+      AutoPublishAlias: live
+      Events:
+        GetTicfVC:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /
+            Method: POST
+    Metadata:
+      # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - src/handlers/ticfHandler.ts
+
+  GetTicfVCFunctionCoreDev01InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetTicfVCFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+
+  GetTicfVCFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    # checkov:skip=CKV_AWS_158: No need for customer managed keys for short lived logs
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/getTicfVC-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  TicfLambdaSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: >-
+        TICF Lambdas Security Group
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow ingress traffic from vpc cidr to port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+
+  # kms key for logging
+  LoggingKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+
+  # ssl cert
+  TicfStubSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsDev01
+        - !Sub "ticf-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "ticf-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsDev01
+            - !Sub "ticf-${Environment}.01.core.dev.stubs.account.gov.uk"
+            - !If [IsDev02, !Sub "ticf-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+          HostedZoneId: !If
+            - IsDev01
+            - !ImportValue Dev01StubsHostedZoneId
+            - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
+      ValidationMethod: DNS
+
+    # api domain entries / mapping
+  TicfStubRestApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    # checkov:skip=CKV_AWS_120: doing it later
+    Properties:
+      DomainName: !If
+        - IsDev01
+        - !Sub "ticf-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "ticf-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+      RegionalCertificateArn: !Ref TicfStubSSLCert
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+
+  TicfStubRestApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    # checkov:skip=CKV_AWS_120: doing it later
+    Properties:
+      DomainName: !If
+        - IsDev01
+        - !Sub "ticf-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "ticf-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+      RestApiId: !Ref RestApiGateway
+      Stage: !Ref RestApiGateway.Stage
+    DependsOn:
+      - TicfStubRestApiDomain
+      - RestApiGateway
+
+  # dns record
+  TicfStubDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !If
+        - IsDev01
+        - !Sub "ticf-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "ticf-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+      HostedZoneId: !If
+        - IsDev01
+        - !ImportValue Dev01StubsHostedZoneId
+        - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
+      AliasTarget:
+        DNSName: !GetAtt TicfStubRestApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt TicfStubRestApiDomain.RegionalHostedZoneId
+
+  RestApiGateway:
+    Type: AWS::Serverless::Api
+    DependsOn: GetTicfVCFunction
+    Properties:
+      # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
+      Name: !Sub TiCF API Gateway ${Environment}
+      StageName: !Sub ${Environment}
+      TracingEnabled: true
+      DefinitionBody:
+        openapi: "3.0.3" # workaround to get `sam validate` to work
+        paths: # workaround to get `sam validate` to work
+          /foo:
+            options: {} # workaround to get `sam validate` to work
+        'Fn::Transform':
+          Name: "AWS::Include"
+          Parameters:
+            Location: "../openAPI/ticf-external.yaml"
+      ApiKeySourceType: HEADER #pragma: allowlist secret
+      Auth:
+        ApiKeyRequired: true #pragma: allowlist secret
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          UsagePlanName: "TICF Usage Plan"
+      AccessLogSetting:
+        DestinationArn: !GetAtt RestApiLogGroup.Arn
+        Format: >-
+          {
+          "requestId":"$context.requestId",
+          "ip":"$context.identity.sourceIp",
+          "requestTime":"$context.requestTime",
+          "httpMethod":"$context.httpMethod",
+          "path":"$context.path",
+          "routeKey":"$context.routeKey",
+          "status":"$context.status",
+          "protocol":"$context.protocol",
+          "responseLatency":"$context.responseLatency",
+          "responseLength":"$context.responseLength"
+          }
+
+  RestApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/restApi-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+Outputs:
+  RestApiGatewayID:
+    Description: TiCF API Gateway ID
+    Export:
+      Name: !Sub "RestApiGatewayID-${Environment}"
+    Value: !Ref RestApiGateway
