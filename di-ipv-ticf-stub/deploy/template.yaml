@@ -60,18 +60,8 @@ Parameters:
     Default: "none"
 
 Conditions:
-  IsDevelopment: !Not
-    - !Or
-      - !Equals [ !Ref Environment, "build"]
-      - !Equals [ !Ref Environment, "production"]
-  IsCoreDev: !Or
-    - !Equals [ !Ref AWS::AccountId, "130355686670"]
-    - !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsProduction: !Equals [ !Ref Environment, "production" ]
-  IsNonProd: !Not
-    - !Or
-      - !Condition IsDevelopment
-      - !Condition IsProduction
+  IsNonProd: !Not [!Condition IsProduction ]
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
@@ -230,18 +220,18 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "ticf-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [ IsNonProd, !Sub "ticf.${Environment}.stubs.account.gov.uk", ticf.stubs.account.gov.uk ]
+        - IsNonProd
+        - !Sub "ticf.${Environment}.stubs.account.gov.uk"
+        - ticf.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
-            - IsCoreDev
-            - !Sub "ticf-${Environment}.core.dev.stubs.account.gov.uk"
-            - !If [ IsNonProd, !Sub "ticf.${Environment}.stubs.account.gov.uk", ticf.stubs.account.gov.uk ]
+            - IsNonProd
+            - !Sub "ticf.${Environment}.stubs.account.gov.uk"
+            - ticf.stubs.account.gov.uk
           HostedZoneId: !If
-            - IsCoreDev
-            - !ImportValue DevPublicHostedZoneId
-            - !If [ IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId ]
+            - IsNonProd
+            - !ImportValue BuildPublicHostedZoneId
+            - !ImportValue RootPublicHostedZoneId
       ValidationMethod: DNS
 
     # api domain entries / mapping
@@ -250,9 +240,9 @@ Resources:
     # checkov:skip=CKV_AWS_120: doing it later
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "ticf-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [ IsNonProd, !Sub "ticf.${Environment}.stubs.account.gov.uk", ticf.stubs.account.gov.uk ]
+        - IsNonProd
+        - !Sub "ticf.${Environment}.stubs.account.gov.uk"
+        - ticf.stubs.account.gov.uk
       RegionalCertificateArn: !Ref TicfStubSSLCert
       EndpointConfiguration:
         Types:
@@ -264,9 +254,9 @@ Resources:
     # checkov:skip=CKV_AWS_120: doing it later
     Properties:
       DomainName: !If
-        - IsCoreDev
-        - !Sub "ticf-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [ IsNonProd, !Sub "ticf.${Environment}.stubs.account.gov.uk", ticf.stubs.account.gov.uk ]
+        - IsNonProd
+        - !Sub "ticf.${Environment}.stubs.account.gov.uk"
+        - ticf.stubs.account.gov.uk
       RestApiId: !Ref RestApiGateway
       Stage: !Ref RestApiGateway.Stage
     DependsOn:
@@ -279,13 +269,13 @@ Resources:
     Properties:
       Type: A
       Name: !If
-        - IsCoreDev
-        - !Sub "ticf-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [ IsNonProd, !Sub "ticf.${Environment}.stubs.account.gov.uk", ticf.stubs.account.gov.uk ]
+        - IsNonProd
+        - !Sub "ticf.${Environment}.stubs.account.gov.uk"
+        - ticf.stubs.account.gov.uk
       HostedZoneId: !If
-        - IsCoreDev
-        - !ImportValue DevPublicHostedZoneId
-        - !If [ IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId ]
+        - IsNonProd
+        - !ImportValue BuildPublicHostedZoneId
+        - !ImportValue RootPublicHostedZoneId
       AliasTarget:
         DNSName: !GetAtt TicfStubRestApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt TicfStubRestApiDomain.RegionalHostedZoneId
