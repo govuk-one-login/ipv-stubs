@@ -22,10 +22,12 @@ export const handler: Handler = async (event: any) => {
     return apiResponses._400({ errorMessage: "Pls. pass proper request." });
 
   // preparing response
-  let ticfSigningKey: string | null | undefined = await getSsmParameter(
-    process.env.TICF_PARAM_BASE_PATH + "signingKey"
-  );
-  if (!ticfSigningKey) {
+  let ticfSigningKey: string;
+  try {
+    ticfSigningKey = await getSsmParameter(
+      process.env.TICF_PARAM_BASE_PATH + "signingKey"
+    );
+  } catch (error) {
     return apiResponses._500({
       errorMessage: "Error while retrieving TicF CRI VC signing key.",
     });
@@ -71,40 +73,21 @@ function getCustomClaims(
   userId: string
 ): JWTPayload {
   if (timeOutVC) {
-    if (includeCIToVC) {
-      return {
-        sub: userId,
-        iss: process.env.ISSUER,
-        aud: "https://development-di-ipv-core-front.london.cloudapps.digital",
-        nbf: Date.now(),
-        vc: {
-          evidence: [
-            {
-              type: "RiskAssessment",
-              ci: ["V03"],
-            },
-          ],
-          type: ["VerifiableCredential", "RiskAssessmentCredential"],
-        },
-        jti: "urn:uuid:" + uuid(),
-      };
-    } else {
-      return {
-        sub: userId,
-        iss: process.env.ISSUER,
-        aud: "https://development-di-ipv-core-front.london.cloudapps.digital",
-        nbf: Date.now(),
-        vc: {
-          evidence: [
-            {
-              type: "RiskAssessment",
-            },
-          ],
-          type: ["VerifiableCredential", "RiskAssessmentCredential"],
-        },
-        jti: "urn:uuid:" + uuid(),
-      };
-    }
+    return {
+      sub: userId,
+      iss: process.env.ISSUER,
+      aud: "https://development-di-ipv-core-front.london.cloudapps.digital",
+      nbf: Date.now(),
+      vc: {
+        evidence: [
+          {
+            type: "RiskAssessment",
+          },
+        ],
+        type: ["VerifiableCredential", "RiskAssessmentCredential"],
+      },
+      jti: "urn:uuid:" + uuid(),
+    };
   } else {
     if (includeCIToVC) {
       return {

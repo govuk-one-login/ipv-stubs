@@ -1,6 +1,6 @@
 {
   "name": "ticf-stub",
-  "description": "TiCF CRI stub",
+  "description": "TICF CRI stub",
   "version": "1.0.0",
   "private": true,
   "author": "IPVCore",
@@ -12,7 +12,6 @@
     "aws-sdk": "^2.1497.0",
     "di-stub-oauth-client": "git+ssh://git@github.com:alphagov/di-stub-oauth-client#main",
     "jose": "4.11.1",
-    "nodemon": "^3.0.1",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },

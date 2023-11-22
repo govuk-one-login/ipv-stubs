@@ -1,5 +1,6 @@
-### TiCF CRI Stub
-This will set up an API gateway in front of a lambda and return TiCF cri VC.
+### TICF CRI Stub
+This will set up an API gateway in front of a lambda and return TICF cri VC.
+(ref. - https://govukverify.atlassian.net/wiki/spaces/Architecture/pages/3763505535/IPV+TICF+CRI+Interaction+-+WIP#High-Level-Flow-Description)
 The format of the POST request to the API gateway should look like
 ```
 {
