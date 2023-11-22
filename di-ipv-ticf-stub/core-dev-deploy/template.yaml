@@ -14,7 +14,7 @@ Globals:
       - !Ref AWS::NoValue
 
 Description: >-
-  This creates the infrastructure for TiCF stub .
+  This creates the infrastructure for TICF stub .
 
 Parameters:
   VpcStackName:
@@ -60,7 +60,7 @@ Mappings:
       accountId: "457601271792"
 
 Resources:
-  # lambda to stub TiCF - getTicfVC
+  # lambda to stub TICF - getTicfVC
   GetTicfVCFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
@@ -123,6 +123,20 @@ Resources:
       FunctionName: !Ref GetTicfVCFunction
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+
+  GetTicfVCFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetTicfVCFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
+
+  GetTicfVCFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetTicfVCFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
   GetTicfVCFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -245,7 +259,7 @@ Resources:
     DependsOn: GetTicfVCFunction
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
-      Name: !Sub TiCF API Gateway ${Environment}
+      Name: !Sub TICF API Gateway ${Environment}
       StageName: !Sub ${Environment}
       TracingEnabled: true
       DefinitionBody:
@@ -288,7 +302,7 @@ Resources:
 
 Outputs:
   RestApiGatewayID:
-    Description: TiCF API Gateway ID
+    Description: TICF API Gateway ID
     Export:
       Name: !Sub "RestApiGatewayID-${Environment}"
     Value: !Ref RestApiGateway
