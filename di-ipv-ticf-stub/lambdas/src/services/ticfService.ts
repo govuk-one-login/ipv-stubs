@@ -1,8 +1,8 @@
 import { JWTPayload } from "jose";
 import { v4 as uuid } from "uuid";
 
-import { buildSignedJwt } from "di-stub-oauth-client";
-import type { SignedJwtParams } from "di-stub-oauth-client";
+import { buildSignedJwt } from "stub-oauth-client";
+import type { SignedJwtParams } from "stub-oauth-client";
 
 import { getSsmParameter } from "../common/ssmParameter";
 import TicfRequest from "../domain/ticfRequest";
