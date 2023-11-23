@@ -7,6 +7,7 @@ import type { SignedJwtParams } from "stub-oauth-client";
 import { getSsmParameter } from "../common/ssmParameter";
 import TicfRequest from "../domain/ticfRequest";
 import TicfResponse from "../domain/ticfResponse";
+import TicfEvidenceItem from "../domain/ticfEvidenceItem";
 
 export class TicfService {
   async processGetVCRequest(ticfRequest: TicfRequest): Promise<TicfResponse> {
@@ -40,8 +41,6 @@ export class TicfService {
 
     // preparing response
     const returnJwt = await buildSignedJwt(buildJwtParams);
-    console.info(`>>> returnJwt: ${returnJwt}`);
-    // let responseBody: TicfResponse;
     return {
       sub: ticfRequest.sub,
       govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
@@ -59,57 +58,36 @@ function getCustomClaims(
   includeCIToVC: boolean,
   userId: string
 ): JWTPayload {
+  return {
+    sub: userId,
+    iss: process.env.ISSUER,
+    aud: "https://development-di-ipv-core-front.london.cloudapps.digital",
+    nbf: Date.now(),
+    vc: {
+      evidence: [getEvidenceItem(timeOutVC, includeCIToVC)],
+      type: ["VerifiableCredential", "RiskAssessmentCredential"],
+    },
+    jti: "urn:uuid:" + uuid(),
+  };
+}
+
+function getEvidenceItem(
+  timeOutVC: boolean,
+  includeCIToVC: boolean
+): TicfEvidenceItem {
   if (timeOutVC) {
-    return {
-      sub: userId,
-      iss: process.env.ISSUER,
-      aud: "https://development-di-ipv-core-front.london.cloudapps.digital",
-      nbf: Date.now(),
-      vc: {
-        evidence: [
-          {
-            type: "RiskAssessment",
-          },
-        ],
-        type: ["VerifiableCredential", "RiskAssessmentCredential"],
-      },
-      jti: "urn:uuid:" + uuid(),
-    };
+    return { type: "RiskAssessment" };
   } else {
     if (includeCIToVC) {
       return {
-        sub: userId,
-        iss: process.env.ISSUER,
-        aud: "https://development-di-ipv-core-front.london.cloudapps.digital",
-        nbf: Date.now(),
-        vc: {
-          evidence: [
-            {
-              type: "RiskAssessment",
-              ci: ["V03"],
-              txn: uuid(),
-            },
-          ],
-          type: ["VerifiableCredential", "RiskAssessmentCredential"],
-        },
-        jti: "urn:uuid:" + uuid(),
+        type: "RiskAssessment",
+        ci: ["V03"],
+        txn: uuid(),
       };
     } else {
       return {
-        sub: userId,
-        iss: process.env.ISSUER,
-        aud: "https://development-di-ipv-core-front.london.cloudapps.digital",
-        nbf: Date.now(),
-        vc: {
-          evidence: [
-            {
-              type: "RiskAssessment",
-              txn: uuid(),
-            },
-          ],
-          type: ["VerifiableCredential", "RiskAssessmentCredential"],
-        },
-        jti: "urn:uuid:" + uuid(),
+        type: "RiskAssessment",
+        txn: uuid(),
       };
     }
   }

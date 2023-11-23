@@ -10,7 +10,6 @@ export const handler = async (
 ): Promise<APIGatewayProxyResult> => {
   let ticfRequest: TicfRequest | undefined;
   try {
-    console.info(">>> Body: " + event.body);
     if (event.body == null) {
       throw new Error(`Pls. pass proper request.`);
     }
