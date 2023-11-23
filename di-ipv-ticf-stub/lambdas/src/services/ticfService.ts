@@ -28,8 +28,7 @@ export class TicfService {
     );
     includeCIToVC ??= "false";
 
-    let buildJwtParams: SignedJwtParams;
-    buildJwtParams = {
+    const buildJwtParams: SignedJwtParams = {
       issuer: process.env.ISSUER,
       customClaims: getCustomClaims(
         JSON.parse(timeoutVC.toLowerCase()),
@@ -41,8 +40,9 @@ export class TicfService {
 
     // preparing response
     const returnJwt = await buildSignedJwt(buildJwtParams);
-    let responseBody: TicfResponse;
-    responseBody = {
+    console.info(`>>> returnJwt: ${returnJwt}`);
+    // let responseBody: TicfResponse;
+    return {
       sub: ticfRequest.sub,
       govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
       vtr: ticfRequest.vtr,
@@ -50,7 +50,7 @@ export class TicfService {
       vtm: ticfRequest.vtm,
       "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
     };
-    return responseBody;
+    // return responseBody;
   }
 }
 

@@ -9,6 +9,8 @@ build
 .idea
 
 lambdas/node_modules
+lambdas/coverage
+lambdas/lib
 
 # Ignore dev-deploy generated file
 core-dev-deploy/.aws-sam
