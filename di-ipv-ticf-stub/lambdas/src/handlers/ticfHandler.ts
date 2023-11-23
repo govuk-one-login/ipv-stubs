@@ -20,8 +20,8 @@ export const handler = async (
       return apiResponses._400({ errorMessage: error.message });
     }
   }
-  if (!ticfRequest || ticfRequest == null || ticfRequest.vot == null)
-    return apiResponses._400({ errorMessage: "Pls. pass proper request with vot." });
+  if (!ticfRequest || !ticfRequest.sub || !ticfRequest.vot || !ticfRequest.vtr || !ticfRequest.vtm || !ticfRequest.govuk_signin_journey_id)
+    return apiResponses._400({ errorMessage: "Pls. pass proper request." });
 
   // Process and get response
   let responseBody: TicfResponse | undefined;
