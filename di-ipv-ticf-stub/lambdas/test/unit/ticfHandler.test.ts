@@ -2,9 +2,8 @@ import { APIGatewayProxyEvent } from "aws-lambda";
 
 import { handler } from "../../src/handlers/ticfHandler";
 
-import * as ssm from "@aws-lambda-powertools/parameters/ssm";
-
 jest.mock('@aws-lambda-powertools/parameters/ssm', () => {
+  // TODO - need more work here
   return { getParameter: jest.fn(() => "false") };
 });
 
