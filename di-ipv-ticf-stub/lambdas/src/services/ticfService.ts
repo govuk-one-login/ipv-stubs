@@ -21,11 +21,9 @@ export class TicfService {
       console.info(error);
       throw new Error(`Error while retrieving TicF CRI VC signing key.`);
     }
-    console.info(">> ticfSigningKey: " + ticfSigningKey);
     let timeoutVC: string | null | undefined = await getSsmParameter(
       process.env.TICF_PARAM_BASE_PATH + "timeoutVC"
     );
-    console.info(">> timeoutVC: " + timeoutVC);
     timeoutVC ??= "false";
     let includeCIToVC: string | null | undefined = await getSsmParameter(
       process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
