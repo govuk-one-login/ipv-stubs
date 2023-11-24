@@ -132,7 +132,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
-            Path: /
+            Path: /risk-assessment
             Method: POST
     Metadata:
       # Manage esbuild properties

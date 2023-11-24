@@ -16,6 +16,7 @@ export async function processGetVCRequest(
     ticfSigningKey = await getSsmParameter(
       process.env.TICF_PARAM_BASE_PATH + "signingKey"
     );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     throw new Error(`Error while retrieving TicF CRI VC signing key. . Error message: ${error.message}`);
   }
@@ -50,6 +51,7 @@ export async function processGetVCRequest(
       vtm: ticfRequest.vtm,
       "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
     };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     throw new Error(`Error while building signing JWT. Error message: ${error.message}`);
   }
