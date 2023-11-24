@@ -6,5 +6,4 @@ module.exports = {
 
   testEnvironment: "node",
   testMatch: ["**/unit/**/*.test.ts"],
-  setupFiles: ["<rootDir>test/setEnvVars.js"],
 };

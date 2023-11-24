@@ -4,9 +4,17 @@ import { handler } from "../../src/handlers/ticfHandler";
 import TicfResponse from "../../src/domain/ticfResponse";
 import { importSPKI, jwtVerify } from "jose";
 import TicfVc from "../../src/domain/ticfVc";
+import config from "../../src/common/config";
 
 jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
   getParameter: jest.fn(),
+}));
+
+jest.mock("../../src/common/config", () => ({
+  default: {
+    ssmBasePath: '/test/path',
+    issuer: 'test-issuer',
+  },
 }));
 
 const EC_PRIVATE_KEY = 'MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgkGU1Xuq6ntjxOPqqk5Q/Qq+JpZsGJ6b6TRcD969CEsuhRANCAATXraAdaAWfQhMjaOT9TVWzmbiJZZLxwx1sShONadRgP+4WWaqxNlUgoAAYYdDEfVJMTOuumLfeRhuLYCKrJd8R';
@@ -59,10 +67,9 @@ describe("TICF handler", function () {
     expect(response["https://vocab.account.gov.uk/v1/credentialJWT"]).toHaveLength(1);
 
     const ticfVc = await parseTicfVc(response["https://vocab.account.gov.uk/v1/credentialJWT"][0]);
-    console.log(ticfVc);
+    expect(ticfVc.iss).toEqual(config.issuer);
     expect(ticfVc.sub).toEqual(TEST_REQUEST.sub);
     expect(ticfVc.aud).toEqual(TEST_COMPONENT_ID);
-    // TODO: check Issuer?
     expect(ticfVc.vc.type).toEqual(['VerifiableCredential', 'RiskAssessmentCredential']);
     expect(ticfVc.vc.evidence).toHaveLength(1);
     expect(ticfVc.vc.evidence[0].type).toEqual('RiskAssessment');
