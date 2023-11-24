@@ -1,6 +1,4 @@
 module.exports = {
-    testEnvironment: "node",
-    testMatch: [
-      "**/integ/**/*.integ.test.ts"
-    ],
-  };
+  testEnvironment: "node",
+  testMatch: ["**/integ/**/*.integ.test.ts"],
+};

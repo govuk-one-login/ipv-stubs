@@ -10,17 +10,23 @@ export const handler = async (
 ): Promise<APIGatewayProxyResult> => {
   let ticfRequest: TicfRequest | undefined;
   try {
-    if (event.body == null) {
+    if (event.body === null) {
       throw new Error(`Pls. pass proper request.`);
     }
     ticfRequest = JSON.parse(event.body);
   } catch (error) {
-    console.info(`>>> Parse issue: ${error}`);
     if (error instanceof Error) {
       return apiResponses._400({ errorMessage: error.message });
     }
   }
-  if (!ticfRequest || !ticfRequest.sub || !ticfRequest.vot || !ticfRequest.vtr || !ticfRequest.vtm || !ticfRequest.govuk_signin_journey_id)
+  if (
+    !ticfRequest ||
+    !ticfRequest.sub ||
+    !ticfRequest.vot ||
+    !ticfRequest.vtr ||
+    !ticfRequest.vtm ||
+    !ticfRequest.govuk_signin_journey_id
+  )
     return apiResponses._400({ errorMessage: "Pls. pass proper request." });
 
   // Process and get response
@@ -28,9 +34,7 @@ export const handler = async (
   try {
     responseBody = await ticfService.processGetVCRequest(ticfRequest);
   } catch (error) {
-    console.error(error);
     if (error instanceof Error) {
-      console.info(`>>> Error from service: ${error}`);
       return apiResponses._500({ errorMessage: error.message });
     }
   }

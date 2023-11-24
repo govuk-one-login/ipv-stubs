@@ -11,8 +11,7 @@
     "@types/aws-lambda": "^8.10.109",
     "aws-sdk": "^2.1497.0",
     "jose": "4.11.1",
-    "stub-oauth-client": "github:govuk-one-login/stub-oauth-client#main",
-    "ts-node": "^10.9.1"
+    "stub-oauth-client": "github:govuk-one-login/stub-oauth-client#main"
   },
   "devDependencies": {
     "@babel/core": "^7.23.3",
@@ -26,6 +25,7 @@
     "babel-jest": "^29.7.0",
     "eslint": "^8.54.0",
     "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
     "typescript": "^5.3.2"
   },
   "scripts": {

@@ -18,11 +18,14 @@ export class TicfService {
         process.env.TICF_PARAM_BASE_PATH + "signingKey"
       );
     } catch (error) {
+      console.info(error);
       throw new Error(`Error while retrieving TicF CRI VC signing key.`);
     }
+    console.info(">> ticfSigningKey: " + ticfSigningKey);
     let timeoutVC: string | null | undefined = await getSsmParameter(
       process.env.TICF_PARAM_BASE_PATH + "timeoutVC"
     );
+    console.info(">> timeoutVC: " + timeoutVC);
     timeoutVC ??= "false";
     let includeCIToVC: string | null | undefined = await getSsmParameter(
       process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
@@ -40,16 +43,21 @@ export class TicfService {
     };
 
     // preparing response
-    const returnJwt = await buildSignedJwt(buildJwtParams);
-    return {
-      sub: ticfRequest.sub,
-      govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
-      vtr: ticfRequest.vtr,
-      vot: ticfRequest.vot,
-      vtm: ticfRequest.vtm,
-      "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
-    };
-    // return responseBody;
+    try {
+      const returnJwt = await buildSignedJwt(buildJwtParams);
+      console.info(returnJwt);
+      return {
+        sub: ticfRequest.sub,
+        govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
+        vtr: ticfRequest.vtr,
+        vot: ticfRequest.vot,
+        vtm: ticfRequest.vtm,
+        "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
+      };
+    } catch (error) {
+      console.error(error);
+      throw new Error(`Error while building signing JWT.`);
+    }
   }
 }
 
