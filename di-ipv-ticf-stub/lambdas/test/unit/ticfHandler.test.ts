@@ -19,6 +19,7 @@ describe("Unit test for TICF handler", function () {
   it("verifies successful, 200 response", async () => {
     mockGetParameter
       .mockReturnValueOnce("testSignedKey")
+      .mockReturnValueOnce("testComponentId")
       .mockReturnValueOnce("False")
       .mockReturnValueOnce("False");
     mockBuildSignedJwt.mockReturnValueOnce("signed-jwt");
@@ -36,7 +37,7 @@ describe("Unit test for TICF handler", function () {
     expect(getParameter).toHaveBeenCalledWith(
       process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
     );
-    expect(getParameter).toHaveBeenCalledTimes(3);
+    expect(getParameter).toHaveBeenCalledTimes(4);
 
     expect(buildSignedJwt).toHaveBeenCalledTimes(1);
 
@@ -47,6 +48,7 @@ describe("Unit test for TICF handler", function () {
   it("verifies successful in case of VC with CI, 200 response", async () => {
     mockGetParameter
       .mockReturnValueOnce("testSignedKey")
+      .mockReturnValueOnce("testComponentId")
       .mockReturnValueOnce("False")
       .mockReturnValueOnce("True");
     mockBuildSignedJwt.mockReturnValueOnce("signed-jwt");
@@ -62,7 +64,7 @@ describe("Unit test for TICF handler", function () {
     expect(getParameter).toHaveBeenCalledWith(
       process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
     );
-    expect(getParameter).toHaveBeenCalledTimes(3);
+    expect(getParameter).toHaveBeenCalledTimes(4);
 
     expect(buildSignedJwt).toHaveBeenCalledTimes(1);
 
@@ -73,6 +75,7 @@ describe("Unit test for TICF handler", function () {
   it("verifies successful in case of timeout VC, 200 response", async () => {
     mockGetParameter
       .mockReturnValueOnce("testSignedKey")
+      .mockReturnValueOnce("testComponentId")
       .mockReturnValueOnce("True")
       .mockReturnValueOnce("False");
     mockBuildSignedJwt.mockReturnValueOnce("signed-jwt");
@@ -88,7 +91,7 @@ describe("Unit test for TICF handler", function () {
     expect(getParameter).toHaveBeenCalledWith(
       process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
     );
-    expect(getParameter).toHaveBeenCalledTimes(3);
+    expect(getParameter).toHaveBeenCalledTimes(4);
 
     expect(buildSignedJwt).toHaveBeenCalledTimes(1);
 
@@ -160,9 +163,23 @@ describe("Unit test for TICF handler", function () {
     expect(result.statusCode).toEqual(500);
   });
 
+  it("verifies undefined response from ssm for no componentId, 500 response", async () => {
+    mockGetParameter
+    .mockReturnValueOnce("testSignedKey")
+    .mockRejectedValueOnce(new Error())
+    //
+    const result = await handler(getTestRequestEvent());
+    //
+    expect(getParameter).toHaveBeenCalledTimes(2);
+    expect(buildSignedJwt).toHaveBeenCalledTimes(0);
+
+    expect(result.statusCode).toEqual(500);
+  });
+
   it("verifies error while building signed JWT, 500 response", async () => {
     mockGetParameter
       .mockReturnValueOnce("testSignedKey")
+      .mockReturnValueOnce("testComponentId")
       .mockReturnValueOnce("False")
       .mockReturnValueOnce("False");
     mockBuildSignedJwt.mockImplementation(() => {
@@ -171,7 +188,7 @@ describe("Unit test for TICF handler", function () {
     //
     const result = await handler(getTestRequestEvent());
     //
-    expect(getParameter).toHaveBeenCalledTimes(3);
+    expect(getParameter).toHaveBeenCalledTimes(4);
     expect(buildSignedJwt).toHaveBeenCalledTimes(1);
 
     expect(result.statusCode).toEqual(500);
