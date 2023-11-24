@@ -13,7 +13,6 @@ jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
 jest.mock("../../src/common/config", () => ({
   default: {
     ssmBasePath: '/test/path',
-    issuer: 'test-issuer',
   },
 }));
 
@@ -67,7 +66,7 @@ describe("TICF handler", function () {
     expect(response["https://vocab.account.gov.uk/v1/credentialJWT"]).toHaveLength(1);
 
     const ticfVc = await parseTicfVc(response["https://vocab.account.gov.uk/v1/credentialJWT"][0]);
-    expect(ticfVc.iss).toEqual(config.issuer);
+    expect(ticfVc.iss).toEqual(TEST_COMPONENT_ID);
     expect(ticfVc.sub).toEqual(TEST_REQUEST.sub);
     expect(ticfVc.aud).toEqual(TEST_COMPONENT_ID);
     expect(ticfVc.vc.type).toEqual(['VerifiableCredential', 'RiskAssessmentCredential']);
