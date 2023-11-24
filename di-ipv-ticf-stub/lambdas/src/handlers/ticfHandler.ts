@@ -33,6 +33,7 @@ export const handler = async (
   try {
     responseBody = await processGetVCRequest(ticfRequest);
     return apiResponses._200(responseBody);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     return apiResponses._500({ errorMessage: error.message });
   }
