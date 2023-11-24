@@ -3,6 +3,7 @@ import { getSsmParameter } from "../common/ssmParameter";
 import TicfRequest from "../domain/ticfRequest";
 import TicfResponse from "../domain/ticfResponse";
 import TicfEvidenceItem from "../domain/ticfEvidenceItem";
+import TicfVc from "../domain/ticfVc";
 import { signJwt } from "./signingService";
 
 export async function processGetVCRequest(
@@ -15,7 +16,7 @@ export async function processGetVCRequest(
 
   const timestamp = Math.floor(new Date().getTime() / 1000);
 
-  const payload = {
+  const payload: TicfVc = {
     iss: process.env.ISSUER,
     sub: ticfRequest.sub,
     aud: ticfComponentId,
