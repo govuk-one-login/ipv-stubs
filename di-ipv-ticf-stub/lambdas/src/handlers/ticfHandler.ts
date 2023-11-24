@@ -1,23 +1,35 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { apiResponses } from "../common/apiResponses";
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
+import { buildApiResponse } from "../common/apiResponses";
 import TicfRequest from "../domain/ticfRequest";
 import TicfResponse from "../domain/ticfResponse";
 import { processGetVCRequest } from "../services/ticfService";
 
-export const handler = async (
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
-  let ticfRequest: TicfRequest | undefined;
+export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
+  let ticfRequest;
   try {
-    if (event.body === null) {
-      throw new Error(`Pls. pass proper request.`);
-    }
-    ticfRequest = JSON.parse(event.body);
-  } catch (error) {
-    if (error instanceof Error) {
-      return apiResponses._400({ errorMessage: error.message });
-    }
+    ticfRequest = parseRequest(event);
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+    console.error(error);
+    return buildApiResponse({ errorMessage: error.message }, 400);
   }
+
+  try {
+    const response: TicfResponse = await processGetVCRequest(ticfRequest);
+    console.info(`Returning ${JSON.stringify(response)}`);
+    return buildApiResponse(response);
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+    console.error(error);
+    return buildApiResponse({ errorMessage: error.message }, 500);
+  }
+}
+
+function parseRequest(event: APIGatewayProxyEventV2): TicfRequest {
+  if (!event.body) {
+    throw new Error('Missing request body');
+  }
+
+  const ticfRequest = JSON.parse(event.body);
+
   if (
     !ticfRequest ||
     !ticfRequest.sub ||
@@ -25,16 +37,9 @@ export const handler = async (
     !ticfRequest.vtr ||
     !ticfRequest.vtm ||
     !ticfRequest.govuk_signin_journey_id
-  )
-    return apiResponses._400({ errorMessage: "Pls. pass proper request." });
-
-  // Process and get response
-  let responseBody: TicfResponse;
-  try {
-    responseBody = await processGetVCRequest(ticfRequest);
-    return apiResponses._200(responseBody);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    return apiResponses._500({ errorMessage: error.message });
+  ) {
+    throw new Error('Invalid request');
   }
-};
+
+  return ticfRequest;
+}
