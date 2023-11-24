@@ -20,6 +20,15 @@ export async function processGetVCRequest(
   } catch (error: any) {
     throw new Error(`Error while retrieving TicF CRI VC signing key. . Error message: ${error.message}`);
   }
+  let ticfComponentId: string;
+  try {
+    ticfComponentId = await getSsmParameter(
+      process.env.TICF_PARAM_BASE_PATH + "componentId"
+    );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    throw new Error(`Error while retrieving TicF CRI componentId for VC aud value. Error message: ${error.message}`);
+  }
   let timeoutVC: string | null | undefined = await getSsmParameter(
     process.env.TICF_PARAM_BASE_PATH + "timeoutVC"
   );
@@ -34,7 +43,8 @@ export async function processGetVCRequest(
     customClaims: getCustomClaims(
       JSON.parse(timeoutVC.toLowerCase()),
       JSON.parse(includeCIToVC.toLowerCase()),
-      ticfRequest.sub
+      ticfRequest.sub,
+      ticfComponentId
     ),
     privateSigningKey: ticfSigningKey!,
   };
@@ -42,7 +52,6 @@ export async function processGetVCRequest(
   // preparing response
   try {
     const returnJwt = await buildSignedJwt(buildJwtParams);
-    console.info(returnJwt);
     return {
       sub: ticfRequest.sub,
       govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
@@ -60,12 +69,13 @@ export async function processGetVCRequest(
 function getCustomClaims(
   timeOutVC: boolean,
   includeCIToVC: boolean,
-  userId: string
+  userId: string,
+  componentId: string
 ): JWTPayload {
   return {
     sub: userId,
     iss: process.env.ISSUER,
-    aud: "https://development-di-ipv-core-front.london.cloudapps.digital",
+    aud: componentId,
     nbf: Date.now(),
     vc: {
       evidence: [getEvidenceItem(timeOutVC, includeCIToVC)],
