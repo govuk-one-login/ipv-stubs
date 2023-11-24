@@ -100,7 +100,7 @@ describe("Unit test for TICF handler", function () {
     expect(getParameter).toHaveBeenCalledTimes(0);
     const event: APIGatewayProxyEvent = {
       body: null,
-    } as any;
+    } as APIGatewayProxyEvent;
     //
     const result = await handler(event);
     //
@@ -117,7 +117,7 @@ describe("Unit test for TICF handler", function () {
     expect(getParameter).toHaveBeenCalledTimes(0);
     const event: APIGatewayProxyEvent = {
       body: JSON.stringify({}),
-    } as any;
+    } as APIGatewayProxyEvent;
     //
     const result = await handler(event);
     //
@@ -139,7 +139,7 @@ describe("Unit test for TICF handler", function () {
           "<JWT-encoded VC 2>",
         ],
       }),
-    } as any;
+    } as APIGatewayProxyEvent;
     //
     const result = await handler(event);
     //
@@ -191,5 +191,5 @@ function getTestRequestEvent(): APIGatewayProxyEvent {
         "<JWT-encoded VC 2>",
       ],
     }),
-  } as any;
+  } as APIGatewayProxyEvent;
 }

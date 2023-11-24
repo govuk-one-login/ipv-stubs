@@ -48,13 +48,7 @@ paths:
         httpMethod: "POST"
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTicfVCFunction.Arn}:live/invocations
-        passthroughBehavior: "when_no_match"
-        requestTemplates:
-          application/json:
-            Fn::Sub: |
-              {
-                "input": “{ \"vtr\": \"$input.body('vtr')\", \"vot\": \"$input.body('vot')\", \"vtm\": \"$input.body('vtm')\", \"sub\": \"$input.body('sub')\", \"govuk_signin_journey_id\": \"$input.body('govuk_signin_journey_id')\", \"https://vocab.account.gov.uk/v1/credentialJWT\": \"$input.body('https://vocab.account.gov.uk/v1/credentialJWT')\ "}"
-              }
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
           default:
             statusCode: 200
