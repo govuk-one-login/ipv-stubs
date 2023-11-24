@@ -16,9 +16,8 @@ export async function processGetVCRequest(
     ticfSigningKey = await getSsmParameter(
       process.env.TICF_PARAM_BASE_PATH + "signingKey"
     );
-  } catch (error) {
-    console.info(error);
-    throw new Error(`Error while retrieving TicF CRI VC signing key.`);
+  } catch (error: any) {
+    throw new Error(`Error while retrieving TicF CRI VC signing key. . Error message: ${error.message}`);
   }
   let timeoutVC: string | null | undefined = await getSsmParameter(
     process.env.TICF_PARAM_BASE_PATH + "timeoutVC"
@@ -51,8 +50,8 @@ export async function processGetVCRequest(
       vtm: ticfRequest.vtm,
       "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
     };
-  } catch (error) {
-    throw new Error(`Error while building signing JWT.`);
+  } catch (error: any) {
+    throw new Error(`Error while building signing JWT. Error message: ${error.message}`);
   }
 }
 
