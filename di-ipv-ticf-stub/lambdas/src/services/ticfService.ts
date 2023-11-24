@@ -1,61 +1,58 @@
 import { JWTPayload } from "jose";
 import { v4 as uuid } from "uuid";
-
-import { buildSignedJwt } from "stub-oauth-client";
-import type { SignedJwtParams } from "stub-oauth-client";
-
+import { buildSignedJwt } from "di-stub-oauth-client";
+import type { SignedJwtParams } from "di-stub-oauth-client";
 import { getSsmParameter } from "../common/ssmParameter";
 import TicfRequest from "../domain/ticfRequest";
 import TicfResponse from "../domain/ticfResponse";
 import TicfEvidenceItem from "../domain/ticfEvidenceItem";
 
-export class TicfService {
-  async processGetVCRequest(ticfRequest: TicfRequest): Promise<TicfResponse> {
-    // preparing response
-    let ticfSigningKey: string;
-    try {
-      ticfSigningKey = await getSsmParameter(
-        process.env.TICF_PARAM_BASE_PATH + "signingKey"
-      );
-    } catch (error) {
-      console.info(error);
-      throw new Error(`Error while retrieving TicF CRI VC signing key.`);
-    }
-    let timeoutVC: string | null | undefined = await getSsmParameter(
-      process.env.TICF_PARAM_BASE_PATH + "timeoutVC"
+export async function processGetVCRequest(
+  ticfRequest: TicfRequest
+): Promise<TicfResponse> {
+  // preparing response
+  let ticfSigningKey: string;
+  try {
+    ticfSigningKey = await getSsmParameter(
+      process.env.TICF_PARAM_BASE_PATH + "signingKey"
     );
-    timeoutVC ??= "false";
-    let includeCIToVC: string | null | undefined = await getSsmParameter(
-      process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
-    );
-    includeCIToVC ??= "false";
+  } catch (error) {
+    console.info(error);
+    throw new Error(`Error while retrieving TicF CRI VC signing key.`);
+  }
+  let timeoutVC: string | null | undefined = await getSsmParameter(
+    process.env.TICF_PARAM_BASE_PATH + "timeoutVC"
+  );
+  timeoutVC ??= "false";
+  let includeCIToVC: string | null | undefined = await getSsmParameter(
+    process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
+  );
+  includeCIToVC ??= "false";
 
-    const buildJwtParams: SignedJwtParams = {
-      issuer: process.env.ISSUER,
-      customClaims: getCustomClaims(
-        JSON.parse(timeoutVC.toLowerCase()),
-        JSON.parse(includeCIToVC.toLowerCase()),
-        ticfRequest.sub
-      ),
-      privateSigningKey: ticfSigningKey!,
+  const buildJwtParams: SignedJwtParams = {
+    issuer: process.env.ISSUER,
+    customClaims: getCustomClaims(
+      JSON.parse(timeoutVC.toLowerCase()),
+      JSON.parse(includeCIToVC.toLowerCase()),
+      ticfRequest.sub
+    ),
+    privateSigningKey: ticfSigningKey!,
+  };
+
+  // preparing response
+  try {
+    const returnJwt = await buildSignedJwt(buildJwtParams);
+    console.info(returnJwt);
+    return {
+      sub: ticfRequest.sub,
+      govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
+      vtr: ticfRequest.vtr,
+      vot: ticfRequest.vot,
+      vtm: ticfRequest.vtm,
+      "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
     };
-
-    // preparing response
-    try {
-      const returnJwt = await buildSignedJwt(buildJwtParams);
-      console.info(returnJwt);
-      return {
-        sub: ticfRequest.sub,
-        govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
-        vtr: ticfRequest.vtr,
-        vot: ticfRequest.vot,
-        vtm: ticfRequest.vtm,
-        "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
-      };
-    } catch (error) {
-      console.error(error);
-      throw new Error(`Error while building signing JWT.`);
-    }
+  } catch (error) {
+    throw new Error(`Error while building signing JWT.`);
   }
 }
 
@@ -99,6 +96,4 @@ function getEvidenceItem(
   }
 }
 
-const ticfService: any = new TicfService();
-
-export default ticfService;
+export default processGetVCRequest;
