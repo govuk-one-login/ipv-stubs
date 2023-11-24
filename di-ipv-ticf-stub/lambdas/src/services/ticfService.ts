@@ -17,7 +17,7 @@ export async function processGetVCRequest(
   const timestamp = Math.floor(new Date().getTime() / 1000);
 
   const payload: TicfVc = {
-    iss: process.env.ISSUER,
+    iss: ticfComponentId,
     sub: ticfRequest.sub,
     aud: ticfComponentId,
     jti: `urn:uuid:${uuid()}`,
