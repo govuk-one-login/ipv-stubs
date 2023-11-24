@@ -1,7 +1,7 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 
-import { buildSignedJwt } from "stub-oauth-client";
+import { buildSignedJwt } from "di-stub-oauth-client";
 
 import { handler } from "../../src/handlers/ticfHandler";
 
@@ -11,7 +11,7 @@ jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
 }));
 
 const mockBuildSignedJwt = buildSignedJwt as jest.Mock;
-jest.mock("stub-oauth-client", () => ({
+jest.mock("di-stub-oauth-client", () => ({
   buildSignedJwt: jest.fn(),
 }));
 

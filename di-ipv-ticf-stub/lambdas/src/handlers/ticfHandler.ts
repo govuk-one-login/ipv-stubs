@@ -1,9 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-
 import { apiResponses } from "../common/apiResponses";
 import TicfRequest from "../domain/ticfRequest";
 import TicfResponse from "../domain/ticfResponse";
-import ticfService from "../services/ticfService";
+import { processGetVCRequest } from "../services/ticfService";
 
 export const handler = async (
   event: APIGatewayProxyEvent
@@ -30,18 +29,11 @@ export const handler = async (
     return apiResponses._400({ errorMessage: "Pls. pass proper request." });
 
   // Process and get response
-  let responseBody: TicfResponse | undefined;
+  let responseBody: TicfResponse;
   try {
-    responseBody = await ticfService.processGetVCRequest(ticfRequest);
-  } catch (error) {
-    if (error instanceof Error) {
-      return apiResponses._500({ errorMessage: error.message });
-    }
+    responseBody = await processGetVCRequest(ticfRequest);
+    return apiResponses._200(responseBody);
+  } catch (error: any) {
+    return apiResponses._500({ errorMessage: error.message });
   }
-  if (!responseBody)
-    return apiResponses._500({
-      errorMessage: "Failed while processing request.",
-    });
-
-  return apiResponses._200(responseBody);
 };
