@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: "TiCF Stub External"
+  description: "The external api presented by TiCF Stub for use by non TiCF services"
+  version: "1.0.0"
+paths:
+  /healthcheck:
+    get:
+      description: "returns a 200 for Route53 health checks to use"
+      responses:
+        200:
+          description: "A healthcheck response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "MOCK"
+        requestTemplates:
+          application/json: "{\"statusCode\":200}"
+        responses:
+          200:
+            statusCode: 200
+            responseTemplates:
+              application/json: "{\"healthcheck\": \"ok\"}"
+
+  /risk-assessment:
+    post:
+      description: process and return VC from Ticf Stub
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicfRequestBody"
+      responses:
+        200:
+          description: "Success response "
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetTicfVCFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: '{"result": "success"}'
+
+components:
+  schemas:
+    TicfRequestBody:
+      description: Request body for Ticf request
+      type: object
+      properties:
+        vtr:
+          type: array
+          items:
+            type: string
+          description: The code for vtr data
+        vot:
+          type: string
+          description: The code for vot data
+        vtm:
+          type: string
+          description: The code for vtm data
+        sub:
+          type: string
+          description: The code user id data
+        govuk_signin_journey_id:
+          type: string
+          description: The code for journey id data
+        https://vocab.account.gov.uk/v1/credentialJWT:
+          type: array
+          items:
+            type: string
+          description: An array of VC's from CRI's
