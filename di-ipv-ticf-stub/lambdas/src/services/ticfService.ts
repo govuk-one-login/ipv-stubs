@@ -1,98 +1,53 @@
-import { JWTPayload } from "jose";
 import { v4 as uuid } from "uuid";
-import { buildSignedJwt } from "di-stub-oauth-client";
-import type { SignedJwtParams } from "di-stub-oauth-client";
 import { getSsmParameter } from "../common/ssmParameter";
 import TicfRequest from "../domain/ticfRequest";
 import TicfResponse from "../domain/ticfResponse";
 import TicfEvidenceItem from "../domain/ticfEvidenceItem";
+import TicfVc from "../domain/ticfVc";
+import { signJwt } from "./signingService";
 
 export async function processGetVCRequest(
   ticfRequest: TicfRequest
 ): Promise<TicfResponse> {
-  // preparing response
-  let ticfSigningKey: string;
-  try {
-    ticfSigningKey = await getSsmParameter(
-      process.env.TICF_PARAM_BASE_PATH + "signingKey"
-    );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    throw new Error(`Error while retrieving TicF CRI VC signing key. . Error message: ${error.message}`);
-  }
-  let ticfComponentId: string;
-  try {
-    ticfComponentId = await getSsmParameter(
-      process.env.TICF_PARAM_BASE_PATH + "componentId"
-    );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    throw new Error(`Error while retrieving TicF CRI componentId for VC aud value. Error message: ${error.message}`);
-  }
-  let timeoutVC: string | null | undefined = await getSsmParameter(
-    process.env.TICF_PARAM_BASE_PATH + "timeoutVC"
-  );
-  timeoutVC ??= "false";
-  let includeCIToVC: string | null | undefined = await getSsmParameter(
-    process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
-  );
-  includeCIToVC ??= "false";
+  const ticfSigningKey = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "signingKey");
+  const ticfComponentId = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "componentId");
+  const timeoutVc = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "timeoutVC") === 'true';
+  const includeCi = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "includeCIToVC") === 'true';
 
-  const buildJwtParams: SignedJwtParams = {
-    issuer: process.env.ISSUER,
-    customClaims: getCustomClaims(
-      JSON.parse(timeoutVC.toLowerCase()),
-      JSON.parse(includeCIToVC.toLowerCase()),
-      ticfRequest.sub,
-      ticfComponentId
-    ),
-    privateSigningKey: ticfSigningKey!,
-  };
+  const timestamp = Math.floor(new Date().getTime() / 1000);
 
-  // preparing response
-  try {
-    const returnJwt = await buildSignedJwt(buildJwtParams);
-    return {
-      sub: ticfRequest.sub,
-      govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
-      vtr: ticfRequest.vtr,
-      vot: ticfRequest.vot,
-      vtm: ticfRequest.vtm,
-      "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
-    };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    throw new Error(`Error while building signing JWT. Error message: ${error.message}`);
-  }
-}
-
-function getCustomClaims(
-  timeOutVC: boolean,
-  includeCIToVC: boolean,
-  userId: string,
-  componentId: string
-): JWTPayload {
-  return {
-    sub: userId,
-    iss: process.env.ISSUER,
-    aud: componentId,
-    nbf: Date.now(),
+  const payload: TicfVc = {
+    iss: ticfComponentId,
+    sub: ticfRequest.sub,
+    aud: ticfComponentId,
+    jti: `urn:uuid:${uuid()}`,
+    nbf: timestamp,
+    iat: timestamp,
     vc: {
-      evidence: [getEvidenceItem(timeOutVC, includeCIToVC)],
+      evidence: [getEvidenceItem(timeoutVc, includeCi)],
       type: ["VerifiableCredential", "RiskAssessmentCredential"],
     },
-    jti: "urn:uuid:" + uuid(),
+  };
+
+  const returnJwt = await signJwt(payload, ticfSigningKey);
+  return {
+    sub: ticfRequest.sub,
+    govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
+    vtr: ticfRequest.vtr,
+    vot: ticfRequest.vot,
+    vtm: ticfRequest.vtm,
+    "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
   };
 }
 
 function getEvidenceItem(
-  timeOutVC: boolean,
-  includeCIToVC: boolean
+  timeoutVc: boolean,
+  includeCi: boolean
 ): TicfEvidenceItem {
-  if (timeOutVC) {
+  if (timeoutVc) {
     return { type: "RiskAssessment" };
   } else {
-    if (includeCIToVC) {
+    if (includeCi) {
       return {
         type: "RiskAssessment",
         ci: ["V03"],

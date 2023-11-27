@@ -1,212 +1,176 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
+import { APIGatewayProxyEventV2, APIGatewayProxyStructuredResultV2 } from "aws-lambda";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
-
-import { buildSignedJwt } from "di-stub-oauth-client";
-
 import { handler } from "../../src/handlers/ticfHandler";
+import TicfResponse from "../../src/domain/ticfResponse";
+import { importSPKI, jwtVerify } from "jose";
+import TicfVc from "../../src/domain/ticfVc";
+import config from "../../src/common/config";
 
-const mockGetParameter = getParameter as jest.Mock;
 jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
   getParameter: jest.fn(),
 }));
 
-const mockBuildSignedJwt = buildSignedJwt as jest.Mock;
-jest.mock("di-stub-oauth-client", () => ({
-  buildSignedJwt: jest.fn(),
+jest.mock("../../src/common/config", () => ({
+  default: {
+    ssmBasePath: '/test/path',
+  },
 }));
 
-describe("Unit test for TICF handler", function () {
-  it("verifies successful, 200 response", async () => {
-    mockGetParameter
-      .mockReturnValueOnce("testSignedKey")
-      .mockReturnValueOnce("testComponentId")
-      .mockReturnValueOnce("False")
-      .mockReturnValueOnce("False");
-    mockBuildSignedJwt.mockReturnValueOnce("signed-jwt");
+const EC_PRIVATE_KEY = 'MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgkGU1Xuq6ntjxOPqqk5Q/Qq+JpZsGJ6b6TRcD969CEsuhRANCAATXraAdaAWfQhMjaOT9TVWzmbiJZZLxwx1sShONadRgP+4WWaqxNlUgoAAYYdDEfVJMTOuumLfeRhuLYCKrJd8R';
+const EC_PUBLIC_KEY = 'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE162gHWgFn0ITI2jk/U1Vs5m4iWWS8cMdbEoTjWnUYD/uFlmqsTZVIKAAGGHQxH1STEzrrpi33kYbi2AiqyXfEQ==';
 
-    expect(getParameter).toHaveBeenCalledTimes(0);
-    //
-    const result = await handler(getTestRequestEvent());
-    //
-    expect(getParameter).toHaveBeenCalledWith(
-      process.env.TICF_PARAM_BASE_PATH + "signingKey"
-    );
-    expect(getParameter).toHaveBeenCalledWith(
-      process.env.TICF_PARAM_BASE_PATH + "timeoutVC"
-    );
-    expect(getParameter).toHaveBeenCalledWith(
-      process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
-    );
-    expect(getParameter).toHaveBeenCalledTimes(4);
+const TEST_COMPONENT_ID = 'https://example.com';
 
-    expect(buildSignedJwt).toHaveBeenCalledTimes(1);
+const TEST_REQUEST = {
+  vtr: ["Cl.Cm.P2"],
+  vot: "P2",
+  vtm: "https://oidc.account.gov.uk/trustmark",
+  sub: "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
+  govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
+  "https://vocab.account.gov.uk/v1/credentialJWT": [],
+};
 
+const TEST_EVENT = {
+  body: JSON.stringify(TEST_REQUEST),
+} as APIGatewayProxyEventV2;
+
+async function parseTicfVc(jwt: string): Promise<TicfVc> {
+  const key = await importSPKI(
+    `-----BEGIN PUBLIC KEY-----\n${EC_PUBLIC_KEY}\n-----END PUBLIC KEY-----`,
+    "ES256"
+  );
+  return (await jwtVerify(jwt, key)).payload as TicfVc;
+}
+
+describe("TICF handler", function () {
+  it("returns a successful VC response", async () => {
+    // arrange
+    jest.mocked(getParameter)
+      .mockResolvedValueOnce(EC_PRIVATE_KEY)
+      .mockResolvedValueOnce(TEST_COMPONENT_ID)
+      .mockResolvedValueOnce("false")
+      .mockResolvedValueOnce("false");
+
+    // act
+    const result = await handler(TEST_EVENT) as APIGatewayProxyStructuredResultV2;
+
+    // assert
     expect(result.statusCode).toEqual(200);
-    // expect(result.body).toEqual(`JWT VC`);
+
+    const response = JSON.parse(result.body!) as TicfResponse;
+    expect(response.vtr).toEqual(TEST_REQUEST.vtr);
+    expect(response.vot).toEqual(TEST_REQUEST.vot);
+    expect(response.vtm).toEqual(TEST_REQUEST.vtm);
+    expect(response.sub).toEqual(TEST_REQUEST.sub);
+    expect(response.govuk_signin_journey_id).toEqual(TEST_REQUEST.govuk_signin_journey_id);
+    expect(response["https://vocab.account.gov.uk/v1/credentialJWT"]).toHaveLength(1);
+
+    const ticfVc = await parseTicfVc(response["https://vocab.account.gov.uk/v1/credentialJWT"][0]);
+    expect(ticfVc.iss).toEqual(TEST_COMPONENT_ID);
+    expect(ticfVc.sub).toEqual(TEST_REQUEST.sub);
+    expect(ticfVc.aud).toEqual(TEST_COMPONENT_ID);
+    expect(ticfVc.vc.type).toEqual(['VerifiableCredential', 'RiskAssessmentCredential']);
+    expect(ticfVc.vc.evidence).toHaveLength(1);
+    expect(ticfVc.vc.evidence[0].type).toEqual('RiskAssessment');
+    expect(ticfVc.vc.evidence[0].txn).toBeTruthy();
   });
 
-  it("verifies successful in case of VC with CI, 200 response", async () => {
-    mockGetParameter
-      .mockReturnValueOnce("testSignedKey")
-      .mockReturnValueOnce("testComponentId")
-      .mockReturnValueOnce("False")
-      .mockReturnValueOnce("True");
-    mockBuildSignedJwt.mockReturnValueOnce("signed-jwt");
-    //
-    const result = await handler(getTestRequestEvent());
-    //
-    expect(getParameter).toHaveBeenCalledWith(
-      process.env.TICF_PARAM_BASE_PATH + "signingKey"
-    );
-    expect(getParameter).toHaveBeenCalledWith(
-      process.env.TICF_PARAM_BASE_PATH + "timeoutVC"
-    );
-    expect(getParameter).toHaveBeenCalledWith(
-      process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
-    );
-    expect(getParameter).toHaveBeenCalledTimes(4);
+  it("returns a VC with CI when includeCIToVC is true", async () => {
+    // arrange
+    jest.mocked(getParameter)
+      .mockResolvedValueOnce(EC_PRIVATE_KEY)
+      .mockResolvedValueOnce(TEST_COMPONENT_ID)
+      .mockResolvedValueOnce("false")
+      .mockResolvedValueOnce("true");
 
-    expect(buildSignedJwt).toHaveBeenCalledTimes(1);
+    // act
+    const result = await handler(TEST_EVENT) as APIGatewayProxyStructuredResultV2;
 
+    // assert
     expect(result.statusCode).toEqual(200);
-    // expect(result.body).toEqual(`JWT VC`);
+
+    const response = JSON.parse(result.body!) as TicfResponse;
+    const ticfVc = await parseTicfVc(response["https://vocab.account.gov.uk/v1/credentialJWT"][0]);
+    expect(ticfVc.vc.evidence).toHaveLength(1);
+    expect(ticfVc.vc.evidence[0].type).toEqual('RiskAssessment');
+    expect(ticfVc.vc.evidence[0].txn).toBeDefined();
+    expect(ticfVc.vc.evidence[0].ci).toEqual(['V03']);
   });
 
-  it("verifies successful in case of timeout VC, 200 response", async () => {
-    mockGetParameter
-      .mockReturnValueOnce("testSignedKey")
-      .mockReturnValueOnce("testComponentId")
-      .mockReturnValueOnce("True")
-      .mockReturnValueOnce("False");
-    mockBuildSignedJwt.mockReturnValueOnce("signed-jwt");
-    //
-    const result = await handler(getTestRequestEvent());
-    //
-    expect(getParameter).toHaveBeenCalledWith(
-      process.env.TICF_PARAM_BASE_PATH + "signingKey"
-    );
-    expect(getParameter).toHaveBeenCalledWith(
-      process.env.TICF_PARAM_BASE_PATH + "timeoutVC"
-    );
-    expect(getParameter).toHaveBeenCalledWith(
-      process.env.TICF_PARAM_BASE_PATH + "includeCIToVC"
-    );
-    expect(getParameter).toHaveBeenCalledTimes(4);
+  it("returns an empty timeout VC when timeoutVC is true", async () => {
+    // arrange
+    jest.mocked(getParameter)
+      .mockResolvedValueOnce(EC_PRIVATE_KEY)
+      .mockResolvedValueOnce(TEST_COMPONENT_ID)
+      .mockResolvedValueOnce("true")
+      .mockResolvedValueOnce("false");
 
-    expect(buildSignedJwt).toHaveBeenCalledTimes(1);
+    // act
+    const result = await handler(TEST_EVENT) as APIGatewayProxyStructuredResultV2;
 
+    // assert
     expect(result.statusCode).toEqual(200);
-    // expect(result.body).toEqual(`JWT VC`);
+
+    const response = JSON.parse(result.body!) as TicfResponse;
+    const ticfVc = await parseTicfVc(response["https://vocab.account.gov.uk/v1/credentialJWT"][0]);
+    expect(ticfVc.vc.evidence).toHaveLength(1);
+    expect(ticfVc.vc.evidence[0].type).toEqual('RiskAssessment');
+    expect(ticfVc.vc.evidence[0].txn).toBeUndefined();
   });
 
-  it("verifies bad request with no body, 400 response", async () => {
-    expect(getParameter).toHaveBeenCalledTimes(0);
-    const event: APIGatewayProxyEvent = {
-      body: null,
-    } as APIGatewayProxyEvent;
-    //
-    const result = await handler(event);
-    //
-    expect(getParameter).toHaveBeenCalledTimes(0);
-    expect(buildSignedJwt).toHaveBeenCalledTimes(0);
+  it("returns a 400 for an empty request", async () => {
+    // arrange
+    const event = {
+      ...TEST_EVENT,
+      body: undefined,
+    };
 
+    // act
+    const result = await handler(event) as APIGatewayProxyStructuredResultV2;
+
+    // assert
     expect(result.statusCode).toEqual(400);
   });
 
-  it("verifies bad request fail while parsing, 400 response", async () => {
-    jest.spyOn(JSON, "parse").mockImplementationOnce(() => {
-      throw new Error();
-    });
-    expect(getParameter).toHaveBeenCalledTimes(0);
-    const event: APIGatewayProxyEvent = {
-      body: JSON.stringify({}),
-    } as APIGatewayProxyEvent;
-    //
-    const result = await handler(event);
-    //
-    expect(getParameter).toHaveBeenCalledTimes(0);
-    expect(buildSignedJwt).toHaveBeenCalledTimes(0);
+  it("returns a 400 for an invalid request", async () => {
+    // arrange
+    const event = {
+      ...TEST_EVENT,
+      body: 'invalid json',
+    };
 
+    // act
+    const result = await handler(event) as APIGatewayProxyStructuredResultV2;
+
+    // assert
     expect(result.statusCode).toEqual(400);
   });
 
-  it("verifies bad request with missing vot, 400 response", async () => {
-    const event: APIGatewayProxyEvent = {
+  it("returns a 400 for a missing vot", async () => {
+    // arrange
+    const event = {
+      ...TEST_EVENT,
       body: JSON.stringify({
-        vtr: ["Cl.Cm.P2"],
-        vtm: "https://oidc.account.gov.uk/trustmark",
-        sub: "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
-        govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
-        "https://vocab.account.gov.uk/v1/credentialJWT": [
-          "<JWT-encoded VC 1>",
-          "<JWT-encoded VC 2>",
-        ],
+        ...TEST_REQUEST,
+        vot: undefined,
       }),
-    } as APIGatewayProxyEvent;
-    //
-    const result = await handler(event);
-    //
-    expect(getParameter).toHaveBeenCalledTimes(0);
-    expect(buildSignedJwt).toHaveBeenCalledTimes(0);
+    };
 
+    // act
+    const result = await handler(event) as APIGatewayProxyStructuredResultV2;
+
+    // assert
     expect(result.statusCode).toEqual(400);
   });
 
-  it("verifies undefined response from ssm, 500 response", async () => {
-    mockGetParameter.mockReturnValueOnce(undefined);
-    //
-    const result = await handler(getTestRequestEvent());
-    //
-    expect(getParameter).toHaveBeenCalledTimes(1);
-    expect(buildSignedJwt).toHaveBeenCalledTimes(0);
+  it("returns a 500 for missing SSM parameter", async () => {
+    // arrange
+    jest.mocked(getParameter).mockResolvedValueOnce(undefined);
 
-    expect(result.statusCode).toEqual(500);
-  });
+    // act
+    const result = await handler(TEST_EVENT) as APIGatewayProxyStructuredResultV2;
 
-  it("verifies undefined response from ssm for no componentId, 500 response", async () => {
-    mockGetParameter
-    .mockReturnValueOnce("testSignedKey")
-    .mockRejectedValueOnce(new Error())
-    //
-    const result = await handler(getTestRequestEvent());
-    //
-    expect(getParameter).toHaveBeenCalledTimes(2);
-    expect(buildSignedJwt).toHaveBeenCalledTimes(0);
-
-    expect(result.statusCode).toEqual(500);
-  });
-
-  it("verifies error while building signed JWT, 500 response", async () => {
-    mockGetParameter
-      .mockReturnValueOnce("testSignedKey")
-      .mockReturnValueOnce("testComponentId")
-      .mockReturnValueOnce("False")
-      .mockReturnValueOnce("False");
-    mockBuildSignedJwt.mockImplementation(() => {
-      throw new Error();
-    });
-    //
-    const result = await handler(getTestRequestEvent());
-    //
-    expect(getParameter).toHaveBeenCalledTimes(4);
-    expect(buildSignedJwt).toHaveBeenCalledTimes(1);
-
+    // assert
     expect(result.statusCode).toEqual(500);
   });
 });
-
-function getTestRequestEvent(): APIGatewayProxyEvent {
-  return {
-    body: JSON.stringify({
-      vtr: ["Cl.Cm.P2"],
-      vot: "P2",
-      vtm: "https://oidc.account.gov.uk/trustmark",
-      sub: "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
-      govuk_signin_journey_id: "44444444-4444-4444-4444-444444444444",
-      "https://vocab.account.gov.uk/v1/credentialJWT": [
-        "<JWT-encoded VC 1>",
-        "<JWT-encoded VC 2>",
-      ],
-    }),
-  } as APIGatewayProxyEvent;
-}
