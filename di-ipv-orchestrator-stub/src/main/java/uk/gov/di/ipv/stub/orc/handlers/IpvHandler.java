@@ -81,12 +81,22 @@ public class IpvHandler {
                         request.queryMap().hasKey("vtrText")
                                 ? request.queryMap("vtrText").values()
                                 : new String[] {"Cl.Cm.P2"};
+                String reproveIdentityString = request.queryMap().get("reproveIdentity").value();
+                JwtBuilder.ReproveIdentityClaimValue reproveIdentityClaimValue =
+                        StringUtils.isNotBlank(reproveIdentityString)
+                                ? JwtBuilder.ReproveIdentityClaimValue.valueOf(
+                                        reproveIdentityString)
+                                : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
 
                 String userId = getUserIdValue(userIdTextValue);
 
                 JWTClaimsSet claims =
                         JwtBuilder.buildAuthorizationRequestClaims(
-                                userId, signInJourneyIdText, vtr, errorType);
+                                userId,
+                                signInJourneyIdText,
+                                vtr,
+                                errorType,
+                                reproveIdentityClaimValue);
 
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
                 EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt);
