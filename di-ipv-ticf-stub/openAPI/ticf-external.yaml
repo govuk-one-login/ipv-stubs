@@ -54,6 +54,36 @@ paths:
             statusCode: 200
             responseTemplates:
               application/json: '{"result": "success"}'
+  /management/user/{userId}:
+    post:
+      description: Ticf Stub management api
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserEvidenceRequestBody"
+      responses:
+        200:
+          description: "Success response "
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserEvidenceFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: '{"result": "success"}'
 
 components:
   schemas:
@@ -83,3 +113,15 @@ components:
           items:
             type: string
           description: An array of VC's from CRI's
+    UserEvidenceRequestBody:
+      description: Request body for Ticf management
+      type: object
+      properties:
+        userId:
+          type: string
+          items:
+            type: string
+          description: The code for userId data
+        evidence:
+          type: string
+          description: The code for evidence data

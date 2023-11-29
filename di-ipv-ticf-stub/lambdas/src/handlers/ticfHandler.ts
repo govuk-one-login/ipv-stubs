@@ -4,11 +4,14 @@ import TicfRequest from "../domain/ticfRequest";
 import TicfResponse from "../domain/ticfResponse";
 import { processGetVCRequest } from "../services/ticfService";
 
-export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
+export async function handler(
+  event: APIGatewayProxyEventV2
+): Promise<APIGatewayProxyResultV2> {
   let ticfRequest;
   try {
     ticfRequest = parseRequest(event);
-  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
     console.error(error);
     return buildApiResponse({ errorMessage: error.message }, 400);
   }
@@ -17,7 +20,8 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
     const response: TicfResponse = await processGetVCRequest(ticfRequest);
     console.info(`Returning ${JSON.stringify(response)}`);
     return buildApiResponse(response);
-  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
     console.error(error);
     return buildApiResponse({ errorMessage: error.message }, 500);
   }
@@ -25,7 +29,7 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
 
 function parseRequest(event: APIGatewayProxyEventV2): TicfRequest {
   if (!event.body) {
-    throw new Error('Missing request body');
+    throw new Error("Missing request body");
   }
 
   const ticfRequest = JSON.parse(event.body);
@@ -38,7 +42,7 @@ function parseRequest(event: APIGatewayProxyEventV2): TicfRequest {
     !ticfRequest.vtm ||
     !ticfRequest.govuk_signin_journey_id
   ) {
-    throw new Error('Invalid request');
+    throw new Error("Invalid request");
   }
 
   return ticfRequest;

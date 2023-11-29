@@ -5,14 +5,22 @@ import TicfResponse from "../domain/ticfResponse";
 import TicfEvidenceItem from "../domain/ticfEvidenceItem";
 import TicfVc from "../domain/ticfVc";
 import { signJwt } from "./signingService";
+import { config } from "../common/config";
 
 export async function processGetVCRequest(
   ticfRequest: TicfRequest
 ): Promise<TicfResponse> {
-  const ticfSigningKey = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "signingKey");
-  const ticfComponentId = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "componentId");
-  const timeoutVc = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "timeoutVC") === 'true';
-  const includeCi = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "includeCIToVC") === 'true';
+  const ticfSigningKey = await getSsmParameter(
+    config.ticfParamBasePath + "signingKey"
+  );
+  const ticfComponentId = await getSsmParameter(
+    config.ticfParamBasePath + "componentId"
+  );
+  const timeoutVc =
+    (await getSsmParameter(config.ticfParamBasePath + "timeoutVC")) === "true";
+  const includeCi =
+    (await getSsmParameter(config.ticfParamBasePath + "includeCIToVC")) ===
+    "true";
 
   const timestamp = Math.floor(new Date().getTime() / 1000);
 
