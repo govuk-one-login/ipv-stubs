@@ -12,8 +12,11 @@ import UserEvidenceItem from "../model/userEvidenceItem";
 import { config } from "../../common/config";
 
 const dynamoClient = config.isLocalDev
-  ? new DynamoDB({ endpoint: config.localDynamoDbEndpoint })
-  : new DynamoDB({ region: process.env.REGION });
+  ? new DynamoDB({
+      endpoint: config.localDynamoDbEndpoint,
+      region: config.region,
+    })
+  : new DynamoDB({ region: config.region });
 
 export async function persistUserEvidence(
   userId: string,
@@ -36,7 +39,7 @@ export async function persistUserEvidence(
   }
 }
 
-async function getUserEvidence(
+export async function getUserEvidence(
   userId: string
 ): Promise<UserEvidenceItem | null> {
   console.info(`Get user record.`);

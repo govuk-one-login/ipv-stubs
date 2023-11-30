@@ -15,7 +15,7 @@ export async function handler(
   let ticfEvidenceItemReq: TicfEvidenceItem;
   try {
     ticfEvidenceItemReq = parseRequest(event);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error);
     return buildApiResponse({ errorMessage: error.message }, 400);
@@ -24,7 +24,7 @@ export async function handler(
   try {
     await persistUserEvidence(userId, ticfEvidenceItemReq);
     return buildApiResponse({ message: "Success !!" });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error);
     return buildApiResponse({ errorMessage: error.message }, 400);

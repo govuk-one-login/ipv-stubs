@@ -7,6 +7,8 @@ import { handler } from "../../src/handlers/ticfHandler";
 import TicfResponse from "../../src/domain/ticfResponse";
 import { importSPKI, jwtVerify } from "jose";
 import TicfVc from "../../src/domain/ticfVc";
+import { getUserEvidence } from "../../src/management/services/userEvidenceService";
+import UserEvidenceItem from "../../src/management/model/userEvidenceItem";
 
 jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
   getParameter: jest.fn(),
@@ -16,6 +18,10 @@ jest.mock("../../src/common/config", () => ({
   config: {
     ticfParamBasePath: "/test/path/",
   },
+}));
+
+jest.mock("../../src/management/services/userEvidenceService", () => ({
+  getUserEvidence: jest.fn(),
 }));
 
 const EC_PRIVATE_KEY =
@@ -91,7 +97,7 @@ describe("TICF handler", function () {
     expect(ticfVc.vc.evidence[0].txn).toBeTruthy();
   });
 
-  it("returns a VC with CI when includeCIToVC is true", async () => {
+  it("returns a VC (with evidence from db) when includeCIToVC is true", async () => {
     // arrange
     jest
       .mocked(getParameter)
@@ -100,6 +106,44 @@ describe("TICF handler", function () {
       .mockResolvedValueOnce("false")
       .mockResolvedValueOnce("true");
 
+    const userEvidence: UserEvidenceItem = {
+      userId:
+        "urn:fdc:gov.uk:2022:56P4CMsGh_02YOlWpd8PAOI-2sVlB2nsNU7mcLZYhYw=",
+      evidence: {
+        type: "RiskAssessment",
+        ci: ["V03", "D03"],
+        txn: "uuid",
+      },
+      ttl: 3123123,
+    };
+    jest.mocked(getUserEvidence).mockResolvedValue(userEvidence);
+    // act
+    const result = (await handler(
+      TEST_EVENT
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(200);
+
+    const response = JSON.parse(result.body!) as TicfResponse;
+    const ticfVc = await parseTicfVc(
+      response["https://vocab.account.gov.uk/v1/credentialJWT"][0]
+    );
+    expect(ticfVc.vc.evidence).toHaveLength(1);
+    expect(ticfVc.vc.evidence[0].type).toEqual("RiskAssessment");
+    expect(ticfVc.vc.evidence[0].txn).toEqual("uuid");
+    expect(ticfVc.vc.evidence[0].ci).toEqual(["V03", "D03"]);
+  });
+
+  it("returns a VC with CI when includeCIToVC is true", async () => {
+    // arrange
+    jest
+      .mocked(getParameter)
+      .mockResolvedValueOnce(EC_PRIVATE_KEY)
+      .mockResolvedValueOnce(TEST_COMPONENT_ID)
+      .mockResolvedValueOnce("false")
+      .mockResolvedValueOnce("true");
+    jest.mocked(getUserEvidence).mockResolvedValue(null);
     // act
     const result = (await handler(
       TEST_EVENT
@@ -126,7 +170,7 @@ describe("TICF handler", function () {
       .mockResolvedValueOnce(TEST_COMPONENT_ID)
       .mockResolvedValueOnce("true")
       .mockResolvedValueOnce("false");
-
+    jest.mocked(getUserEvidence).mockResolvedValue(null);
     // act
     const result = (await handler(
       TEST_EVENT

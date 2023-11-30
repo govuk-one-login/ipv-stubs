@@ -117,6 +117,7 @@ Resources:
           ENVIRONMENT: !Sub "${Environment}"
           TICF_PARAM_BASE_PATH: "/stubs/core/ticf/"
           ISSUER: "https://ticf-cri.stubs.account.gov.uk"
+          TICF_STUB_USER_EVIDENCE_TABLE_NAME: !Ref TicfStubUserEvidenceTable
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -127,6 +128,10 @@ Resources:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/ticf/*
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TicfStubUserEvidenceTable
       AutoPublishAlias: live
       Events:
         GetTicfVC:

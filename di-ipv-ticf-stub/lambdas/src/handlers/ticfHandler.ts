@@ -10,7 +10,7 @@ export async function handler(
   let ticfRequest;
   try {
     ticfRequest = parseRequest(event);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error);
     return buildApiResponse({ errorMessage: error.message }, 400);
@@ -20,7 +20,7 @@ export async function handler(
     const response: TicfResponse = await processGetVCRequest(ticfRequest);
     console.info(`Returning ${JSON.stringify(response)}`);
     return buildApiResponse(response);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error);
     return buildApiResponse({ errorMessage: error.message }, 500);

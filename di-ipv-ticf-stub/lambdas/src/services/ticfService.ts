@@ -6,6 +6,8 @@ import TicfEvidenceItem from "../domain/ticfEvidenceItem";
 import TicfVc from "../domain/ticfVc";
 import { signJwt } from "./signingService";
 import { config } from "../common/config";
+import { getUserEvidence } from "../management/services/userEvidenceService";
+import UserEvidenceItem from "../management/model/userEvidenceItem";
 
 export async function processGetVCRequest(
   ticfRequest: TicfRequest
@@ -23,6 +25,7 @@ export async function processGetVCRequest(
     "true";
 
   const timestamp = Math.floor(new Date().getTime() / 1000);
+  const ticfEvidenceItem = await getUserEvidenceFromDb(ticfRequest.sub);
 
   const payload: TicfVc = {
     iss: ticfComponentId,
@@ -32,7 +35,11 @@ export async function processGetVCRequest(
     nbf: timestamp,
     iat: timestamp,
     vc: {
-      evidence: [getEvidenceItem(timeoutVc, includeCi)],
+      evidence: [
+        !ticfEvidenceItem
+          ? getEvidenceItem(timeoutVc, includeCi)
+          : ticfEvidenceItem,
+      ],
       type: ["VerifiableCredential", "RiskAssessmentCredential"],
     },
   };
@@ -68,6 +75,15 @@ function getEvidenceItem(
       };
     }
   }
+}
+
+async function getUserEvidenceFromDb(
+  userId: string
+): Promise<TicfEvidenceItem | undefined> {
+  const userEvidenceItem: UserEvidenceItem | null = await getUserEvidence(
+    userId
+  );
+  return userEvidenceItem ? userEvidenceItem.evidence : undefined;
 }
 
 export default processGetVCRequest;
