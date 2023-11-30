@@ -304,5 +304,5 @@ Outputs:
   RestApiGatewayID:
     Description: TICF API Gateway ID
     Export:
-      Name: !Sub "RestApiGatewayID-${Environment}"
+      Name: !Sub "TicfRestApiGatewayID-${Environment}"
     Value: !Ref RestApiGateway
