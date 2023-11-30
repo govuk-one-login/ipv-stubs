@@ -418,12 +418,12 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 14
-      LogGroupName: !Sub "/aws/lambda/restApi-${Environment}"
+      LogGroupName: !Sub "/aws/lambda/ticfRestApi-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
 Outputs:
   RestApiGatewayID:
     Description: TICF API Gateway ID
     Export:
-      Name: !Sub "RestApiGatewayID-${Environment}"
+      Name: !Sub "TicfRestApiGatewayID-${Environment}"
     Value: !Ref RestApiGateway
