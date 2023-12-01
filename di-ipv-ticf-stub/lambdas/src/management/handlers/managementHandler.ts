@@ -27,7 +27,7 @@ export async function handler(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error);
-    return buildApiResponse({ errorMessage: error.message }, 400);
+    return buildApiResponse({ errorMessage: error.message }, 500);
   }
 }
 

@@ -7,6 +7,8 @@ import { DynamoDB } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { handler } from "../../src/management/handlers/managementHandler";
+import { getUserEvidence } from "../../src/management/services/userEvidenceService";
+import UserEvidenceItem from "../../src/management/model/userEvidenceItem";
 
 jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
   getParameter: jest.fn(),
@@ -59,6 +61,10 @@ const TEST_EVENT = {
   pathParameters: TEST_PATH_PARAM,
 } as APIGatewayProxyEventV2;
 
+const TEST_EVENT_WITHOUT_USER_PARAM = {
+  body: JSON.stringify(TEST_REQUEST),
+} as APIGatewayProxyEventV2;
+
 const TEST_EVENT_WITHOUT_CI = {
   body: JSON.stringify(TEST_REQUEST_WITHOUT_CI),
   pathParameters: TEST_PATH_PARAM,
@@ -66,6 +72,9 @@ const TEST_EVENT_WITHOUT_CI = {
 
 describe("TICF management handler", function () {
   it("returns a successful response", async () => {
+    const initiallyUserEvidenceInDb: UserEvidenceItem | null =
+      await getUserEvidence(testUserId);
+    expect(initiallyUserEvidenceInDb).toBeNull();
     // arrange
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
@@ -95,6 +104,30 @@ describe("TICF management handler", function () {
     expect(evidence.type).toEqual("RiskAssessment");
     expect(evidence.txn).toEqual("uuid");
     expect(evidence.ci).toBeUndefined();
+
+    // to cover service method
+    const userEvidenceItem: UserEvidenceItem | null = await getUserEvidence(
+      testUserId
+    );
+    expect(userEvidenceItem).toBeDefined();
+    expect(userEvidenceItem?.userId).toEqual(testUserId);
+    expect(userEvidenceItem?.evidence).toBeDefined;
+    evidence = userEvidenceItem?.evidence;
+    expect(evidence.type).toEqual("RiskAssessment");
+    expect(evidence.txn).toEqual("uuid");
+    expect(evidence.ci).toBeUndefined();
+  });
+
+  it("returns a 400 when userId path paran not passed", async () => {
+    // arrange
+
+    // act
+    const result = (await handler(
+      TEST_EVENT_WITHOUT_USER_PARAM
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(400);
   });
 
   it("returns a 400 for an empty request", async () => {
@@ -142,7 +175,7 @@ describe("TICF management handler", function () {
     expect(result.statusCode).toEqual(400);
   });
 
-  it("returns a 400 for missing SSM parameter", async () => {
+  it("returns a 500 for missing SSM parameter", async () => {
     // arrange
     jest.mocked(getParameter).mockResolvedValueOnce(undefined);
 
@@ -152,6 +185,6 @@ describe("TICF management handler", function () {
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert
-    expect(result.statusCode).toEqual(400);
+    expect(result.statusCode).toEqual(500);
   });
 });

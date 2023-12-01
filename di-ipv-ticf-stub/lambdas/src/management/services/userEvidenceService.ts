@@ -1,9 +1,4 @@
-import {
-  DynamoDB,
-  GetItemInput,
-  PutItemInput,
-  UpdateItemInput,
-} from "@aws-sdk/client-dynamodb";
+import { DynamoDB, GetItemInput, PutItemInput } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import { getSsmParameter } from "../../common/ssmParameter";
@@ -22,21 +17,16 @@ export async function persistUserEvidence(
   userId: string,
   ticfEvidenceItemReq: TicfEvidenceItem
 ): Promise<void> {
-  const ticfStubTtl = getTtl(parseInt(
-    await getSsmParameter(config.ticfParamBasePath + "ticfStubTtl"))
+  const ticfStubTtl = getTtl(
+    parseInt(await getSsmParameter(config.ticfParamBasePath + "ticfStubTtl"))
   );
 
-  const existingUserEvidence = await getUserEvidence(userId);
-  if (!existingUserEvidence) {
-    const userEvidence: UserEvidenceItem = {
-      userId: userId,
-      evidence: ticfEvidenceItemReq,
-      ttl: ticfStubTtl,
-    };
-    await saveUserEvidence(userEvidence);
-  } else {
-    await updateUserEvidence(userId, ticfEvidenceItemReq, ticfStubTtl);
-  }
+  const userEvidence: UserEvidenceItem = {
+    userId: userId,
+    evidence: ticfEvidenceItemReq,
+    ttl: ticfStubTtl,
+  };
+  await saveUserEvidence(userEvidence);
 }
 
 export async function getUserEvidence(
@@ -69,35 +59,6 @@ async function saveUserEvidence(userEvidence: UserEvidenceItem) {
     : null;
   if (userEvidenceItem === null) {
     console.info(`User record not saved.`);
-  }
-  return userEvidenceItem;
-}
-
-async function updateUserEvidence(
-  userId: string,
-  updatedEvidence: TicfEvidenceItem,
-  ticfStubTtl: number
-) {
-  console.info(`Update user record.`);
-  const updateItemInput: UpdateItemInput = {
-    TableName: config.ticfStubUserEvidenceTableName,
-    Key: marshall({
-      userId: userId,
-    }),
-    UpdateExpression: "set evidence = :updatedEvidence, #attrTtl = :updatedTtl",
-    ExpressionAttributeNames: { "#attrTtl": "ttl" },
-    ExpressionAttributeValues: marshall({
-      ":updatedEvidence": updatedEvidence,
-      ":updatedTtl": ticfStubTtl,
-    }),
-    ReturnValues: "ALL_NEW",
-  };
-  const { Attributes } = await dynamoClient.updateItem(updateItemInput);
-  const userEvidenceItem = Attributes
-    ? (unmarshall(Attributes) as UserEvidenceItem)
-    : null;
-  if (userEvidenceItem === null) {
-    console.info(`User record not updated.`);
   }
   return userEvidenceItem;
 }
