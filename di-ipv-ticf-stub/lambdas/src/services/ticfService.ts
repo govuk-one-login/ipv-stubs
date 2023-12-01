@@ -19,9 +19,9 @@ export async function processGetVCRequest(
     config.ticfParamBasePath + "componentId"
   );
   const timeoutVc =
-    (await getSsmParameter(config.ticfParamBasePath + "timeoutVC")) === "true";
+    (await getSsmParameter(config.ticfParamBasePath + "timeoutVC")).toLowerCase() === "true";
   const includeCi =
-    (await getSsmParameter(config.ticfParamBasePath + "includeCIToVC")) ===
+    (await getSsmParameter(config.ticfParamBasePath + "includeCIToVC")).toLowerCase() ===
     "true";
 
   const timestamp = Math.floor(new Date().getTime() / 1000);
