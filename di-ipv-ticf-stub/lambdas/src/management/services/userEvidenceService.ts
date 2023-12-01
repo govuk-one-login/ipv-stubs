@@ -22,8 +22,8 @@ export async function persistUserEvidence(
   userId: string,
   ticfEvidenceItemReq: TicfEvidenceItem
 ): Promise<void> {
-  const ticfStubTtl = getTtl(
-    await getSsmParameter(config.ticfParamBasePath + "ticfStubTtl")
+  const ticfStubTtl = getTtl(parseInt(
+    await getSsmParameter(config.ticfParamBasePath + "ticfStubTtl"))
   );
 
   const existingUserEvidence = await getUserEvidence(userId);
@@ -102,9 +102,9 @@ async function updateUserEvidence(
   return userEvidenceItem;
 }
 
-function getTtl(ticfStubTtl: string): number {
+function getTtl(ticfTtlSeconds: number): number {
   const newLocal = new Date();
-  newLocal.setSeconds(parseInt(ticfStubTtl));
+  newLocal.setSeconds(ticfTtlSeconds);
   return Math.floor(newLocal.getTime() / 1000);
 }
 

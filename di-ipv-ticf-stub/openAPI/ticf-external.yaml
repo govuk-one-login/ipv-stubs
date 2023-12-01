@@ -57,6 +57,12 @@ paths:
   /management/user/{userId}:
     post:
       description: Ticf Stub management api
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -117,11 +123,15 @@ components:
       description: Request body for Ticf management
       type: object
       properties:
-        userId:
+        type: 
           type: string
-          items:
+          description: The code for evidence type data
+        ci:
+          type: array
+          items: 
             type: string
-          description: The code for userId data
-        evidence:
+          desxcription: The array of ci codes data
+        txn:
           type: string
-          description: The code for evidence data
+          description: The txn code (riskEngineAssessmentId) data
+
