@@ -17,14 +17,11 @@ export async function persistUserEvidence(
   userId: string,
   ticfEvidenceItemReq: TicfEvidenceItem
 ): Promise<void> {
-  const ticfStubTtl = getTtl(
-    parseInt(await getSsmParameter(config.ticfParamBasePath + "ticfStubTtl"))
-  );
 
   const userEvidence: UserEvidenceItem = {
     userId: userId,
     evidence: ticfEvidenceItemReq,
-    ttl: ticfStubTtl,
+    ttl: await getTtl(),
   };
   await saveUserEvidence(userEvidence);
 }
@@ -63,10 +60,9 @@ async function saveUserEvidence(userEvidence: UserEvidenceItem) {
   return userEvidenceItem;
 }
 
-function getTtl(ticfTtlSeconds: number): number {
-  const newLocal = new Date();
-  newLocal.setSeconds(ticfTtlSeconds);
-  return Math.floor(newLocal.getTime() / 1000);
+async function getTtl(): Promise<number> {
+  const ticfTtlSeconds: number = parseInt(await getSsmParameter(config.ticfParamBasePath + "ticfStubTtl"))
+  return Math.floor(Date.now() / 1000) + ticfTtlSeconds;
 }
 
 export default persistUserEvidence;

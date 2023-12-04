@@ -82,4 +82,26 @@ The absence of a "txn" object in the response denotes a VC returned in a timeout
 When this set to 'true' will return VC response with contra-indicator.
 
 There is an API gateway deployed in the stubs build account here:
-https://ticf.build.stubs.account.gov.uk
+https://ticf.build.stubs.account.gov.uk/risk-assessment
+
+# Management API
+1) To persist a user based evidence block to be picked up by the stub while generating VC for a user.
+https://ticf.build.stubs.account.gov.uk/management/user/urn:user1:1239
+The format of the POST request to the API gateway should look like
+```
+{
+    "type": "RiskAssessment",
+    "ci": [
+        "V03",
+        "D03"
+    ],
+    "txn": "uuid"
+}
+```
+
+Response
+```
+{
+    "message": "Success !!"
+}
+```
