@@ -50,14 +50,7 @@ async function saveUserEvidence(userEvidence: UserEvidenceItem) {
     TableName: config.ticfStubUserEvidenceTableName,
     Item: marshall(userEvidence),
   };
-  const { Attributes } = await dynamoClient.putItem(putItemInput);
-  const userEvidenceItem = Attributes
-    ? (unmarshall(Attributes) as UserEvidenceItem)
-    : null;
-  if (userEvidenceItem === null) {
-    console.info(`User record not saved.`);
-  }
-  return userEvidenceItem;
+  await dynamoClient.putItem(putItemInput);
 }
 
 async function getTtl(): Promise<number> {

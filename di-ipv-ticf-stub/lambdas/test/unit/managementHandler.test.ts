@@ -14,7 +14,8 @@ jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
   getParameter: jest.fn(),
 }));
 
-const testUserId: string = "test-user-id";
+const testUserId: string = "urn%3Auuid%3Atest-user-id";
+const decodedTestUserId: string = decodeURIComponent("urn%3Auuid%3Atest-user-id");
 
 const dbConfig = {
   convertEmptyValues: true,
@@ -29,7 +30,7 @@ const dynamoDocClient = DynamoDBDocumentClient.from(dynamoClient);
 const getCommand = new GetCommand({
   TableName: "ticf-stub-user-evidence",
   Key: {
-    userId: testUserId,
+    userId: decodedTestUserId,
   },
 });
 
@@ -107,10 +108,10 @@ describe("TICF management handler", function () {
 
     // to cover service method
     const userEvidenceItem: UserEvidenceItem | null = await getUserEvidence(
-      testUserId
+      decodedTestUserId
     );
     expect(userEvidenceItem).toBeDefined();
-    expect(userEvidenceItem?.userId).toEqual(testUserId);
+    expect(userEvidenceItem?.userId).toEqual(decodedTestUserId);
     expect(userEvidenceItem?.evidence).toBeDefined;
     evidence = userEvidenceItem?.evidence;
     expect(evidence.type).toEqual("RiskAssessment");
