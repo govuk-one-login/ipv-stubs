@@ -56,7 +56,7 @@ public class JwtBuilder {
         String[] vtr,
         String errorType,
         ReproveIdentityClaimValue reproveIdentityValue) {
-    String audience = "https://dev-danc.02.dev.identity.account.gov.uk";
+    String audience = "https://dev-amrits.01.dev.identity.account.gov.uk";
     String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
     if (errorType != null) {
