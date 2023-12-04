@@ -5,16 +5,30 @@ import TicfResponse from "../domain/ticfResponse";
 import TicfEvidenceItem from "../domain/ticfEvidenceItem";
 import TicfVc from "../domain/ticfVc";
 import { signJwt } from "./signingService";
+import { config } from "../common/config";
+import { getUserEvidence } from "../management/services/userEvidenceService";
+import UserEvidenceItem from "../management/model/userEvidenceItem";
 
 export async function processGetVCRequest(
   ticfRequest: TicfRequest
 ): Promise<TicfResponse> {
-  const ticfSigningKey = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "signingKey");
-  const ticfComponentId = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "componentId");
-  const timeoutVc = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "timeoutVC") === 'true';
-  const includeCi = await getSsmParameter(process.env.TICF_PARAM_BASE_PATH + "includeCIToVC") === 'true';
+  const ticfSigningKey = await getSsmParameter(
+    config.ticfParamBasePath + "signingKey"
+  );
+  const ticfComponentId = await getSsmParameter(
+    config.ticfParamBasePath + "componentId"
+  );
+  const timeoutVc =
+    (
+      await getSsmParameter(config.ticfParamBasePath + "timeoutVC")
+    ).toLowerCase() === "true";
+  const includeCi =
+    (
+      await getSsmParameter(config.ticfParamBasePath + "includeCIToVC")
+    ).toLowerCase() === "true";
 
   const timestamp = Math.floor(new Date().getTime() / 1000);
+  const ticfEvidenceItem = await getUserEvidenceFromDb(ticfRequest.sub);
 
   const payload: TicfVc = {
     iss: ticfComponentId,
@@ -24,7 +38,11 @@ export async function processGetVCRequest(
     nbf: timestamp,
     iat: timestamp,
     vc: {
-      evidence: [getEvidenceItem(timeoutVc, includeCi)],
+      evidence: [
+        !ticfEvidenceItem
+          ? getEvidenceItem(timeoutVc, includeCi)
+          : ticfEvidenceItem,
+      ],
       type: ["VerifiableCredential", "RiskAssessmentCredential"],
     },
   };
@@ -60,6 +78,15 @@ function getEvidenceItem(
       };
     }
   }
+}
+
+async function getUserEvidenceFromDb(
+  userId: string
+): Promise<TicfEvidenceItem | undefined> {
+  const userEvidenceItem: UserEvidenceItem | null = await getUserEvidence(
+    userId
+  );
+  return userEvidenceItem ? userEvidenceItem.evidence : undefined;
 }
 
 export default processGetVCRequest;
