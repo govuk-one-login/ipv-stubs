@@ -185,7 +185,7 @@ public class IpvHandler {
                         new AuthorizationCodeGrant(
                                 authorizationCode, URI.create(ORCHESTRATOR_REDIRECT_URL)));
 
-        logger.warn("ORCH CALLBACK REQUEST =======" + tokenRequest);
+        logger.warn("ORCH CALLBACK REQUEST =======" + tokenRequest.getEndpointURI() + tokenRequest.getResources());
 
         var httpTokenResponse = sendHttpRequest(tokenRequest.toHTTPRequest());
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
