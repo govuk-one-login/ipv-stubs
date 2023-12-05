@@ -55,7 +55,6 @@ import java.util.UUID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_USER_IDENTITY_PATH;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
 import static uk.gov.di.ipv.stub.orc.utils.JwtBuilder.URN_UUID;
@@ -106,8 +105,8 @@ public class IpvHandler {
                                 new ClientID(ORCHESTRATOR_CLIENT_ID))
                                 .state(state)
                                 .scope(new Scope("openid"))
-                                .redirectionURI(new URI("https://orch-dev-amrits.01.core.dev.stubs.account.gov.uk/callback"))
-                                .endpointURI(new URI("https://dev-amrits.01.dev.identity.account.gov.uk/").resolve("/oauth2/authorize"))
+                                .redirectionURI(new URI("https://orch-dev-danc.02.core.dev.stubs.account.gov.uk/callback"))
+                                .endpointURI(new URI("https://dev-danc.02.dev.identity.account.gov.uk/").resolve("/oauth2/authorize"))
                                 .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
                                 .build();
 
