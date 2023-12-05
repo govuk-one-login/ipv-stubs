@@ -164,7 +164,7 @@ public class IpvHandler {
 
     private AccessToken exchangeCodeForToken(AuthorizationCode authorizationCode)
             throws OrchestratorStubException, CertificateException, JOSEException {
-        URI resolve = URI.create("https://api-dev-shivp.02.dev.identity.account.gov.uk").resolve(IPV_BACKCHANNEL_TOKEN_PATH);
+        URI resolve = URI.create("https://api-dev-shivp.02.dev.identity.account.gov.uk/").resolve(IPV_BACKCHANNEL_TOKEN_PATH);
         logger.info("token url is " + resolve);
 
         SignedJWT signedClientJwt;
