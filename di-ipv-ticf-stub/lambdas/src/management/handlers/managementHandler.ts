@@ -22,7 +22,7 @@ export async function handler(
   }
 
   try {
-    await persistUserEvidence(userId, ticfEvidenceItemReq);
+    await persistUserEvidence(decodeURIComponent(userId), ticfEvidenceItemReq);
     return buildApiResponse({ message: "Success !!" });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
