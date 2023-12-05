@@ -483,7 +483,7 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Essential: true
-          Image: 175872367215.dkr.ecr.eu-west-2.amazonaws.com/config-mgmt-gha-ecr-imagerepository-kn0pzsusvjog:orch-stub-rogerv-1701792899
+          Image: 175872367215.dkr.ecr.eu-west-2.amazonaws.com/config-mgmt-gha-ecr-imagerepository-kn0pzsusvjog:orch-stub-rogerv-1701794151
           Name: app
           Environment:
             - Name: JBP_CONFIG_OPEN_JDK_JRE

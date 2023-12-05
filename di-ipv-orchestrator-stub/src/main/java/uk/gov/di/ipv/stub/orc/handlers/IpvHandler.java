@@ -186,7 +186,7 @@ public class IpvHandler {
                                 authorizationCode, URI.create(ORCHESTRATOR_REDIRECT_URL)));
 
 
-        logger.warn("ORCH CALLBACK REQUEST =======" + tokenRequest.getEndpointURI() + tokenRequest.getResources());
+        logger.warn("ORCH CALLBACK REQUEST =======" + tokenRequest.getEndpointURI() + "======" + signedClientJwt);
 
         var httpTokenResponse = sendHttpRequest(tokenRequest.toHTTPRequest());
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
@@ -203,7 +203,7 @@ public class IpvHandler {
     public JSONObject getUserInfo(AccessToken accessToken) {
         var userInfoRequest =
                 new UserInfoRequest(
-                        URI.create(IPV_BACKCHANNEL_ENDPOINT)
+                        URI.create("https://api-dev-shivp.02.dev.identity.account.gov.uk/")
                                 .resolve(IPV_BACKCHANNEL_USER_IDENTITY_PATH),
                         (BearerAccessToken) accessToken);
 
