@@ -100,7 +100,7 @@ public class JwtBuilder {
         Instant now = Instant.now();
         return new JWTClaimsSet.Builder()
                 .subject(ORCHESTRATOR_CLIENT_ID)
-                .audience(IPV_CORE_AUDIENCE)
+                .audience("https://dev-shivp.02.dev.identity.account.gov.uk")
                 .issuer(ORCHESTRATOR_CLIENT_ID)
                 .expirationTime(generateExpirationTime(now))
                 .jwtID(UUID.randomUUID().toString())
