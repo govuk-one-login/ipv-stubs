@@ -72,6 +72,7 @@ public class IpvHandler {
             (Request request, Response response) -> {
                 var state = new State();
                 stateSession.put(state.getValue(), null);
+                response.cookie("test_cookie", "targetEnvironment.com");
 
                 String errorType = request.queryMap().get("error").value();
                 String userIdTextValue = request.queryMap().get("userIdText").value();
