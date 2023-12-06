@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_USER_IDENTITY_PATH;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
@@ -72,7 +71,7 @@ public class IpvHandler {
             (Request request, Response response) -> {
                 var state = new State();
                 stateSession.put(state.getValue(), null);
-                response.cookie("test_cookie", "targetEnvironment.com");
+                response.cookie("targetEnvironment", "https://api-dev-shivp.02.dev.identity.account.gov.uk/");
 
                 String errorType = request.queryMap().get("error").value();
                 String userIdTextValue = request.queryMap().get("userIdText").value();
@@ -119,10 +118,11 @@ public class IpvHandler {
             (Request request, Response response) -> {
                 List<Map<String, Object>> mustacheData = new ArrayList<>();
                 Map<String, Object> moustacheDataModel = new HashMap<>();
+                String targetBackend = request.cookie("targetEnvironment");
                 try {
                     var authorizationCode = getAuthorizationCode(request);
 
-                    var accessToken = exchangeCodeForToken(authorizationCode);
+                    var accessToken = exchangeCodeForToken(authorizationCode, targetBackend);
 
                     var userInfo = getUserInfo(accessToken);
 
@@ -163,9 +163,9 @@ public class IpvHandler {
         return authorizationResponse.toSuccessResponse().getAuthorizationCode();
     }
 
-    private AccessToken exchangeCodeForToken(AuthorizationCode authorizationCode)
+    private AccessToken exchangeCodeForToken(AuthorizationCode authorizationCode, String targetBackend)
             throws OrchestratorStubException, CertificateException, JOSEException {
-        URI resolve = URI.create("https://api-dev-shivp.02.dev.identity.account.gov.uk/").resolve(IPV_BACKCHANNEL_TOKEN_PATH);
+        URI resolve = URI.create(targetBackend).resolve(IPV_BACKCHANNEL_TOKEN_PATH);
         logger.info("token url is " + resolve);
 
         SignedJWT signedClientJwt;
