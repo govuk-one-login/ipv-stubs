@@ -56,6 +56,7 @@ public class JwtBuilder {
             String signInJourneyId,
             String[] vtr,
             String errorType,
+            String userEmailAddress,
             ReproveIdentityClaimValue reproveIdentityValue) {
         String audience = IPV_CORE_AUDIENCE;
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
@@ -83,9 +84,7 @@ public class JwtBuilder {
                         .claim("state", UUID.randomUUID().toString())
                         .claim("govuk_signin_journey_id", signInJourneyId)
                         .claim("persistent_session_id", UUID.randomUUID().toString())
-                        .claim(
-                                "email_address",
-                                "dev-platform-testing@digital.cabinet-office.gov.uk")
+                        .claim("email_address", userEmailAddress)
                         .claim("vtr", List.of(vtr));
 
         if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {

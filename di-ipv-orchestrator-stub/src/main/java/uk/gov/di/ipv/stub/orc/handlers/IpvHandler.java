@@ -81,6 +81,7 @@ public class IpvHandler {
                         request.queryMap().hasKey("vtrText")
                                 ? request.queryMap("vtrText").values()
                                 : new String[] {"Cl.Cm.P2"};
+                String userEmailAddress = request.queryMap().get("emailAddress").value();
                 String reproveIdentityString = request.queryMap().get("reproveIdentity").value();
                 JwtBuilder.ReproveIdentityClaimValue reproveIdentityClaimValue =
                         StringUtils.isNotBlank(reproveIdentityString)
@@ -96,6 +97,7 @@ public class IpvHandler {
                                 signInJourneyIdText,
                                 vtr,
                                 errorType,
+                                userEmailAddress,
                                 reproveIdentityClaimValue);
 
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
