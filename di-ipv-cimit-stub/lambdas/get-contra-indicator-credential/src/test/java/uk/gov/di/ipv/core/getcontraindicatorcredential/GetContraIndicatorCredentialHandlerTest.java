@@ -57,7 +57,8 @@ class GetContraIndicatorCredentialHandlerTest {
             "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO";
     private static final String CIMIT_PUBLIC_JWK =
             "{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}";
-    public static final String ISSUERS_TEST = "https://review-d.account.gov.uk,https://review-f.account.gov.uk";
+    public static final String ISSUERS_TEST =
+            "https://review-d.account.gov.uk,https://review-f.account.gov.uk";
 
     private static final String CIMIT_COMPONENT_ID = "https://cimit.stubs.account.gov.uk";
 
