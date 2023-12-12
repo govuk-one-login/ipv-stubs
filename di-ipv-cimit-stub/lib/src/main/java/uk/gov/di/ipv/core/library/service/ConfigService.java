@@ -13,6 +13,7 @@ public class ConfigService {
 
     public static final String CIMIT_SIGNING_KEY_PARAM = "signingKey";
     public static final String CIMIT_COMPONENT_ID_PARAM = "componentId";
+    public static final String CIMIT_CONTRAINDICATOR_ISSUERS = "issuers";
     private final SSMProvider ssmProvider;
 
     public ConfigService(SSMProvider ssmProvider) {
@@ -35,6 +36,11 @@ public class ConfigService {
     public String getCimitSigningKey() {
         String cimitParamBasePath = getEnvironmentVariable(CIMIT_PARAM_BASE_PATH);
         return getSsmParameter(cimitParamBasePath + CIMIT_SIGNING_KEY_PARAM);
+    }
+
+    public String getIssuers() {
+        String cimitParamBasePath = getEnvironmentVariable(CIMIT_PARAM_BASE_PATH);
+        return getSsmParameter(cimitParamBasePath + CIMIT_CONTRAINDICATOR_ISSUERS);
     }
 
     private String getSsmParameter(String ssmParamKey, String... pathProperties) {

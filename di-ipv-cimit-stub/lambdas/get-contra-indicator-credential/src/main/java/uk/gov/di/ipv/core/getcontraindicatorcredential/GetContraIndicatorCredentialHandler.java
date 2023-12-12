@@ -30,6 +30,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -49,6 +50,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
     public static final String MITIGATION = "mitigation";
     public static final String MITIGATION_CREDENTIAL = "mitigatingCredential";
     public static final String ISSUANCE_DATE = "issuanceDate";
+    public static final String ISSUERS = "issuers";
 
     private static final ObjectMapper mapper = new ObjectMapper();
     private final ConfigService configService;
@@ -164,6 +166,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         for (CimitStubItem cimitStubItem : cimitStubItems) {
             Map<String, Object> contraIndicator = new LinkedHashMap<>();
             contraIndicator.put(CODE, cimitStubItem.getContraIndicatorCode());
+            contraIndicator.put(ISSUERS, Arrays.asList(configService.getIssuers().split("\\,")));
             contraIndicator.put(ISSUANCE_DATE, cimitStubItem.getIssuanceDate().toString());
             contraIndicator.put(MITIGATION, getMitigations(cimitStubItem.getMitigations()));
             contraIndicators.add(contraIndicator);
