@@ -44,6 +44,7 @@ public class DocAppCredentialHandler {
 
     public Route getResource =
             (Request request, Response response) -> {
+                LOGGER.warn("Doc App handler triggered");
                 String accessTokenHeaderValue =
                         request.headers(HttpHeader.AUTHORIZATION.toString());
 
