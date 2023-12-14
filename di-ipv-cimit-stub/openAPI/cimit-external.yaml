@@ -59,7 +59,7 @@ paths:
           application/x-www-form-urlencoded:
             Fn::Sub: |
               {
-                "input": “{ \"userId\": \"$input.params('userId')\", \"code\": \"$input.body('code')\", \"issuanceDate\": \"$input.body('issuanceDate')\", \"mitigations\": \"$input.body('mitigations')\ "}"
+                "input": “{ \"userId\": \"$input.params('userId')\", \"code\": \"$input.body('code')\", \"issuanceDate\": \"$input.body('issuanceDate')\", \"mitigations\": \"$input.body('mitigations')\, \"issuer\": \"$input.body('issuer')\ "}"
               }
         responses:
           default:

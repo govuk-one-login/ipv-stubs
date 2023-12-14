@@ -22,4 +22,7 @@ public class UserCisRequest {
 
     @JsonProperty("mitigations")
     private List<String> mitigations;
+
+    @JsonProperty("issuer")
+    private String issuer;
 }

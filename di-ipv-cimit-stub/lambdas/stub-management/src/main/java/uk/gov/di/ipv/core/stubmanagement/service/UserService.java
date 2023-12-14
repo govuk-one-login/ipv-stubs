@@ -38,20 +38,30 @@ public class UserService {
         userCisRequest.forEach(
                 user -> {
                     Optional<CimitStubItem> cimitStubItem =
-                            getCimitStubItemByCiCode(cimitStubItems, user.getCode());
+                            getCimitStubItemByCiCode(cimitStubItems, user.getCode().toUpperCase());
                     if (cimitStubItem.isEmpty()) {
                         cimitStubItemService.persistCimitStub(
                                 userId,
                                 user.getCode().toUpperCase(),
+                                List.of(user.getIssuer()),
                                 getIssuanceDate(user.getIssuanceDate()),
                                 convertListToUppercase(user.getMitigations()));
                     } else {
                         cimitStubItem
                                 .get()
                                 .setMitigations(
-                                        getUpdatedMitigationsList(
+                                        getUpdatedList(
                                                 cimitStubItem.get().getMitigations(),
-                                                user.getMitigations()));
+                                                user.getMitigations(),
+                                                true));
+                        cimitStubItem
+                                .get()
+                                .setIssuers(
+                                        getUpdatedList(
+                                                cimitStubItem.get().getIssuers(),
+                                                List.of(user.getIssuer()),
+                                                false));
+
                         cimitStubItem
                                 .get()
                                 .setIssuanceDate(getIssuanceDate(user.getIssuanceDate()));
@@ -72,6 +82,7 @@ public class UserService {
                     cimitStubItemService.persistCimitStub(
                             userId,
                             user.getCode().toUpperCase(),
+                            List.of(user.getIssuer()),
                             getIssuanceDate(user.getIssuanceDate()),
                             convertListToUppercase(user.getMitigations()));
                 });
@@ -91,16 +102,18 @@ public class UserService {
         }
     }
 
-    private List<String> getUpdatedMitigationsList(
-            List<String> existingMitigations, List<String> newMitigations) {
+    private List<String> getUpdatedList(
+            List<String> existingList, List<String> newList, boolean isUpperCase) {
         Stream<String> combinedStream = Stream.empty();
-        if (existingMitigations != null) {
-            combinedStream = Stream.concat(combinedStream, existingMitigations.stream());
+        if (existingList != null) {
+            combinedStream = Stream.concat(combinedStream, existingList.stream());
         }
-        if (newMitigations != null) {
-            combinedStream = Stream.concat(combinedStream, newMitigations.stream());
+        if (newList != null) {
+            combinedStream = Stream.concat(combinedStream, newList.stream());
         }
-        return combinedStream.distinct().map(String::toUpperCase).collect(Collectors.toList());
+        return isUpperCase
+                ? combinedStream.distinct().map(String::toUpperCase).collect(Collectors.toList())
+                : combinedStream.distinct().collect(Collectors.toList());
     }
 
     private Instant getIssuanceDate(String issuanceDate) {

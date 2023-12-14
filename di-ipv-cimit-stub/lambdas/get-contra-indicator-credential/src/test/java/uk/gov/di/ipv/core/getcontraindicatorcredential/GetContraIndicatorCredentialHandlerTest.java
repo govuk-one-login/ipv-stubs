@@ -39,6 +39,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.CODE;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.CONTRA_INDICATORS;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.ISSUANCE_DATE;
+import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.ISSUERS;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.MITIGATION;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.MITIGATION_CREDENTIAL;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.SECURITY_CHECK_CREDENTIAL_VC_TYPE;
@@ -56,9 +57,9 @@ class GetContraIndicatorCredentialHandlerTest {
             "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO";
     private static final String CIMIT_PUBLIC_JWK =
             "{\"kty\":\"EC\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}";
+    public static final String ISSUERS_TEST = "https://review-d.account.gov.uk";
 
     private static final String CIMIT_COMPONENT_ID = "https://cimit.stubs.account.gov.uk";
-
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock private Context mockContext;
@@ -81,6 +82,7 @@ class GetContraIndicatorCredentialHandlerTest {
                 CimitStubItem.builder()
                         .userId(USER_ID)
                         .contraIndicatorCode(CI_V_03)
+                        .issuers(List.of(ISSUERS_TEST))
                         .issuanceDate(issuanceDate)
                         .mitigations(List.of(MITIGATION_M_01))
                         .build());
@@ -164,6 +166,9 @@ class GetContraIndicatorCredentialHandlerTest {
         assertEquals(1, contraIndicators.size());
         JsonNode firstCINode = contraIndicators.get(0);
         assertEquals(CI_V_03, firstCINode.get(CODE).asText());
+        JsonNode issuers = firstCINode.get(ISSUERS);
+        assertEquals(1, issuers.size());
+        assertEquals(ISSUERS_TEST, issuers.get(0).asText());
         assertEquals(issuanceDate.toString(), firstCINode.get(ISSUANCE_DATE).asText());
         JsonNode mitigations = firstCINode.get(MITIGATION);
         assertEquals(1, mitigations.size());

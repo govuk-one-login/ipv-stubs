@@ -2,6 +2,8 @@ package uk.gov.di.ipv.stub.cred.handlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.JOSEException;
@@ -60,6 +62,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -341,9 +344,25 @@ public class AuthorizeHandler {
                             queryParamsMap
                                     .value(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM)
                                     .replaceAll("\\s", "");
+                    String encodedUserId;
+                    try {
+                        encodedUserId =
+                                URLEncoder.encode(userId, StandardCharsets.UTF_8.toString());
+                    } catch (UnsupportedEncodingException e) {
+                        throw new CriStubException("Unable to URL encode userId", e);
+                    }
+
                     if (!ciString.isEmpty()) {
                         String[] ciList = ciString.split(",");
-                        gpgMap.put(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, ciList);
+                        if (!ciString.isEmpty()) {
+                            String iss =
+                                    signedJWT
+                                            .getJWTClaimsSet()
+                                            .getClaim(RequestParamConstants.ISSUER)
+                                            .toString();
+                            processIssuersCIs(
+                                    encodedUserId, iss, queryParamsMap, Arrays.asList(ciList));
+                        }
                     }
 
                     String expFlag = queryParamsMap.value(CredentialIssuerConfig.EXPIRY_FLAG);
@@ -390,7 +409,7 @@ public class AuthorizeHandler {
 
                     if (CredentialIssuerConfig.isEnabled(
                             CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
-                        processMitigatedCIs(userId, queryParamsMap, signedVcJwt);
+                        processMitigatedCIs(encodedUserId, queryParamsMap, signedVcJwt);
                     }
 
                     boolean F2F_SEND_VC_QUEUE =
@@ -456,6 +475,33 @@ public class AuthorizeHandler {
                 return null;
             };
 
+    private void processIssuersCIs(
+            String userId, String iss, QueryParamsMap queryParamsMap, List<String> ciList)
+            throws CriStubException {
+
+        if (!iss.isEmpty()) {
+            LOGGER.info("Processing issuers CI's");
+
+            String postUrlTemplate = "/user/%s/cis";
+            String serviceUrl = String.format(postUrlTemplate, userId);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            ArrayNode jsonArray = objectMapper.createArrayNode();
+            for (String ciCode : ciList) {
+                ObjectNode jsonObject = objectMapper.createObjectNode();
+                jsonObject.put("code", ciCode);
+                jsonObject.put("issuer", iss);
+                jsonObject.put("mitigations", objectMapper.createArrayNode());
+                jsonArray.add(jsonObject);
+            }
+            String body =
+                    jsonArray
+                            .toString(); // String.format("{\"mitigations\":[],\"code\":\"%s\",\"issuer\":\"%s\"}", ciCode, iss);
+
+            callStubManagement(userId, queryParamsMap, serviceUrl, body);
+        }
+    }
+
     private void processMitigatedCIs(
             String userId, QueryParamsMap queryParamsMap, String signedVcJwt)
             throws CriStubException {
@@ -466,67 +512,62 @@ public class AuthorizeHandler {
 
         if (!mitigatedCIsString.isEmpty()) {
             LOGGER.info("Processing mitigated CI's");
-            String baseStubManagedPostUrl =
-                    queryParamsMap.value(CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM);
-            String stubManagementApiKey =
-                    queryParamsMap.value(CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM);
             List<String> mitigatedCiList = Stream.of(mitigatedCIsString.split(",", -1)).toList();
-            String postUrlTemplate = "/user/%s/mitigations/%s";
+
             for (String ciCode : mitigatedCiList) {
+                String postUrlTemplate = "/user/%s/mitigations/%s";
+                String serviceUrl = String.format(postUrlTemplate, userId, ciCode);
+
                 String jwtId;
                 try {
                     jwtId = SignedJWT.parse(signedVcJwt).getJWTClaimsSet().getJWTID();
                 } catch (ParseException e) {
                     throw new CriStubException("Unable to parse signed JWT", e);
                 }
-
-                String encodedUserId;
-                try {
-                    encodedUserId = URLEncoder.encode(userId, StandardCharsets.UTF_8.toString());
-                } catch (UnsupportedEncodingException e) {
-                    throw new CriStubException("Unable to URL encode userId", e);
-                }
-                String postUrl =
-                        baseStubManagedPostUrl
-                                + String.format(postUrlTemplate, encodedUserId, ciCode);
-                LOGGER.info("Managed cimit stub postUrl:{}", postUrl);
-                try {
-                    HttpRequest request =
-                            HttpRequest.newBuilder()
-                                    .uri(new URI(postUrl))
-                                    .header("Content-Type", "application/json")
-                                    .header("x-api-key", stubManagementApiKey)
-                                    .POST(
-                                            HttpRequest.BodyPublishers.ofString(
-                                                    String.format(
-                                                            "{\"mitigations\":[\"M01\"],\"vcJti\":\"%s\"}",
-                                                            jwtId)))
-                                    .build();
-
-                    HttpResponse response =
-                            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                    int responseStatusCode = response.statusCode();
-                    LOGGER.info("Processed mitigated CI's with response: {}", responseStatusCode);
-                    if (responseStatusCode != 200) {
-                        String msg = "Failed to post CI mitigation to management stub api.";
-                        LOGGER.error(msg);
-                        LOGGER.error(response.body().toString());
-                        throw new CriStubException("failed_to_post", msg);
-                    }
-                } catch (URISyntaxException e) {
-                    LOGGER.info(
-                            "Unable to generate request for post cimit stub. Error message:{}",
-                            e.getMessage());
-                    throw new CriStubException(
-                            "invalid_posturl", "Unable to generate request for post cimit stub", e);
-                } catch (IOException | InterruptedException e) {
-                    LOGGER.info(
-                            "Unable to make post cimit management stub call. Error message:{}",
-                            e.getMessage());
-                    throw new CriStubException(
-                            "failed_to_post", "Unable to make post cimit management stub call", e);
-                }
+                String body = String.format("{\"mitigations\":[\"M01\"],\"vcJti\":\"%s\"}", jwtId);
+                callStubManagement(userId, queryParamsMap, serviceUrl, body);
             }
+        }
+    }
+
+    private void callStubManagement(
+            String userId, QueryParamsMap queryParamsMap, String serviceUrl, String body)
+            throws CriStubException {
+        String baseStubManagedPostUrl =
+                queryParamsMap.value(CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM);
+        String stubManagementApiKey =
+                queryParamsMap.value(CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM);
+        String postUrl = baseStubManagedPostUrl + serviceUrl;
+        LOGGER.info("Managed cimit stub postUrl:{}", postUrl);
+        try {
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(new URI(postUrl))
+                            .header("Content-Type", "application/json")
+                            .header("x-api-key", stubManagementApiKey)
+                            .POST(HttpRequest.BodyPublishers.ofString(body))
+                            .build();
+            HttpResponse response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            int responseStatusCode = response.statusCode();
+            LOGGER.info("Processed  CI's with response: {}", responseStatusCode);
+            if (responseStatusCode != 200) {
+                String msg = "Failed to post CI  to management stub api.";
+                LOGGER.error(msg);
+                LOGGER.error(response.body().toString());
+                throw new CriStubException("failed_to_post", msg);
+            }
+        } catch (URISyntaxException e) {
+            LOGGER.info(
+                    "Unable to generate request for post cimit stub. Error message:{}",
+                    e.getMessage());
+            throw new CriStubException(
+                    "invalid_posturl", "Unable to generate request for post cimit stub", e);
+        } catch (IOException | InterruptedException e) {
+            LOGGER.info(
+                    "Unable to make post cimit management stub call. Error message:{}",
+                    e.getMessage());
+            throw new CriStubException(
+                    "failed_to_post", "Unable to make post cimit management stub call", e);
         }
     }
 

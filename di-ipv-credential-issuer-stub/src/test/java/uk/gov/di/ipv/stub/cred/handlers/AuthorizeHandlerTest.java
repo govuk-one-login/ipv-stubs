@@ -315,9 +315,20 @@ class AuthorizeHandlerTest {
     @Test
     void generateResponseShouldReturn302WithAuthCodeQueryParamWhenValidAuthRequest()
             throws Exception {
-        QueryParamsMap queryParamsMap = toQueryParamsMap(validGenerateResponseQueryParams());
+        Map<String, String[]> queryParams = validGenerateResponseQueryParams();
+        queryParams.put(
+                CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM,
+                new String[] {"http://test.com"});
+        queryParams.put(
+                CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM, new String[] {"api:key"});
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
         when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
+        HttpResponse httpResponse = mock(HttpResponse.class);
+        when(httpResponse.statusCode()).thenReturn(200);
+        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(httpResponse);
+        when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
 
         String result =
                 (String) authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
@@ -350,8 +361,20 @@ class AuthorizeHandlerTest {
 
     @Test
     void generateResponseShouldPersistSharedAttributesCombinedWithJsonInput() throws Exception {
-        QueryParamsMap queryParamsMap = toQueryParamsMap(validGenerateResponseQueryParams());
+        Map<String, String[]> queryParams = validGenerateResponseQueryParams();
+        queryParams.put(
+                CredentialIssuerConfig.MITIGATED_CONTRAINDICATORS_PARAM, new String[] {"V03"});
+        queryParams.put(
+                CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM,
+                new String[] {"http://test.com"});
+        queryParams.put(
+                CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM, new String[] {"api:key"});
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+        HttpResponse httpResponse = mock(HttpResponse.class);
+        when(httpResponse.statusCode()).thenReturn(200);
+        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(httpResponse);
         when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
         authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
@@ -363,7 +386,6 @@ class AuthorizeHandlerTest {
         Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
         assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
         assertEquals("test-value", persistedAttributes.get("test"));
-        assertArrayEquals(new String[] {"A01", "D03"}, (String[]) persistedEvidence.get("ci"));
         assertEquals("IdentityCheck", persistedEvidence.get("type"));
         assertNotNull(persistedEvidence.get("txn"));
         assertNotNull(persistedEvidence.get("strengthScore"));
@@ -379,9 +401,18 @@ class AuthorizeHandlerTest {
             throws Exception {
         Map<String, String[]> queryParams = validGenerateResponseQueryParams();
         queryParams.remove(CredentialIssuerConfig.EXPIRY_FLAG);
+        queryParams.put(
+                CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM,
+                new String[] {"http://test.com"});
+        queryParams.put(
+                CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM, new String[] {"api:key"});
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
         when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
+        HttpResponse httpResponse = mock(HttpResponse.class);
+        when(httpResponse.statusCode()).thenReturn(200);
+        when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                .thenReturn(httpResponse);
 
         authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
 
@@ -392,7 +423,6 @@ class AuthorizeHandlerTest {
         Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
         assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
         assertEquals("test-value", persistedAttributes.get("test"));
-        assertArrayEquals(new String[] {"A01", "D03"}, (String[]) persistedEvidence.get("ci"));
         assertEquals("IdentityCheck", persistedEvidence.get("type"));
         assertNotNull(persistedEvidence.get("txn"));
         assertNotNull(persistedEvidence.get("strengthScore"));
@@ -429,7 +459,7 @@ class AuthorizeHandlerTest {
 
         ArgumentCaptor<HttpRequest> requestArgumentCaptor =
                 ArgumentCaptor.forClass(HttpRequest.class);
-        verify(httpClient, times(1)).send(requestArgumentCaptor.capture(), any());
+        verify(httpClient, times(2)).send(requestArgumentCaptor.capture(), any());
         // This is a poor proxy for checking the content of the request. We can't access the content
         // directly.
         // The content is:
@@ -461,8 +491,6 @@ class AuthorizeHandlerTest {
                 CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM, new String[] {"api:key"});
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-        when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
-        when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
         HttpResponse httpResponse = mock(HttpResponse.class);
         when(httpResponse.statusCode()).thenReturn(403);
@@ -473,11 +501,6 @@ class AuthorizeHandlerTest {
         authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
 
         verify(httpClient, times(1)).send(any(), any());
-
-        verify(mockResponse)
-                .redirect(
-                        VALID_REDIRECT_URI
-                                + "?error=failed_to_post&iss=Credential+Issuer+Stub&error_description=Failed+to+post+CI+mitigation+to+management+stub+api.");
     }
 
     @Test

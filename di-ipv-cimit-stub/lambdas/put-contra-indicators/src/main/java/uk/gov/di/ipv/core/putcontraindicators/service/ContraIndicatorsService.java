@@ -161,6 +161,7 @@ public class ContraIndicatorsService {
                         cimitStubItemService.persistCimitStub(
                                 userId,
                                 cimitStubItem.getContraIndicatorCode().toUpperCase(),
+                                cimitStubItem.getIssuers(),
                                 cimitStubItem.getIssuanceDate(),
                                 Collections.emptyList());
                     } else {
