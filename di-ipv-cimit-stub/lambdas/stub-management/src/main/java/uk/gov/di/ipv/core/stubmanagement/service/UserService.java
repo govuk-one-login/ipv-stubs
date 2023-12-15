@@ -43,6 +43,7 @@ public class UserService {
                         cimitStubItemService.persistCimitStub(
                                 userId,
                                 user.getCode().toUpperCase(),
+                                null,
                                 getIssuanceDate(user.getIssuanceDate()),
                                 convertListToUppercase(user.getMitigations()));
                     } else {
@@ -72,6 +73,7 @@ public class UserService {
                     cimitStubItemService.persistCimitStub(
                             userId,
                             user.getCode().toUpperCase(),
+                            null,
                             getIssuanceDate(user.getIssuanceDate()),
                             convertListToUppercase(user.getMitigations()));
                 });

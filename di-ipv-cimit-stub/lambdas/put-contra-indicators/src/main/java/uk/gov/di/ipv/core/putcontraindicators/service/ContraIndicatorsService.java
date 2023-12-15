@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_EVIDENCE;
@@ -34,7 +35,6 @@ public class ContraIndicatorsService {
     private static final String LOG_MESSAGE_DESCRIPTION = "description";
 
     private static final String LOG_ERROR_DESCRIPTION = "errorDescription";
-    public static final String ISSUER = "iss";
     private final ConfigService configService;
 
     private final CimitStubItemService cimitStubItemService;
@@ -128,7 +128,7 @@ public class ContraIndicatorsService {
             throws ParseException {
 
         Instant issuanceDate = getIssuanceDate(signedJWT.getJWTClaimsSet().getNotBeforeTime());
-        String iss = signedJWT.getJWTClaimsSet().getClaim(ISSUER).toString();
+        String iss = signedJWT.getJWTClaimsSet().getIssuer();
         return contraIndicatorEvidenceDto.getCi().stream()
                 .distinct()
                 .map(
@@ -161,14 +161,33 @@ public class ContraIndicatorsService {
                         cimitStubItemService.persistCimitStub(
                                 userId,
                                 cimitStubItem.getContraIndicatorCode().toUpperCase(),
+                                cimitStubItem.getIssuers(),
                                 cimitStubItem.getIssuanceDate(),
                                 Collections.emptyList());
                     } else {
                         dbCimitStubItem.get().setIssuanceDate(cimitStubItem.getIssuanceDate());
+                        dbCimitStubItem
+                                .get()
+                                .setIssuers(
+                                        mergeStringLists(
+                                                dbCimitStubItem.get().getIssuers(),
+                                                cimitStubItem.getIssuers()));
                         cimitStubItemService.updateCimitStubItem(dbCimitStubItem.get());
                     }
                 });
         LOGGER.info("Inserted User CI data to the Cimit Stub DynamoDB Table.");
+    }
+
+    private List<String> mergeStringLists(
+            List<String> existingMitigations, List<String> newMitigations) {
+        Stream<String> combinedStream = Stream.empty();
+        if (existingMitigations != null) {
+            combinedStream = Stream.concat(combinedStream, existingMitigations.stream());
+        }
+        if (newMitigations != null) {
+            combinedStream = Stream.concat(combinedStream, newMitigations.stream());
+        }
+        return combinedStream.distinct().map(String::toUpperCase).collect(Collectors.toList());
     }
 
     private Optional<CimitStubItem> getUserIdAndCodeFromDatabase(

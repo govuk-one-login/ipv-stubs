@@ -51,7 +51,7 @@ public class UserServiceTest {
         assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
 
         verify(cimitStubItemService, times(userCisRequests.size()))
-                .persistCimitStub(any(), any(), any(), any());
+                .persistCimitStub(any(), any(), any(), any(), any());
         verify(cimitStubItemService, never()).updateCimitStubItem(any());
     }
 
@@ -68,7 +68,7 @@ public class UserServiceTest {
         assertThrows(
                 BadRequestException.class, () -> userService.addUserCis(userId, userCisRequests));
 
-        verify(cimitStubItemService, never()).persistCimitStub(any(), any(), any(), any());
+        verify(cimitStubItemService, never()).persistCimitStub(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -128,7 +128,7 @@ public class UserServiceTest {
         assertDoesNotThrow(() -> userService.updateUserCis(userId, userCisRequests));
 
         verify(cimitStubItemService, times(userCisRequests.size()))
-                .persistCimitStub(any(), any(), any(), any());
+                .persistCimitStub(any(), any(), any(), any(), any());
     }
 
     @Test
@@ -188,7 +188,7 @@ public class UserServiceTest {
         assertDoesNotThrow(() -> userService.updateUserCis(userId, userCisRequests));
 
         verify(cimitStubItemService, times(userCisRequests.size()))
-                .persistCimitStub(any(), any(), any(), any());
+                .persistCimitStub(any(), any(), any(), any(), any());
     }
 
     @Test

@@ -26,7 +26,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.core.library.config.ConfigurationVariable.CIMIT_STUB_TTL;
-import static uk.gov.di.ipv.core.putcontraindicators.service.ContraIndicatorsService.ISSUER;
 
 @ExtendWith(MockitoExtension.class)
 public class ContraIndicatorsServiceTest {
@@ -75,7 +74,7 @@ public class ContraIndicatorsServiceTest {
                         .ipAddress("ip_address")
                         .signedJwt(SIGNED_CRI_VC)
                         .build();
-        String iss = SignedJWT.parse(SIGNED_CRI_VC).getJWTClaimsSet().getClaim(ISSUER).toString();
+        String iss = SignedJWT.parse(SIGNED_CRI_VC).getJWTClaimsSet().getIssuer();
         CimitStubItem existingCimitStubItem =
                 CimitStubItem.builder()
                         .userId(USER_ID)
