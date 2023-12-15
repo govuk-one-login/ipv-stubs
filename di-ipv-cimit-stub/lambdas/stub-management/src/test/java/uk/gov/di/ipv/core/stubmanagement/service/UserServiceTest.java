@@ -83,7 +83,17 @@ public class UserServiceTest {
                                 .build());
         List<CimitStubItem> existingItems = new ArrayList<>();
         existingItems.add(
-                new CimitStubItem(userId, "code1", Instant.now(), 30000, new ArrayList<>()));
+                CimitStubItem.builder()
+                        .userId(userId)
+                        .contraIndicatorCode("CODE1")
+                        .issuers(
+                                List.of(
+                                        "https://review-d.account.gov.uk",
+                                        "https://review-f.account.gov.uk"))
+                        .issuanceDate(Instant.now())
+                        .ttl(30000)
+                        .mitigations(new ArrayList<>())
+                        .build());
 
         when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
@@ -105,7 +115,13 @@ public class UserServiceTest {
 
         List<CimitStubItem> existingItems = new ArrayList<>();
         existingItems.add(
-                new CimitStubItem(userId, "code1", Instant.now(), 30000, new ArrayList<>()));
+                CimitStubItem.builder()
+                        .userId(userId)
+                        .contraIndicatorCode("CODE1")
+                        .issuanceDate(Instant.now())
+                        .ttl(30000)
+                        .mitigations(new ArrayList<>())
+                        .build());
 
         when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
@@ -145,10 +161,27 @@ public class UserServiceTest {
 
         List<CimitStubItem> existingItems =
                 List.of(
-                        new CimitStubItem(userId, "code1", Instant.now(), 30000, new ArrayList<>()),
-                        new CimitStubItem(userId, "code2", Instant.now(), 30000, new ArrayList<>()),
-                        new CimitStubItem(
-                                userId, "code3", Instant.now(), 30000, new ArrayList<>()));
+                        CimitStubItem.builder()
+                                .userId(userId)
+                                .contraIndicatorCode("CODE1")
+                                .issuanceDate(Instant.now())
+                                .ttl(30000)
+                                .mitigations(new ArrayList<>())
+                                .build(),
+                        CimitStubItem.builder()
+                                .userId(userId)
+                                .contraIndicatorCode("CODE2")
+                                .issuanceDate(Instant.now())
+                                .ttl(30000)
+                                .mitigations(new ArrayList<>())
+                                .build(),
+                        CimitStubItem.builder()
+                                .userId(userId)
+                                .contraIndicatorCode("CODE3")
+                                .issuanceDate(Instant.now())
+                                .ttl(30000)
+                                .mitigations(new ArrayList<>())
+                                .build());
 
         when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
@@ -169,7 +202,14 @@ public class UserServiceTest {
                                 .mitigations(List.of("V01", "V03"))
                                 .build());
         List<CimitStubItem> existingItems =
-                List.of(new CimitStubItem(userId, "code1", Instant.now(), 30000, null));
+                List.of(
+                        CimitStubItem.builder()
+                                .userId(userId)
+                                .contraIndicatorCode("CODE1")
+                                .issuanceDate(Instant.now())
+                                .ttl(30000)
+                                .mitigations(null)
+                                .build());
 
         when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
@@ -190,8 +230,17 @@ public class UserServiceTest {
                                 .build());
         List<CimitStubItem> existingItems =
                 List.of(
-                        new CimitStubItem(
-                                userId, "code1", Instant.now(), 30000, List.of("V01", "V03")));
+                        CimitStubItem.builder()
+                                .userId(userId)
+                                .contraIndicatorCode("CODE1")
+                                .issuers(
+                                        List.of(
+                                                "https://review-d.account.gov.uk",
+                                                "https://review-f.account.gov.uk"))
+                                .issuanceDate(Instant.now())
+                                .ttl(30000)
+                                .mitigations(List.of("V01", "V03"))
+                                .build());
 
         when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
@@ -206,12 +255,19 @@ public class UserServiceTest {
         List<UserCisRequest> userCisRequests =
                 List.of(
                         UserCisRequest.builder()
-                                .code("code1")
+                                .code("CODE1")
                                 .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(null)
                                 .build());
         List<CimitStubItem> existingItems =
-                List.of(new CimitStubItem(userId, "code1", Instant.now(), 30000, null));
+                List.of(
+                        CimitStubItem.builder()
+                                .userId(userId)
+                                .contraIndicatorCode("CODE1")
+                                .issuanceDate(Instant.now())
+                                .ttl(30000)
+                                .mitigations(null)
+                                .build());
 
         when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 

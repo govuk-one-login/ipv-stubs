@@ -34,7 +34,7 @@ public class ContraIndicatorsService {
     private static final String LOG_MESSAGE_DESCRIPTION = "description";
 
     private static final String LOG_ERROR_DESCRIPTION = "errorDescription";
-
+    public static final String ISSUER = "iss";
     private final ConfigService configService;
 
     private final CimitStubItemService cimitStubItemService;
@@ -63,11 +63,7 @@ public class ContraIndicatorsService {
                     LOGGER.info(new StringMapMessage().with(LOG_MESSAGE_DESCRIPTION, message));
                 } else {
                     List<CimitStubItem> cimitStubItems =
-                            mapToContraIndications(
-                                    userId,
-                                    contraIndicatorEvidenceDto,
-                                    getIssuanceDate(
-                                            signedJWT.getJWTClaimsSet().getNotBeforeTime()));
+                            mapToContraIndications(userId, contraIndicatorEvidenceDto, signedJWT);
                     saveOrUpdateCimitStubItems(userId, cimitStubItems);
                 }
             }
@@ -128,8 +124,11 @@ public class ContraIndicatorsService {
     private List<CimitStubItem> mapToContraIndications(
             String userId,
             ContraIndicatorEvidenceDto contraIndicatorEvidenceDto,
-            Instant issuanceDate) {
+            SignedJWT signedJWT)
+            throws ParseException {
 
+        Instant issuanceDate = getIssuanceDate(signedJWT.getJWTClaimsSet().getNotBeforeTime());
+        String iss = signedJWT.getJWTClaimsSet().getClaim(ISSUER).toString();
         return contraIndicatorEvidenceDto.getCi().stream()
                 .distinct()
                 .map(
@@ -137,6 +136,7 @@ public class ContraIndicatorsService {
                             return CimitStubItem.builder()
                                     .userId(userId)
                                     .contraIndicatorCode(ciCode)
+                                    .issuers(List.of(iss))
                                     .issuanceDate(issuanceDate)
                                     .build();
                         })

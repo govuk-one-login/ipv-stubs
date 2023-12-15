@@ -38,7 +38,7 @@ public class UserService {
         userCisRequest.forEach(
                 user -> {
                     Optional<CimitStubItem> cimitStubItem =
-                            getCimitStubItemByCiCode(cimitStubItems, user.getCode());
+                            getCimitStubItemByCiCode(cimitStubItems, user.getCode().toUpperCase());
                     if (cimitStubItem.isEmpty()) {
                         cimitStubItemService.persistCimitStub(
                                 userId,
