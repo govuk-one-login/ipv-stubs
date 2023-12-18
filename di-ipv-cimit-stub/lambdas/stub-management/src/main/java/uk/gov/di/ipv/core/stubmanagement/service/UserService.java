@@ -36,27 +36,25 @@ public class UserService {
         checkCICodes(userCisRequest);
         List<CimitStubItem> cimitStubItems = cimitStubItemService.getCIsForUserId(userId);
         userCisRequest.forEach(
-                user -> {
+                request -> {
                     Optional<CimitStubItem> cimitStubItem =
-                            getCimitStubItemByCiCode(cimitStubItems, user.getCode().toUpperCase());
+                            getCimitStubItemByCiCode(
+                                    cimitStubItems, request.getCode().toUpperCase());
                     if (cimitStubItem.isEmpty()) {
                         cimitStubItemService.persistCimitStub(
                                 userId,
-                                user.getCode().toUpperCase(),
-                                null,
-                                getIssuanceDate(user.getIssuanceDate()),
-                                convertListToUppercase(user.getMitigations()));
+                                request.getCode().toUpperCase(),
+                                request.getIssuers(),
+                                getIssuanceDate(request.getIssuanceDate()),
+                                convertListToUppercase(request.getMitigations()));
                     } else {
-                        cimitStubItem
-                                .get()
-                                .setMitigations(
-                                        getUpdatedMitigationsList(
-                                                cimitStubItem.get().getMitigations(),
-                                                user.getMitigations()));
-                        cimitStubItem
-                                .get()
-                                .setIssuanceDate(getIssuanceDate(user.getIssuanceDate()));
-                        cimitStubItemService.updateCimitStubItem(cimitStubItem.get());
+                        CimitStubItem item = cimitStubItem.get();
+                        item.setMitigations(
+                                getUpdatedMitigationsList(
+                                        item.getMitigations(), request.getMitigations()));
+                        item.setIssuers(combineLists(item.getIssuers(), request.getIssuers()));
+                        item.setIssuanceDate(getIssuanceDate(request.getIssuanceDate()));
+                        cimitStubItemService.updateCimitStubItem(item);
                     }
                 });
         LOGGER.info("Inserted User CI data to the Cimit Stub DynamoDB Table.");
@@ -69,13 +67,13 @@ public class UserService {
             deleteCimitStubItems(cimitStubItems);
         }
         userCisRequest.forEach(
-                user -> {
+                request -> {
                     cimitStubItemService.persistCimitStub(
                             userId,
-                            user.getCode().toUpperCase(),
-                            null,
-                            getIssuanceDate(user.getIssuanceDate()),
-                            convertListToUppercase(user.getMitigations()));
+                            request.getCode().toUpperCase(),
+                            request.getIssuers(),
+                            getIssuanceDate(request.getIssuanceDate()),
+                            convertListToUppercase(request.getMitigations()));
                 });
     }
 
@@ -95,14 +93,22 @@ public class UserService {
 
     private List<String> getUpdatedMitigationsList(
             List<String> existingMitigations, List<String> newMitigations) {
-        Stream<String> combinedStream = Stream.empty();
-        if (existingMitigations != null) {
-            combinedStream = Stream.concat(combinedStream, existingMitigations.stream());
+        return combineLists(existingMitigations, newMitigations).stream()
+                .distinct()
+                .map(String::toUpperCase)
+                .toList();
+    }
+
+    private <T> List<T> combineLists(List<T> firstList, List<T> secondList) {
+        Stream<T> combinedStream = Stream.empty();
+        if (firstList != null) {
+            combinedStream = Stream.concat(combinedStream, firstList.stream());
         }
-        if (newMitigations != null) {
-            combinedStream = Stream.concat(combinedStream, newMitigations.stream());
+        if (secondList != null) {
+            combinedStream = Stream.concat(combinedStream, secondList.stream());
         }
-        return combinedStream.distinct().map(String::toUpperCase).collect(Collectors.toList());
+
+        return combinedStream.toList();
     }
 
     private Instant getIssuanceDate(String issuanceDate) {

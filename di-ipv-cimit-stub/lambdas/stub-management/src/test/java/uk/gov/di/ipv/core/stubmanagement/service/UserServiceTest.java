@@ -2,6 +2,8 @@ package uk.gov.di.ipv.core.stubmanagement.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
@@ -30,6 +33,8 @@ public class UserServiceTest {
 
     @InjectMocks private UserService userService;
 
+    @Captor ArgumentCaptor<List<String>> issuerListArgumentCaptor;
+
     @Test
     public void shouldReturnSuccessFromAddUserCis() {
         String userId = "user123";
@@ -38,11 +43,13 @@ public class UserServiceTest {
                         UserCisRequest.builder()
                                 .code("code1")
                                 .issuanceDate("2023-07-25T10:00:00Z")
+                                .issuers(List.of("https://issuer.example.com"))
                                 .mitigations(List.of("V01", "V03"))
                                 .build(),
                         UserCisRequest.builder()
                                 .code("code2")
                                 .issuanceDate("2023-07-25T10:00:00Z")
+                                .issuers(List.of("https://issuer.example.com"))
                                 .mitigations(Collections.emptyList())
                                 .build());
 
@@ -51,8 +58,12 @@ public class UserServiceTest {
         assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
 
         verify(cimitStubItemService, times(userCisRequests.size()))
-                .persistCimitStub(any(), any(), any(), any(), any());
+                .persistCimitStub(any(), any(), issuerListArgumentCaptor.capture(), any(), any());
         verify(cimitStubItemService, never()).updateCimitStubItem(any());
+
+        assertEquals(
+                List.of("https://issuer.example.com"),
+                issuerListArgumentCaptor.getAllValues().get(0));
     }
 
     @Test
@@ -80,6 +91,7 @@ public class UserServiceTest {
                                 .code("code1")
                                 .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(List.of("V01", "V03"))
+                                .issuers(List.of("https://issuer.example.com"))
                                 .build());
         List<CimitStubItem> existingItems = new ArrayList<>();
         existingItems.add(
@@ -99,7 +111,19 @@ public class UserServiceTest {
 
         assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
 
-        verify(cimitStubItemService, times(1)).updateCimitStubItem(any());
+        ArgumentCaptor<CimitStubItem> cimitStubItemArgumentCaptor =
+                ArgumentCaptor.forClass(CimitStubItem.class);
+        verify(cimitStubItemService, times(1))
+                .updateCimitStubItem(cimitStubItemArgumentCaptor.capture());
+
+        List<CimitStubItem> updatedItem = cimitStubItemArgumentCaptor.getAllValues();
+
+        assertEquals(
+                List.of(
+                        "https://review-d.account.gov.uk",
+                        "https://review-f.account.gov.uk",
+                        "https://issuer.example.com"),
+                updatedItem.get(0).getIssuers());
     }
 
     @Test
@@ -109,6 +133,7 @@ public class UserServiceTest {
                 List.of(
                         UserCisRequest.builder()
                                 .code("code1")
+                                .issuers(List.of("https://issuer.example.com"))
                                 .issuanceDate("2023-07-25T10:00:00Z")
                                 .mitigations(List.of("V01"))
                                 .build());
@@ -128,7 +153,11 @@ public class UserServiceTest {
         assertDoesNotThrow(() -> userService.updateUserCis(userId, userCisRequests));
 
         verify(cimitStubItemService, times(userCisRequests.size()))
-                .persistCimitStub(any(), any(), any(), any(), any());
+                .persistCimitStub(any(), any(), issuerListArgumentCaptor.capture(), any(), any());
+
+        assertEquals(
+                List.of("https://issuer.example.com"),
+                issuerListArgumentCaptor.getAllValues().get(0));
     }
 
     @Test

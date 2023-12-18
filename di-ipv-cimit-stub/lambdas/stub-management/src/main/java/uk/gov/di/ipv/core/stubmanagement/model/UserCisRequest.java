@@ -20,6 +20,9 @@ public class UserCisRequest {
     @JsonProperty("issuanceDate")
     private String issuanceDate;
 
+    @JsonProperty("issuers")
+    private List<String> issuers;
+
     @JsonProperty("mitigations")
     private List<String> mitigations;
 }
