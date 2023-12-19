@@ -90,7 +90,7 @@ public class JwtBuilder {
         if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
             claimSetBuilder.claim(
                     "reprove_identity",
-                    reproveIdentityValue == ReproveIdentityClaimValue.TRUE ? "true" : "false");
+                    reproveIdentityValue == ReproveIdentityClaimValue.TRUE);
         }
 
         return claimSetBuilder.build();
