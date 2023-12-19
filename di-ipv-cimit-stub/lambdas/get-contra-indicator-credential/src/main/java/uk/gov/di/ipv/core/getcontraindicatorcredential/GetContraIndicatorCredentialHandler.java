@@ -49,6 +49,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
     public static final String MITIGATION = "mitigation";
     public static final String MITIGATION_CREDENTIAL = "mitigatingCredential";
     public static final String ISSUANCE_DATE = "issuanceDate";
+    public static final String ISSUERS = "issuers";
 
     private static final ObjectMapper mapper = new ObjectMapper();
     private final ConfigService configService;
@@ -164,6 +165,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         for (CimitStubItem cimitStubItem : cimitStubItems) {
             Map<String, Object> contraIndicator = new LinkedHashMap<>();
             contraIndicator.put(CODE, cimitStubItem.getContraIndicatorCode());
+            contraIndicator.put(ISSUERS, cimitStubItem.getIssuers());
             contraIndicator.put(ISSUANCE_DATE, cimitStubItem.getIssuanceDate().toString());
             contraIndicator.put(MITIGATION, getMitigations(cimitStubItem.getMitigations()));
             contraIndicators.add(contraIndicator);
