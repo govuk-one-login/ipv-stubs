@@ -114,6 +114,7 @@ describe("TICF handler", function () {
         ci: ["V03", "D03"],
         txn: "uuid",
       },
+      statusCode: 200,
       ttl: 3123123,
     };
     jest.mocked(getUserEvidence).mockResolvedValue(userEvidence);

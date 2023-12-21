@@ -16,6 +16,7 @@ jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
 
 const testUserId: string = "urn%3Auuid%3Atest-user-id";
 const decodedTestUserId: string = decodeURIComponent("urn%3Auuid%3Atest-user-id");
+const expectedFailureResponseCode: string = '500';
 
 const dbConfig = {
   convertEmptyValues: true,
@@ -71,6 +72,21 @@ const TEST_EVENT_WITHOUT_CI = {
   pathParameters: TEST_PATH_PARAM,
 } as APIGatewayProxyEventV2;
 
+//
+const TEST_PATH_PARAM_WITH_STATUS = {
+  userId: testUserId,
+  statusCode: expectedFailureResponseCode
+} as APIGatewayProxyEventPathParameters;
+
+const TEST_EVENT_WITH_STATUS_AND_BODY = {
+  body: JSON.stringify(TEST_REQUEST),
+  pathParameters: TEST_PATH_PARAM_WITH_STATUS,
+} as APIGatewayProxyEventV2;
+
+const TEST_EVENT_WITH_STATUS_AND_NOBODY = {
+  pathParameters: TEST_PATH_PARAM_WITH_STATUS,
+} as APIGatewayProxyEventV2;
+
 describe("TICF management handler", function () {
   it("returns a successful response", async () => {
     const initiallyUserEvidenceInDb: UserEvidenceItem | null =
@@ -87,6 +103,8 @@ describe("TICF management handler", function () {
     expect(result.statusCode).toEqual(200);
     // assert - check evidence in db
     let response = await dynamoDocClient.send(getCommand);
+    expect(decodedTestUserId).toEqual(response.Item?.userId);
+    expect(200).toEqual(response.Item?.statusCode);
     let evidence = response.Item?.evidence;
     expect(evidence.type).toEqual("RiskAssessment");
     expect(evidence.txn).toEqual("uuid");
@@ -187,5 +205,41 @@ describe("TICF management handler", function () {
 
     // assert
     expect(result.statusCode).toEqual(500);
+  });
+
+  it("returns a successful response for req with response status code", async () => {
+    const initiallyUserEvidenceInDb: UserEvidenceItem | null =
+      await getUserEvidence(testUserId);
+    expect(initiallyUserEvidenceInDb).toBeNull();
+    // arrange
+    jest.mocked(getParameter).mockResolvedValue("1800");
+    // act
+    let result = (await handler(
+      TEST_EVENT_WITH_STATUS_AND_BODY
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(200);
+    // assert - check evidence in db
+    let response = await dynamoDocClient.send(getCommand);
+    expect(decodedTestUserId).toEqual(response.Item?.userId);
+    expect(parseInt(expectedFailureResponseCode)).toEqual(response.Item?.statusCode);
+    let evidence = response.Item?.evidence;
+    expect(evidence.type).toEqual("RiskAssessment");
+    expect(evidence.txn).toEqual("uuid");
+    expect(evidence.ci).toEqual(["V03", "D03"]);
+
+    //
+    result = (await handler(
+      TEST_EVENT_WITH_STATUS_AND_NOBODY
+    )) as APIGatewayProxyStructuredResultV2;
+    // assert
+    expect(result.statusCode).toEqual(200);
+    // assert - check evidence in db
+    response = await dynamoDocClient.send(getCommand);
+    expect(decodedTestUserId).toEqual(response.Item?.userId);
+    expect(parseInt(expectedFailureResponseCode)).toEqual(response.Item?.statusCode);
+    evidence = response.Item?.evidence;
+    expect(evidence).toEqual({});
   });
 });

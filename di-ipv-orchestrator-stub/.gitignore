@@ -32,3 +32,4 @@ build
 
 # Ignore dev-deploy generated file
 deploy*/**/orch-stub-*.yaml
+core-dev-deploy*/**/orch-stub-*.yaml

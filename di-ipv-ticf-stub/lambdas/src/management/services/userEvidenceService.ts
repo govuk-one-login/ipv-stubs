@@ -15,13 +15,15 @@ const dynamoClient = config.isLocalDev
 
 export async function persistUserEvidence(
   userId: string,
-  ticfEvidenceItemReq: TicfEvidenceItem
+  ticfEvidenceItemReq: TicfEvidenceItem,
+  statusCode: number = 200
 ): Promise<void> {
 
   const userEvidence: UserEvidenceItem = {
     userId: userId,
     evidence: ticfEvidenceItemReq,
     ttl: await getTtl(),
+    statusCode: statusCode
   };
   await saveUserEvidence(userEvidence);
 }
@@ -59,3 +61,5 @@ async function getTtl(): Promise<number> {
 }
 
 export default persistUserEvidence;
+
+
