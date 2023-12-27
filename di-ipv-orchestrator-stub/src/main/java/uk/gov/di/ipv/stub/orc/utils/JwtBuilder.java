@@ -33,7 +33,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_JWT_TTL;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_SIGNING_KEY;
@@ -44,6 +43,7 @@ public class JwtBuilder {
     public static final String URN_UUID = "urn:uuid:";
     public static final String INVALID_AUDIENCE = "invalid-audience";
     public static final String INVALID_REDIRECT_URI = "http://example.com";
+
     public enum ReproveIdentityClaimValue {
         NOT_PRESENT,
         TRUE,
@@ -51,56 +51,63 @@ public class JwtBuilder {
     }
 
     public static JWTClaimsSet buildAuthorizationRequestClaims(
-        String userId,
-        String signInJourneyId,
-        String[] vtr,
-        String errorType,
-        ReproveIdentityClaimValue reproveIdentityValue) {
-    String audience = "https://dev-shivp.02.dev.identity.account.gov.uk";
-    String redirectUri = ORCHESTRATOR_REDIRECT_URL;
+            String userId,
+            String signInJourneyId,
+            String[] vtr,
+            String errorType,
+            ReproveIdentityClaimValue reproveIdentityValue,
+            String environment) {
+        String audience =
+                environment.equals("staging")
+                        ? "https://identity.staging.account.gov.uk/"
+                        : "https://identity.build.account.gov.uk/";
+        String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
-    if (errorType != null) {
-        if (errorType.equals("recoverable")) {
-            audience = INVALID_AUDIENCE;
-        } else {
-            redirectUri = INVALID_REDIRECT_URI;
+        if (errorType != null) {
+            if (errorType.equals("recoverable")) {
+                audience = INVALID_AUDIENCE;
+            } else {
+                redirectUri = INVALID_REDIRECT_URI;
+            }
         }
+
+        Instant now = Instant.now();
+        var claimSetBuilder =
+                new JWTClaimsSet.Builder()
+                        .subject(userId)
+                        .audience(audience)
+                        .issueTime(Date.from(now))
+                        .issuer(ORCHESTRATOR_CLIENT_ID)
+                        .notBeforeTime(Date.from(now))
+                        .expirationTime(generateExpirationTime(now))
+                        .claim("client_id", ORCHESTRATOR_CLIENT_ID)
+                        .claim("response_type", ResponseType.Value.CODE.toString())
+                        .claim("redirect_uri", redirectUri)
+                        .claim("state", UUID.randomUUID().toString())
+                        .claim("govuk_signin_journey_id", signInJourneyId)
+                        .claim("persistent_session_id", UUID.randomUUID().toString())
+                        .claim(
+                                "email_address",
+                                "dev-platform-testing@digital.cabinet-office.gov.uk")
+                        .claim("vtr", List.of(vtr));
+
+        if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
+            claimSetBuilder.claim(
+                    "reprove_identity",
+                    reproveIdentityValue == ReproveIdentityClaimValue.TRUE ? "true" : "false");
+        }
+
+        return claimSetBuilder.build();
     }
 
-    Instant now = Instant.now();
-    var claimSetBuilder =
-            new JWTClaimsSet.Builder()
-                    .subject(userId)
-                    .audience(audience)
-                    .issueTime(Date.from(now))
-                    .issuer(ORCHESTRATOR_CLIENT_ID)
-                    .notBeforeTime(Date.from(now))
-                    .expirationTime(generateExpirationTime(now))
-                    .claim("client_id", ORCHESTRATOR_CLIENT_ID)
-                    .claim("response_type", ResponseType.Value.CODE.toString())
-                    .claim("redirect_uri", redirectUri)
-                    .claim("state", UUID.randomUUID().toString())
-                    .claim("govuk_signin_journey_id", signInJourneyId)
-                    .claim("persistent_session_id", UUID.randomUUID().toString())
-                    .claim(
-                            "email_address",
-                            "dev-platform-testing@digital.cabinet-office.gov.uk")
-                    .claim("vtr", List.of(vtr));
-
-    if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
-        claimSetBuilder.claim(
-                "reprove_identity",
-                reproveIdentityValue == ReproveIdentityClaimValue.TRUE ? "true" : "false");
-    }
-
-    return claimSetBuilder.build();
-}
-
-    public static JWTClaimsSet buildClientAuthenticationClaims() {
+    public static JWTClaimsSet buildClientAuthenticationClaims(String targetBackend) {
         Instant now = Instant.now();
         return new JWTClaimsSet.Builder()
                 .subject(ORCHESTRATOR_CLIENT_ID)
-                .audience("https://dev-shivp.02.dev.identity.account.gov.uk")
+                .audience(
+                        targetBackend.equals("staging")
+                                ? "https://staging.identity.account.gov.uk"
+                                : "https://build.identity.account.gov.uk")
                 .issuer(ORCHESTRATOR_CLIENT_ID)
                 .expirationTime(generateExpirationTime(now))
                 .jwtID(UUID.randomUUID().toString())

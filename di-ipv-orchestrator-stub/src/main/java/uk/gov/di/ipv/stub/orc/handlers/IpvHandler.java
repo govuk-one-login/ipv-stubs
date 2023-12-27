@@ -71,7 +71,10 @@ public class IpvHandler {
             (Request request, Response response) -> {
                 var state = new State();
                 stateSession.put(state.getValue(), null);
-                response.cookie("targetEnvironment", "https://api-dev-shivp.02.dev.identity.account.gov.uk/");
+
+                String environment = request.queryMap().get("targetEnvironment").value();
+
+                response.cookie("targetEnvironment", environment);
 
                 String errorType = request.queryMap().get("error").value();
                 String userIdTextValue = request.queryMap().get("userIdText").value();
@@ -84,7 +87,7 @@ public class IpvHandler {
                 JwtBuilder.ReproveIdentityClaimValue reproveIdentityClaimValue =
                         StringUtils.isNotBlank(reproveIdentityString)
                                 ? JwtBuilder.ReproveIdentityClaimValue.valueOf(
-                                reproveIdentityString)
+                                        reproveIdentityString)
                                 : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
 
                 String userId = getUserIdValue(userIdTextValue);
@@ -95,18 +98,28 @@ public class IpvHandler {
                                 signInJourneyIdText,
                                 vtr,
                                 errorType,
-                                reproveIdentityClaimValue);
+                                reproveIdentityClaimValue,
+                                environment);
 
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
                 EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt);
                 var authRequest =
                         new AuthorizationRequest.Builder(
-                                new ResponseType(ResponseType.Value.CODE),
-                                new ClientID(ORCHESTRATOR_CLIENT_ID))
+                                        new ResponseType(ResponseType.Value.CODE),
+                                        new ClientID(ORCHESTRATOR_CLIENT_ID))
                                 .state(state)
                                 .scope(new Scope("openid"))
-                                .redirectionURI(new URI("https://orch-dev-shivp.02.core.dev.stubs.account.gov.uk/callback"))
-                                .endpointURI(new URI("https://dev-shivp.02.dev.identity.account.gov.uk/").resolve("/oauth2/authorize"))
+                                .redirectionURI(
+                                        new URI(
+                                                environment.equals("staging")
+                                                        ? "https://orch-staging.stubs.account.gov.uk/callback"
+                                                        : "https://orch-build.stubs.account.gov.uk/callback"))
+                                .endpointURI(
+                                        new URI(
+                                                        environment.equals("staging")
+                                                                ? "https://identity.staging.account.gov.uk/"
+                                                                : "https://identity.build.account.gov.uk/")
+                                                .resolve("/oauth2/authorize"))
                                 .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
                                 .build();
 
@@ -124,7 +137,7 @@ public class IpvHandler {
 
                     var accessToken = exchangeCodeForToken(authorizationCode, targetBackend);
 
-                    var userInfo = getUserInfo(accessToken);
+                    var userInfo = getUserInfo(accessToken, targetBackend);
 
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     String userInfoJson = gson.toJson(userInfo);
@@ -163,14 +176,21 @@ public class IpvHandler {
         return authorizationResponse.toSuccessResponse().getAuthorizationCode();
     }
 
-    private AccessToken exchangeCodeForToken(AuthorizationCode authorizationCode, String targetBackend)
+    private AccessToken exchangeCodeForToken(
+            AuthorizationCode authorizationCode, String targetBackend)
             throws OrchestratorStubException, CertificateException, JOSEException {
-        URI resolve = URI.create(targetBackend).resolve(IPV_BACKCHANNEL_TOKEN_PATH);
+
+        URI resolve =
+                URI.create(
+                                targetBackend.equals("staging")
+                                        ? "https://api-staging.identity.account.gov.uk/"
+                                        : "https://api-build.identity.account.gov.uk/")
+                        .resolve(IPV_BACKCHANNEL_TOKEN_PATH);
         logger.info("token url is " + resolve);
 
         SignedJWT signedClientJwt;
         try {
-            JWTClaimsSet claims = buildClientAuthenticationClaims();
+            JWTClaimsSet claims = buildClientAuthenticationClaims(targetBackend);
             signedClientJwt = JwtBuilder.createSignedJwt(claims);
         } catch (JOSEException | InvalidKeySpecException | NoSuchAlgorithmException e) {
             logger.error("Failed to generate orch client JWT", e);
@@ -186,8 +206,11 @@ public class IpvHandler {
                         new AuthorizationCodeGrant(
                                 authorizationCode, URI.create(ORCHESTRATOR_REDIRECT_URL)));
 
-
-        logger.warn("ORCH CALLBACK REQUEST =======" + tokenRequest.getEndpointURI() + "======" + signedClientJwt);
+        logger.warn(
+                "ORCH CALLBACK REQUEST ======="
+                        + tokenRequest.getEndpointURI()
+                        + "======"
+                        + signedClientJwt);
 
         var httpTokenResponse = sendHttpRequest(tokenRequest.toHTTPRequest());
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
@@ -201,10 +224,13 @@ public class IpvHandler {
         return tokenResponse.toSuccessResponse().getTokens().getAccessToken();
     }
 
-    public JSONObject getUserInfo(AccessToken accessToken) {
+    public JSONObject getUserInfo(AccessToken accessToken, String targetBackend) {
         var userInfoRequest =
                 new UserInfoRequest(
-                        URI.create("https://api-dev-shivp.02.dev.identity.account.gov.uk/")
+                        URI.create(
+                                        targetBackend.equals("staging")
+                                                ? "https://staging.identity.account.gov.uk/"
+                                                : "https://build.identity.account.gov.uk/")
                                 .resolve(IPV_BACKCHANNEL_USER_IDENTITY_PATH),
                         (BearerAccessToken) accessToken);
 
