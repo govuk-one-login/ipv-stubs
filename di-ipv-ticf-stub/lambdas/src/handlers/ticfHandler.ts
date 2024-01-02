@@ -1,7 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { buildApiResponse } from "../common/apiResponses";
 import TicfRequest from "../domain/ticfRequest";
-import ServiceResponse from "../domain/serviceResponse";
 import { processGetVCRequest } from "../services/ticfService";
 
 export async function handler(
