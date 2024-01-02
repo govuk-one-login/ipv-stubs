@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { getSsmParameter } from "../common/ssmParameter";
 import TicfRequest from "../domain/ticfRequest";
-import TicfResponse from "../domain/ticfResponse";
+import ServiceResponse from "../domain/serviceResponse";
 import TicfEvidenceItem from "../domain/ticfEvidenceItem";
 import TicfVc from "../domain/ticfVc";
 import { signJwt } from "./signingService";
@@ -11,7 +11,7 @@ import UserEvidenceItem from "../management/model/userEvidenceItem";
 
 export async function processGetVCRequest(
   ticfRequest: TicfRequest
-): Promise<TicfResponse> {
+): Promise<ServiceResponse> {
   const ticfSigningKey = await getSsmParameter(
     config.ticfParamBasePath + "signingKey"
   );
@@ -58,7 +58,7 @@ export async function processGetVCRequest(
       vtm: ticfRequest.vtm,
       "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
     },
-    statusCode: userEvidenceItem?.statusCode
+    statusCode: userEvidenceItem?.statusCode 
   };
 }
 

@@ -16,7 +16,7 @@ const dynamoClient = config.isLocalDev
 export async function persistUserEvidence(
   userId: string,
   ticfEvidenceItemReq: TicfEvidenceItem,
-  statusCode: number = 200
+  statusCode: number
 ): Promise<void> {
 
   const userEvidence: UserEvidenceItem = {
