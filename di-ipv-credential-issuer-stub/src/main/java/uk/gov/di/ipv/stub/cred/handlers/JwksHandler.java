@@ -5,7 +5,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
+import uk.gov.di.ipv.stub.cred.service.ConfigService;
 
 import java.util.List;
 
@@ -17,10 +17,9 @@ public class JwksHandler {
 
     public Route getResource =
             (Request request, Response response) -> {
-                var docAppClientConfig = CredentialIssuerConfig.getDocAppClientConfig();
+                var docAppClientConfig = ConfigService.getClientConfig("authOrchestratorDocApp");
                 var signingJWK = JWK.parse(docAppClientConfig.getSigningPublicJwk());
-                var encryptionJWK = JWK.parse(docAppClientConfig.getEncryptionPublicJwk());
-                var jwkSet = new JWKSet(List.of(signingJWK, encryptionJWK));
+                var jwkSet = new JWKSet(List.of(signingJWK));
 
                 response.type(RESPONSE_TYPE);
                 return jwkSet.toString(true);
