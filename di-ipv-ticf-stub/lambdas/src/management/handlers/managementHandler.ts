@@ -11,7 +11,7 @@ export async function handler(
   if (!userId) {
     return buildApiResponse({ errorMessage: "Missing userId." }, 400);
   }
-  const statusCode = event.pathParameters?.statusCode;
+  const statusCode = event.pathParameters?.statusCode ?? '200';
   let ticfEvidenceItemReq: TicfEvidenceItem;
   try {
     ticfEvidenceItemReq = parseRequest(event);
@@ -22,11 +22,7 @@ export async function handler(
   }
 
   try {
-    if (statusCode) {
-      await persistUserEvidence(decodeURIComponent(userId), ticfEvidenceItemReq, parseInt(statusCode));
-    } else {
-      await persistUserEvidence(decodeURIComponent(userId), ticfEvidenceItemReq);
-    }
+    await persistUserEvidence(decodeURIComponent(userId), ticfEvidenceItemReq, parseInt(statusCode));
     return buildApiResponse({ message: "Success !!" });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {

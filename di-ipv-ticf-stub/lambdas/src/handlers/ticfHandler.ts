@@ -17,9 +17,9 @@ export async function handler(
   }
 
   try {
-    const response: ServiceResponse = await processGetVCRequest(ticfRequest);
+    const { response, statusCode } = await processGetVCRequest(ticfRequest);
     console.info(`Returning ${JSON.stringify(response)}`);
-    return buildApiResponse(response.response, response.statusCode);
+    return buildApiResponse(response, statusCode);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error);
