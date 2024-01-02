@@ -34,3 +34,4 @@ build
 # Dev env stuff
 config
 deploy/*/*-*.yaml
+core-dev-deploy/*/*-*.yaml

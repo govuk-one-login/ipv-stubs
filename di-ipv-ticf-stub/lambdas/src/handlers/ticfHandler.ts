@@ -1,7 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { buildApiResponse } from "../common/apiResponses";
 import TicfRequest from "../domain/ticfRequest";
-import TicfResponse from "../domain/ticfResponse";
 import { processGetVCRequest } from "../services/ticfService";
 
 export async function handler(
@@ -17,9 +16,9 @@ export async function handler(
   }
 
   try {
-    const response: TicfResponse = await processGetVCRequest(ticfRequest);
+    const { response, statusCode } = await processGetVCRequest(ticfRequest);
     console.info(`Returning ${JSON.stringify(response)}`);
-    return buildApiResponse(response);
+    return buildApiResponse(response, statusCode);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error);

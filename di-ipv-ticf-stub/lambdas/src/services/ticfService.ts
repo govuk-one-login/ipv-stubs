@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { getSsmParameter } from "../common/ssmParameter";
 import TicfRequest from "../domain/ticfRequest";
-import TicfResponse from "../domain/ticfResponse";
+import ServiceResponse from "../domain/serviceResponse";
 import TicfEvidenceItem from "../domain/ticfEvidenceItem";
 import TicfVc from "../domain/ticfVc";
 import { signJwt } from "./signingService";
@@ -11,7 +11,7 @@ import UserEvidenceItem from "../management/model/userEvidenceItem";
 
 export async function processGetVCRequest(
   ticfRequest: TicfRequest
-): Promise<TicfResponse> {
+): Promise<ServiceResponse> {
   const ticfSigningKey = await getSsmParameter(
     config.ticfParamBasePath + "signingKey"
   );
@@ -28,7 +28,8 @@ export async function processGetVCRequest(
     ).toLowerCase() === "true";
 
   const timestamp = Math.floor(new Date().getTime() / 1000);
-  const ticfEvidenceItem = await getUserEvidenceFromDb(ticfRequest.sub);
+  const userEvidenceItem = await getUserEvidenceFromDb(ticfRequest.sub);
+  const ticfEvidenceItem = userEvidenceItem?.evidence;
 
   const payload: TicfVc = {
     iss: ticfComponentId,
@@ -49,12 +50,15 @@ export async function processGetVCRequest(
 
   const returnJwt = await signJwt(payload, ticfSigningKey);
   return {
-    sub: ticfRequest.sub,
-    govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
-    vtr: ticfRequest.vtr,
-    vot: ticfRequest.vot,
-    vtm: ticfRequest.vtm,
-    "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
+    response: {
+      sub: ticfRequest.sub,
+      govuk_signin_journey_id: ticfRequest.govuk_signin_journey_id,
+      vtr: ticfRequest.vtr,
+      vot: ticfRequest.vot,
+      vtm: ticfRequest.vtm,
+      "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
+    },
+    statusCode: userEvidenceItem?.statusCode 
   };
 }
 
@@ -82,11 +86,11 @@ function getEvidenceItem(
 
 async function getUserEvidenceFromDb(
   userId: string
-): Promise<TicfEvidenceItem | undefined> {
+): Promise<UserEvidenceItem | undefined> {
   const userEvidenceItem: UserEvidenceItem | null = await getUserEvidence(
     userId
   );
-  return userEvidenceItem ? userEvidenceItem.evidence : undefined;
+  return userEvidenceItem ? userEvidenceItem : undefined;
 }
 
 export default processGetVCRequest;

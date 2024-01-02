@@ -170,6 +170,12 @@ Resources:
             RestApiId: !Ref RestApiGateway
             Path: /management/user/{userId}
             Method: POST
+        PostCisWithStatusCode:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /management/user/{userId}/statuscode/{statusCode}
+            Method: POST
     Metadata:
       # Manage esbuild properties
       BuildMethod: esbuild

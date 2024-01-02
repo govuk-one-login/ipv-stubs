@@ -31,6 +31,8 @@ build
 # Ignore AWS SAM folder
 deploy/.aws-sam
 deploy/cimit-stub-*.yaml
+core-dev-deploy/.aws-sam
+core-dev-deploy/**/cimit-stub-*.yaml
 
 .idea
 .gradle
