@@ -26,15 +26,6 @@ jobs:
         with:
           fetch-depth: '0'
 
-      - name: Checkout config repo
-        uses: actions/checkout@v3
-        with:
-          repository: govuk-one-login/ipv-config
-          token: ${{ secrets.IPV_CONFIG_PAT }}
-          path: ./di-ipv-config
-          fetch-depth: '0'
-          ref: 'refs/heads/main'
-
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
@@ -62,10 +53,6 @@ jobs:
         uses: sigstore/cosign-installer@main
         with:
           cosign-release: 'v1.9.0'
-
-      - name: Copy Core Config into place
-        id: copy-config-to-stub
-        run: cp -rpfv ./di-ipv-config/stubs/di-ipv-credential-issuer-stub ./di-ipv-credential-issuer-stub/config
 
       - name: Build, tag, sign and push image to Amazon ECR
         working-directory: ./di-ipv-credential-issuer-stub

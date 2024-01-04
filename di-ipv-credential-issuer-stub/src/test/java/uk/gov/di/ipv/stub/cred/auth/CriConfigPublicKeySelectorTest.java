@@ -34,19 +34,19 @@ public class CriConfigPublicKeySelectorTest {
 
     @Test
     void registerClientsAllowsSelectionOfTheirKey() throws Exception {
-        ClientConfig clientConfig1 = new ClientConfig();
+        ClientConfig clientConfig1 = ClientConfig.builder().build();
         JwtAuthenticationConfig jwtAuthConfig1 =
                 new JwtAuthenticationConfig(
                         TestFixtures.EC_PUBLIC_JWK_1, List.of("https://example.com"), "jwt");
         clientConfig1.setJwtAuthentication(jwtAuthConfig1);
 
-        ClientConfig clientConfig2 = new ClientConfig();
+        ClientConfig clientConfig2 = ClientConfig.builder().build();
         JwtAuthenticationConfig jwtAuthConfig2 =
                 new JwtAuthenticationConfig(
                         TestFixtures.EC_PUBLIC_JWK_2, List.of("https://example.com"), "jwt");
         clientConfig2.setJwtAuthentication(jwtAuthConfig2);
 
-        ClientConfig clientConfig3 = new ClientConfig();
+        ClientConfig clientConfig3 = ClientConfig.builder().build();
         JwtAuthenticationConfig jwtAuthConfig3 =
                 new JwtAuthenticationConfig(
                         TestFixtures.EC_PUBLIC_JWK_3, List.of("https://example.com"), "jwt");
@@ -81,7 +81,7 @@ public class CriConfigPublicKeySelectorTest {
 
     @Test
     void onlyThrowsForBadCertsWhenRetrievingPublicKeys() throws Exception {
-        ClientConfig clientConfig1 = new ClientConfig();
+        ClientConfig clientConfig1 = ClientConfig.builder().build();
         JwtAuthenticationConfig jwtAuthConfig1 =
                 new JwtAuthenticationConfig(
                         "{\"valid_json\": \"but_not_a_jwk\"}",
@@ -89,13 +89,13 @@ public class CriConfigPublicKeySelectorTest {
                         "jwt");
         clientConfig1.setJwtAuthentication(jwtAuthConfig1);
 
-        ClientConfig clientConfig2 = new ClientConfig();
+        ClientConfig clientConfig2 = ClientConfig.builder().build();
         JwtAuthenticationConfig jwtAuthConfig2 =
                 new JwtAuthenticationConfig(
                         TestFixtures.EC_PUBLIC_JWK_1, List.of("https://example.com"), "jwt");
         clientConfig2.setJwtAuthentication(jwtAuthConfig2);
 
-        ClientConfig clientConfig3 = new ClientConfig();
+        ClientConfig clientConfig3 = ClientConfig.builder().build();
         JwtAuthenticationConfig jwtAuthConfig3 =
                 new JwtAuthenticationConfig("Not even json", List.of("https://example.com"), "jwt");
         clientConfig3.setJwtAuthentication(jwtAuthConfig3);

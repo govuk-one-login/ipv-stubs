@@ -1,20 +1,6 @@
 package uk.gov.di.ipv.stub.cred.config;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-
 public class CredentialIssuerConfig {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CredentialIssuerConfig.class);
     public static final String PORT = getConfigValue("CREDENTIAL_ISSUER_PORT", "8084");
     public static final String NAME =
             getConfigValue("CREDENTIAL_ISSUER_NAME", "Credential Issuer Stub");
@@ -48,9 +34,6 @@ public class CredentialIssuerConfig {
     public static final String EXPIRY_MINUTES = "expMinutes";
     public static final String EXPIRY_SECONDS = "expSeconds";
 
-    public static Map<String, ClientConfig> CLIENT_CONFIGS;
-
-    private static final Gson gson = new Gson();
     private static final String CREDENTIAL_ISSUER_TYPE_VAR = "CREDENTIAL_ISSUER_TYPE";
 
     private CredentialIssuerConfig() {}
@@ -58,30 +41,6 @@ public class CredentialIssuerConfig {
     public static CriType getCriType() {
         return CriType.fromValue(
                 getConfigValue(CREDENTIAL_ISSUER_TYPE_VAR, CriType.EVIDENCE_CRI_TYPE.value));
-    }
-
-    public static ClientConfig getClientConfig(String clientId) {
-        if (CLIENT_CONFIGS == null) {
-            CLIENT_CONFIGS = parseClientConfigFile();
-        }
-        return CLIENT_CONFIGS.get(clientId);
-    }
-
-    public static ClientConfig getDocAppClientConfig() {
-        return getClientConfig("authOrchestratorDocApp");
-    }
-
-    public static Map<String, ClientConfig> getClientConfigs() {
-        if (CLIENT_CONFIGS == null) {
-            CLIENT_CONFIGS = parseClientConfigFile();
-        }
-        return CLIENT_CONFIGS;
-    }
-
-    public static void resetClientConfigs() {
-        // For testing purposes only.
-        CLIENT_CONFIGS = null;
-        CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
     }
 
     public static String getVerifiableCredentialIssuer() {
@@ -107,36 +66,5 @@ public class CredentialIssuerConfig {
 
     public static boolean isEnabled(String key, String defaultValue) {
         return Boolean.parseBoolean(getConfigValue(key, defaultValue));
-    }
-
-    private static Map<String, ClientConfig> parseClientConfigs() {
-        String client_config = getConfigValue("CLIENT_CONFIG", null);
-        if (client_config == null) {
-            return new HashMap<>();
-        }
-
-        String clientConfigJson = new String(Base64.getDecoder().decode(client_config));
-        Type type = new TypeToken<Map<String, ClientConfig>>() {}.getType();
-
-        return gson.fromJson(clientConfigJson, type);
-    }
-
-    private static Map<String, ClientConfig> parseClientConfigFile() {
-        String client_config_file = getConfigValue("CLIENT_CONFIG_FILE", null);
-        LOGGER.info("Client Config File: {}", client_config_file);
-        if (client_config_file == null) {
-            return parseClientConfigs();
-        }
-
-        Path client_config = Path.of(client_config_file);
-        try {
-            String clientConfigJson = Files.readString(client_config);
-            LOGGER.info("Successfully read config file: {}", client_config_file);
-            Type type = new TypeToken<Map<String, ClientConfig>>() {}.getType();
-
-            return gson.fromJson(clientConfigJson, type);
-        } catch (IOException e) {
-            return new HashMap<>();
-        }
     }
 }

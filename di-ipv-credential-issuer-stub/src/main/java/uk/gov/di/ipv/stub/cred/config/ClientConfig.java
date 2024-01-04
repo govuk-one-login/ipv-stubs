@@ -1,5 +1,7 @@
 package uk.gov.di.ipv.stub.cred.config;
 
+import lombok.Builder;
+
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -7,19 +9,15 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
+@Builder
 public class ClientConfig {
     private String signingPublicJwk;
     private JwtAuthenticationConfig jwtAuthentication;
     private String base64EncryptionPrivateKey;
     private String audienceForVcJwt;
-    private String encryptionPublicJwk;
 
     public String getSigningPublicJwk() {
         return signingPublicJwk;
-    }
-
-    public String getEncryptionPublicJwk() {
-        return encryptionPublicJwk;
     }
 
     public void setSigningPublicJwk(String signingPublicJwk) {

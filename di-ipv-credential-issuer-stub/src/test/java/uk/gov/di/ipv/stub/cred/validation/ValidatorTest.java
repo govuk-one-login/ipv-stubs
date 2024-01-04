@@ -8,11 +8,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import spark.QueryParamsMap;
-import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
-import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
+import uk.gov.di.ipv.stub.cred.utils.StubSsmClient;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
@@ -28,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(SystemStubsExtension.class)
@@ -37,11 +37,11 @@ class ValidatorTest {
 
     @SystemStub
     private final EnvironmentVariables environmentVariables =
-            new EnvironmentVariables("CLIENT_CONFIG", TestFixtures.CLIENT_CONFIG);
+            new EnvironmentVariables("ENVIRONMENT", "TEST");
 
     @BeforeAll
     public static void setUp() {
-        CredentialIssuerConfig.resetClientConfigs();
+        StubSsmClient.setClientConfigParams(CLIENT_CONFIG);
     }
 
     @Test
