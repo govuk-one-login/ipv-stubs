@@ -49,8 +49,8 @@ public class StubSsmClient implements SsmClient {
         return GetParametersByPathResponse.builder().parameters(params).build();
     }
 
-    public static void setClientConfigParams(String requiredClientConfigs) {
-        clientConfigs = GSON.fromJson(requiredClientConfigs, clientConfigsMapType);
+    public static void setClientConfigParams(Map<String, ClientConfig> requiredClientConfigs) {
+        clientConfigs = requiredClientConfigs;
     }
 
     public static int getParametersByPathCallCount() {
