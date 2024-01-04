@@ -11,6 +11,7 @@ import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.utils.StubSsmClient;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,11 +20,11 @@ public class ConfigService {
     private static final long DEFAULT_CONFIG_CACHE_SECONDS = 60;
     private static final Gson GSON = new Gson();
     private static final SsmClient SSM_CLIENT = getSsmClient();
-    private static final Map<String, ClientConfig> CLIENT_CONFIGS = new HashMap<>();
     private static final String CLIENT_CONFIG_BASE_PATH = "/stubs/credential-issuer-stub-clients";
     private static final String ENVIRONMENT_ENV_VAR = "ENVIRONMENT";
     private static final String TEST = "TEST";
     private static final String CONFIG_CACHE_SECONDS_ENV_VAR = "CONFIG_CACHE_SECONDS";
+    private static Map<String, ClientConfig> CLIENT_CONFIGS;
     private static Instant lastRefresh = null;
 
     public static ClientConfig getClientConfig(String clientId) {
@@ -38,7 +39,7 @@ public class ConfigService {
         return CLIENT_CONFIGS;
     }
 
-    private static void refreshClientConfigsIfRequired() {
+    private static synchronized void refreshClientConfigsIfRequired() {
         if (lastRefresh == null
                 || lastRefresh.isBefore(Instant.now().minusSeconds(getCacheDurationSeconds()))) {
             LOGGER.info("Refreshing client configs");
@@ -57,12 +58,14 @@ public class ConfigService {
         GetParametersByPathResponse response =
                 SSM_CLIENT.getParametersByPath(requestBuilder.build());
 
+        HashMap<String, ClientConfig> configs = new HashMap<>();
         for (Parameter param : response.parameters()) {
             String[] nameParts = param.name().split("/");
-            CLIENT_CONFIGS.put(
+            configs.put(
                     nameParts[nameParts.length - 1],
                     GSON.fromJson(param.value(), ClientConfig.class));
         }
+        CLIENT_CONFIGS = Collections.unmodifiableMap(configs);
 
         if (response.nextToken() != null) {
             LOGGER.info("Next token found - fetching more client configs");
