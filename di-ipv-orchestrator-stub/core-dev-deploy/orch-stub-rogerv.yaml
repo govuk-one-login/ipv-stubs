@@ -36,10 +36,22 @@ Parameters:
     Description: Environment Variables for ECS - Retrieved from SSM Parameter Store
     Type: AWS::SSM::Parameter::Value<String>
     Default: /stubs/build/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY
-  OrchestratorJarEncryptionPublicKey:
+  OrchestratorDefaultJarEncryptionPublicKey:
     Description: Environment Variables for ECS - Retrieved from SSM Parameter Store
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /stubs/build/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY
+    Default: /stubs/build/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
+  OrchestratorBuildJarEncryptionPublicKey:
+    Description: Environment Variables for ECS - Retrieved from SSM Parameter Store
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /stubs/build/orch/env/ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY
+  OrchestratorStagingJarEncryptionPublicKey:
+    Description: Environment Variables for ECS - Retrieved from SSM Parameter Store
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /stubs/build/orch/env/ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY
+  OrchestratorIntegrationJarEncryptionPublicKey:
+    Description: Environment Variables for ECS - Retrieved from SSM Parameter Store
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /stubs/build/orch/env/ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY
   OrchestratorBasicAuthEnable:
     Description: Environment Variables for ECS - Retrieved from SSM Parameter Store
     Type: AWS::SSM::Parameter::Value<String>
@@ -483,7 +495,7 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Essential: true
-          Image: 175872367215.dkr.ecr.eu-west-2.amazonaws.com/config-mgmt-gha-ecr-imagerepository-kn0pzsusvjog:orch-stub-rogerv-1703854290
+          Image: 175872367215.dkr.ecr.eu-west-2.amazonaws.com/config-mgmt-gha-ecr-imagerepository-kn0pzsusvjog:orch-stub-rogerv-1704376583
           Name: app
           Environment:
             - Name: JBP_CONFIG_OPEN_JDK_JRE
@@ -500,8 +512,8 @@ Resources:
               Value: !Ref 'OrchestratorPort'
             - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
               Value: !Ref 'OrchestratorClientSigningKey'
-            - Name: ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY
-              Value: !Ref 'OrchestratorJarEncryptionPublicKey'
+            - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: !Ref 'OrchestratorDefaultJarEncryptionPublicKey'
             - Name: IPV_BACKCHANNEL_ENDPOINT
               Value: !Ref 'IpvBackchannelEndpoint'
             - Name: IPV_BACKCHANNEL_TOKEN_PATH

@@ -48,10 +48,22 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/staging/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY" #pragma: allowlist secret
-  OrchestratorJarEncryptionPublicKey:
+  OrchestratorDefaultJarEncryptionPublicKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store" #pragma: allowlist secret
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/staging/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+    Default: "/stubs/staging/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+  OrchestratorBuildJarEncryptionPublicKey:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+  OrchestratorStagingJarEncryptionPublicKey:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+  OrchestratorIntegrationJarEncryptionPublicKey:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   OrchestratorBasicAuthEnable:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -533,8 +545,14 @@ Resources:
             Value: !Ref OrchestratorPort
           - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
             Value: !Ref OrchestratorClientSigningKey
-          - Name: ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY
-            Value: !Ref OrchestratorJarEncryptionPublicKey
+          - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
+            Value: !Ref OrchestratorDefaultJarEncryptionPublicKey
+          - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY
+            Value: !Ref OrchestratorBuildJarEncryptionPublicKey
+          - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY
+            Value: !Ref OrchestratorStagingJarEncryptionPublicKey
+          - Name: ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY
+            Value: !Ref OrchestratorIntegrationJarEncryptionPublicKey
           - Name: IPV_BACKCHANNEL_ENDPOINT
             Value: !Ref IpvBackchannelEndpoint
           - Name: IPV_BACKCHANNEL_TOKEN_PATH

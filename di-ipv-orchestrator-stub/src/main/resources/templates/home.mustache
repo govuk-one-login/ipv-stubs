@@ -68,10 +68,12 @@
                 <input class="govuk-input" data-module="govuk-input" name="vtrText" id="vtrText" type="text" value="Cl.Cm.P2">
             </div>
             <div class="govuk-form-group">
-                <label class="govuk-label" for="targetEnvironment">Choose a target environment:</label>
+                <label class="govuk-label" for="targetEnvironment">Choose a target environment (optional):</label>
                 <select class="govuk-select" name="targetEnvironment" id="targetEnvironment">
+                    <option value="_">default</option>
                     <option value="BUILD">build</option>
                     <option value="STAGING">staging</option>
+                    <option value="INTEGRATION">integration</option>
                 </select>
             </div>
             <div class="govuk-form-group">

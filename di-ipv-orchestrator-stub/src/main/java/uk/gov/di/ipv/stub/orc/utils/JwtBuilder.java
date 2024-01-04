@@ -33,13 +33,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_JWT_TTL;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_SIGNING_KEY;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY;
 
 public class JwtBuilder {
     public static final String URN_UUID = "urn:uuid:";
@@ -137,8 +139,19 @@ public class JwtBuilder {
     }
 
     private static RSAPublicKey getEncryptionKey(String targetEnvironment) throws java.text.ParseException, JOSEException {
-        byte[] binaryKey = Base64.getDecoder().decode(ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY);
+        String jarEncryptionPublicKey = getJarEncryptionPublicKey(targetEnvironment);
+
+        byte[] binaryKey = Base64.getDecoder().decode(jarEncryptionPublicKey);
         return RSAKey.parse(new String(binaryKey)).toRSAPublicKey();
+    }
+
+    private static String getJarEncryptionPublicKey(String targetEnvironment) {
+        return switch (targetEnvironment){
+            case ("BUILD") -> ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY;
+            case ("STAGING") -> ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY;
+            case ("INTEGRATION") -> ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY;
+            default -> ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY;
+        };
     }
 
     private static String getIpvCoreAudience(String targetEnvironment) {
