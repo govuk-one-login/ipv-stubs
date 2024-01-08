@@ -19,13 +19,19 @@ public class OrchestratorConfig {
     public static final String ORCHESTRATOR_CLIENT_SIGNING_KEY =
             getConfigValue("ORCHESTRATOR_CLIENT_SIGNING_KEY", "missing-key");
     public static final String ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY =
-            getConfigValue("ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY", "missing-encryption-key");
+            getConfigValue(
+                    "ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY", "missing-encryption-key");
     public static final String ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY =
-            getConfigValue("ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY", "missing-build-encryption-key");
+            getConfigValue(
+                    "ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY", "missing-build-encryption-key");
     public static final String ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY =
-            getConfigValue("ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY", "missing-staging-encryption-key");
+            getConfigValue(
+                    "ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY",
+                    "missing-staging-encryption-key");
     public static final String ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY =
-            getConfigValue("ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY", "missing-integration-encryption-key");
+            getConfigValue(
+                    "ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY",
+                    "missing-integration-encryption-key");
     public static final String ORCHESTRATOR_CLIENT_JWT_TTL =
             getConfigValue("ORCHESTRATOR_CLIENT_JWT_TTL", "900");
     public static final String IPV_CORE_AUDIENCE =
