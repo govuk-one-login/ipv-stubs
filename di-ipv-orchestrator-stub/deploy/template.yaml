@@ -14,6 +14,10 @@ Parameters:
     Description: The name of the environment to deploy to.
     Type: String
     AllowedPattern: ((production)|(build)|(dev.*))
+  ImageTag:
+    Description: The tag of orch-stub image to deploy in the task definition.
+    Type: String
+    Default: "none"
   VpcStackName:
     Description: >
       The name of the stack that defines the VPC in which this container will
@@ -44,10 +48,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/build/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY" #pragma: allowlist secret
-  OrchestratorJarEncryptionPublicKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   OrchestratorDefaultJarEncryptionPublicKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -104,15 +104,22 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/build/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+    # PassportPrivateApiKey:
+    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    #    Type: AWS::SSM::Parameter::Value<String>
+    #    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
     - !Or
       - !Equals [ !Ref Environment, "build"]
       - !Equals [ !Ref Environment, "production"]
-  IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
-  IsDev02: !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsNotDevelopment: !Not [ !Condition IsDevelopment ]
+  IsProduction: !Equals [ !Ref Environment, production ]
+  IsNonProd: !Not
+    - !Or
+      - !Condition IsDevelopment
+      - !Condition IsProduction
 
   UsePermissionsBoundary:
     Fn::Not:
@@ -124,36 +131,34 @@ Conditions:
 # if this is built out differently.
 Mappings:
   EnvironmentConfiguration:
-    "130355686670": # Old Development
+    "130355686670": # Development
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: dev
       platform: core
-    "175872367215": # New Development
-      fargateCPUsize: "256"
-      fargateRAMsize: "512"
-      desiredTaskCount: 1
-      environment: dev
-      platform: core
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
     "826978934233": #Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: build
       platform: core-stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
     "616199614141": #Stubs Build
-      fargateCPUsize: "256"
-      fargateRAMsize: "512"
-      desiredTaskCount: 1
-      environment: build
-      platform: stubs
-    "388905755587": #Stubs Prod
       fargateCPUsize: "512"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
+      environment: build
+      platform: stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+    "388905755587": #Stubs Prod
+      fargateCPUsize: "4096"
+      fargateRAMsize: "8192"
+      desiredTaskCount: 1
       environment: production
       platform: stubs
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
   SecurityGroups:
     PrefixListIds:
       dynamodb: "pl-b3a742da"
@@ -165,18 +170,18 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !If
-        - IsDev01
-        - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - IsNonProd
+        - !Sub "orch.${Environment}.stubs.account.gov.uk"
+        - orch.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
-            - IsDev01
-            - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+            - IsNonProd
+            - !Sub "orch.${Environment}.stubs.account.gov.uk"
+            - orch.stubs.account.gov.uk
           HostedZoneId: !If
-            - IsDev01
-            - !ImportValue Dev01StubsHostedZoneId
-            - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, !ImportValue DevStubHostedZoneId]
+            - IsNonProd
+            - !ImportValue BuildPublicHostedZoneId
+            - !ImportValue RootPublicHostedZoneId
       ValidationMethod: DNS
 
   # api domain entries / mapping
@@ -184,9 +189,9 @@ Resources:
     Type: AWS::ApiGatewayV2::DomainName
     Properties:
       DomainName: !If
-        - IsDev01
-        - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - IsNonProd
+        - !Sub "orch.${Environment}.stubs.account.gov.uk"
+        - orch.stubs.account.gov.uk
       DomainNameConfigurations:
         - CertificateArn: !Ref OrchStubSSLCert
           EndpointType: REGIONAL
@@ -196,9 +201,9 @@ Resources:
     Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
       DomainName: !If
-        - IsDev01
-        - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - IsNonProd
+        - !Sub "orch.${Environment}.stubs.account.gov.uk"
+        - orch.stubs.account.gov.uk
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -211,13 +216,13 @@ Resources:
     Properties:
       Type: A
       Name: !If
-        - IsDev01
-        - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - IsNonProd
+        - !Sub "orch.${Environment}.stubs.account.gov.uk"
+        - orch.stubs.account.gov.uk
       HostedZoneId: !If
-        - IsDev01
-        - !ImportValue Dev01StubsHostedZoneId
-        - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, !ImportValue DevStubHostedZoneId]
+        - IsNonProd
+        - !ImportValue BuildPublicHostedZoneId
+        - !ImportValue RootPublicHostedZoneId
       AliasTarget:
         DNSName: !GetAtt OrchStubApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt OrchStubApiDomain.RegionalHostedZoneId
@@ -266,14 +271,11 @@ Resources:
           IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-        - DestinationSecurityGroupId:
-            Fn::ImportValue:  !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+        - DestinationSecurityGroupId: !If
+            - IsNotDevelopment
+            - Fn::ImportValue:  !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+            - !ImportValue InterfaceVpcEndpointSecurityGroupId
           Description: Allow outbound traffic to AWS Services vpc endpoint security group
-          IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-        - CidrIpv6: ::/0
-          Description: Allow outbound traffic to external IPV6 port 443
           IpProtocol: tcp
           FromPort: 443
           ToPort: 443
@@ -364,7 +366,7 @@ Resources:
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-orch-api-gw-accesslogs
+      LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-orch-api-gw-accesslogs
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -522,49 +524,67 @@ Resources:
     Properties:
       ContainerDefinitions:
         - Essential: true
-          Image: CONTAINER-IMAGE-PLACEHOLDER
+          Image: !If [
+            IsNotDevelopment,
+            CONTAINER-IMAGE-PLACEHOLDER,
+            !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/orch-stub-development:${ImageTag}",
+          ] # Uses build account and ECR when not in development.
           Name: app
           Environment:
-            - Name: JBP_CONFIG_OPEN_JDK_JRE
-              Value: !Ref JbpConfigOpenJdkJre
-            - Name: JAVA_OPTS
-              Value: !Ref JavaOpts
-            - Name: ORCHESTRATOR_CLIENT_ID
-              Value: !Ref OrchestratorClientId
-            - Name: ORCHESTRATOR_REDIRECT_URL
-              Value: !Ref OrchestratorRedirectUrl
-            - Name: ORCHESTRATOR_CLIENT_JWT_TTL
-              Value: !Ref OrchestratorClientJwtTtl
-            - Name: ORCHESTRATOR_PORT
-              Value: !Ref OrchestratorPort
-            - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
-              Value: !Ref OrchestratorClientSigningKey
-            - Name: ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY
-              Value: !Ref OrchestratorJarEncryptionPublicKey
-            - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
-              Value: !Ref OrchestratorDefaultJarEncryptionPublicKey
-            - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY
-              Value: !Ref OrchestratorBuildJarEncryptionPublicKey
-            - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY
-              Value: !Ref OrchestratorStagingJarEncryptionPublicKey
-            - Name: ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY
-              Value: !Ref OrchestratorIntegrationJarEncryptionPublicKey
-            - Name: IPV_BACKCHANNEL_ENDPOINT
-              Value: !Ref IpvBackchannelEndpoint
-            - Name: IPV_BACKCHANNEL_TOKEN_PATH
-              Value: !Ref IpvBackchannelTokenPath
-            - Name: IPV_BACKCHANNEL_USER_IDENTITY_PATH
-              Value: !Ref IpvBackchannelUserIdentityPath
-            - Name: IPV_ENDPOINT
-              Value: !Ref IpvEndpoint
-            - Name: IPV_CORE_AUDIENCE
-              Value: !Ref IpvCoreAudience
-            - Name: ORCHESTRATOR_BASIC_AUTH_ENABLE
-              Value: !Ref OrchestratorBasicAuthEnable
-            - Name: ORCHESTRATOR_BASIC_AUTH_USERNAME
-              Value: !Ref OrchestratorBasicAuthUsername
-            - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
-              Value: !Ref OrchestratorBasicAuthPassword
+          - Name: JBP_CONFIG_OPEN_JDK_JRE
+            Value: !Ref JbpConfigOpenJdkJre
+          - Name: JAVA_OPTS
+            Value: !Ref JavaOpts
+          - Name: ORCHESTRATOR_CLIENT_ID
+            Value: !Ref OrchestratorClientId
+          - Name: ORCHESTRATOR_REDIRECT_URL
+            Value: !Ref OrchestratorRedirectUrl
+          - Name: ORCHESTRATOR_CLIENT_JWT_TTL
+            Value: !Ref OrchestratorClientJwtTtl
+          - Name: ORCHESTRATOR_PORT
+            Value: !Ref OrchestratorPort
+          - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
+            Value: !Ref OrchestratorClientSigningKey
+          - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
+            Value: !Ref OrchestratorDefaultJarEncryptionPublicKey
+          - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY
+            Value: !Ref OrchestratorBuildJarEncryptionPublicKey
+          - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY
+            Value: !Ref OrchestratorStagingJarEncryptionPublicKey
+          - Name: ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY
+            Value: !Ref OrchestratorIntegrationJarEncryptionPublicKey
+          - Name: IPV_BACKCHANNEL_ENDPOINT
+            Value: !Ref IpvBackchannelEndpoint
+          - Name: IPV_BACKCHANNEL_TOKEN_PATH
+            Value: !Ref IpvBackchannelTokenPath
+          - Name: IPV_BACKCHANNEL_USER_IDENTITY_PATH
+            Value: !Ref IpvBackchannelUserIdentityPath
+          - Name: IPV_ENDPOINT
+            Value: !Ref IpvEndpoint
+          - Name: IPV_CORE_AUDIENCE
+            Value: !Ref IpvCoreAudience
+          - Name: ORCHESTRATOR_BASIC_AUTH_ENABLE
+            Value: !Ref OrchestratorBasicAuthEnable
+          - Name: ORCHESTRATOR_BASIC_AUTH_USERNAME
+            Value: !Ref OrchestratorBasicAuthUsername
+          - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
+            Value: !Ref OrchestratorBasicAuthPassword
+          Secrets:
+            - Name: DT_TENANT
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ]
+                  - ':DT_TENANT::'
+            - Name: DT_TENANTTOKEN
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ]
+                  - ':DT_TENANTTOKEN::'
+            - Name: DT_CONNECTION_POINT
+              ValueFrom: !Join
+              - ''
+              - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ]
+                - ':DT_CONNECTION_POINT::'
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -620,7 +640,20 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/*"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/build/orch/*"
+        - PolicyName: GetDynatraceSecret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow
+                Action: secretsmanager:ListSecrets
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -650,7 +683,20 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/*" #pragma: allowlist secret
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/orch/core/*" #pragma: allowlist secret
+        - PolicyName: GetDynatraceSecret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow
+                Action: secretsmanager:ListSecrets
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
