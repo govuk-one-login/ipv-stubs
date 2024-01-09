@@ -11,6 +11,8 @@ PREFIXES: |
                 "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-1/env/" } ,
               { "clusterNamePrefix" : "orch-stub-OrchStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/build/orch/env/" } ,
+              { "clusterNamePrefix" : "orch-staging-stub-OrchStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/staging/orch/env/" } ,
               { "clusterNamePrefix" : "cri-kbv-stub-CriStubCluster-" ,
                   "ssmParamPrefix" : "/stubs/credential-issuer/kbv/env/" } ,
               { "clusterNamePrefix" : "cri-err-test-2-stub-CriStubCluster-" ,

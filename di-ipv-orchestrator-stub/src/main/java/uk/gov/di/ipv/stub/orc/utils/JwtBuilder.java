@@ -138,8 +138,7 @@ public class JwtBuilder {
         return (ECPrivateKey) factory.generatePrivate(privateKeySpec);
     }
 
-    private static RSAPublicKey getEncryptionKey(String targetEnvironment)
-            throws java.text.ParseException, JOSEException {
+    private static RSAPublicKey getEncryptionKey(String targetEnvironment) throws java.text.ParseException, JOSEException {
         String jarEncryptionPublicKey = getJarEncryptionPublicKey(targetEnvironment);
 
         byte[] binaryKey = Base64.getDecoder().decode(jarEncryptionPublicKey);
@@ -147,7 +146,7 @@ public class JwtBuilder {
     }
 
     private static String getJarEncryptionPublicKey(String targetEnvironment) {
-        return switch (targetEnvironment) {
+        return switch (targetEnvironment){
             case ("BUILD") -> ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY;
             case ("STAGING") -> ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY;
             case ("INTEGRATION") -> ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY;

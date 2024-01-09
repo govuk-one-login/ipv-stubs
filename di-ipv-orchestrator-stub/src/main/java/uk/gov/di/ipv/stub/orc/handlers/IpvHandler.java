@@ -124,25 +124,23 @@ public class IpvHandler {
             };
 
     private URI getIpvEndpoint(String environment) throws URISyntaxException {
-        String url =
-                switch (environment) {
-                    case ("BUILD") -> "https://identity.build.account.gov.uk/";
-                    case ("STAGING") -> "https://identity.staging.account.gov.uk/";
-                    case ("INTEGRATION") -> "https://identity.integration.account.gov.uk/";
-                    default -> IPV_ENDPOINT;
-                };
+        String url = switch (environment) {
+            case ("BUILD") -> "https://identity.build.account.gov.uk/";
+            case ("STAGING") -> "https://identity.staging.account.gov.uk/";
+            case ("INTEGRATION") -> "https://identity.integration.account.gov.uk/";
+            default -> IPV_ENDPOINT;
+        };
 
         return new URI(url);
     }
 
     private URI getIpvBackchannelEndpoint(String environment) throws URISyntaxException {
-        String url =
-                switch (environment) {
-                    case ("BUILD") -> "https://api.identity.build.account.gov.uk/";
-                    case ("STAGING") -> "https://api.identity.staging.account.gov.uk/";
-                    case ("INTEGRATION") -> "https://api.identity.integration.account.gov.uk/";
-                    default -> IPV_BACKCHANNEL_ENDPOINT;
-                };
+        String url = switch (environment) {
+            case ("BUILD") -> "https://api.identity.build.account.gov.uk/";
+            case ("STAGING") -> "https://api.identity.staging.account.gov.uk/";
+            case ("INTEGRATION") -> "https://api.identity.integration.account.gov.uk/";
+            default -> IPV_BACKCHANNEL_ENDPOINT;
+        };
 
         return new URI(url);
     }
