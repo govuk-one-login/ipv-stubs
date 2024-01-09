@@ -31,27 +31,27 @@ Parameters:
   OrchestratorClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_CLIENT_ID" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/ORCHESTRATOR_CLIENT_ID" #pragma: allowlist secret
   OrchestratorRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_REDIRECT_URL" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/ORCHESTRATOR_REDIRECT_URL" #pragma: allowlist secret
   OrchestratorClientJwtTtl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_CLIENT_JWT_TTL" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/ORCHESTRATOR_CLIENT_JWT_TTL" #pragma: allowlist secret
   OrchestratorPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_PORT" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/ORCHESTRATOR_PORT" #pragma: allowlist secret
   OrchestratorClientSigningKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY" #pragma: allowlist secret
   OrchestratorDefaultJarEncryptionPublicKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store" #pragma: allowlist secret
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   OrchestratorBuildJarEncryptionPublicKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -67,43 +67,43 @@ Parameters:
   OrchestratorBasicAuthEnable:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_ENABLE" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/ORCHESTRATOR_BASIC_AUTH_ENABLE" #pragma: allowlist secret
   OrchestratorBasicAuthUsername:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME" #pragma: allowlist secret
   OrchestratorBasicAuthPassword:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSWORD" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSWORD" #pragma: allowlist secret
   IpvBackchannelEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/IPV_BACKCHANNEL_ENDPOINT" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/IPV_BACKCHANNEL_ENDPOINT" #pragma: allowlist secret
   IpvBackchannelTokenPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/IPV_BACKCHANNEL_TOKEN_PATH" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/IPV_BACKCHANNEL_TOKEN_PATH" #pragma: allowlist secret
   IpvBackchannelUserIdentityPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/IPV_BACKCHANNEL_USER_IDENTITY_PATH" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/IPV_BACKCHANNEL_USER_IDENTITY_PATH" #pragma: allowlist secret
   IpvEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/IPV_ENDPOINT" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/IPV_ENDPOINT" #pragma: allowlist secret
   IpvCoreAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/IPV_CORE_AUDIENCE" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/IPV_CORE_AUDIENCE" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/JAVA_OPTS" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/JAVA_OPTS" #pragma: allowlist secret
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+    Default: "/stubs/integration/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
     # PassportPrivateApiKey:
     #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     #    Type: AWS::SSM::Parameter::Value<String>
@@ -137,28 +137,28 @@ Mappings:
       desiredTaskCount: 1
       environment: dev
       platform: core
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret`
     "826978934233": #Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: build
       platform: core-stubs
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret`
     "616199614141": #Stubs Build
       fargateCPUsize: "512"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: build
       platform: stubs
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "388905755587": #Stubs Prod
-      fargateCPUsize: "4096"
-      fargateRAMsize: "8192"
+      fargateCPUsize: "512"
+      fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: production
       platform: stubs
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
   SecurityGroups:
     PrefixListIds:
       dynamodb: "pl-b3a742da"
@@ -171,13 +171,13 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-integration.${Environment}.stubs.account.gov.uk"
+        - orch-integration.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
             - IsNonProd
-            - !Sub "orch.${Environment}.stubs.account.gov.uk"
-            - orch.stubs.account.gov.uk
+            - !Sub "orch-integration.${Environment}.stubs.account.gov.uk"
+            - orch-integration.stubs.account.gov.uk
           HostedZoneId: !If
             - IsNonProd
             - !ImportValue BuildPublicHostedZoneId
@@ -190,8 +190,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-integration.${Environment}.stubs.account.gov.uk"
+        - orch-integration.stubs.account.gov.uk
       DomainNameConfigurations:
         - CertificateArn: !Ref OrchStubSSLCert
           EndpointType: REGIONAL
@@ -202,8 +202,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-integration.${Environment}.stubs.account.gov.uk"
+        - orch-integration.stubs.account.gov.uk
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -211,14 +211,14 @@ Resources:
       - APIStageDefault
 
   # dns rcord
-  OrchStubDNSRecord:
+  CoreStubDNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
       Type: A
       Name: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-integration.${Environment}.stubs.account.gov.uk"
+        - orch-integration.stubs.account.gov.uk
       HostedZoneId: !If
         - IsNonProd
         - !ImportValue BuildPublicHostedZoneId
@@ -545,14 +545,8 @@ Resources:
             Value: !Ref OrchestratorPort
           - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
             Value: !Ref OrchestratorClientSigningKey
-          - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
+          - Name: ORCHESTRATOR_DEAFULT_JAR_ENCRYPTION_PUBLIC_KEY
             Value: !Ref OrchestratorDefaultJarEncryptionPublicKey
-          - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY
-            Value: !Ref OrchestratorBuildJarEncryptionPublicKey
-          - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY
-            Value: !Ref OrchestratorStagingJarEncryptionPublicKey
-          - Name: ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY
-            Value: !Ref OrchestratorIntegrationJarEncryptionPublicKey
           - Name: IPV_BACKCHANNEL_ENDPOINT
             Value: !Ref IpvBackchannelEndpoint
           - Name: IPV_BACKCHANNEL_TOKEN_PATH
@@ -640,17 +634,17 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/build/orch/*"
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/integration/orch/*"
         - PolicyName: GetDynatraceSecret
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              - Effect: Allow
-                Action: secretsmanager:GetSecretValue
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
-              - Effect: Allow
-                Action: secretsmanager:ListSecrets
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
               - Effect: Allow
                 Action: kms:Decrypt
                 Resource: arn:aws:kms:eu-west-2:216552277552:key/*
@@ -689,11 +683,11 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
-                Action: secretsmanager:GetSecretValue
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
               - Effect: Allow
-                Action: secretsmanager:ListSecrets
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
               - Effect: Allow
                 Action: kms:Decrypt
                 Resource: arn:aws:kms:eu-west-2:216552277552:key/*
@@ -732,11 +726,5 @@ Resources:
 
 Outputs:
   OrchStubEnvironment:
-    Description: Orch Stub Environment
+    Description: Orch Build Stub Environment
     Value: !Ref Environment
-  OrchStubDomain:
-    Description: Orch Stub DNS Domain
-    Value: !Ref OrchStubDNSRecord
-  OrchStubApiDomain:
-    Description: Orch Stub API Domain
-    Value: !Ref OrchStubApiDomain

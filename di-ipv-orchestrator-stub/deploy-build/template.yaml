@@ -171,13 +171,13 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-build.${Environment}.stubs.account.gov.uk"
+        - orch-build.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
             - IsNonProd
-            - !Sub "orch.${Environment}.stubs.account.gov.uk"
-            - orch.stubs.account.gov.uk
+            - !Sub "orch-build.${Environment}.stubs.account.gov.uk"
+            - orch-build.stubs.account.gov.uk
           HostedZoneId: !If
             - IsNonProd
             - !ImportValue BuildPublicHostedZoneId
@@ -190,8 +190,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-build.${Environment}.stubs.account.gov.uk"
+        - orch-build.stubs.account.gov.uk
       DomainNameConfigurations:
         - CertificateArn: !Ref OrchStubSSLCert
           EndpointType: REGIONAL
@@ -202,8 +202,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-build.${Environment}.stubs.account.gov.uk"
+        - orch-build.stubs.account.gov.uk
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -211,14 +211,14 @@ Resources:
       - APIStageDefault
 
   # dns rcord
-  OrchStubDNSRecord:
+  CoreStubDNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
       Type: A
       Name: !If
         - IsNonProd
-        - !Sub "orch.${Environment}.stubs.account.gov.uk"
-        - orch.stubs.account.gov.uk
+        - !Sub "orch-build.${Environment}.stubs.account.gov.uk"
+        - orch-build.stubs.account.gov.uk
       HostedZoneId: !If
         - IsNonProd
         - !ImportValue BuildPublicHostedZoneId
@@ -732,11 +732,5 @@ Resources:
 
 Outputs:
   OrchStubEnvironment:
-    Description: Orch Stub Environment
+    Description: Orch Build Stub Environment
     Value: !Ref Environment
-  OrchStubDomain:
-    Description: Orch Stub DNS Domain
-    Value: !Ref OrchStubDNSRecord
-  OrchStubApiDomain:
-    Description: Orch Stub API Domain
-    Value: !Ref OrchStubApiDomain

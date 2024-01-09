@@ -9,7 +9,7 @@ PREFIXES: |
                 "ssmParamPrefix" : "/stubs/credential-issuer/fraud/env/" } ,
               { "clusterName" : "cri-err-test-1-stub-CriStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-1/env/" } ,
-              { "clusterNamePrefix" : "orch-stub-OrchStubCluster-" ,
+              { "clusterNamePrefix" : "orch-build-stub-OrchStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/build/orch/env/" } ,
               { "clusterNamePrefix" : "orch-staging-stub-OrchStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/staging/orch/env/" } ,
