@@ -43,8 +43,8 @@ import uk.gov.di.ipv.stub.orc.utils.ViewHelper;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -74,6 +74,10 @@ public class IpvHandler {
                 var state = new State();
                 stateSession.put(state.getValue(), null);
 
+                String environment = request.queryMap().get("targetEnvironment").value();
+
+                response.cookie("targetEnvironment", environment);
+
                 String errorType = request.queryMap().get("error").value();
                 String userIdTextValue = request.queryMap().get("userIdText").value();
                 String signInJourneyIdText = request.queryMap().get("signInJourneyIdText").value();
@@ -98,10 +102,11 @@ public class IpvHandler {
                                 vtr,
                                 errorType,
                                 userEmailAddress,
-                                reproveIdentityClaimValue);
+                                reproveIdentityClaimValue,
+                                environment);
 
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
-                EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt);
+                EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);
                 var authRequest =
                         new AuthorizationRequest.Builder(
                                         new ResponseType(ResponseType.Value.CODE),
@@ -109,7 +114,8 @@ public class IpvHandler {
                                 .state(state)
                                 .scope(new Scope("openid"))
                                 .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
-                                .endpointURI(new URI(IPV_ENDPOINT).resolve("/oauth2/authorize"))
+                                .endpointURI(
+                                        getIpvEndpoint(environment).resolve("/oauth2/authorize"))
                                 .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
                                 .build();
 
@@ -117,16 +123,41 @@ public class IpvHandler {
                 return null;
             };
 
+    private URI getIpvEndpoint(String environment) throws URISyntaxException {
+        String url =
+                switch (environment) {
+                    case ("BUILD") -> "https://identity.build.account.gov.uk/";
+                    case ("STAGING") -> "https://identity.staging.account.gov.uk/";
+                    case ("INTEGRATION") -> "https://identity.integration.account.gov.uk/";
+                    default -> IPV_ENDPOINT;
+                };
+
+        return new URI(url);
+    }
+
+    private URI getIpvBackchannelEndpoint(String environment) throws URISyntaxException {
+        String url =
+                switch (environment) {
+                    case ("BUILD") -> "https://api.identity.build.account.gov.uk/";
+                    case ("STAGING") -> "https://api.identity.staging.account.gov.uk/";
+                    case ("INTEGRATION") -> "https://api.identity.integration.account.gov.uk/";
+                    default -> IPV_BACKCHANNEL_ENDPOINT;
+                };
+
+        return new URI(url);
+    }
+
     public Route doCallback =
             (Request request, Response response) -> {
-                List<Map<String, Object>> mustacheData = new ArrayList<>();
+                List<Map<String, Object>> mustacheData;
                 Map<String, Object> moustacheDataModel = new HashMap<>();
+                String targetBackend = request.cookie("targetEnvironment");
                 try {
                     var authorizationCode = getAuthorizationCode(request);
 
-                    var accessToken = exchangeCodeForToken(authorizationCode);
+                    var accessToken = exchangeCodeForToken(authorizationCode, targetBackend);
 
-                    var userInfo = getUserInfo(accessToken);
+                    var userInfo = getUserInfo(accessToken, targetBackend);
 
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
                     String userInfoJson = gson.toJson(userInfo);
@@ -165,14 +196,16 @@ public class IpvHandler {
         return authorizationResponse.toSuccessResponse().getAuthorizationCode();
     }
 
-    private AccessToken exchangeCodeForToken(AuthorizationCode authorizationCode)
-            throws OrchestratorStubException, CertificateException, JOSEException {
-        URI resolve = URI.create(IPV_BACKCHANNEL_ENDPOINT).resolve(IPV_BACKCHANNEL_TOKEN_PATH);
+    private AccessToken exchangeCodeForToken(
+            AuthorizationCode authorizationCode, String targetEnvironment)
+            throws OrchestratorStubException, URISyntaxException {
+        URI resolve =
+                getIpvBackchannelEndpoint(targetEnvironment).resolve(IPV_BACKCHANNEL_TOKEN_PATH);
         logger.info("token url is " + resolve);
 
         SignedJWT signedClientJwt;
         try {
-            JWTClaimsSet claims = buildClientAuthenticationClaims();
+            JWTClaimsSet claims = buildClientAuthenticationClaims(targetEnvironment);
             signedClientJwt = JwtBuilder.createSignedJwt(claims);
         } catch (JOSEException | InvalidKeySpecException | NoSuchAlgorithmException e) {
             logger.error("Failed to generate orch client JWT", e);
@@ -200,10 +233,11 @@ public class IpvHandler {
         return tokenResponse.toSuccessResponse().getTokens().getAccessToken();
     }
 
-    public JSONObject getUserInfo(AccessToken accessToken) {
+    public JSONObject getUserInfo(AccessToken accessToken, String targetBackend)
+            throws URISyntaxException {
         var userInfoRequest =
                 new UserInfoRequest(
-                        URI.create(IPV_BACKCHANNEL_ENDPOINT)
+                        getIpvBackchannelEndpoint(targetBackend)
                                 .resolve(IPV_BACKCHANNEL_USER_IDENTITY_PATH),
                         (BearerAccessToken) accessToken);
 
