@@ -54,10 +54,14 @@ public class JwtBuilder {
     public static JWTClaimsSet buildAuthorizationRequestClaims(
             String userId,
             String signInJourneyId,
-            String[] vtr,
+            String vtr,
             String errorType,
             String userEmailAddress,
-            ReproveIdentityClaimValue reproveIdentityValue) {
+            ReproveIdentityClaimValue reproveIdentityValue,
+            boolean duringMigration,
+            String credentialSubject,
+            String evidence)
+            throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         String audience = IPV_CORE_AUDIENCE;
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
@@ -70,6 +74,9 @@ public class JwtBuilder {
         }
 
         Instant now = Instant.now();
+        String userInfo =
+                HMRCUserInfoResponse.generateResponse(
+                        userId, vtr, duringMigration, credentialSubject, evidence);
         var claimSetBuilder =
                 new JWTClaimsSet.Builder()
                         .subject(userId)
@@ -85,8 +92,8 @@ public class JwtBuilder {
                         .claim("govuk_signin_journey_id", signInJourneyId)
                         .claim("persistent_session_id", UUID.randomUUID().toString())
                         .claim("email_address", userEmailAddress)
-                        .claim("vtr", List.of(vtr));
-
+                        .claim("vtr", List.of(vtr))
+                        .claim("userInfo", userInfo);
         if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
             claimSetBuilder.claim(
                     "reprove_identity", reproveIdentityValue == ReproveIdentityClaimValue.TRUE);

@@ -25,6 +25,12 @@
 <script>
     document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');
 </script>
+<script
+        src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous">
+
+</script>
 <a href="#main-content" class="govuk-skip-link">Skip to main content</a>
 
 <header class="govuk-header " role="banner" data-module="govuk-header">
@@ -80,6 +86,23 @@
                 <input class="govuk-input" data-module="govuk-input" name="emailAddress" id="emailAddress" type="text" value="dev-platform-testing@digital.cabinet-office.gov.uk">
             </div>
 
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" type="checkbox" name="duringMigration" id="duringMigration" value="checked">
+                <label class="govuk-label govuk-checkboxes__label" for="duringMigration">
+                During Migration
+                </label>
+              </div>
+            </div><br/>
+
+
+
+            <div class="govuk-form-group" id="test_data_block"></div>
+            <div class="govuk-form-group"><textarea class="govuk-textarea" id="jsonPayload" name="jsonPayload" rows="5" aria-describedby="more-detail-hint"></textarea></div>
+
+            <div class="govuk-form-group" id="custom_evidence_block"></div>
+            <div class="govuk-form-group"> <textarea class="govuk-textarea" id="evidenceJsonPayload" name="evidenceJsonPayload" rows="5" aria-describedby="more-detail-hint"></textarea></div>
+
             <input class="govuk-button" data-module="govuk-button" type="submit" value="Full journey route">
         </form>
         <form action="/authorize">
@@ -118,5 +141,44 @@
 <script>
     window.GOVUKFrontend.initAll()
 </script>
+            <script>
+                var dropdownData = {{{credentialSubjects}}}
+                 $(document).ready(function() {
+                        var select = $('<select class="govuk-select" id="test_data" name="sort">')
+                        select.append($("<option selected disabled hidden value=''>").text('Select from dropdown...'))
+                        $(dropdownData).each(function() {
+                            select.append($("<option>")
+                            .prop('value', this.label)
+                            .text(this.label));
+                        });
+
+                        var label = $('<label class="govuk-label" for="sort">').text("Select Credential Subject data: ");
+                        $('#test_data_block').append(label).append(select);
+                        $("#test_data").on("change", function(event) {
+                            var val = $(event.target).val();
+                            var {payload} = dropdownData.find(x => x.label === val)
+                            $("#jsonPayload").val(JSON.stringify(payload, undefined, 4))
+                        });
+                    });
+
+                    var evidenceDropdownData = {{{evidences}}}
+                        $(document).ready(function() {
+                            var select = $('<select class="govuk-select" id="custom_evidence" name="sort">')
+                            select.append($("<option selected disabled hidden value=''>").text('Select from dropdown...'))
+                            $(evidenceDropdownData).each(function() {
+                                select.append($("<option>")
+                                .prop('value', this.label)
+                                .text(this.label));
+                            });
+
+                            var label = $('<label class="govuk-label" for="sort">').text("Select evidence block: ");
+                            $('#custom_evidence_block').append(label).append(select);
+                            $("#custom_evidence").on("change", function(event) {
+                                var val = $(event.target).val();
+                                var {payload} = evidenceDropdownData.find(x => x.label === val)
+                                $("#evidenceJsonPayload").val(JSON.stringify(payload, undefined, 4))
+                            });
+                        });
+            </script>
 </body>
 </html>
