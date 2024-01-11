@@ -15,7 +15,7 @@ public class HMRCUserInfoResponse {
 
     public static String generateResponse(
             String userId,
-            String vtr,
+            String[] vtr,
             boolean duringMigration,
             String credentialSubject,
             String evidence)

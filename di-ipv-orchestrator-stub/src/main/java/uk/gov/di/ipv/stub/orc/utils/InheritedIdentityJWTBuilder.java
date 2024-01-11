@@ -46,7 +46,7 @@ public class InheritedIdentityJWTBuilder {
     public static final String EC_ALGO = "EC";
 
     public static SignedJWT generate(
-            String userId, String vtr, String credentialSubject, String evidence)
+            String userId, String[] vtr, String credentialSubject, String evidence)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         Map<String, Object> vc = new LinkedHashMap<>();
         vc.put(
