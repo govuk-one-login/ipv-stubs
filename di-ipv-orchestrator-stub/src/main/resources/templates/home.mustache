@@ -58,7 +58,7 @@
                 Orchestrator Stub
             </h1>
         </div>
-        <h2 class="govuk-heading-l">Prove Your Identity</h2>
+        <h2 class="govuk-heading-l">Prove Your Identity Test</h2>
         <form action="/authorize">
             <input type="hidden" name="journeyType" value="full" />
             <div class="govuk-form-group">
@@ -72,6 +72,15 @@
             <div class="govuk-form-group">
                 <label class="govuk-label" for="vtrText">Enter vtr manually</label>
                 <input class="govuk-input" data-module="govuk-input" name="vtrText" id="vtrText" type="text" value="Cl.Cm.P2">
+            </div>
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="targetEnvironment">Choose a target environment (optional):</label>
+                <select class="govuk-select" name="targetEnvironment" id="targetEnvironment">
+                    <option value="DEFAULT">default</option>
+                    <option value="BUILD">build</option>
+                    <option value="STAGING">staging</option>
+                    <option value="INTEGRATION">integration</option>
+                </select>
             </div>
             <div class="govuk-form-group">
                 <label class="govuk-label" for="reproveIdentity">Choose a value for reprove_identity:</label>
