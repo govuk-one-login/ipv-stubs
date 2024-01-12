@@ -210,7 +210,7 @@ Resources:
       - OrchStubApiDomain
       - APIStageDefault
 
-  # dns rcord
+  # dns record
   OrchStubDNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
