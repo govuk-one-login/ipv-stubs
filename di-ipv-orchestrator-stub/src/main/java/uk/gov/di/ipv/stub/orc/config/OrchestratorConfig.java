@@ -48,7 +48,7 @@ public class OrchestratorConfig {
             getConfigValue("ORCHESTRATOR_BASIC_AUTH_PASSWORD", null);
 
     public static final String INHERITED_IDENTITY_JWT_SIGNING_KEY =
-            getConfigValue("INHERITED_IDENTITY_JWT_SIGNING_KEY", "missing-key");
+            getConfigValue("INHERITED_IDENTITY_JWT_SIGNING_KEY", null);
     public static final String INHERITED_IDENTITY_JWT_ISSUER =
             getConfigValue(
                     "INHERITED_IDENTITY_JWT_ISSUER", "<https://oidc.hmrc.gov.uk/migration/v1>");

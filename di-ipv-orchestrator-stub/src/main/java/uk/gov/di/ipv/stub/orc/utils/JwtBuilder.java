@@ -89,6 +89,7 @@ public class JwtBuilder {
                         .issuer(ORCHESTRATOR_CLIENT_ID)
                         .notBeforeTime(Date.from(now))
                         .expirationTime(generateExpirationTime(now))
+                        .claim("userInfo", userInfo)
                         .claim("client_id", ORCHESTRATOR_CLIENT_ID)
                         .claim("response_type", ResponseType.Value.CODE.toString())
                         .claim("redirect_uri", redirectUri)
@@ -96,8 +97,7 @@ public class JwtBuilder {
                         .claim("govuk_signin_journey_id", signInJourneyId)
                         .claim("persistent_session_id", UUID.randomUUID().toString())
                         .claim("email_address", userEmailAddress)
-                        .claim("vtr", List.of(vtr))
-                        .claim("userInfo", userInfo);
+                        .claim("vtr", List.of(vtr));
         if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
             claimSetBuilder.claim(
                     "reprove_identity", reproveIdentityValue == ReproveIdentityClaimValue.TRUE);

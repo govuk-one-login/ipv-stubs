@@ -11,6 +11,8 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -20,12 +22,14 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_ISSUER;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_SIGNING_KEY;
@@ -34,16 +38,19 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTIT
 
 public class InheritedIdentityJWTBuilder {
 
-    public static final String VC_CREDENTIAL_SUBJECT = "credentialSubject";
-    public static final String VOT = "vot";
-    public static final String VTM = "vtm";
-    public static final String VC = "vc";
-    public static final String VC_TYPE = "type";
-    public static final String VERIFIABLE_CREDENTIAL_TYPE = "VerifiableCredential";
-    public static final String INHERITED_IDENTITY_CREDENTIAL_TYPE = "InheritedIdentityCredential";
-    public static final String VC_EVIDENCE = "evidence";
+    private static final String VC_CREDENTIAL_SUBJECT = "credentialSubject";
+    private static final String VOT = "vot";
+    private static final String VTM = "vtm";
+    private static final String VC = "vc";
+    private static final String VC_TYPE = "type";
+    private static final String VERIFIABLE_CREDENTIAL_TYPE = "VerifiableCredential";
+    private static final String INHERITED_IDENTITY_CREDENTIAL_TYPE = "InheritedIdentityCredential";
+    private static final String VC_EVIDENCE = "evidence";
+    private static final String EC_ALGO = "EC";
+    private static final List<String> allowedValues = List.of("PCL200", "PCL250", "P2");
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static final String EC_ALGO = "EC";
+    private static final Logger logger = LoggerFactory.getLogger(InheritedIdentityJWTBuilder.class);
 
     public static SignedJWT generate(
             String userId, String[] vtr, String credentialSubject, String evidence)
@@ -61,16 +68,25 @@ public class InheritedIdentityJWTBuilder {
                         .issuer(INHERITED_IDENTITY_JWT_ISSUER)
                         .notBeforeTime(Date.from(now))
                         .expirationTime(generateExpirationTime(now))
-                        .claim(VOT, vtr)
+                        .claim(VOT, getValidVtrValues(vtr))
                         .claim(VTM, INHERITED_IDENTITY_JWT_VTM)
                         .claim(VC, vc)
                         .build();
         return createSignedJwt(claimsSet);
     }
 
+    private static List<String> getValidVtrValues(String[] vtr) {
+        Arrays.stream(vtr)
+                .filter(value -> !allowedValues.contains(value))
+                .peek(value -> logger.warn("Invalid VTR value ignored: " + value))
+                .collect(Collectors.toList());
+
+        return Arrays.stream(vtr).filter(allowedValues::contains).collect(Collectors.toList());
+    }
+
     private static Map<String, Object> convertJsonToMap(String json) {
         try {
-            return new ObjectMapper().readValue(json, new TypeReference<>() {});
+            return objectMapper.readValue(json, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
             return Collections.emptyMap();
         }

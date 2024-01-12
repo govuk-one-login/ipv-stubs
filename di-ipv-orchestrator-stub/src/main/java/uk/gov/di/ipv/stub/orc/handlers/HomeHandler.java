@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.stub.orc.handlers;
 
+import com.nimbusds.jose.shaded.json.JSONObject;
 import com.nimbusds.jose.shaded.json.parser.JSONParser;
 import spark.Request;
 import spark.Response;
@@ -32,8 +33,8 @@ public class HomeHandler {
     private static Object getCredentialSubjectData()
             throws UnsupportedEncodingException,
                     com.nimbusds.jose.shaded.json.parser.ParseException {
-        com.nimbusds.jose.shaded.json.JSONObject js =
-                (com.nimbusds.jose.shaded.json.JSONObject)
+        JSONObject js =
+                (JSONObject)
                         new JSONParser(MODE_JSON_SIMPLE)
                                 .parse(
                                         HomeHandler.class.getResourceAsStream(
@@ -45,8 +46,8 @@ public class HomeHandler {
     private static Object getEvidencePayloads()
             throws UnsupportedEncodingException,
                     com.nimbusds.jose.shaded.json.parser.ParseException {
-        com.nimbusds.jose.shaded.json.JSONObject js =
-                (com.nimbusds.jose.shaded.json.JSONObject)
+        JSONObject js =
+                (JSONObject)
                         new JSONParser(MODE_JSON_SIMPLE)
                                 .parse(
                                         HomeHandler.class.getResourceAsStream(
