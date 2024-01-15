@@ -62,7 +62,7 @@ public class InheritedIdentityJWTBuilder {
         vc.put(VC_CREDENTIAL_SUBJECT, convertJsonToMap(credentialSubject));
         vc.put(
                 VC_EVIDENCE,
-                !evidence.equals("null")
+                !evidence.equals("{}")
                         ? List.of(convertJsonToMap(evidence))
                         : Collections.emptyList());
         Instant now = Instant.now();

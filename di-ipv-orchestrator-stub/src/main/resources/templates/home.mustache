@@ -70,10 +70,6 @@
                 <input class="govuk-input" data-module="govuk-input" name="signInJourneyIdText" id="signInJourneyIdText" type="text" value={{signInJourneyId}} readonly="readonly">
             </div>
             <div class="govuk-form-group">
-                <label class="govuk-label" for="vtrText">Enter vtr manually</label>
-                <input class="govuk-input" data-module="govuk-input" name="vtrText" id="vtrText" type="text" value="Cl.Cm.P2">
-            </div>
-            <div class="govuk-form-group">
                 <label class="govuk-label" for="targetEnvironment">Choose a target environment (optional):</label>
                 <select class="govuk-select" name="targetEnvironment" id="targetEnvironment">
                     <option value="DEFAULT">default</option>
@@ -103,8 +99,10 @@
                 </label>
               </div>
             </div><br/>
-
-
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="vtrText">Enter vtr manually</label>
+                <input class="govuk-input" data-module="govuk-input" name="vtrText" id="vtrText" type="text" value="P2">
+            </div>
 
             <div class="govuk-form-group" id="test_data_block"></div>
             <div class="govuk-form-group"><textarea class="govuk-textarea" id="jsonPayload" name="jsonPayload" rows="5" aria-describedby="more-detail-hint"></textarea></div>
