@@ -60,7 +60,11 @@ public class InheritedIdentityJWTBuilder {
                 VC_TYPE,
                 new String[] {VERIFIABLE_CREDENTIAL_TYPE, INHERITED_IDENTITY_CREDENTIAL_TYPE});
         vc.put(VC_CREDENTIAL_SUBJECT, convertJsonToMap(credentialSubject));
-        vc.put(VC_EVIDENCE, List.of(convertJsonToMap(evidence)));
+        vc.put(
+                VC_EVIDENCE,
+                !evidence.equals("null")
+                        ? List.of(convertJsonToMap(evidence))
+                        : Collections.emptyList());
         Instant now = Instant.now();
         JWTClaimsSet claimsSet =
                 new JWTClaimsSet.Builder()
@@ -79,7 +83,7 @@ public class InheritedIdentityJWTBuilder {
         Arrays.stream(vtr)
                 .filter(value -> !allowedValues.contains(value))
                 .peek(value -> logger.warn("Invalid VTR value ignored: " + value))
-                .collect(Collectors.toList());
+                .toList();
 
         return Arrays.stream(vtr).filter(allowedValues::contains).collect(Collectors.toList());
     }

@@ -177,6 +177,7 @@
                             $(evidenceDropdownData).each(function() {
                                 select.append($("<option>")
                                 .prop('value', this.label)
+                                .prop('id', this.scenario)
                                 .text(this.label));
                             });
 

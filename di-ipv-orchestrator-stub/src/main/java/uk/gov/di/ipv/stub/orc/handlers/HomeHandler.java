@@ -25,33 +25,19 @@ public class HomeHandler {
 
                 moustacheDataModel.put("signInJourneyId", journeyId);
                 moustacheDataModel.put("uuid", userId);
-                moustacheDataModel.put("credentialSubjects", getCredentialSubjectData());
-                moustacheDataModel.put("evidences", getEvidencePayloads());
+                moustacheDataModel.put(
+                        "credentialSubjects", getData("/data/inheritedJWTCredentialSubjects.json"));
+                moustacheDataModel.put("evidences", getData("/data/inheritedJWTEvidences.json"));
                 return ViewHelper.render(moustacheDataModel, "home.mustache");
             };
 
-    private static Object getCredentialSubjectData()
+    private static Object getData(String jsonPath)
             throws UnsupportedEncodingException,
                     com.nimbusds.jose.shaded.json.parser.ParseException {
         JSONObject js =
                 (JSONObject)
                         new JSONParser(MODE_JSON_SIMPLE)
-                                .parse(
-                                        HomeHandler.class.getResourceAsStream(
-                                                "/data/inheritedJWTCredentialSubjects.json"));
-
-        return js.get("data");
-    }
-
-    private static Object getEvidencePayloads()
-            throws UnsupportedEncodingException,
-                    com.nimbusds.jose.shaded.json.parser.ParseException {
-        JSONObject js =
-                (JSONObject)
-                        new JSONParser(MODE_JSON_SIMPLE)
-                                .parse(
-                                        HomeHandler.class.getResourceAsStream(
-                                                "/data/inheritedJWTEvidences.json"));
+                                .parse(HomeHandler.class.getResourceAsStream(jsonPath));
 
         return js.get("data");
     }

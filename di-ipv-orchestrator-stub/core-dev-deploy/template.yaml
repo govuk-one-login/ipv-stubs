@@ -710,11 +710,11 @@ Resources:
 
 Outputs:
   OrchStubEnvironment:
-    Description: Orch Build Stub Environment
+    Description: Orch Stub Environment
     Value: !Ref Environment
   OrchStubDomain:
     Description: Orch Stub DNS Domain
-    Value: !Ref CoreStubDNSRecord
+    Value: !Ref OrchStubDNSRecord
   OrchStubApiDomain:
     Description: Orch Stub API Domain
     Value: !Ref OrchStubApiDomain

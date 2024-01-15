@@ -3,8 +3,7 @@
     {
       "scenario": "Cohort1",
       "label": "Users with VoT PCL200 or PCL250, with no evidence provided",
-      "payload": {
-      }
+      "payload": null
     },
     {
       "scenario": "Cohort2",
