@@ -259,7 +259,7 @@ public class CoreStubHandler {
             };
 
     private <T> void sendAuthorizationRequest(
-            Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims) throws JOSEException, ParseException {
+            Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims) throws ParseException, JOSEException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
 
@@ -273,6 +273,9 @@ public class CoreStubHandler {
         } catch (ParseException parseException) {
             LOGGER.error("ParseException occurred," + parseException.getMessage());
             throw parseException;
+        } catch (Exception e) {
+            LOGGER.error("Unknown exception occurred," + e.getMessage());
+            throw e;
         }
 
         LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);
@@ -283,10 +286,14 @@ public class CoreStubHandler {
                 LOGGER.info("Redirecting to {}", uri);
                 response.redirect(authRequest.toURI().toString());
             } else {
-                LOGGER.error("AuthorizationRequest URI object is null");
+                String error = "AuthorizationRequest URI object is null";
+                LOGGER.error(error);
+                throw new RuntimeException(error);
             }
         } else {
-            LOGGER.error("AuthorizationRequest object is null");
+            String error = "AuthorizationRequest object is null";
+            LOGGER.error(error);
+            throw new RuntimeException(error);
         }
     }
 
