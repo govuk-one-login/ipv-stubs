@@ -259,14 +259,16 @@ public class CoreStubHandler {
             };
 
     private <T> void sendAuthorizationRequest(
-            Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims) throws ParseException, JOSEException {
+            Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims)
+            throws ParseException, JOSEException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
 
         AuthorizationRequest authRequest;
 
         try {
-            authRequest = handlerHelper.createAuthorizationJAR(state, credentialIssuer, sharedClaims);
+            authRequest =
+                    handlerHelper.createAuthorizationJAR(state, credentialIssuer, sharedClaims);
         } catch (JOSEException joseException) {
             LOGGER.error("JOSEException occurred," + joseException.getMessage());
             throw joseException;
@@ -280,9 +282,9 @@ public class CoreStubHandler {
 
         LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);
 
-        if(authRequest != null) {
+        if (authRequest != null) {
             URI uri = authRequest.toURI();
-            if(uri != null) {
+            if (uri != null) {
                 LOGGER.info("Redirecting to {}", uri);
                 response.redirect(authRequest.toURI().toString());
             } else {
