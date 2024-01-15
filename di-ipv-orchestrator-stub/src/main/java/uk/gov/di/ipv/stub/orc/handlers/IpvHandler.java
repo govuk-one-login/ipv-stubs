@@ -215,6 +215,7 @@ public class IpvHandler {
         logger.info("token url is " + resolve);
 
         SignedJWT signedClientJwt;
+
         try {
             JWTClaimsSet claims = buildClientAuthenticationClaims(targetEnvironment);
             signedClientJwt = JwtBuilder.createSignedJwt(claims);
