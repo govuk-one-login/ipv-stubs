@@ -67,12 +67,10 @@ public class IpvHandler {
             "https://vocab.account.gov.uk/v1/credentialJWT";
 
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
-    private final Map<String, Object> stateSession = new HashMap<>();
 
     public Route doAuthorize =
             (Request request, Response response) -> {
                 var state = new State();
-                stateSession.put(state.getValue(), null);
 
                 String environment = request.queryMap().get("targetEnvironment").value();
 
