@@ -57,6 +57,7 @@ public class JwtBuilder {
     public static JWTClaimsSet buildAuthorizationRequestClaims(
             String userId,
             String signInJourneyId,
+            String state,
             String[] vtr,
             String errorType,
             String userEmailAddress,
@@ -85,7 +86,7 @@ public class JwtBuilder {
                         .claim("client_id", ORCHESTRATOR_CLIENT_ID)
                         .claim("response_type", ResponseType.Value.CODE.toString())
                         .claim("redirect_uri", redirectUri)
-                        .claim("state", UUID.randomUUID().toString())
+                        .claim("state", state)
                         .claim("govuk_signin_journey_id", signInJourneyId)
                         .claim("persistent_session_id", UUID.randomUUID().toString())
                         .claim("email_address", userEmailAddress)

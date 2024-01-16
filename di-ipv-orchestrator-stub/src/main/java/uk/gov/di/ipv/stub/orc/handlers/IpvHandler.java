@@ -98,6 +98,7 @@ public class IpvHandler {
                         JwtBuilder.buildAuthorizationRequestClaims(
                                 userId,
                                 signInJourneyIdText,
+                                ORCHESTRATOR_STUB_STATE.getValue(),
                                 vtr,
                                 errorType,
                                 userEmailAddress,
