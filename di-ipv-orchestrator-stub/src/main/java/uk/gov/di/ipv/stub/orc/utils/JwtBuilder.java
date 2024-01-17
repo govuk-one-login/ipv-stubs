@@ -52,6 +52,7 @@ public class JwtBuilder {
     public static final String INVALID_AUDIENCE = "invalid-audience";
     public static final String INVALID_REDIRECT_URI = "http://example.com";
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
     public enum ReproveIdentityClaimValue {
         NOT_PRESENT,
         TRUE,
