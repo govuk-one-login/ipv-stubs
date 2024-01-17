@@ -88,6 +88,7 @@ public class IpvHandler {
                         request.queryMap().hasKey("vtrText")
                                 ? request.queryMap("vtrText").values()
                                 : new String[] {"P2"};
+                String vot = request.queryMap().get("votText").value();
                 String userEmailAddress = request.queryMap().get("emailAddress").value();
                 String reproveIdentityString = request.queryMap().get("reproveIdentity").value();
                 JwtBuilder.ReproveIdentityClaimValue reproveIdentityClaimValue =
@@ -114,7 +115,8 @@ public class IpvHandler {
                                 environment,
                                 duringMigration,
                                 credentialSubject,
-                                evidence);
+                                evidence,
+                                vot);
 
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
                 EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);

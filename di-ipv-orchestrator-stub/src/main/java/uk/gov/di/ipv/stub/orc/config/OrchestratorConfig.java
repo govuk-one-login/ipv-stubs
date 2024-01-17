@@ -51,9 +51,10 @@ public class OrchestratorConfig {
             getConfigValue("INHERITED_IDENTITY_JWT_SIGNING_KEY", null);
     public static final String INHERITED_IDENTITY_JWT_ISSUER =
             getConfigValue(
-                    "INHERITED_IDENTITY_JWT_ISSUER", "<https://oidc.hmrc.gov.uk/migration/v1>");
+                    "INHERITED_IDENTITY_JWT_ISSUER",
+                    "https://orch.stubs.account.gov.uk/migration/v1");
     public static final String INHERITED_IDENTITY_JWT_VTM =
-            getConfigValue("INHERITED_IDENTITY_JWT_VTM", "<https://hmrc.gov.uk/trustmark>");
+            getConfigValue("INHERITED_IDENTITY_JWT_VTM", "https://hmrc.gov.uk/trustmark");
     public static final String INHERITED_IDENTITY_JWT_TTL =
             getConfigValue("INHERITED_IDENTITY_JWT_TTL", "900");
 

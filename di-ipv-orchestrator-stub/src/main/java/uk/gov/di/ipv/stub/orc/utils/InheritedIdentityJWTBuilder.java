@@ -11,8 +11,6 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -22,14 +20,13 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_ISSUER;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_SIGNING_KEY;
@@ -47,14 +44,15 @@ public class InheritedIdentityJWTBuilder {
     private static final String INHERITED_IDENTITY_CREDENTIAL_TYPE = "InheritedIdentityCredential";
     private static final String VC_EVIDENCE = "evidence";
     private static final String EC_ALGO = "EC";
-    private static final List<String> allowedValues = List.of("PCL200", "PCL250", "P2");
+    private static final String JWT_ID = "jti";
+    private static final String JTI_SCHEME_AND_PATH_PREFIX = "urn:uuid";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final Logger logger = LoggerFactory.getLogger(InheritedIdentityJWTBuilder.class);
-
     public static SignedJWT generate(
-            String userId, String[] vtr, String credentialSubject, String evidence)
-            throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
+            String userId, String vot, String credentialSubject, String evidence)
+            throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
+                    JsonProcessingException {
+
         Map<String, Object> vc = new LinkedHashMap<>();
         vc.put(
                 VC_TYPE,
@@ -72,28 +70,21 @@ public class InheritedIdentityJWTBuilder {
                         .issuer(INHERITED_IDENTITY_JWT_ISSUER)
                         .notBeforeTime(Date.from(now))
                         .expirationTime(generateExpirationTime(now))
-                        .claim(VOT, getValidVtrValues(vtr))
+                        .claim(
+                                JWT_ID,
+                                String.format(
+                                        "%s:%s",
+                                        JTI_SCHEME_AND_PATH_PREFIX, UUID.randomUUID().toString()))
+                        .claim(VOT, vot)
                         .claim(VTM, INHERITED_IDENTITY_JWT_VTM)
                         .claim(VC, vc)
                         .build();
         return createSignedJwt(claimsSet);
     }
 
-    private static List<String> getValidVtrValues(String[] vtr) {
-        Arrays.stream(vtr)
-                .filter(value -> !allowedValues.contains(value))
-                .peek(value -> logger.warn("Invalid VTR value ignored: " + value))
-                .toList();
-
-        return Arrays.stream(vtr).filter(allowedValues::contains).collect(Collectors.toList());
-    }
-
-    private static Map<String, Object> convertJsonToMap(String json) {
-        try {
-            return objectMapper.readValue(json, new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
-            return Collections.emptyMap();
-        }
+    private static Map<String, Object> convertJsonToMap(String json)
+            throws JsonProcessingException {
+        return objectMapper.readValue(json, new TypeReference<>() {});
     }
 
     private static Date generateExpirationTime(Instant now) {
