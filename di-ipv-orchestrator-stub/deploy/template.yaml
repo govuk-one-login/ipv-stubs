@@ -169,9 +169,9 @@ Mappings:
       platform: stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
     "388905755587": #Stubs Prod
-      fargateCPUsize: "4096"
-      fargateRAMsize: "8192"
-      desiredTaskCount: 1
+      fargateCPUsize: "2048"
+      fargateRAMsize: "4096"
+      desiredTaskCount: 4
       environment: production
       platform: stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
@@ -497,7 +497,7 @@ Resources:
   OrchStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
-      MaxCapacity: 1
+      MaxCapacity: 8
       MinCapacity: 1
       ResourceId: !Join
         - '/'

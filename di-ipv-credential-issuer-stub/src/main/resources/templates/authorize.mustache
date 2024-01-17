@@ -653,17 +653,20 @@
     const customEvidenceBlock = document.getElementById("custom_evidence_block");
     const breakElement = document.getElementById('custom_evidence_block_break');
 
-    expandCheckbox.addEventListener("change", () => {
-      if (expandCheckbox.checked) {
-        evidenceTextarea.style.display = "block";
-        customEvidenceBlock.style.display = "block";
-          breakElement.style.display = 'block';
-      } else {
-        evidenceTextarea.style.display = "none";
-        customEvidenceBlock.style.display = "none";
-          breakElement.style.display = 'none';
-      }
-    });
+    if (expandCheckbox) {
+      expandCheckbox.addEventListener("change", () => {
+        const displayValue = expandCheckbox.checked ? "block" : "none";
+        if (evidenceTextarea) {
+          evidenceTextarea.style.display = displayValue;
+        }
+        if (customEvidenceBlock) {
+          customEvidenceBlock.style.display = displayValue;
+        }
+        if (breakElement) {
+          breakElement.style.display = displayValue;
+        }
+      });
+    }
 </script>
 
 </body>

@@ -11,6 +11,7 @@ import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.AuthorizationResponse;
+import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.Scope;
@@ -69,14 +70,13 @@ public class IpvHandler {
     private static final String JSON_PAYLOAD_PARAM = "jsonPayload";
     private static final String EVIDENCE_JSON_PAYLOAD_PARAM = "evidenceJsonPayload";
     private static final String DURING_MIGRATION = "duringMigration";
+
+    private static final State ORCHESTRATOR_STUB_STATE = new State("orchestrator-stub-state");
+
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
-    private final Map<String, Object> stateSession = new HashMap<>();
 
     public Route doAuthorize =
             (Request request, Response response) -> {
-                var state = new State();
-                stateSession.put(state.getValue(), null);
-
                 String environment = request.queryMap().get("targetEnvironment").value();
 
                 response.cookie("targetEnvironment", environment);
@@ -124,7 +124,7 @@ public class IpvHandler {
                         new AuthorizationRequest.Builder(
                                         new ResponseType(ResponseType.Value.CODE),
                                         new ClientID(ORCHESTRATOR_CLIENT_ID))
-                                .state(state)
+                                .state(ORCHESTRATOR_STUB_STATE)
                                 .scope(new Scope("openid"))
                                 .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
                                 .endpointURI(
@@ -165,6 +165,7 @@ public class IpvHandler {
                 List<Map<String, Object>> mustacheData;
                 Map<String, Object> moustacheDataModel = new HashMap<>();
                 String targetBackend = request.cookie("targetEnvironment");
+
                 try {
                     var authorizationCode = getAuthorizationCode(request);
 
@@ -200,10 +201,17 @@ public class IpvHandler {
             throws ParseException, OauthException {
         var authorizationResponse =
                 AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
+
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
             logger.error("Failed authorization code request: {}", error);
             throw new OauthException(error);
+        }
+
+        if (!ORCHESTRATOR_STUB_STATE.equals(authorizationResponse.getState())) {
+            throw new OauthException(
+                    OAuth2Error.INVALID_REQUEST.appendDescription(
+                            " - missing or invalid state value"));
         }
 
         return authorizationResponse.toSuccessResponse().getAuthorizationCode();
