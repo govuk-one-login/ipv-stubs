@@ -107,19 +107,19 @@ Parameters:
   InheritedIdentityJwtSigningKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/integration/build/orch/env/INHERITED_IDENTITY_JWT_SIGNING_KEY" #pragma: allowlist secret
+    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_SIGNING_KEY" #pragma: allowlist secret
   InheritedIdentityJwtTtl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/integration/build/orch/env/INHERITED_IDENTITY_JWT_TTL" #pragma: allowlist secret
+    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_TTL" #pragma: allowlist secret
   InheritedIdentityJwtIssuer:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/integration/build/orch/env/INHERITED_IDENTITY_JWT_ISSUER" #pragma: allowlist secret
+    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_ISSUER" #pragma: allowlist secret
   InheritedIdentityJwtVtm:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/integration/build/orch/env/INHERITED_IDENTITY_JWT_VTM" #pragma: allowlist secret
+    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_VTM" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
