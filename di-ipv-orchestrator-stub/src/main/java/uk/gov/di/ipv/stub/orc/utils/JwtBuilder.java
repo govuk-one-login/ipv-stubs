@@ -1,8 +1,8 @@
 package uk.gov.di.ipv.stub.orc.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
@@ -20,6 +20,7 @@ import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.ResponseType;
+import uk.gov.di.ipv.stub.orc.models.JarClaims;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -86,10 +87,10 @@ public class JwtBuilder {
         }
 
         Instant now = Instant.now();
-        ObjectNode hmrcClaims =
-                HMRCUserInfoResponse.generateResponse(
+        var jarClaims =
+                JarClaimsBuilder.buildJarClaims(
                         userId, vot, duringMigration, credentialSubject, evidence);
-        Map<String, Object> hmrcClaimsMap = objectMapper.convertValue(hmrcClaims, Map.class);
+        var jarClaimsMap = objectMapper.convertValue(jarClaims, new TypeReference<Map<String, Object>>() {});
         var claimSetBuilder =
                 new JWTClaimsSet.Builder()
                         .subject(userId)
@@ -98,7 +99,7 @@ public class JwtBuilder {
                         .issuer(ORCHESTRATOR_CLIENT_ID)
                         .notBeforeTime(Date.from(now))
                         .expirationTime(generateExpirationTime(now))
-                        .claim("claims", hmrcClaimsMap)
+                        .claim("claims", jarClaimsMap)
                         .claim("client_id", ORCHESTRATOR_CLIENT_ID)
                         .claim("response_type", ResponseType.Value.CODE.toString())
                         .claim("redirect_uri", redirectUri)
