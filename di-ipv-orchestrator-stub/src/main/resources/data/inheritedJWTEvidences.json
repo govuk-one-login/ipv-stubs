@@ -1,0 +1,42 @@
+{
+  "data": [
+    {
+      "scenario": "Cohort1",
+      "label": "Users with VoT PCL200 or PCL250, with no evidence provided",
+      "payload": {
+      }
+    },
+    {
+      "scenario": "Cohort2",
+      "label": "Users with VoT PCL250, where evidence shows identity verification via a photo driver's license.",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "d22f8cb1",
+        "strengthScore": 3,
+        "validityScore": 2,
+        "verificationScore": 3,
+        "checkDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "scenario": "Cohort3",
+      "label": "Users with VoT PCL250, where evidence shows identity verification via a biometric passport",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "d22f8cb2",
+        "strengthScore": 4,
+        "validityScore": 3,
+        "verificationScore": 3,
+        "checkDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    }
+  ]
+}

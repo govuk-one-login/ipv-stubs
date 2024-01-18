@@ -1,5 +1,8 @@
 package uk.gov.di.ipv.stub.orc.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
@@ -31,6 +34,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
@@ -47,6 +51,7 @@ public class JwtBuilder {
     public static final String URN_UUID = "urn:uuid:";
     public static final String INVALID_AUDIENCE = "invalid-audience";
     public static final String INVALID_REDIRECT_URI = "http://example.com";
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public enum ReproveIdentityClaimValue {
         NOT_PRESENT,
@@ -62,7 +67,13 @@ public class JwtBuilder {
             String errorType,
             String userEmailAddress,
             ReproveIdentityClaimValue reproveIdentityValue,
-            String environment) {
+            String environment,
+            boolean duringMigration,
+            String credentialSubject,
+            String evidence,
+            String vot)
+            throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
+                    JsonProcessingException {
         String audience = getIpvCoreAudience(environment);
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
@@ -75,6 +86,10 @@ public class JwtBuilder {
         }
 
         Instant now = Instant.now();
+        ObjectNode hmrcClaims =
+                HMRCUserInfoResponse.generateResponse(
+                        userId, vot, duringMigration, credentialSubject, evidence);
+        Map<String, Object> hmrcClaimsMap = objectMapper.convertValue(hmrcClaims, Map.class);
         var claimSetBuilder =
                 new JWTClaimsSet.Builder()
                         .subject(userId)
@@ -83,6 +98,7 @@ public class JwtBuilder {
                         .issuer(ORCHESTRATOR_CLIENT_ID)
                         .notBeforeTime(Date.from(now))
                         .expirationTime(generateExpirationTime(now))
+                        .claim("claims", hmrcClaimsMap)
                         .claim("client_id", ORCHESTRATOR_CLIENT_ID)
                         .claim("response_type", ResponseType.Value.CODE.toString())
                         .claim("redirect_uri", redirectUri)
@@ -91,12 +107,10 @@ public class JwtBuilder {
                         .claim("persistent_session_id", UUID.randomUUID().toString())
                         .claim("email_address", userEmailAddress)
                         .claim("vtr", List.of(vtr));
-
         if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
             claimSetBuilder.claim(
                     "reprove_identity", reproveIdentityValue == ReproveIdentityClaimValue.TRUE);
         }
-
         return claimSetBuilder.build();
     }
 

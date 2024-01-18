@@ -104,6 +104,22 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/build/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+  InheritedIdentityJwtSigningKey:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/integration/build/orch/env/INHERITED_IDENTITY_JWT_SIGNING_KEY" #pragma: allowlist secret
+  InheritedIdentityJwtTtl:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/integration/build/orch/env/INHERITED_IDENTITY_JWT_TTL" #pragma: allowlist secret
+  InheritedIdentityJwtIssuer:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/integration/build/orch/env/INHERITED_IDENTITY_JWT_ISSUER" #pragma: allowlist secret
+  InheritedIdentityJwtVtm:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/integration/build/orch/env/INHERITED_IDENTITY_JWT_VTM" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -565,6 +581,14 @@ Resources:
               Value: !Ref OrchestratorBasicAuthUsername
             - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
               Value: !Ref OrchestratorBasicAuthPassword
+            - Name: INHERITED_IDENTITY_JWT_SIGNING_KEY
+              Value: !Ref InheritedIdentityJwtSigningKey
+            - Name: INHERITED_IDENTITY_JWT_TTL
+              Value: !Ref InheritedIdentityJwtTtl
+            - Name: INHERITED_IDENTITY_JWT_ISSUER
+              Value: !Ref InheritedIdentityJwtIssuer
+            - Name: INHERITED_IDENTITY_JWT_VTM
+              Value: !Ref InheritedIdentityJwtVtm
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp

@@ -47,6 +47,17 @@ public class OrchestratorConfig {
     public static final String BASIC_AUTH_PASSWORD =
             getConfigValue("ORCHESTRATOR_BASIC_AUTH_PASSWORD", null);
 
+    public static final String INHERITED_IDENTITY_JWT_SIGNING_KEY =
+            getConfigValue("INHERITED_IDENTITY_JWT_SIGNING_KEY", null);
+    public static final String INHERITED_IDENTITY_JWT_ISSUER =
+            getConfigValue(
+                    "INHERITED_IDENTITY_JWT_ISSUER",
+                    "https://orch.stubs.account.gov.uk/migration/v1");
+    public static final String INHERITED_IDENTITY_JWT_VTM =
+            getConfigValue("INHERITED_IDENTITY_JWT_VTM", "https://hmrc.gov.uk/trustmark");
+    public static final String INHERITED_IDENTITY_JWT_TTL =
+            getConfigValue("INHERITED_IDENTITY_JWT_TTL", "900");
+
     private static String getConfigValue(String key, String defaultValue) {
         var envValue = System.getenv(key);
         if (envValue == null) {

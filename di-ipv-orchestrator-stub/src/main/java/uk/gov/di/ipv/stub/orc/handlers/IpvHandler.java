@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
@@ -66,6 +67,9 @@ public class IpvHandler {
 
     private static final String CREDENTIALS_URL_PROPERTY =
             "https://vocab.account.gov.uk/v1/credentialJWT";
+    private static final String JSON_PAYLOAD_PARAM = "jsonPayload";
+    private static final String EVIDENCE_JSON_PAYLOAD_PARAM = "evidenceJsonPayload";
+    private static final String DURING_MIGRATION = "duringMigration";
 
     private static final State ORCHESTRATOR_STUB_STATE = new State("orchestrator-stub-state");
 
@@ -83,7 +87,8 @@ public class IpvHandler {
                 String[] vtr =
                         request.queryMap().hasKey("vtrText")
                                 ? request.queryMap("vtrText").values()
-                                : new String[] {"Cl.Cm.P2"};
+                                : new String[] {"P2"};
+                String vot = request.queryMap().get("votText").value();
                 String userEmailAddress = request.queryMap().get("emailAddress").value();
                 String reproveIdentityString = request.queryMap().get("reproveIdentity").value();
                 JwtBuilder.ReproveIdentityClaimValue reproveIdentityClaimValue =
@@ -91,6 +96,11 @@ public class IpvHandler {
                                 ? JwtBuilder.ReproveIdentityClaimValue.valueOf(
                                         reproveIdentityString)
                                 : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
+
+                String credentialSubject = request.queryMap().value(JSON_PAYLOAD_PARAM);
+                String evidence = request.queryMap().value(EVIDENCE_JSON_PAYLOAD_PARAM);
+                boolean duringMigration =
+                        Objects.equals(request.queryMap().value(DURING_MIGRATION), "checked");
 
                 String userId = getUserIdValue(userIdTextValue);
 
@@ -103,7 +113,11 @@ public class IpvHandler {
                                 errorType,
                                 userEmailAddress,
                                 reproveIdentityClaimValue,
-                                environment);
+                                environment,
+                                duringMigration,
+                                credentialSubject,
+                                evidence,
+                                vot);
 
                 SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
                 EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);
