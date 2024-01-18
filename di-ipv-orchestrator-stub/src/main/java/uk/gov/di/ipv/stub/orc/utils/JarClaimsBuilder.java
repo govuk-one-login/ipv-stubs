@@ -17,18 +17,23 @@ public class JarClaimsBuilder {
             String vot,
             boolean duringMigration,
             String credentialSubject,
-            String evidence) throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException, JsonProcessingException {
-        var inheritedIdentityJwt = duringMigration
-                ? InheritedIdentityJwtBuilder.generate(userId, vot, credentialSubject, evidence).serialize()
-                : null;
-        return new JarClaims(new JarUserInfo(
-                new Essential(true),
-                null,
-                null,
-                null,
-                inheritedIdentityJwt == null
-                        ? null
-                        : new InheritedIdentityJwtClaim(List.of(inheritedIdentityJwt))
-        ));
+            String evidence)
+            throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
+                    JsonProcessingException {
+        var inheritedIdentityJwt =
+                duringMigration
+                        ? InheritedIdentityJwtBuilder.generate(
+                                        userId, vot, credentialSubject, evidence)
+                                .serialize()
+                        : null;
+        return new JarClaims(
+                new JarUserInfo(
+                        new Essential(true),
+                        null,
+                        null,
+                        null,
+                        inheritedIdentityJwt == null
+                                ? null
+                                : new InheritedIdentityJwtClaim(List.of(inheritedIdentityJwt))));
     }
 }

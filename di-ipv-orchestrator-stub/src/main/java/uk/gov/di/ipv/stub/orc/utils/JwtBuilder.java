@@ -20,7 +20,6 @@ import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.ResponseType;
-import uk.gov.di.ipv.stub.orc.models.JarClaims;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -90,7 +89,8 @@ public class JwtBuilder {
         var jarClaims =
                 JarClaimsBuilder.buildJarClaims(
                         userId, vot, duringMigration, credentialSubject, evidence);
-        var jarClaimsMap = objectMapper.convertValue(jarClaims, new TypeReference<Map<String, Object>>() {});
+        var jarClaimsMap =
+                objectMapper.convertValue(jarClaims, new TypeReference<Map<String, Object>>() {});
         var claimSetBuilder =
                 new JWTClaimsSet.Builder()
                         .subject(userId)
