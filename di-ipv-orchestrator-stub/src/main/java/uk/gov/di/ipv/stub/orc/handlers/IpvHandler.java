@@ -48,6 +48,7 @@ import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,10 +85,11 @@ public class IpvHandler {
                 String errorType = request.queryMap().get("error").value();
                 String userIdTextValue = request.queryMap().get("userIdText").value();
                 String signInJourneyIdText = request.queryMap().get("signInJourneyIdText").value();
-                String[] vtr =
-                        request.queryMap().hasKey("vtrText")
-                                ? request.queryMap("vtrText").values()
-                                : new String[] {"P2"};
+                List<String> vtr =
+                        Arrays.stream(request.queryMap("vtrText").value().split(","))
+                                .map(String::trim)
+                                .filter(value -> !value.isEmpty())
+                                .toList();
                 String vot = request.queryMap().get("votText").value();
                 String userEmailAddress = request.queryMap().get("emailAddress").value();
                 String reproveIdentityString = request.queryMap().get("reproveIdentity").value();
