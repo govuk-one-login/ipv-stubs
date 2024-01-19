@@ -497,8 +497,8 @@ Resources:
   OrchStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
-      MaxCapacity: 8
-      MinCapacity: 1
+      MaxCapacity: 12
+      MinCapacity: 2
       ResourceId: !Join
         - '/'
         - - "service"
@@ -524,9 +524,9 @@ Resources:
       TargetTrackingScalingPolicyConfiguration:
         PredefinedMetricSpecification:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
-        TargetValue: 70
+        TargetValue: 50
         ScaleInCooldown: 300
-        ScaleOutCooldown: 60
+        ScaleOutCooldown: 30
 
   ECSAccessLogsGroup:
     Type: AWS::Logs::LogGroup
