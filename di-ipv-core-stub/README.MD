@@ -17,8 +17,8 @@ This stub allows us to:
 ## Config
 
 Core Stub config from the `di-ipv-config` repository directory `/stubs/di-ipv-core-stub` will be available at:
-* Docker image: `/app/config/`
 
+* Docker image: `/app/config/`
 
 ## Environment
 
