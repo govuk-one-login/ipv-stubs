@@ -33,7 +33,7 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTIT
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_TTL;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_VTM;
 
-public class InheritedIdentityJWTBuilder {
+public class InheritedIdentityJwtBuilder {
 
     private static final String VC_CREDENTIAL_SUBJECT = "credentialSubject";
     private static final String VOT = "vot";
