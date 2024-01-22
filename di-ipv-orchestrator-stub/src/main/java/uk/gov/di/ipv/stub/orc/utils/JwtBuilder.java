@@ -63,7 +63,7 @@ public class JwtBuilder {
             String userId,
             String signInJourneyId,
             String state,
-            String[] vtr,
+            List<String> vtr,
             String errorType,
             String userEmailAddress,
             ReproveIdentityClaimValue reproveIdentityValue,
@@ -107,7 +107,7 @@ public class JwtBuilder {
                         .claim("govuk_signin_journey_id", signInJourneyId)
                         .claim("persistent_session_id", UUID.randomUUID().toString())
                         .claim("email_address", userEmailAddress)
-                        .claim("vtr", List.of(vtr));
+                        .claim("vtr", vtr);
         if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
             claimSetBuilder.claim(
                     "reprove_identity", reproveIdentityValue == ReproveIdentityClaimValue.TRUE);
