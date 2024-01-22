@@ -153,28 +153,28 @@ Mappings:
       desiredTaskCount: 1
       environment: dev
       platform: core
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "826978934233": #Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: build
       platform: core-stubs
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "616199614141": #Stubs Build
       fargateCPUsize: "512"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: build
       platform: stubs
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "388905755587": #Stubs Prod
-      fargateCPUsize: "2048"
-      fargateRAMsize: "4096"
+      fargateCPUsize: "1024"
+      fargateRAMsize: "2048"
       desiredTaskCount: 4
       environment: production
       platform: stubs
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
   SecurityGroups:
     PrefixListIds:
       dynamodb: "pl-b3a742da"
@@ -670,11 +670,11 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
-                Action: secretsmanager:GetSecretValue
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+                Action: secretsmanager:GetSecretValue #pragma:allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma:allowlist secret
               - Effect: Allow
-                Action: secretsmanager:ListSecrets
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+                Action: secretsmanager:ListSecrets #pragma:allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma:allowlist secret
               - Effect: Allow
                 Action: kms:Decrypt
                 Resource: arn:aws:kms:eu-west-2:216552277552:key/*
@@ -713,11 +713,11 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Effect: Allow
-                Action: secretsmanager:GetSecretValue
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
               - Effect: Allow
-                Action: secretsmanager:ListSecrets
-                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:*
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
               - Effect: Allow
                 Action: kms:Decrypt
                 Resource: arn:aws:kms:eu-west-2:216552277552:key/*
