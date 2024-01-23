@@ -1,0 +1,898 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description: >-
+  This creates the necessary components to deploy IPV Core Stub onto ECS
+  Fargate within the dev platform VPC and private subnets (provided as parameters).
+
+Globals:
+  Function:
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+
+Parameters:
+  Environment:
+    Description: The name of the environment to deploy to.
+    Type: String
+    AllowedPattern: ((production)|(build)|(dev.*))
+  VpcStackName:
+    Description: >
+      The name of the stack that defines the VPC in which this container will
+      run.
+    Type: String
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+  PermissionsBoundary:
+    Description: "The ARN of the permissions boundary to apply when creating IAM roles"
+    Type: String
+    Default: "none"
+  JbpConfigOpenJdkJre:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+  ApiKeyCriFraudDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_FRAUD_DEV" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_DL_DEV" #pragma: allowlist secret
+  ApiKeyCriPassportDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_DEV" #pragma: allowlist secret
+  ApiKeyCriAddressBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_ADDRESS_BUILD" #pragma: allowlist secret
+  ApiKeyCriKbvBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_KBV_BUILD" #pragma: allowlist secret
+  ApiKeyCriFraudBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_FRAUD_BUILD" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_DL_BUILD" #pragma: allowlist secret
+  ApiKeyCriToyDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_TOY_DEV" #pragma: allowlist secret
+  ApiKeyCriToyBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_TOY_BUILD" #pragma: allowlist secret
+  ApiKeyCriPassportBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_BUILD" #pragma: allowlist secret
+  ApiKeyCriAddressStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_ADDRESS_STAGING" #pragma: allowlist secret
+  ApiKeyCriKbvStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_KBV_STAGING" #pragma: allowlist secret
+  ApiKeyCriFraudStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_FRAUD_STAGING" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_DL_STAGING" #pragma: allowlist secret
+  ApiKeyCriToyStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_TOY_STAGING" #pragma: allowlist secret
+  ApiKeyCriCheckHmrcDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_CHECK_HMRC_DEV" #pragma: allowlist secret
+  ApiKeyCriCheckHmrcBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_CHECK_HMRC_BUILD" #pragma: allowlist secret
+  ApiKeyCriCheckHmrcStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_CHECK_HMRC_STAGING" #pragma: allowlist secret
+  ApiKeyCriCheckHmrcIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_CHECK_HMRC_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriPassportStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_STAGING" #pragma: allowlist secret
+  ApiKeyCriAddressIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_ADDRESS_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriKbvIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_KBV_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriFraudIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_FRAUD_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_DL_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriPassportIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_INTEGRATION" #pragma: allowlist secret
+  JavaOpts:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/JAVA_OPTS" #pragma: allowlist secret
+  CoreStubConfigFile:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_CONFIG_FILE" #pragma: allowlist secret
+  CoreStubJwtIssCriUri:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_JWT_ISS_CRI_URI" #pragma: allowlist secret
+  CoreStubPort:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_PORT" #pragma: allowlist secret
+  CoreStubClientId:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_CLIENT_ID" #pragma: allowlist secret
+  CoreStubRedirectUrl:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_REDIRECT_URL" #pragma: allowlist secret
+  CoreStubAppTitle:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_APP_TITLE" #pragma: allowlist secret
+  CoreStubConfigAgedDob:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_CONFIG_AGED_DOB" #pragma: allowlist secret
+  CoreStubShowVc:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_SHOW_VC" #pragma: allowlist secret
+  CoreStubEnableBackendRoutes:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_ENABLE_BACKEND_ROUTES"  #pragma: allowlist secret
+  CoreStubBasicAuth:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_BASIC_AUTH" #pragma: allowlist secret
+  EnableBasicAuth:
+    Description: "Environment Variables for ECS"
+    Type: String
+    Default: "true" #pragma: allowlist secret
+
+
+Conditions:
+  IsDevelopment: !Not
+    - !Or
+      - !Equals [ !Ref Environment, "build"]
+      - !Equals [ !Ref Environment, "production"]
+  IsNotDevelopment: !Not [ !Condition IsDevelopment ]
+  IsCoreDev: !Or
+    - !Equals [ !Ref AWS::AccountId, "130355686670"]
+    - !Equals [ !Ref AWS::AccountId, "175872367215"]
+  IsProduction: !Equals [ !Ref Environment, "production" ]
+  IsNonProd: !Not
+    - !Or
+      - !Condition IsDevelopment
+      - !Condition IsProduction
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
+
+
+
+# Mapping using aws account id - keeps things simple
+# if this is built out differently.
+Mappings:
+  EnvironmentConfiguration:
+    "130355686670": # Core Old Development Account
+      fargateCPUsize: "256"
+      fargateRAMsize: "512"
+      desiredTaskCount: 1
+      environment: dev
+      platform: core
+      dnsZoneId: "Z10093761FBZNR80Q938M"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+    "175872367215": # Core New Development Account
+      fargateCPUsize: "256"
+      fargateRAMsize: "512"
+      desiredTaskCount: 1
+      environment: dev
+      platform: core
+      dnsZoneId: "Z10093761FBZNR80Q938M"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+    "826978934233": # Core Stubs Build
+      fargateCPUsize: "256"
+      fargateRAMsize: "512"
+      desiredTaskCount: 1
+      environment: build
+      platform: core-stubs
+      dnsZoneId: "NOT-NEEDED"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+    "616199614141": # Stubs Build
+      fargateCPUsize: "256"
+      fargateRAMsize: "512"
+      desiredTaskCount: 1
+      environment: build
+      platform: stubs
+      dnsZoneId: "NOT-NEEDED"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+    "388905755587": # Stubs Prod
+      fargateCPUsize: "4096"
+      fargateRAMsize: "8192"
+      desiredTaskCount: 1
+      environment: production
+      platform: stubs
+      dnsZoneId: "NOT-NEEDED"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+  SecurityGroups:
+    PrefixListIds:
+      dynamodb: "pl-b3a742da"
+      s3: "pl-7ca54015"
+
+Resources:
+  # ssl cert
+  CoreStubSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cri-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri.core.${Environment}.stubs.account.gov.uk", cri.core.stubs.account.gov.uk]
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsCoreDev
+            - !Sub "cri-${Environment}.core.dev.stubs.account.gov.uk"
+            - !If [IsNonProd, !Sub "cri.core.${Environment}.stubs.account.gov.uk", cri.core.stubs.account.gov.uk]
+          HostedZoneId: !If
+            - IsCoreDev
+            - !ImportValue DevPublicHostedZoneId
+            - !If [IsNonProd, !ImportValue BuildCorePublicHostedZoneId, !ImportValue CorePublicHostedZoneId]
+      ValidationMethod: DNS
+
+  # dns rcord
+  CoreStubDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !If
+        - IsCoreDev
+        - !Sub "cri-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri.core.${Environment}.stubs.account.gov.uk", cri.core.stubs.account.gov.uk]
+      HostedZoneId: !If
+        - IsCoreDev
+        - !ImportValue DevPublicHostedZoneId
+        - !If [IsNonProd, !ImportValue BuildCorePublicHostedZoneId, !ImportValue CorePublicHostedZoneId]
+      AliasTarget:
+        DNSName: !GetAtt CoreStubApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt CoreStubApiDomain.RegionalHostedZoneId
+
+  # Security Groups for the Lambda, ECS service and load balancer
+  LoadBalancerSG:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: >-
+        Core Stub LoadBalancer Security Group
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow vpc cidr ingress to port 80
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+
+  LoadBalancerSGEgressToECSSecurityGroup:
+    Type: "AWS::EC2::SecurityGroupEgress"
+    Properties:
+      GroupId: !GetAtt LoadBalancerSG.GroupId
+      Description: >-
+        Egress between the Core Stub load balancer and
+        the core Stub ECS security group
+      DestinationSecurityGroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
+      IpProtocol: tcp
+      FromPort: 8080
+      ToPort: 8080
+
+  CoreStubECSSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: >-
+        Core Stub ECS Security Group outbound permissions ruleset
+      SecurityGroupEgress:
+        - DestinationPrefixListId: !FindInMap [SecurityGroups, PrefixListIds, dynamodb]
+          Description: Allow outbound traffic to dynamodb vpc endpoint
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+        - DestinationPrefixListId: !FindInMap [SecurityGroups, PrefixListIds, s3]
+          Description: Allow outbound traffic to s3 vpc endpoint
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+        - DestinationSecurityGroupId:
+            Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+          Description: Allow outbound traffic to AWS Services vpc endpoint security group
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow outbound traffic from vpc cidr to port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+        - CidrIp: 0.0.0.0/0
+          Description: Allow egress HTTPS traffic to any from port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow inbound traffic from vpc cidr to port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+
+  CoreStubECSSecurityGroupIngressFromLoadBalancer:
+    Type: "AWS::EC2::SecurityGroupIngress"
+    Properties:
+      IpProtocol: tcp
+      Description: >-
+        Core Stub ECS permits inbound from the Core Stub
+        load balancer.
+      FromPort: 8080
+      ToPort: 8080
+      GroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
+      SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
+
+  # http api gateway - redirects to an internal alb
+  #
+  # api domain entries / mapping
+  CoreStubApiDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cri-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri.core.${Environment}.stubs.account.gov.uk", cri.core.stubs.account.gov.uk]
+      DomainNameConfigurations:
+        - CertificateArn: !Ref CoreStubSSLCert
+          EndpointType: REGIONAL
+          SecurityPolicy: TLS_1_2
+
+  CoreStubApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cri-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri.core.${Environment}.stubs.account.gov.uk", cri.core.stubs.account.gov.uk]
+      ApiId: !Ref ApiGwHttpEndpoint
+      Stage: "$default"
+    DependsOn:
+      - CoreStubApiDomain
+      - APIStageDefault
+
+  ApiGwHttpEndpoint:
+    Type: "AWS::ApiGatewayV2::Api"
+    Properties:
+      Name: !Sub ${AWS::StackName}-cri-api-gw
+      ProtocolType: HTTP
+
+  ApiGwHttpEndpointIntegration:
+    Type: "AWS::ApiGatewayV2::Integration"
+    Properties:
+      ApiId: !Ref ApiGwHttpEndpoint
+      IntegrationType: HTTP_PROXY
+      ConnectionId:
+        Fn::ImportValue: !Sub "${VpcStackName}-VpcLinkId"
+      ConnectionType: VPC_LINK
+      IntegrationMethod: ANY
+      IntegrationUri: !Ref LoadBalancerListener
+      PayloadFormatVersion: "1.0"
+
+  APIGWRoute:
+    Type: "AWS::ApiGatewayV2::Route"
+    Properties:
+      ApiId: !Ref ApiGwHttpEndpoint
+      RouteKey: "ANY /{proxy+}"
+      Target: !Join
+        - /
+        - - integrations
+          - !Ref ApiGwHttpEndpointIntegration
+
+  APIStageDefault:
+    Type: "AWS::ApiGatewayV2::Stage"
+    Properties:
+      ApiId: !Ref ApiGwHttpEndpoint
+      StageName: $default
+      AutoDeploy: true
+      AccessLogSettings:
+        DestinationArn: !GetAtt APIGWAccessLogsGroup.Arn
+        Format: >-
+          {
+          "requestId":"$context.requestId",
+          "ip": "$context.identity.sourceIp",
+          "requestTime":"$context.requestTime",
+          "httpMethod":"$context.httpMethod",
+          "path": "$context.path",
+          "routeKey":"$context.routeKey",
+          "status":"$context.status",
+          "protocol":"$context.protocol",
+          "responseLength":"$context.responseLength",
+          "responseLatency":"$context.responseLatency"
+          }
+
+  APIGWAccessLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !If
+        - IsCoreDev
+        - !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-cri-api-gw-accesslogs
+        - !Sub /aws/apigateway/${AWS::StackName}-cri-api-gw-accesslogs
+      RetentionInDays: 14
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  # Private Application Load Balancer
+  LoadBalancer:
+    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
+    Properties:
+      Scheme: internal
+      SecurityGroups:
+        - !GetAtt LoadBalancerSG.GroupId
+      Subnets:
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+      Type: application
+      #checkov:skip=CKV_AWS_91:ALB access logging is disabled in developer environments to make them easier to manage.
+      LoadBalancerAttributes:
+        - Key: routing.http.drop_invalid_header_fields.enabled
+          Value: true
+        - !If
+          - IsNotDevelopment
+          - Key: access_logs.s3.enabled
+            Value: true
+          - !Ref AWS::NoValue
+        - !If
+          - IsNotDevelopment
+          - Key: access_logs.s3.bucket
+            Value: !Join
+              - "-"
+              - - "ipv"
+                - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, platform ]
+                - !Ref Environment
+                - "access"
+                - "logs"
+          - !Ref AWS::NoValue
+        - !If
+          - IsNotDevelopment
+          - Key: access_logs.s3.prefix
+            Value: core-stubs
+          - !Ref AWS::NoValue
+        - !If
+          - IsNotDevelopment
+          - Key: deletion_protection.enabled
+            Value: false
+          - !Ref AWS::NoValue
+
+  LoadBalancerListenerTargetGroupECS:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckEnabled: TRUE
+      HealthCheckProtocol: HTTP
+      Matcher:
+        HttpCode: 401
+      Port: 8080
+      Protocol: HTTP
+      TargetType: ip
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 60
+
+  LoadBalancerListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      # checkov:skip=CKV_AWS_2:Certificate generation must be resolved before the listener can use HTTPS.
+      # checkov:skip=CKV_AWS_103:The load balancer cannot use TLS v1.2 until HTTPS is enabled
+      LoadBalancerArn: !Ref LoadBalancer
+      Protocol: HTTP
+      Port: 80
+      DefaultActions:
+        - TargetGroupArn: !Ref LoadBalancerListenerTargetGroupECS
+          Type: forward
+
+  # ECS cluster, service, task and autoscaling definition
+  CoreStubCluster:
+    Type: "AWS::ECS::Cluster"
+    Properties:
+      ClusterSettings:
+        - Name: containerInsights
+          Value: enabled
+
+  CoreStubService:
+    Type: "AWS::ECS::Service"
+    Properties:
+      Cluster: !Ref CoreStubCluster
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      DeploymentController:
+        Type: ECS
+      DesiredCount: !FindInMap
+        - EnvironmentConfiguration
+        - !Ref AWS::AccountId
+        - desiredTaskCount
+      EnableECSManagedTags: false
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: app
+          ContainerPort: 8080
+          TargetGroupArn: !Ref LoadBalancerListenerTargetGroupECS
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !GetAtt CoreStubECSSecurityGroup.GroupId
+          Subnets:
+            - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+            - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+      TaskDefinition: !Ref ECSServiceTaskDefinition
+    DependsOn:
+      - LoadBalancerListener
+
+  CoreStubAutoScalingTarget:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: 1
+      MinCapacity: 1
+      ResourceId: !Join
+        - '/'
+        - - "service"
+          - !Ref CoreStubCluster
+          - !GetAtt CoreStubService.Name
+      RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+
+  CoreStubAutoScalingPolicy:
+    DependsOn: CoreStubAutoScalingTarget
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: CoreStubAutoScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ResourceId: !Join
+        - '/'
+        - - "service"
+          - !Ref CoreStubCluster
+          - !GetAtt CoreStubService.Name
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      TargetTrackingScalingPolicyConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        TargetValue: 70
+        ScaleInCooldown: 300
+        ScaleOutCooldown: 60
+
+  ECSAccessLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/ecs/${AWS::StackName}-CoreStub-ECS
+      RetentionInDays: 14
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  ECSServiceTaskDefinition:
+    Type: "AWS::ECS::TaskDefinition"
+    Properties:
+      ContainerDefinitions:
+        - Essential: true
+          Image: CONTAINER-IMAGE-PLACEHOLDER
+          Name: app
+          Environment:
+          - Name: JBP_CONFIG_OPEN_JDK_JRE
+            Value: !Ref JbpConfigOpenJdkJre
+          - Name: JAVA_OPTS
+            Value: !Ref JavaOpts
+          - Name: CORE_STUB_CONFIG_FILE
+            Value: !Ref CoreStubConfigFile
+          - Name: CORE_STUB_PORT
+            Value: !Ref CoreStubPort
+          - Name: CORE_STUB_JWT_ISS_CRI_URI
+            Value: !Ref CoreStubJwtIssCriUri
+          - Name: CORE_STUB_CLIENT_ID
+            Value: !Ref CoreStubClientId
+          - Name: CORE_STUB_REDIRECT_URL
+            Value: !Ref CoreStubRedirectUrl
+          - Name: CORE_STUB_APP_TITLE
+            Value: !Ref CoreStubAppTitle
+          - Name: CORE_STUB_CONFIG_AGED_DOB
+            Value: !Ref CoreStubConfigAgedDob
+          - Name: CORE_STUB_SHOW_VC
+            Value: !Ref CoreStubShowVc
+          - Name: CORE_STUB_ENABLE_BACKEND_ROUTES
+            Value: !Ref CoreStubEnableBackendRoutes
+          - Name: CORE_STUB_BASIC_AUTH
+            Value: !Ref CoreStubBasicAuth
+          - Name: API_KEY_CRI_FRAUD_DEV
+            Value: !Ref ApiKeyCriFraudDev
+          - Name: API_KEY_CRI_DL_DEV
+            Value: !Ref ApiKeyCriDrivingPermitDev
+          - Name: API_KEY_CRI_PASSPORTA_DEV
+            Value: !Ref ApiKeyCriPassportDev
+          - Name: API_KEY_CRI_ADDRESS_BUILD
+            Value: !Ref ApiKeyCriAddressBuild
+          - Name: API_KEY_CRI_KBV_BUILD
+            Value: !Ref ApiKeyCriKbvBuild
+          - Name: API_KEY_CRI_FRAUD_BUILD
+            Value: !Ref ApiKeyCriFraudBuild
+          - Name: API_KEY_CRI_DL_BUILD
+            Value: !Ref ApiKeyCriDrivingPermitBuild
+          - Name: API_KEY_CRI_PASSPORTA_BUILD
+            Value: !Ref ApiKeyCriPassportBuild
+          - Name: API_KEY_CRI_TOY_DEV
+            Value: !Ref ApiKeyCriToyDev
+          - Name: API_KEY_CRI_TOY_BUILD
+            Value: !Ref ApiKeyCriToyBuild
+          - Name: API_KEY_CRI_TOY_STAGING
+            Value: !Ref ApiKeyCriToyStaging
+          - Name: API_KEY_CRI_CHECK_HMRC_DEV
+            Value: !Ref ApiKeyCriCheckHmrcDev
+          - Name: API_KEY_CRI_CHECK_HMRC_BUILD
+            Value: !Ref ApiKeyCriCheckHmrcBuild
+          - Name: API_KEY_CRI_CHECK_HMRC_STAGING
+            Value: !Ref ApiKeyCriCheckHmrcStaging
+          - Name: API_KEY_CRI_CHECK_HMRC_INTEGRATION
+            Value: !Ref ApiKeyCriCheckHmrcIntegration
+          - Name: API_KEY_CRI_ADDRESS_STAGING
+            Value: !Ref ApiKeyCriAddressStaging
+          - Name: API_KEY_CRI_KBV_STAGING
+            Value: !Ref ApiKeyCriKbvStaging
+          - Name: API_KEY_CRI_FRAUD_STAGING
+            Value: !Ref ApiKeyCriFraudStaging
+          - Name: API_KEY_CRI_DL_STAGING
+            Value: !Ref ApiKeyCriDrivingPermitStaging
+          - Name: API_KEY_CRI_PASSPORTA_STAGING
+            Value: !Ref ApiKeyCriPassportStaging
+          - Name: API_KEY_CRI_ADDRESS_INTEGRATION
+            Value: !Ref ApiKeyCriAddressIntegration
+          - Name: API_KEY_CRI_KBV_INTEGRATION
+            Value: !Ref ApiKeyCriKbvIntegration
+          - Name: API_KEY_CRI_FRAUD_INTEGRATION
+            Value: !Ref ApiKeyCriFraudIntegration
+          - Name: API_KEY_CRI_DL_INTEGRATION
+            Value: !Ref ApiKeyCriDrivingPermitIntegration
+          - Name: API_KEY_CRI_PASSPORTA_INTEGRATION
+            Value: !Ref ApiKeyCriPassportIntegration
+          - Name: ENABLE_BASIC_AUTH
+            Value: !Ref EnableBasicAuth
+          Secrets:
+            - Name: "CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/cri-3rdparty/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
+            - Name: DT_TENANT
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                  - ':DT_TENANT::'
+            - Name: DT_TENANTTOKEN
+              ValueFrom: !Join
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                  - ':DT_TENANTTOKEN::'
+            - Name: DT_CONNECTION_POINT
+              ValueFrom: !Join
+              - ''
+              - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                - ':DT_CONNECTION_POINT::'
+          PortMappings:
+            - ContainerPort: 8080
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref ECSAccessLogsGroup
+              awslogs-region: !Sub ${AWS::Region}
+              awslogs-stream-prefix: !Sub core-stub-${Environment}
+      Cpu: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, fargateCPUsize ]
+      ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
+      Memory: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, fargateRAMsize ]
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn: !GetAtt ECSTaskRole.Arn
+
+  ECSTaskExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: 2012-10-17
+      Policies:
+        - PolicyName: PullCoreStubImage
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "ecr:BatchGetImage"
+                  - "ecr:GetDownloadUrlForLayer"
+                  - "ecr:GetAuthorizationToken"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource:
+                  - !GetAtt "ECSAccessLogsGroup.Arn"
+                  - !Sub "${ECSAccessLogsGroup.Arn}:*"
+        - PolicyName: CoreStubGetSecrets
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret
+                Resource:
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*" #pragma: allowlist secret
+        - PolicyName: CoreStubGetSSMParams
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssm:GetParameters'
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
+        - PolicyName: GetDynatraceSecret #pragma: allowlist secret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
+  ECSTaskRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: "sts:AssumeRole"
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: 2012-10-17
+      Policies:
+        - PolicyName: CoreStubGetSecrets
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret -- how can this be a secret ?
+                Resource:
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*" #pragma: allowlist secret
+        - PolicyName: CoreStubGetSSMParams
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssm:GetParameters'
+                Resource:
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
+        - PolicyName: GetDynatraceSecret #pragma: allowlist secret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow #pragma: allowlist secret
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
+  # kms key for logging
+  LoggingKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+
+Outputs:
+  CoreStubEnvironment:
+    Description: Core Stub Environment
+    Value: !Ref Environment
+  CoreStubDomain:
+    Description: Core Stub DNS Domain
+    Value: !Ref CoreStubDNSRecord
+  CoreStubApiDomain:
+    Description: Core Stub API Domain
+    Value: !Ref CoreStubApiDomain
