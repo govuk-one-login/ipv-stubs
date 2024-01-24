@@ -272,13 +272,13 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "cri-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "cri.core.${Environment}.stubs.account.gov.uk", cri.core.stubs.account.gov.uk]
+        - !Sub "cri-3rdparty${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri-3rdparty.core.${Environment}.stubs.account.gov.uk", cri-3rdparty.core.stubs.account.gov.uk]
       DomainValidationOptions:
         - DomainName: !If
             - IsCoreDev
-            - !Sub "cri-${Environment}.core.dev.stubs.account.gov.uk"
-            - !If [IsNonProd, !Sub "cri.core.${Environment}.stubs.account.gov.uk", cri.core.stubs.account.gov.uk]
+            - !Sub "cri-3rdparty${Environment}.core.dev.stubs.account.gov.uk"
+            - !If [IsNonProd, !Sub "cri-3rdparty.core.${Environment}.stubs.account.gov.uk", cri-3rdparty.core.stubs.account.gov.uk]
           HostedZoneId: !If
             - IsCoreDev
             - !ImportValue DevPublicHostedZoneId
@@ -292,8 +292,8 @@ Resources:
       Type: A
       Name: !If
         - IsCoreDev
-        - !Sub "cri-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "cri.core.${Environment}.stubs.account.gov.uk", cri.core.stubs.account.gov.uk]
+        - !Sub "cri-3rdparty${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri-3rdparty.core.${Environment}.stubs.account.gov.uk", cri-3rdparty.core.stubs.account.gov.uk]
       HostedZoneId: !If
         - IsCoreDev
         - !ImportValue DevPublicHostedZoneId
@@ -393,8 +393,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "cri-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "cri.core.${Environment}.stubs.account.gov.uk", cri.core.stubs.account.gov.uk]
+        - !Sub "cri-3rdparty${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri-3rdparty.core.${Environment}.stubs.account.gov.uk", cri-3rdparty.core.stubs.account.gov.uk]
       DomainNameConfigurations:
         - CertificateArn: !Ref CoreStubSSLCert
           EndpointType: REGIONAL
@@ -405,8 +405,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "cri-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "cri.core.${Environment}.stubs.account.gov.uk", cri.core.stubs.account.gov.uk]
+        - !Sub "cri-3rdparty${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri-3rdparty.core.${Environment}.stubs.account.gov.uk", cri-3rdparty.core.stubs.account.gov.uk]
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
