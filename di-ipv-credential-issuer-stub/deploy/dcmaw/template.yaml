@@ -40,10 +40,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/dcmaw/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
-  ClientConfigFile:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/dcmaw/env/CLIENT_CONFIG_FILE" #pragma: allowlist secret
   ClientAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -506,8 +502,6 @@ Resources:
             Value: !Ref CredentialIssuerType
           - Name: MITIGATION_ENABLED
             Value: !Ref CredentialMitigationEnabled
-          - Name: CLIENT_CONFIG_FILE
-            Value: !Ref ClientConfigFile
           - Name: CLIENT_AUDIENCE
             Value: !Ref ClientAudience
           - Name: VC_ISSUER

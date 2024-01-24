@@ -40,10 +40,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/f2f/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
-  ClientConfigFile:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/f2f/env/CLIENT_CONFIG_FILE" #pragma: allowlist secret
   ClientAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -462,8 +458,6 @@ Resources:
             Value: !Ref CredentialIssuerName
           - Name: CREDENTIAL_ISSUER_TYPE
             Value: !Ref CredentialIssuerType
-          - Name: CLIENT_CONFIG_FILE
-            Value: !Ref ClientConfigFile
           - Name: CLIENT_AUDIENCE
             Value: !Ref ClientAudience
           - Name: VC_ISSUER
