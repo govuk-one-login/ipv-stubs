@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -eu
 
-CONFIG_DIR="../../di-ipv-config/stubs/di-ipv-core-stub"
+CONFIG_DIR="../../ipv-config/stubs/di-ipv-core-stub"
 
 clean_up () {
     rm -r config
