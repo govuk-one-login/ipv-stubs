@@ -17,9 +17,10 @@ public class JwksHandler {
 
     public Route getResource =
             (Request request, Response response) -> {
-                var docAppClientConfig = ConfigService.getClientConfig("authOrchestratorDocApp");
+                var docAppClientConfig = ConfigService.getClientConfig("orch-build");
                 var signingJWK = JWK.parse(docAppClientConfig.getSigningPublicJwk());
-                var jwkSet = new JWKSet(List.of(signingJWK));
+                var encryptionJWK = docAppClientConfig.getEncryptionPublicKeyJwk();
+                var jwkSet = new JWKSet(List.of(signingJWK, encryptionJWK));
 
                 response.type(RESPONSE_TYPE);
                 return jwkSet.toString(true);
