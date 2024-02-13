@@ -21,7 +21,6 @@ import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
-import com.nimbusds.oauth2.sdk.util.MapUtils;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +34,7 @@ import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.domain.*;
 import uk.gov.di.ipv.stub.cred.error.CriStubException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
+import uk.gov.di.ipv.stub.cred.service.ConfigService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.utils.ES256SignatureVerifier;
@@ -152,8 +152,7 @@ public class AuthorizeHandler {
                     String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
                     String requestValue = queryParamsMap.value(RequestParamConstants.REQUEST);
 
-                    ClientConfig clientConfig =
-                            CredentialIssuerConfig.getClientConfig(clientIdValue);
+                    ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
 
                     if (clientConfig == null) {
                         response.status(HttpServletResponse.SC_BAD_REQUEST);
@@ -273,7 +272,7 @@ public class AuthorizeHandler {
                 String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
                 String requestValue = queryParamsMap.value(RequestParamConstants.REQUEST);
 
-                ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdValue);
+                ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
 
                 if (clientConfig == null) {
                     response.status(HttpServletResponse.SC_BAD_REQUEST);
@@ -727,7 +726,7 @@ public class AuthorizeHandler {
     private ValidationResult validateQueryParams(QueryParamsMap queryParams) {
         String clientIdValue = queryParams.value(RequestParamConstants.CLIENT_ID);
         if (Validator.isNullBlankOrEmpty(clientIdValue)
-                || CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
+                || ConfigService.getClientConfig(clientIdValue) == null) {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
@@ -749,7 +748,7 @@ public class AuthorizeHandler {
 
     private ValidationResult validateRequestClaims(QueryParamsMap queryParams) {
         String clientIdValue = queryParams.value(RequestParamConstants.CLIENT_ID);
-        ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdValue);
+        ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
 
         try {
             SignedJWT signedJWT =
@@ -861,11 +860,7 @@ public class AuthorizeHandler {
         String requestParam = queryParamsMap.value(RequestParamConstants.REQUEST);
         String clientIdParam = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
 
-        if (MapUtils.isEmpty(CredentialIssuerConfig.getClientConfigs())) {
-            throw new Exception("Error: Missing cri stub client configuration env variable");
-        }
-
-        ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdParam);
+        ClientConfig clientConfig = ConfigService.getClientConfig(clientIdParam);
 
         if (clientConfig == null) {
             throw new Exception(

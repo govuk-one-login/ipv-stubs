@@ -19,6 +19,7 @@ dependencies {
 			"com.sparkjava:spark-template-mustache:2.7.1",
 			"com.nimbusds:oauth2-oidc-sdk:9.20",
 			"com.google.code.gson:gson:2.8.9",
+			"com.fasterxml.jackson.core:jackson-databind:2.13.1",
 			"org.slf4j:slf4j-simple:1.7.32"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"

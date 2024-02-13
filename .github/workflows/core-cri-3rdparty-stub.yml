@@ -1,12 +1,16 @@
-name: Orch Integration Stub Build & Push
+name: CRI 3rdparty Core Stub - Secure Pipeline build, push & Ship
+
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
     paths:
-      - di-ipv-orchestrator-stub/**
-      - .github/workflows/deploy-orch-integration-stub.yml
+      - di-ipv-core-stub/deploy/cri-3rdparty/**
+      - di-ipv-core-stub/gradle/**
+      - di-ipv-core-stub/src/**
+      - di-ipv-core-stub/*
+      - .github/workflows/core-cri-3rdparty-stub.yml
+  workflow_dispatch:
 
 jobs:
   dockerBuildAndPush:
@@ -19,14 +23,23 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: '0'
 
-      - name: Set up AWS creds
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Checkout config repo
+        uses: actions/checkout@v3
         with:
-          role-to-assume: ${{ secrets.ORCH_INTEGRATION_GH_ACTIONS_ROLE_ARN }}
+          repository: govuk-one-login/ipv-config
+          token: ${{ secrets.IPV_CONFIG_PAT }}
+          path: ./di-ipv-config
+          fetch-depth: '0'
+          ref: 'refs/heads/main'
+
+      - name: Set up AWS creds
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: ${{ secrets.CORE_CRI_3P_GH_ACTIONS_ROLE_ARN }}
           aws-region: eu-west-2
 
       - name: Login to Amazon ECR
@@ -43,20 +56,24 @@ jobs:
       - name: Create tag
         id: create-tag
         run: |
-          IMAGE_TAG="${{ github.sha }}-secure-pipeline-$(date +'%Y-%m-%d-%H%M%S')"
-          echo "::set-output name=image_tag::$IMAGE_TAG"
+          IMAGE_TAG="${{ github.sha }}-$(date +'%Y-%m-%d-%H%M%S')"
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@main
         with:
           cosign-release: 'v1.9.0'
 
+      - name: Copy Core Config into place
+        id: copy-config-to-stub
+        run: cp -rpfv ./di-ipv-config/stubs/di-ipv-core-stub ./di-ipv-core-stub/config
+
       - name: Build, tag, sign and push image to Amazon ECR
-        working-directory: ./di-ipv-orchestrator-stub
+        working-directory: ./di-ipv-core-stub
         env:
           CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ORCH_INTEGRATION_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.CORE_CRI_3P_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
@@ -70,20 +87,20 @@ jobs:
         run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
 
       - name: SAM Validate
-        working-directory: ./di-ipv-orchestrator-stub/deploy-integration
+        working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
         run: sam validate --region ${{ env.AWS_REGION }}
 
       - name: SAM Package
-        working-directory: ./di-ipv-orchestrator-stub/deploy-integration
+        working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
         env:
-          ARTIFACT_BUCKET: ${{ secrets.ORCH_INTEGRATION_ARTIFACT_BUCKET_NAME }}
+          ARTIFACT_BUCKET: ${{ secrets.CORE_CRI_3P_ARTIFACT_BUCKET_NAME }}
         run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Update SAM template with ECR image
-        working-directory: ./di-ipv-orchestrator-stub/deploy-integration
+        working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ORCH_INTEGRATION_ECR_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.CORE_CRI_3P_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
 
@@ -91,18 +108,17 @@ jobs:
         id: signing
         uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc
         with:
-          template: ./di-ipv-orchestrator-stub/deploy-integration/cf-template.yaml
+          template: ./di-ipv-core-stub/deploy/cri-3rdparty/cf-template.yaml
           profile: ${{ secrets.SIGNING_PROFILE_NAME }}
 
       - name: SAM build and test
-        working-directory: ./di-ipv-orchestrator-stub/deploy-integration
+        working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
         run: sam build -t cf-template.yaml
 
       - name: Deploy SAM app
-        uses: alphagov/di-devplatform-upload-action@v3
+        uses: govuk-one-login/devplatform-upload-action@v3.3
         with:
-          artifact-bucket-name: ${{ secrets.ORCH_INTEGRATION_ARTIFACT_BUCKET_NAME }}
-          signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-          working-directory: ./di-ipv-orchestrator-stub/deploy-integration
-          template-file: cf-template.yaml
-
+            artifact-bucket-name: ${{ secrets.CORE_CRI_3P_ARTIFACT_BUCKET_NAME }}
+            signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+            working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
+            template-file: cf-template.yaml

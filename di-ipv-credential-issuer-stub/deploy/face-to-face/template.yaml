@@ -40,10 +40,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/f2f/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
-  ClientConfigFile:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/f2f/env/CLIENT_CONFIG_FILE" #pragma: allowlist secret
   ClientAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -510,8 +506,6 @@ Resources:
             Value: !Ref CredentialIssuerType
           - Name: MITIGATION_ENABLED
             Value: !Ref CredentialMitigationEnabled
-          - Name: CLIENT_CONFIG_FILE
-            Value: !Ref ClientConfigFile
           - Name: CLIENT_AUDIENCE
             Value: !Ref ClientAudience
           - Name: VC_ISSUER
@@ -606,8 +600,8 @@ Resources:
                 Action:
                   - 'ssm:GetParameters'
                 Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/cri/*" #pragma: allowlist secret
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/*" #pragma: allowlist secret
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/cri/*"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/*"
         - PolicyName: GetDynatraceSecret #pragma: allowlist secret
           PolicyDocument:
             Version: 2012-10-17
@@ -654,9 +648,12 @@ Resources:
               - Effect: Allow
                 Action:
                   - 'ssm:GetParameters'
+                  - 'ssm:GetParametersByPath'
                 Resource:
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/cri/*"
                   - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/*"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer-stub-clients"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer-stub-clients/*"
         - PolicyName: GetDynatraceSecret #pragma: allowlist secret
           PolicyDocument:
             Version: 2012-10-17

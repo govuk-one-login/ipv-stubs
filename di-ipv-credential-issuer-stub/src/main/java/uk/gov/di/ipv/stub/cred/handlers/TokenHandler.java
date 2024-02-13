@@ -15,10 +15,10 @@ import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
-import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
+import uk.gov.di.ipv.stub.cred.service.ConfigService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
@@ -91,7 +91,7 @@ public class TokenHandler {
 
                 } else {
                     ClientConfig clientConfig =
-                            CredentialIssuerConfig.getClientConfig(
+                            ConfigService.getClientConfig(
                                     requestParams.value(RequestParamConstants.CLIENT_ID));
                     String authMethod =
                             clientConfig.getJwtAuthentication().getAuthenticationMethod();

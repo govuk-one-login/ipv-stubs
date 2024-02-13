@@ -105,6 +105,10 @@ public class HandlerHelper {
 
     public AuthorizationResponse getAuthorizationResponse(Request request)
             throws ParseException, JsonProcessingException {
+        LOGGER.info("uri={}", request.uri());
+        LOGGER.info("url={}", request.url());
+        LOGGER.info("pathInfo={}", request.pathInfo());
+        LOGGER.info("requestMethod={}", request.requestMethod());
         var authorizationResponse =
                 AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
         if (!authorizationResponse.indicatesSuccess()) {

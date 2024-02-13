@@ -36,7 +36,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -258,13 +260,43 @@ public class CoreStubHandler {
 
     private <T> void sendAuthorizationRequest(
             Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims)
-            throws JOSEException, java.text.ParseException {
+            throws ParseException, JOSEException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
-        AuthorizationRequest authRequest =
-                handlerHelper.createAuthorizationJAR(state, credentialIssuer, sharedClaims);
+
+        AuthorizationRequest authRequest;
+
+        try {
+            authRequest =
+                    handlerHelper.createAuthorizationJAR(state, credentialIssuer, sharedClaims);
+        } catch (JOSEException joseException) {
+            LOGGER.error("JOSEException occurred," + joseException.getMessage());
+            throw joseException;
+        } catch (ParseException parseException) {
+            LOGGER.error("ParseException occurred," + parseException.getMessage());
+            throw parseException;
+        } catch (Exception e) {
+            LOGGER.error("Unknown exception occurred," + e.getMessage());
+            throw e;
+        }
+
         LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);
-        response.redirect(authRequest.toURI().toString());
+
+        if (authRequest != null) {
+            URI uri = authRequest.toURI();
+            if (uri != null) {
+                LOGGER.info("Redirecting to {}", uri);
+                response.redirect(authRequest.toURI().toString());
+            } else {
+                String error = "AuthorizationRequest URI object is null";
+                LOGGER.error(error);
+                throw new RuntimeException(error);
+            }
+        } else {
+            String error = "AuthorizationRequest object is null";
+            LOGGER.error(error);
+            throw new RuntimeException(error);
+        }
     }
 
     private AuthorizationRequest createBackendAuthorizationRequest(

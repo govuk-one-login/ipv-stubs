@@ -10,6 +10,7 @@ import com.nimbusds.jwt.SignedJWT;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.domain.Credential;
+import uk.gov.di.ipv.stub.cred.service.ConfigService;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -101,7 +102,7 @@ public class VerifiableCredentialGenerator {
                         .claim(ISSUER, CredentialIssuerConfig.getVerifiableCredentialIssuer())
                         .claim(
                                 AUDIENCE,
-                                CredentialIssuerConfig.getClientConfig(credential.getClientId())
+                                ConfigService.getClientConfig(credential.getClientId())
                                         .getAudienceForVcJwt())
                         .claim(NOT_BEFORE, now.getEpochSecond())
                         .claim(

@@ -11,6 +11,7 @@ import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
+import uk.gov.di.ipv.stub.cred.service.ConfigService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -112,7 +113,7 @@ public class Validator {
     }
 
     public static boolean redirectUrlIsInvalid(String clientId, String redirectUri) {
-        ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientId);
+        ClientConfig clientConfig = ConfigService.getClientConfig(clientId);
 
         LOGGER.info("Validating client redirect uri: {}", redirectUri);
 
@@ -174,7 +175,7 @@ public class Validator {
         }
 
         if (!Validator.isNullBlankOrEmpty(clientIdValue)
-                && CredentialIssuerConfig.getClientConfig(clientIdValue) == null) {
+                && ConfigService.getClientConfig(clientIdValue) == null) {
             LOGGER.error("Failed to find config for provided client id: {}", clientIdValue);
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }

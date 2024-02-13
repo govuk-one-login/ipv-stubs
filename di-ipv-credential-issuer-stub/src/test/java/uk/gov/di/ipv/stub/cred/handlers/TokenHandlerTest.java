@@ -9,7 +9,7 @@ import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.AccessTokenType;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,12 +20,11 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
-import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
-import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
+import uk.gov.di.ipv.stub.cred.utils.StubSsmClient;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
@@ -52,6 +51,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(SystemStubsExtension.class)
@@ -75,14 +75,14 @@ public class TokenHandlerTest {
     @SystemStub
     private final EnvironmentVariables environmentVariables =
             new EnvironmentVariables(
-                    "CLIENT_CONFIG",
-                    TestFixtures.NO_AUTHENTICATION_CLIENT_CONFIG,
                     "CLIENT_AUDIENCE",
-                    "https://test-server.example.com/token");
+                    "https://test-server.example.com/token",
+                    "ENVIRONMENT",
+                    "TEST");
 
-    @BeforeEach
-    public void setUp() {
-        CredentialIssuerConfig.resetClientConfigs();
+    @BeforeAll
+    public static void setUp() {
+        StubSsmClient.setClientConfigParams(CLIENT_CONFIG);
     }
 
     @Test
@@ -240,24 +240,16 @@ public class TokenHandlerTest {
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
         when(mockValidator.validateTokenRequest(any()))
                 .thenReturn(ValidationResult.createValidResult());
-        new EnvironmentVariables("CLIENT_CONFIG", TestFixtures.CLIENT_CONFIG)
-                .execute(
-                        () -> {
-                            CredentialIssuerConfig.resetClientConfigs();
 
-                            String result =
-                                    (String)
-                                            tokenHandler.issueAccessToken.handle(
-                                                    mockRequest, mockResponse);
+        String result = (String) tokenHandler.issueAccessToken.handle(mockRequest, mockResponse);
 
-                            verify(mockResponse).status(HTTPResponse.SC_BAD_REQUEST);
+        verify(mockResponse).status(HTTPResponse.SC_BAD_REQUEST);
 
-                            ErrorObject resultantErrorObject =
-                                    createErrorFromResult(HTTPResponse.SC_BAD_REQUEST, result);
+        ErrorObject resultantErrorObject =
+                createErrorFromResult(HTTPResponse.SC_BAD_REQUEST, result);
 
-                            assertEquals(INVALID_REQUEST_CODE, resultantErrorObject.getCode());
-                            assertEquals("Invalid request", resultantErrorObject.getDescription());
-                        });
+        assertEquals(INVALID_REQUEST_CODE, resultantErrorObject.getCode());
+        assertEquals("Invalid request", resultantErrorObject.getDescription());
     }
 
     @Test

@@ -18,6 +18,7 @@ import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,7 @@ import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
+import uk.gov.di.ipv.stub.cred.utils.StubSsmClient;
 import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
@@ -79,6 +81,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CRI_MITIGATION_ENABLED_PARAM;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
@@ -111,14 +114,17 @@ class AuthorizeHandlerTest {
 
     @SystemStub
     private EnvironmentVariables environmentVariables =
-            new EnvironmentVariables("CLIENT_CONFIG", TestFixtures.CLIENT_CONFIG);
+            new EnvironmentVariables("ENVIRONMENT", "TEST");
 
     @Captor ArgumentCaptor<Map<String, Object>> viewParamsCaptor;
 
+    @BeforeAll
+    public static void beforeAllSetUp() {
+        StubSsmClient.setClientConfigParams(CLIENT_CONFIG);
+    }
+
     @BeforeEach
     void setup() {
-        CredentialIssuerConfig.resetClientConfigs();
-
         mockResponse = mock(Response.class);
         mockRequest = mock(Request.class);
         mockViewHelper = mock(ViewHelper.class);

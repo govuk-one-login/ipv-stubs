@@ -11,6 +11,7 @@ import spark.QueryParamsMap;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
+import uk.gov.di.ipv.stub.cred.service.ConfigService;
 import uk.gov.di.ipv.stub.cred.utils.ES256SignatureVerifier;
 
 import java.util.Arrays;
@@ -45,7 +46,7 @@ public class ClientJwtVerifier {
         }
 
         ClientConfig clientConfig =
-                CredentialIssuerConfig.getClientConfig(authenticationJwt.getClientID().getValue());
+                ConfigService.getClientConfig(authenticationJwt.getClientID().getValue());
         if (clientConfig == null) {
             throw new ClientAuthenticationException(
                     String.format(
@@ -94,7 +95,7 @@ public class ClientJwtVerifier {
 
     private ClientAuthenticationVerifier<Object> getPopulatedClientAuthVerifier() {
         CriConfigPublicKeySelector criConfigPublicKeySelector = new CriConfigPublicKeySelector();
-        criConfigPublicKeySelector.registerClients(CredentialIssuerConfig.getClientConfigs());
+        criConfigPublicKeySelector.registerClients(ConfigService.getClientConfigs());
         return new ClientAuthenticationVerifier<>(
                 criConfigPublicKeySelector,
                 Set.of(new Audience(CredentialIssuerConfig.CLIENT_AUDIENCE)));

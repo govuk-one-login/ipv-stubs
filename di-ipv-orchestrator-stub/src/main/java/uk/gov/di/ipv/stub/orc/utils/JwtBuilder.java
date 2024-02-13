@@ -1,5 +1,8 @@
 package uk.gov.di.ipv.stub.orc.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.EncryptionMethod;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
@@ -31,23 +34,47 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_JWT_TTL;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_SIGNING_KEY;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY;
 
 public class JwtBuilder {
     public static final String URN_UUID = "urn:uuid:";
     public static final String INVALID_AUDIENCE = "invalid-audience";
     public static final String INVALID_REDIRECT_URI = "http://example.com";
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    public enum ReproveIdentityClaimValue {
+        NOT_PRESENT,
+        TRUE,
+        FALSE
+    }
 
     public static JWTClaimsSet buildAuthorizationRequestClaims(
-            String userId, String signInJourneyId, String[] vtr, String errorType) {
-        String audience = IPV_CORE_AUDIENCE;
+            String userId,
+            String signInJourneyId,
+            String state,
+            List<String> vtr,
+            String errorType,
+            String userEmailAddress,
+            ReproveIdentityClaimValue reproveIdentityValue,
+            String environment,
+            boolean duringMigration,
+            String credentialSubject,
+            String evidence,
+            String vot)
+            throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
+                    JsonProcessingException {
+        String audience = getIpvCoreAudience(environment);
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
         if (errorType != null) {
@@ -59,29 +86,40 @@ public class JwtBuilder {
         }
 
         Instant now = Instant.now();
-        return new JWTClaimsSet.Builder()
-                .subject(userId)
-                .audience(audience)
-                .issueTime(Date.from(now))
-                .issuer(ORCHESTRATOR_CLIENT_ID)
-                .notBeforeTime(Date.from(now))
-                .expirationTime(generateExpirationTime(now))
-                .claim("client_id", ORCHESTRATOR_CLIENT_ID)
-                .claim("response_type", ResponseType.Value.CODE.toString())
-                .claim("redirect_uri", redirectUri)
-                .claim("state", UUID.randomUUID().toString())
-                .claim("govuk_signin_journey_id", signInJourneyId)
-                .claim("persistent_session_id", UUID.randomUUID().toString())
-                .claim("email_address", "dev-platform-testing@digital.cabinet-office.gov.uk")
-                .claim("vtr", List.of(vtr))
-                .build();
+        var jarClaims =
+                JarClaimsBuilder.buildJarClaims(
+                        userId, vot, duringMigration, credentialSubject, evidence);
+        var jarClaimsMap =
+                objectMapper.convertValue(jarClaims, new TypeReference<Map<String, Object>>() {});
+        var claimSetBuilder =
+                new JWTClaimsSet.Builder()
+                        .subject(userId)
+                        .audience(audience)
+                        .issueTime(Date.from(now))
+                        .issuer(ORCHESTRATOR_CLIENT_ID)
+                        .notBeforeTime(Date.from(now))
+                        .expirationTime(generateExpirationTime(now))
+                        .claim("claims", jarClaimsMap)
+                        .claim("client_id", ORCHESTRATOR_CLIENT_ID)
+                        .claim("response_type", ResponseType.Value.CODE.toString())
+                        .claim("redirect_uri", redirectUri)
+                        .claim("state", state)
+                        .claim("govuk_signin_journey_id", signInJourneyId)
+                        .claim("persistent_session_id", UUID.randomUUID().toString())
+                        .claim("email_address", userEmailAddress)
+                        .claim("vtr", vtr);
+        if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
+            claimSetBuilder.claim(
+                    "reprove_identity", reproveIdentityValue == ReproveIdentityClaimValue.TRUE);
+        }
+        return claimSetBuilder.build();
     }
 
-    public static JWTClaimsSet buildClientAuthenticationClaims() {
+    public static JWTClaimsSet buildClientAuthenticationClaims(String targetEnvironment) {
         Instant now = Instant.now();
         return new JWTClaimsSet.Builder()
                 .subject(ORCHESTRATOR_CLIENT_ID)
-                .audience(IPV_CORE_AUDIENCE)
+                .audience(getIpvCoreAudience(targetEnvironment))
                 .issuer(ORCHESTRATOR_CLIENT_ID)
                 .expirationTime(generateExpirationTime(now))
                 .jwtID(UUID.randomUUID().toString())
@@ -96,7 +134,7 @@ public class JwtBuilder {
         return signedJwt;
     }
 
-    public static EncryptedJWT encryptJwt(SignedJWT signedJwt)
+    public static EncryptedJWT encryptJwt(SignedJWT signedJwt, String targetEnvironment)
             throws ParseException, JOSEException {
         JWEObject jweObject =
                 new JWEObject(
@@ -104,7 +142,7 @@ public class JwtBuilder {
                                 .contentType("JWT")
                                 .build(),
                         new Payload(signedJwt));
-        jweObject.encrypt(new RSAEncrypter(getEncryptionKey()));
+        jweObject.encrypt(new RSAEncrypter(getEncryptionKey(targetEnvironment)));
         return EncryptedJWT.parse(jweObject.serialize());
     }
 
@@ -116,9 +154,30 @@ public class JwtBuilder {
         return (ECPrivateKey) factory.generatePrivate(privateKeySpec);
     }
 
-    private static RSAPublicKey getEncryptionKey() throws java.text.ParseException, JOSEException {
-        byte[] binaryKey = Base64.getDecoder().decode(ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY);
+    private static RSAPublicKey getEncryptionKey(String targetEnvironment)
+            throws java.text.ParseException, JOSEException {
+        String jarEncryptionPublicKey = getJarEncryptionPublicKey(targetEnvironment);
+
+        byte[] binaryKey = Base64.getDecoder().decode(jarEncryptionPublicKey);
         return RSAKey.parse(new String(binaryKey)).toRSAPublicKey();
+    }
+
+    private static String getJarEncryptionPublicKey(String targetEnvironment) {
+        return switch (targetEnvironment) {
+            case ("BUILD") -> ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY;
+            case ("STAGING") -> ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY;
+            case ("INTEGRATION") -> ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY;
+            default -> ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY;
+        };
+    }
+
+    private static String getIpvCoreAudience(String targetEnvironment) {
+        return switch (targetEnvironment) {
+            case ("BUILD") -> "https://identity.build.account.gov.uk";
+            case ("STAGING") -> "https://identity.staging.account.gov.uk";
+            case ("INTEGRATION") -> "https://identity.integration.account.gov.uk";
+            default -> IPV_CORE_AUDIENCE;
+        };
     }
 
     private static JWSHeader generateHeader() {

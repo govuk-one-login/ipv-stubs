@@ -48,6 +48,22 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/build/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+  OrchestratorDefaultJarEncryptionPublicKey:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+  OrchestratorBuildJarEncryptionPublicKey:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+  OrchestratorStagingJarEncryptionPublicKey:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+  OrchestratorIntegrationJarEncryptionPublicKey:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   OrchestratorBasicAuthEnable:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -88,6 +104,22 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/build/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+  InheritedIdentityJwtSigningKey:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_SIGNING_KEY" #pragma: allowlist secret
+  InheritedIdentityJwtTtl:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_TTL" #pragma: allowlist secret
+  InheritedIdentityJwtIssuer:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_ISSUER" #pragma: allowlist secret
+  InheritedIdentityJwtVtm:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_VTM" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -190,7 +222,7 @@ Resources:
       - APIStageDefault
 
   # dns rcord
-  CoreStubDNSRecord:
+  OrchStubDNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
       Type: A
@@ -525,6 +557,14 @@ Resources:
               Value: !Ref OrchestratorClientSigningKey
             - Name: ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY
               Value: !Ref OrchestratorJarEncryptionPublicKey
+            - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: !Ref OrchestratorDefaultJarEncryptionPublicKey
+            - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: !Ref OrchestratorBuildJarEncryptionPublicKey
+            - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: !Ref OrchestratorStagingJarEncryptionPublicKey
+            - Name: ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: !Ref OrchestratorIntegrationJarEncryptionPublicKey
             - Name: IPV_BACKCHANNEL_ENDPOINT
               Value: !Ref IpvBackchannelEndpoint
             - Name: IPV_BACKCHANNEL_TOKEN_PATH
@@ -541,6 +581,14 @@ Resources:
               Value: !Ref OrchestratorBasicAuthUsername
             - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
               Value: !Ref OrchestratorBasicAuthPassword
+            - Name: INHERITED_IDENTITY_JWT_SIGNING_KEY
+              Value: !Ref InheritedIdentityJwtSigningKey
+            - Name: INHERITED_IDENTITY_JWT_TTL
+              Value: !Ref InheritedIdentityJwtTtl
+            - Name: INHERITED_IDENTITY_JWT_ISSUER
+              Value: !Ref InheritedIdentityJwtIssuer
+            - Name: INHERITED_IDENTITY_JWT_VTM
+              Value: !Ref InheritedIdentityJwtVtm
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -664,11 +712,11 @@ Resources:
 
 Outputs:
   OrchStubEnvironment:
-    Description: Orch Build Stub Environment
+    Description: Orch Stub Environment
     Value: !Ref Environment
   OrchStubDomain:
     Description: Orch Stub DNS Domain
-    Value: !Ref CoreStubDNSRecord
+    Value: !Ref OrchStubDNSRecord
   OrchStubApiDomain:
     Description: Orch Stub API Domain
     Value: !Ref OrchStubApiDomain

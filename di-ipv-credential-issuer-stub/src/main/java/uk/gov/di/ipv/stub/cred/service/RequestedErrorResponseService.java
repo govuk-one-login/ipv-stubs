@@ -66,7 +66,7 @@ public class RequestedErrorResponseService {
 
         if (AUTH.equals(endpoint) && !NONE.equals(error)) {
             String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
-            ClientConfig clientConfig = CredentialIssuerConfig.getClientConfig(clientIdValue);
+            ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
 
             JWTClaimsSet jwtClaimsSet =
                     getSignedJWT(

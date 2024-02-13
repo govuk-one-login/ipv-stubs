@@ -613,3 +613,4 @@ Outputs:
   CriStubApiDomain:
     Description: Cri Stub API Domain
     Value: !Ref CriStubApiDomain
+

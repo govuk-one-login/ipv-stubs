@@ -20,10 +20,6 @@ COPY --from=build \
     /home/gradle/src/build/distributions/src.tar \
     /app/
 
-# Add in dynatrace layer
-COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules-musl:nodejs / /
-ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
-
 WORKDIR /app
 ADD config config
 
@@ -32,6 +28,11 @@ RUN tar -xvf src.tar \
 
 RUN chown -R appuser:appgroup /app/
 USER appuser
+
+# Add in dynatrace layer
+COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules:java / /
+ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
+
 EXPOSE $PORT
 EXPOSE $DEBUG_PORT
 

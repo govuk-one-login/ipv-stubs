@@ -25,6 +25,12 @@
 <script>
     document.body.className = ((document.body.className) ? document.body.className + ' js-enabled' : 'js-enabled');
 </script>
+<script
+        src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous">
+
+</script>
 <a href="#main-content" class="govuk-skip-link">Skip to main content</a>
 
 <header class="govuk-header " role="banner" data-module="govuk-header">
@@ -52,7 +58,7 @@
                 Orchestrator Stub
             </h1>
         </div>
-        <h2 class="govuk-heading-l">Prove Your Identity</h2>
+        <h2 class="govuk-heading-l">Prove Your Identity Test</h2>
         <form action="/authorize">
             <input type="hidden" name="journeyType" value="full" />
             <div class="govuk-form-group">
@@ -64,10 +70,53 @@
                 <input class="govuk-input" data-module="govuk-input" name="signInJourneyIdText" id="signInJourneyIdText" type="text" value={{signInJourneyId}} readonly="readonly">
             </div>
             <div class="govuk-form-group">
-                <label class="govuk-label" for="vtrText">Enter vtr manually</label>
-                <input class="govuk-input" data-module="govuk-input" name="vtrText" id="vtrText" type="text" value="Cl.Cm.P2">
+                <label class="govuk-label" for="vtrText">Enter vtr manually - comma separated list for multiple values</label>
+                <input class="govuk-input" data-module="govuk-input" name="vtrText" id="vtrText" type="text" value="P2">
+            </div>
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="targetEnvironment">Choose a target environment (optional):</label>
+                <select class="govuk-select" name="targetEnvironment" id="targetEnvironment">
+                    <option value="DEFAULT">default</option>
+                    <option value="BUILD">build</option>
+                    <option value="STAGING">staging</option>
+                    <option value="INTEGRATION">integration</option>
+                </select>
+            </div>
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="reproveIdentity">Choose a value for reprove_identity:</label>
+                <select class="govuk-select" name="reproveIdentity" id="reproveIdentity">
+                    <option value="NOT_PRESENT">Not set</option>
+                    <option value="TRUE">true</option>
+                    <option value="FALSE">false</option>
+                </select>
+            </div>
+            <div class="govuk-form-group">
+                <label class="govuk-label" for="emailAddress">Enter user's email address manually</label>
+                <input class="govuk-input" data-module="govuk-input" name="emailAddress" id="emailAddress" type="text" value="dev-platform-testing@digital.cabinet-office.gov.uk">
             </div>
 
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" type="checkbox" name="duringMigration" id="duringMigration" value="checked">
+                <label class="govuk-label govuk-checkboxes__label" for="duringMigration">
+                Include inherited identity claim
+                </label>
+              </div>
+            </div><br/>
+            <div id="integrationIdentityDiv" style="display: none">
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="votText">
+                        Enter VOT (PCL200 or PCL250)
+                    </label>
+                    <input class="govuk-input" data-module="govuk-input" name="votText" id="votText" type="text" >
+                </div>
+
+                <div class="govuk-form-group" id="test_data_block"></div>
+                <div class="govuk-form-group"><textarea class="govuk-textarea" id="jsonPayload" name="jsonPayload" rows="5"  aria-describedby="more-detail-hint"></textarea></div>
+
+                <div class="govuk-form-group" id="custom_evidence_block"></div>
+                <div class="govuk-form-group"> <textarea class="govuk-textarea" id="evidenceJsonPayload" name="evidenceJsonPayload" rows="5"  aria-describedby="more-detail-hint"></textarea></div>
+            </div>
             <input class="govuk-button" data-module="govuk-button" type="submit" value="Full journey route">
         </form>
         <form action="/authorize">
@@ -77,7 +126,7 @@
                 <option value="non-recoverable">Non-Recoverable</option>
             </select>
             <input type="hidden" name="journeyType" value="full" />
-            <input type="hidden" name="vtrText" value="Cl.Cm.P2" />
+            <input type="hidden" name="vtrText" value="P2" />
             <input class="govuk-button" data-module="govuk-button" type="submit" value="Error journey route">
         </form>
     </main>
@@ -106,5 +155,56 @@
 <script>
     window.GOVUKFrontend.initAll()
 </script>
+            <script>
+                var dropdownData = {{{credentialSubjects}}}
+                 $(document).ready(function() {
+                        var select = $('<select class="govuk-select" id="test_data" name="sort">')
+                        select.append($("<option selected disabled hidden value=''>").text('Select from dropdown...'))
+                        $(dropdownData).each(function() {
+                            select.append($("<option>")
+                            .prop('value', this.label)
+                            .text(this.label));
+                        });
+
+                        var label = $('<label class="govuk-label" for="sort">').text("Select Credential Subject data: ");
+                        $('#test_data_block').append(label).append(select);
+                        $("#test_data").on("change", function(event) {
+                            var val = $(event.target).val();
+                            var {payload} = dropdownData.find(x => x.label === val)
+                            $("#jsonPayload").val(JSON.stringify(payload, undefined, 4))
+                        });
+                    });
+
+                    var evidenceDropdownData = {{{evidences}}}
+                        $(document).ready(function() {
+                            var select = $('<select class="govuk-select" id="custom_evidence" name="sort">')
+                            select.append($("<option selected disabled hidden value=''>").text('Select from dropdown...'))
+                            $(evidenceDropdownData).each(function() {
+                                select.append($("<option>")
+                                .prop('value', this.label)
+                                .prop('id', this.scenario)
+                                .text(this.label));
+                            });
+
+                            var label = $('<label class="govuk-label" for="sort">').text("Select evidence block: ");
+                            $('#custom_evidence_block').append(label).append(select);
+                            $("#custom_evidence").on("change", function(event) {
+                                var val = $(event.target).val();
+                                var {payload} = evidenceDropdownData.find(x => x.label === val)
+                                $("#evidenceJsonPayload").val(JSON.stringify(payload, undefined, 4))
+                            });
+                        });
+
+                   const duringMigrationCheckbox = document.getElementById("duringMigration");
+                   const integrationIdentityDiv = document.getElementById("integrationIdentityDiv");
+
+                   duringMigrationCheckbox.addEventListener("change", () => {
+                    if (duringMigrationCheckbox.checked) {
+                        integrationIdentityDiv.style.display = "block";
+                    } else {
+                        integrationIdentityDiv.style.display = "none";
+                    }
+                 });
+            </script>
 </body>
 </html>

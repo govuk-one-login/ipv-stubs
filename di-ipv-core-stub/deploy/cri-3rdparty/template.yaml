@@ -1,9 +1,20 @@
 AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
 
 Description: >-
-  This creates the necessary components to deploy IPV Activity History Credential Issuer
-  Stub onto ECS Fargate within the dev platform VPC and private subnets
-  (provided as parameters).
+  This creates the necessary components to deploy IPV Core Stub onto ECS
+  Fargate within the dev platform VPC and private subnets (provided as parameters).
+
+Globals:
+  Function:
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
 
 Parameters:
   Environment:
@@ -15,67 +26,195 @@ Parameters:
       The name of the stack that defines the VPC in which this container will
       run.
     Type: String
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
   PermissionsBoundary:
     Description: "The ARN of the permissions boundary to apply when creating IAM roles"
     Type: String
     Default: "none"
-
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+    Default: "/stubs/core/cri-3rdparty/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+  ApiKeyCriFraudDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_FRAUD_DEV" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_DL_DEV" #pragma: allowlist secret
+  ApiKeyCriPassportDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_DEV" #pragma: allowlist secret
+  ApiKeyCriAddressBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_ADDRESS_BUILD" #pragma: allowlist secret
+  ApiKeyCriKbvBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_KBV_BUILD" #pragma: allowlist secret
+  ApiKeyCriFraudBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_FRAUD_BUILD" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_DL_BUILD" #pragma: allowlist secret
+  ApiKeyCriToyDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_TOY_DEV" #pragma: allowlist secret
+  ApiKeyCriToyBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_TOY_BUILD" #pragma: allowlist secret
+  ApiKeyCriPassportBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_BUILD" #pragma: allowlist secret
+  ApiKeyCriAddressStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_ADDRESS_STAGING" #pragma: allowlist secret
+  ApiKeyCriKbvStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_KBV_STAGING" #pragma: allowlist secret
+  ApiKeyCriFraudStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_FRAUD_STAGING" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_DL_STAGING" #pragma: allowlist secret
+  ApiKeyCriToyStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_TOY_STAGING" #pragma: allowlist secret
+  ApiKeyCriCheckHmrcDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_CHECK_HMRC_DEV" #pragma: allowlist secret
+  ApiKeyCriCheckHmrcBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_CHECK_HMRC_BUILD" #pragma: allowlist secret
+  ApiKeyCriCheckHmrcStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_CHECK_HMRC_STAGING" #pragma: allowlist secret
+  ApiKeyCriCheckHmrcIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_CHECK_HMRC_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriPassportStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_STAGING" #pragma: allowlist secret
+  ApiKeyCriAddressIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_ADDRESS_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriKbvIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_KBV_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriFraudIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_FRAUD_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriDrivingPermitIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_DL_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriPassportIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_INTEGRATION" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/JAVA_OPTS" #pragma: allowlist secret
-  CredentialIssuerPort:
+    Default: "/stubs/core/cri-3rdparty/env/JAVA_OPTS" #pragma: allowlist secret
+  CoreStubConfigFile:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/CREDENTIAL_ISSUER_PORT" #pragma: allowlist secret
-  CredentialIssuerName:
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_CONFIG_FILE" #pragma: allowlist secret
+  CoreStubJwtIssCriUri:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/CREDENTIAL_ISSUER_NAME" #pragma: allowlist secret
-  CredentialIssuerType:
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_JWT_ISS_CRI_URI" #pragma: allowlist secret
+  CoreStubPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
-  ClientConfigFile:
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_PORT" #pragma: allowlist secret
+  CoreStubClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/CLIENT_CONFIG_FILE" #pragma: allowlist secret
-  ClientAudience:
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_CLIENT_ID" #pragma: allowlist secret
+  CoreStubRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/CLIENT_AUDIENCE" #pragma: allowlist secret
-  VcIssuer:
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_REDIRECT_URL" #pragma: allowlist secret
+  CoreStubAppTitle:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/VC_ISSUER" #pragma: allowlist secret
-  VcTtlSeconds:
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_APP_TITLE" #pragma: allowlist secret
+  CoreStubConfigAgedDob:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/activity-history/env/VC_TTL_SECONDS" #pragma: allowlist secret
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_CONFIG_AGED_DOB" #pragma: allowlist secret
+  CoreStubShowVc:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_SHOW_VC" #pragma: allowlist secret
+  CoreStubEnableBackendRoutes:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_ENABLE_BACKEND_ROUTES"  #pragma: allowlist secret
+  CoreStubBasicAuth:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-3rdparty/env/CORE_STUB_BASIC_AUTH" #pragma: allowlist secret
+  EnableBasicAuth:
+    Description: "Environment Variables for ECS"
+    Type: String
+    Default: "true" #pragma: allowlist secret
+
 
 Conditions:
   IsDevelopment: !Not
     - !Or
       - !Equals [ !Ref Environment, "build"]
       - !Equals [ !Ref Environment, "production"]
-  IsCoreDev: !Or
-      - !Equals [ !Ref AWS::AccountId, "130355686670"]
-      - !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsNotDevelopment: !Not [ !Condition IsDevelopment ]
+  IsCoreDev: !Or
+    - !Equals [ !Ref AWS::AccountId, "130355686670"]
+    - !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsProduction: !Equals [ !Ref Environment, "production" ]
   IsNonProd: !Not
     - !Or
       - !Condition IsDevelopment
       - !Condition IsProduction
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
+
+
 
 # Mapping using aws account id - keeps things simple
 # if this is built out differently.
@@ -87,6 +226,7 @@ Mappings:
       desiredTaskCount: 1
       environment: dev
       platform: core
+      dnsZoneId: "Z10093761FBZNR80Q938M"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "175872367215": # Core New Development Account
       fargateCPUsize: "256"
@@ -94,27 +234,31 @@ Mappings:
       desiredTaskCount: 1
       environment: dev
       platform: core
+      dnsZoneId: "Z10093761FBZNR80Q938M"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
-    "826978934233": #Core Stubs Build
+    "826978934233": # Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: build
       platform: core-stubs
+      dnsZoneId: "NOT-NEEDED"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
-    "616199614141": #Stubs Build
-      fargateCPUsize: "512"
-      fargateRAMsize: "1024"
+    "616199614141": # Stubs Build
+      fargateCPUsize: "256"
+      fargateRAMsize: "512"
       desiredTaskCount: 1
       environment: build
       platform: stubs
+      dnsZoneId: "NOT-NEEDED"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
-    "388905755587": #Stubs Prod
-      fargateCPUsize: "512"
-      fargateRAMsize: "1024"
+    "388905755587": # Stubs Prod
+      fargateCPUsize: "4096"
+      fargateRAMsize: "8192"
       desiredTaskCount: 1
       environment: production
       platform: stubs
+      dnsZoneId: "NOT-NEEDED"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
   SecurityGroups:
     PrefixListIds:
@@ -123,73 +267,47 @@ Mappings:
 
 Resources:
   # ssl cert
-  CriStubSSLCert:
+  CoreStubSSLCert:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "activity-history-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "activity-history-cri.${Environment}.stubs.account.gov.uk", activity-history-cri.stubs.account.gov.uk]
+        - !Sub "cri-3rdparty${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri-3rdparty.core.${Environment}.stubs.account.gov.uk", cri-3rdparty.core.stubs.account.gov.uk]
       DomainValidationOptions:
         - DomainName: !If
             - IsCoreDev
-            - !Sub "activity-history-${Environment}.core.dev.stubs.account.gov.uk"
-            - !If [IsNonProd, !Sub "activity-history-cri.${Environment}.stubs.account.gov.uk", activity-history-cri.stubs.account.gov.uk]
+            - !Sub "cri-3rdparty${Environment}.core.dev.stubs.account.gov.uk"
+            - !If [IsNonProd, !Sub "cri-3rdparty.core.${Environment}.stubs.account.gov.uk", cri-3rdparty.core.stubs.account.gov.uk]
           HostedZoneId: !If
             - IsCoreDev
             - !ImportValue DevPublicHostedZoneId
-            - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
+            - !If [IsNonProd, !ImportValue BuildCorePublicHostedZoneId, !ImportValue CorePublicHostedZoneId]
       ValidationMethod: DNS
 
-  # api domain entries / mapping
-  CriStubApiDomain:
-    Type: AWS::ApiGatewayV2::DomainName
-    Properties:
-      DomainName: !If
-        - IsCoreDev
-        - !Sub "activity-history-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "activity-history-cri.${Environment}.stubs.account.gov.uk", activity-history-cri.stubs.account.gov.uk]
-      DomainNameConfigurations:
-        - CertificateArn: !Ref CriStubSSLCert
-          EndpointType: REGIONAL
-          SecurityPolicy: TLS_1_2
-
-  CriStubApiMapping:
-    Type: AWS::ApiGatewayV2::ApiMapping
-    Properties:
-      DomainName: !If
-        - IsCoreDev
-        - !Sub "activity-history-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "activity-history-cri.${Environment}.stubs.account.gov.uk", activity-history-cri.stubs.account.gov.uk]
-      ApiId: !Ref ApiGwHttpEndpoint
-      Stage: "$default"
-    DependsOn:
-      - CriStubApiDomain
-      - APIStageDefault
-
   # dns rcord
-  CriStubDNSRecord:
+  CoreStubDNSRecord:
     Type: AWS::Route53::RecordSet
     Properties:
       Type: A
       Name: !If
         - IsCoreDev
-        - !Sub "activity-history-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "activity-history-cri.${Environment}.stubs.account.gov.uk", activity-history-cri.stubs.account.gov.uk]
+        - !Sub "cri-3rdparty${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri-3rdparty.core.${Environment}.stubs.account.gov.uk", cri-3rdparty.core.stubs.account.gov.uk]
       HostedZoneId: !If
         - IsCoreDev
         - !ImportValue DevPublicHostedZoneId
-        - !If [IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId]
+        - !If [IsNonProd, !ImportValue BuildCorePublicHostedZoneId, !ImportValue CorePublicHostedZoneId]
       AliasTarget:
-        DNSName: !GetAtt CriStubApiDomain.RegionalDomainName
-        HostedZoneId: !GetAtt CriStubApiDomain.RegionalHostedZoneId
+        DNSName: !GetAtt CoreStubApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt CoreStubApiDomain.RegionalHostedZoneId
 
-  # Security Groups for the ECS service and load balancer
+  # Security Groups for the Lambda, ECS service and load balancer
   LoadBalancerSG:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: >-
-        Cri Stub LoadBalancer Security Group
+        Core Stub LoadBalancer Security Group
       SecurityGroupIngress:
         - CidrIp:
             Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
@@ -205,18 +323,18 @@ Resources:
     Properties:
       GroupId: !GetAtt LoadBalancerSG.GroupId
       Description: >-
-        Egress between the Cri Stub load balancer and
-        the cri Stub ECS security group
-      DestinationSecurityGroupId: !GetAtt CriStubECSSecurityGroup.GroupId
+        Egress between the Core Stub load balancer and
+        the core Stub ECS security group
+      DestinationSecurityGroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
       IpProtocol: tcp
       FromPort: 8080
       ToPort: 8080
 
-  CriStubECSSecurityGroup:
+  CoreStubECSSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: >-
-        Cri Stub ECS Security Group outbound permissions ruleset
+        Core Stub ECS Security Group outbound permissions ruleset
       SecurityGroupEgress:
         - DestinationPrefixListId: !FindInMap [SecurityGroups, PrefixListIds, dynamodb]
           Description: Allow outbound traffic to dynamodb vpc endpoint
@@ -229,7 +347,7 @@ Resources:
           FromPort: 443
           ToPort: 443
         - DestinationSecurityGroupId:
-            Fn::ImportValue:  !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+            Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
           Description: Allow outbound traffic to AWS Services vpc endpoint security group
           IpProtocol: tcp
           FromPort: 443
@@ -241,7 +359,7 @@ Resources:
           IpProtocol: tcp
           ToPort: 443
         - CidrIp: 0.0.0.0/0
-          Description: Allow outbound traffic to everywhere 443
+          Description: Allow egress HTTPS traffic to any from port 443
           FromPort: 443
           IpProtocol: tcp
           ToPort: 443
@@ -255,23 +373,50 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 
-  CriStubECSSecurityGroupIngressFromLoadBalancer:
+  CoreStubECSSecurityGroupIngressFromLoadBalancer:
     Type: "AWS::EC2::SecurityGroupIngress"
     Properties:
       IpProtocol: tcp
       Description: >-
-        Cri Stub ECS permits inbound from the Cri Stub
+        Core Stub ECS permits inbound from the Core Stub
         load balancer.
       FromPort: 8080
       ToPort: 8080
-      GroupId: !GetAtt CriStubECSSecurityGroup.GroupId
+      GroupId: !GetAtt CoreStubECSSecurityGroup.GroupId
       SourceSecurityGroupId: !GetAtt LoadBalancerSG.GroupId
 
-  # http api gateway - which does nothing other than route everything to LB
+  # http api gateway - redirects to an internal alb
+  #
+  # api domain entries / mapping
+  CoreStubApiDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cri-3rdparty${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri-3rdparty.core.${Environment}.stubs.account.gov.uk", cri-3rdparty.core.stubs.account.gov.uk]
+      DomainNameConfigurations:
+        - CertificateArn: !Ref CoreStubSSLCert
+          EndpointType: REGIONAL
+          SecurityPolicy: TLS_1_2
+
+  CoreStubApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cri-3rdparty${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "cri-3rdparty.core.${Environment}.stubs.account.gov.uk", cri-3rdparty.core.stubs.account.gov.uk]
+      ApiId: !Ref ApiGwHttpEndpoint
+      Stage: "$default"
+    DependsOn:
+      - CoreStubApiDomain
+      - APIStageDefault
+
   ApiGwHttpEndpoint:
     Type: "AWS::ApiGatewayV2::Api"
     Properties:
-      Name: !Sub ${AWS::StackName}-activity-history-cri-api-gw
+      Name: !Sub ${AWS::StackName}-cri-api-gw
       ProtocolType: HTTP
 
   ApiGwHttpEndpointIntegration:
@@ -323,8 +468,8 @@ Resources:
     Properties:
       LogGroupName: !If
         - IsCoreDev
-        - !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-activity-history-cri-api-gw-accesslogs
-        - !Sub /aws/apigateway/${AWS::StackName}-activity-history-cri-api-gw-accesslogs
+        - !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-cri-api-gw-accesslogs
+        - !Sub /aws/apigateway/${AWS::StackName}-cri-api-gw-accesslogs
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -362,7 +507,7 @@ Resources:
         - !If
           - IsNotDevelopment
           - Key: access_logs.s3.prefix
-            Value: cri-stubs
+            Value: core-stubs
           - !Ref AWS::NoValue
         - !If
           - IsNotDevelopment
@@ -376,7 +521,7 @@ Resources:
       HealthCheckEnabled: TRUE
       HealthCheckProtocol: HTTP
       Matcher:
-        HttpCode: 200
+        HttpCode: 401
       Port: 8080
       Protocol: HTTP
       TargetType: ip
@@ -399,17 +544,17 @@ Resources:
           Type: forward
 
   # ECS cluster, service, task and autoscaling definition
-  CriStubCluster:
+  CoreStubCluster:
     Type: "AWS::ECS::Cluster"
     Properties:
       ClusterSettings:
         - Name: containerInsights
           Value: enabled
 
-  CriStubService:
+  CoreStubService:
     Type: "AWS::ECS::Service"
     Properties:
-      Cluster: !Ref CriStubCluster
+      Cluster: !Ref CoreStubCluster
       DeploymentConfiguration:
         MaximumPercent: 200
         MinimumHealthyPercent: 50
@@ -433,7 +578,7 @@ Resources:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED
           SecurityGroups:
-            - !GetAtt CriStubECSSecurityGroup.GroupId
+            - !GetAtt CoreStubECSSecurityGroup.GroupId
           Subnets:
             - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
             - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
@@ -441,7 +586,7 @@ Resources:
     DependsOn:
       - LoadBalancerListener
 
-  CriStubAutoScalingTarget:
+  CoreStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
       MaxCapacity: 1
@@ -449,23 +594,23 @@ Resources:
       ResourceId: !Join
         - '/'
         - - "service"
-          - !Ref CriStubCluster
-          - !GetAtt CriStubService.Name
+          - !Ref CoreStubCluster
+          - !GetAtt CoreStubService.Name
       RoleARN: !Sub "arn:aws:iam::${AWS::AccountId}:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
       ScalableDimension: ecs:service:DesiredCount
       ServiceNamespace: ecs
 
-  CriStubAutoScalingPolicy:
-    DependsOn: CriStubAutoScalingTarget
+  CoreStubAutoScalingPolicy:
+    DependsOn: CoreStubAutoScalingTarget
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
     Properties:
-      PolicyName: CriStubAutoScalingPolicy
+      PolicyName: CoreStubAutoScalingPolicy
       PolicyType: TargetTrackingScaling
       ResourceId: !Join
         - '/'
         - - "service"
-          - !Ref CriStubCluster
-          - !GetAtt CriStubService.Name
+          - !Ref CoreStubCluster
+          - !GetAtt CoreStubService.Name
       ScalableDimension: ecs:service:DesiredCount
       ServiceNamespace: ecs
       TargetTrackingScalingPolicyConfiguration:
@@ -478,7 +623,7 @@ Resources:
   ECSAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/ecs/${AWS::StackName}-CriStub-ECS
+      LogGroupName: !Sub /aws/ecs/${AWS::StackName}-CoreStub-ECS
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -494,23 +639,81 @@ Resources:
             Value: !Ref JbpConfigOpenJdkJre
           - Name: JAVA_OPTS
             Value: !Ref JavaOpts
-          - Name: CREDENTIAL_ISSUER_PORT
-            Value: !Ref CredentialIssuerPort
-          - Name: CREDENTIAL_ISSUER_NAME
-            Value: !Ref CredentialIssuerName
-          - Name: CREDENTIAL_ISSUER_TYPE
-            Value: !Ref CredentialIssuerType
-          - Name: CLIENT_CONFIG_FILE
-            Value: !Ref ClientConfigFile
-          - Name: CLIENT_AUDIENCE
-            Value: !Ref ClientAudience
-          - Name: VC_ISSUER
-            Value: !Ref VcIssuer
-          - Name: VC_TTL_SECONDS
-            Value: !Ref VcTtlSeconds
+          - Name: CORE_STUB_CONFIG_FILE
+            Value: !Ref CoreStubConfigFile
+          - Name: CORE_STUB_PORT
+            Value: !Ref CoreStubPort
+          - Name: CORE_STUB_JWT_ISS_CRI_URI
+            Value: !Ref CoreStubJwtIssCriUri
+          - Name: CORE_STUB_CLIENT_ID
+            Value: !Ref CoreStubClientId
+          - Name: CORE_STUB_REDIRECT_URL
+            Value: !Ref CoreStubRedirectUrl
+          - Name: CORE_STUB_APP_TITLE
+            Value: !Ref CoreStubAppTitle
+          - Name: CORE_STUB_CONFIG_AGED_DOB
+            Value: !Ref CoreStubConfigAgedDob
+          - Name: CORE_STUB_SHOW_VC
+            Value: !Ref CoreStubShowVc
+          - Name: CORE_STUB_ENABLE_BACKEND_ROUTES
+            Value: !Ref CoreStubEnableBackendRoutes
+          - Name: CORE_STUB_BASIC_AUTH
+            Value: !Ref CoreStubBasicAuth
+          - Name: API_KEY_CRI_FRAUD_DEV
+            Value: !Ref ApiKeyCriFraudDev
+          - Name: API_KEY_CRI_DL_DEV
+            Value: !Ref ApiKeyCriDrivingPermitDev
+          - Name: API_KEY_CRI_PASSPORTA_DEV
+            Value: !Ref ApiKeyCriPassportDev
+          - Name: API_KEY_CRI_ADDRESS_BUILD
+            Value: !Ref ApiKeyCriAddressBuild
+          - Name: API_KEY_CRI_KBV_BUILD
+            Value: !Ref ApiKeyCriKbvBuild
+          - Name: API_KEY_CRI_FRAUD_BUILD
+            Value: !Ref ApiKeyCriFraudBuild
+          - Name: API_KEY_CRI_DL_BUILD
+            Value: !Ref ApiKeyCriDrivingPermitBuild
+          - Name: API_KEY_CRI_PASSPORTA_BUILD
+            Value: !Ref ApiKeyCriPassportBuild
+          - Name: API_KEY_CRI_TOY_DEV
+            Value: !Ref ApiKeyCriToyDev
+          - Name: API_KEY_CRI_TOY_BUILD
+            Value: !Ref ApiKeyCriToyBuild
+          - Name: API_KEY_CRI_TOY_STAGING
+            Value: !Ref ApiKeyCriToyStaging
+          - Name: API_KEY_CRI_CHECK_HMRC_DEV
+            Value: !Ref ApiKeyCriCheckHmrcDev
+          - Name: API_KEY_CRI_CHECK_HMRC_BUILD
+            Value: !Ref ApiKeyCriCheckHmrcBuild
+          - Name: API_KEY_CRI_CHECK_HMRC_STAGING
+            Value: !Ref ApiKeyCriCheckHmrcStaging
+          - Name: API_KEY_CRI_CHECK_HMRC_INTEGRATION
+            Value: !Ref ApiKeyCriCheckHmrcIntegration
+          - Name: API_KEY_CRI_ADDRESS_STAGING
+            Value: !Ref ApiKeyCriAddressStaging
+          - Name: API_KEY_CRI_KBV_STAGING
+            Value: !Ref ApiKeyCriKbvStaging
+          - Name: API_KEY_CRI_FRAUD_STAGING
+            Value: !Ref ApiKeyCriFraudStaging
+          - Name: API_KEY_CRI_DL_STAGING
+            Value: !Ref ApiKeyCriDrivingPermitStaging
+          - Name: API_KEY_CRI_PASSPORTA_STAGING
+            Value: !Ref ApiKeyCriPassportStaging
+          - Name: API_KEY_CRI_ADDRESS_INTEGRATION
+            Value: !Ref ApiKeyCriAddressIntegration
+          - Name: API_KEY_CRI_KBV_INTEGRATION
+            Value: !Ref ApiKeyCriKbvIntegration
+          - Name: API_KEY_CRI_FRAUD_INTEGRATION
+            Value: !Ref ApiKeyCriFraudIntegration
+          - Name: API_KEY_CRI_DL_INTEGRATION
+            Value: !Ref ApiKeyCriDrivingPermitIntegration
+          - Name: API_KEY_CRI_PASSPORTA_INTEGRATION
+            Value: !Ref ApiKeyCriPassportIntegration
+          - Name: ENABLE_BASIC_AUTH
+            Value: !Ref EnableBasicAuth
           Secrets:
-            - Name: "VC_SIGNING_KEY"
-              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/activity-history/env/VC_SIGNING_KEY"
+            - Name: "CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/cri-3rdparty/env/CORE_STUB_SIGNING_PRIVATE_KEY_JWK_BASE64"
             - Name: DT_TENANT
               ValueFrom: !Join
                 - ''
@@ -534,7 +737,7 @@ Resources:
             Options:
               awslogs-group: !Ref ECSAccessLogsGroup
               awslogs-region: !Sub ${AWS::Region}
-              awslogs-stream-prefix: !Sub cri-stub-${Environment}
+              awslogs-stream-prefix: !Sub core-stub-${Environment}
       Cpu: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, fargateCPUsize ]
       ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
       Memory: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, fargateRAMsize ]
@@ -556,7 +759,7 @@ Resources:
               Service: ecs-tasks.amazonaws.com
         Version: 2012-10-17
       Policies:
-        - PolicyName: PullCriStubImage
+        - PolicyName: PullCoreStubImage
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -574,7 +777,7 @@ Resources:
                 Resource:
                   - !GetAtt "ECSAccessLogsGroup.Arn"
                   - !Sub "${ECSAccessLogsGroup.Arn}:*"
-        - PolicyName: CriStubGetSecrets
+        - PolicyName: CoreStubGetSecrets
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -582,9 +785,8 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/cri/*" #pragma: allowlist secret
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/credential-issuer/*" #pragma: allowlist secret
-        - PolicyName: CriStubGetSSMParams
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*" #pragma: allowlist secret
+        - PolicyName: CoreStubGetSSMParams
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -592,16 +794,15 @@ Resources:
                 Action:
                   - 'ssm:GetParameters'
                 Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/cri/*"
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/*"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
         - PolicyName: GetDynatraceSecret #pragma: allowlist secret
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              - Effect: Allow
+              - Effect: Allow #pragma: allowlist secret
                 Action: secretsmanager:GetSecretValue #pragma: allowlist secret
                 Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
-              - Effect: Allow
+              - Effect: Allow #pragma: allowlist secret
                 Action: secretsmanager:ListSecrets #pragma: allowlist secret
                 Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
               - Effect: Allow
@@ -623,17 +824,16 @@ Resources:
               Service: ecs-tasks.amazonaws.com
         Version: 2012-10-17
       Policies:
-        - PolicyName: CriStubGetSecrets
+        - PolicyName: CoreStubGetSecrets
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
-                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret
+                  - "secretsmanager:GetSecretValue" #pragma: allowlist secret -- how can this be a secret ?
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/cri/*" #pragma: allowlist secret
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/credential-issuer/*" #pragma: allowlist secret
-        - PolicyName: CriStubGetSSMParams
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/core/*" #pragma: allowlist secret
+        - PolicyName: CoreStubGetSSMParams
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -641,16 +841,15 @@ Resources:
                 Action:
                   - 'ssm:GetParameters'
                 Resource:
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/cri/*"
-                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/*"
+                  - !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/core/*"
         - PolicyName: GetDynatraceSecret #pragma: allowlist secret
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              - Effect: Allow
+              - Effect: Allow #pragma: allowlist secret
                 Action: secretsmanager:GetSecretValue #pragma: allowlist secret
                 Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
-              - Effect: Allow
+              - Effect: Allow #pragma: allowlist secret
                 Action: secretsmanager:ListSecrets #pragma: allowlist secret
                 Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
               - Effect: Allow
@@ -690,12 +889,12 @@ Resources:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
 
 Outputs:
-  CriStubEnvironment:
-    Description: Cri Stub Environment
+  CoreStubEnvironment:
+    Description: Core Stub Environment
     Value: !Ref Environment
-  CriStubDomain:
-    Description: Cri Stub DNS Domain
-    Value: !Ref CriStubDNSRecord
-  CriStubApiDomain:
-    Description: Cri Stub API Domain
-    Value: !Ref CriStubApiDomain
+  CoreStubDomain:
+    Description: Core Stub DNS Domain
+    Value: !Ref CoreStubDNSRecord
+  CoreStubApiDomain:
+    Description: Core Stub API Domain
+    Value: !Ref CoreStubApiDomain

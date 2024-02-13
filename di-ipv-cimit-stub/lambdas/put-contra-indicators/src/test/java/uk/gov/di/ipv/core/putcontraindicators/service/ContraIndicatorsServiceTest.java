@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.core.putcontraindicators.service;
 
+import com.nimbusds.jwt.SignedJWT;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,8 +13,10 @@ import uk.gov.di.ipv.core.library.service.ConfigService;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsRequest;
 import uk.gov.di.ipv.core.putcontraindicators.exceptions.CiPutException;
 
+import java.text.ParseException;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,7 +66,7 @@ public class ContraIndicatorsServiceTest {
     }
 
     @Test
-    public void addUserCisShouldUpdated() {
+    public void addUserCisShouldUpdated() throws ParseException {
         String ci = "V03";
         PutContraIndicatorsRequest putContraIndicatorsRequest =
                 PutContraIndicatorsRequest.builder()
@@ -71,11 +74,12 @@ public class ContraIndicatorsServiceTest {
                         .ipAddress("ip_address")
                         .signedJwt(SIGNED_CRI_VC)
                         .build();
-
+        String iss = SignedJWT.parse(SIGNED_CRI_VC).getJWTClaimsSet().getIssuer();
         CimitStubItem existingCimitStubItem =
                 CimitStubItem.builder()
                         .userId(USER_ID)
                         .contraIndicatorCode(ci)
+                        .issuers(List.of(iss))
                         .issuanceDate(Instant.now())
                         .mitigations(Collections.emptyList())
                         .build();

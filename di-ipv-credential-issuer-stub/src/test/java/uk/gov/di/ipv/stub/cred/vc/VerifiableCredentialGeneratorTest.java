@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.gov.di.ipv.stub.cred.domain.Credential;
-import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
+import uk.gov.di.ipv.stub.cred.utils.StubSsmClient;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
@@ -35,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PRIVATE_KEY_1;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PUBLIC_KEY_1;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_ADDRESS;
@@ -66,8 +68,13 @@ public class VerifiableCredentialGeneratorTest {
                     "https://issuer.example.com",
                     "VC_SIGNING_KEY",
                     EC_PRIVATE_KEY_1,
-                    "CLIENT_CONFIG",
-                    TestFixtures.CLIENT_CONFIG);
+                    "ENVIRONMENT",
+                    "TEST");
+
+    @BeforeAll
+    public static void beforeAllSetUp() {
+        StubSsmClient.setClientConfigParams(CLIENT_CONFIG);
+    }
 
     @Test
     void shouldGenerateASignedVerifiableCredential() throws Exception {

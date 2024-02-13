@@ -60,9 +60,9 @@ class CimitStubItemServiceTest {
         String ciCode = "V03";
         List<String> mitigations = List.of("V01", "V03");
         Instant issuanceDate = Instant.now();
-
+        List<String> issuers = List.of("https://address-cri.stubs.account.gov.uk");
         CimitStubItem cimitStubItem =
-                classToTest.persistCimitStub(USER_ID, ciCode, issuanceDate, mitigations);
+                classToTest.persistCimitStub(USER_ID, ciCode, issuers, issuanceDate, mitigations);
 
         ArgumentCaptor<CimitStubItem> cimitStubItemArgumentCaptor =
                 ArgumentCaptor.forClass(CimitStubItem.class);

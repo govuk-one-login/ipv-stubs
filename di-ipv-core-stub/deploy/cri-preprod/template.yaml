@@ -34,6 +34,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_ADDRESS_PRE_PROD" #pragma: allowlist secret
+  ApiKeyCriCheckHmrcPreProd:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_CHECK_HMRC_PRE_PROD"
   ApiKeyCriKbvPreProd:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -571,6 +575,8 @@ Resources:
             Value: !Ref CoreStubBasicAuth
           - Name: API_KEY_CRI_ADDRESS_PRE_PROD
             Value: !Ref ApiKeyCriAddressPreProd
+          - Name: API_KEY_CRI_CHECK_HMRC_PRE_PROD
+            Value: !Ref ApiKeyCriCheckHmrcPreProd
           - Name: API_KEY_CRI_KBV_PRE_PROD
             Value: !Ref ApiKeyCriKbvPreProd
           - Name: API_KEY_CRI_FRAUD_PRE_PROD

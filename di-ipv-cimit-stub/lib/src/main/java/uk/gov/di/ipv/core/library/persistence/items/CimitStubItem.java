@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 public class CimitStubItem implements DynamodbItem {
     private String userId;
     private String contraIndicatorCode;
+    private List<String> issuers;
     private Instant issuanceDate;
     private long ttl;
     private List<String> mitigations;

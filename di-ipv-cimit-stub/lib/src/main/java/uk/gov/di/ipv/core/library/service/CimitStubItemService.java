@@ -43,6 +43,7 @@ public class CimitStubItemService {
     public CimitStubItem persistCimitStub(
             String userId,
             String contraIndicatorCode,
+            List<String> issuers,
             Instant issuanceDate,
             List<String> mitigations) {
 
@@ -50,6 +51,7 @@ public class CimitStubItemService {
                 CimitStubItem.builder()
                         .userId(userId)
                         .contraIndicatorCode(contraIndicatorCode)
+                        .issuers(issuers)
                         .issuanceDate(issuanceDate)
                         .mitigations(mitigations)
                         .build();
