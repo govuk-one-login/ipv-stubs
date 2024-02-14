@@ -25,6 +25,16 @@ updates:
     - dependabot
     commit-message:
       prefix: BAU
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "03:00"
+    target-branch: main
+    labels:
+    - dependabot
+    commit-message:
+      prefix: BAU
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
