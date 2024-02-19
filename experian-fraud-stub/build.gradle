@@ -16,7 +16,7 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
 	implementation 'org.apache.commons:commons-lang3:3.12.0'
 
-	testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
+	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
 }
 
 sourceSets {

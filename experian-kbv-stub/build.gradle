@@ -18,7 +18,7 @@ dependencies {
 	implementation 'org.slf4j:slf4j-simple:1.7.21'
 	implementation group: 'com.sun.xml.messaging.saaj', name: 'saaj-impl', version: '1.5.0'
 
-	testImplementation "org.junit.jupiter:junit-jupiter:5.8.2"
+	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2"
 }
 
 sourceSets {
