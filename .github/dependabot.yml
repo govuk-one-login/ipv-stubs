@@ -1,0 +1,47 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: daily
+      time: "03:00"
+    target-branch: main
+    labels:
+    - dependabot
+    ignore:
+      - dependency-name: "node"
+        versions: ["17.x","18.x","20.x"]
+      - dependency-name: "*"
+        update-types: [ "version-update:semver-patch" ]
+    commit-message:
+      prefix: BAU
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "03:00"
+    target-branch: main
+    labels:
+    - dependabot
+    commit-message:
+      prefix: BAU
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "03:00"
+    target-branch: main
+    labels:
+    - dependabot
+    commit-message:
+      prefix: BAU
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "03:00"
+    target-branch: main
+    labels:
+    - dependabot
+    commit-message:
+      prefix: BAU
