@@ -171,7 +171,7 @@ Mappings:
     "388905755587": #Stubs Prod
       fargateCPUsize: "1024"
       fargateRAMsize: "2048"
-      desiredTaskCount: 2
+      desiredTaskCount: 12
       environment: production
       platform: stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
