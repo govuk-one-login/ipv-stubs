@@ -67,14 +67,13 @@ public class UserService {
             deleteCimitStubItems(cimitStubItems);
         }
         userCisRequest.forEach(
-                request -> {
-                    cimitStubItemService.persistCimitStub(
-                            userId,
-                            request.getCode().toUpperCase(),
-                            request.getIssuers(),
-                            getIssuanceDate(request.getIssuanceDate()),
-                            convertListToUppercase(request.getMitigations()));
-                });
+                request ->
+                        cimitStubItemService.persistCimitStub(
+                                userId,
+                                request.getCode().toUpperCase(),
+                                request.getIssuers(),
+                                getIssuanceDate(request.getIssuanceDate()),
+                                convertListToUppercase(request.getMitigations())));
     }
 
     private void deleteCimitStubItems(List<CimitStubItem> cimitStubItems) {

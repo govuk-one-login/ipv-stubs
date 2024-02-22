@@ -40,6 +40,10 @@ public class CimitStubItemService {
         return dataStore.getItem(userId, ci.toUpperCase());
     }
 
+    public void persistCimitStubItem(CimitStubItem cimitStubItem) {
+        dataStore.create(cimitStubItem, CIMIT_STUB_TTL);
+    }
+
     public CimitStubItem persistCimitStub(
             String userId,
             String contraIndicatorCode,

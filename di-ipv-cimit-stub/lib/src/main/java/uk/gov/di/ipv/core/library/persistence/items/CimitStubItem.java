@@ -10,7 +10,6 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortK
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @DynamoDbBean
@@ -25,6 +24,7 @@ public class CimitStubItem implements DynamodbItem {
     private Instant issuanceDate;
     private long ttl;
     private List<String> mitigations;
+    private List<String> document;
 
     @DynamoDbPartitionKey
     public String getUserId() {
@@ -48,6 +48,6 @@ public class CimitStubItem implements DynamodbItem {
                 Stream.concat(this.mitigations.stream(), newMitigations.stream())
                         .sorted()
                         .distinct()
-                        .collect(Collectors.toList());
+                        .toList();
     }
 }
