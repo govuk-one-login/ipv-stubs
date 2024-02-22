@@ -17,6 +17,8 @@ import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.PENDING_MITI
 public class PendingMitigationService {
     private static final Logger LOGGER = LogManager.getLogger();
     public static final String DESCRIPTION = "description";
+    public static final String JWT_ID = "jwtId";
+    public static final String USER_ID = "userId";
     private final DataStore<PendingMitigationItem> dataStore;
 
     public PendingMitigationService(ConfigService configService) {
@@ -55,8 +57,8 @@ public class PendingMitigationService {
             LOGGER.info(
                     new StringMapMessage()
                             .with(DESCRIPTION, "No pending mitigations found")
-                            .with("jwtId", jwtId)
-                            .with("userId", userId));
+                            .with(JWT_ID, jwtId)
+                            .with(USER_ID, userId));
             return;
         }
         List<CimitStubItem> cimitItems =
@@ -65,12 +67,13 @@ public class PendingMitigationService {
             LOGGER.warn(
                     new StringMapMessage()
                             .with(DESCRIPTION, "No CI found for attempted mitigation")
-                            .with("jwtId", jwtId)
-                            .with("userId", userId)
+                            .with(JWT_ID, jwtId)
+                            .with(USER_ID, userId)
                             .with("ci", pendingMitigationItem.getMitigatedCi()));
             return;
         }
 
+        // Mitigate the most recently received CI. In practice, we should only have one
         CimitStubItem itemToMitigate =
                 cimitItems.stream()
                         .sorted(Comparator.comparing(CimitStubItem::getIssuanceDate))
@@ -90,8 +93,8 @@ public class PendingMitigationService {
         LOGGER.info(
                 new StringMapMessage()
                         .with(DESCRIPTION, "CI mitigated")
-                        .with("jwtId", jwtId)
-                        .with("userId", userId)
+                        .with(JWT_ID, jwtId)
+                        .with(USER_ID, userId)
                         .with("ci", pendingMitigationItem.getMitigatedCi()));
     }
 }

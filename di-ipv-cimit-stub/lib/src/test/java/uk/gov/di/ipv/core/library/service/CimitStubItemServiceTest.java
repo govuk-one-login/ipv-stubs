@@ -58,16 +58,28 @@ class CimitStubItemServiceTest {
         List<String> mitigations = List.of("V01", "V03");
         Instant issuanceDate = Instant.now();
         List<String> issuers = List.of("https://address-cri.stubs.account.gov.uk");
-        CimitStubItem cimitStubItem =
-                cimitStubItemService.persistCimitStub(
-                        USER_ID, ciCode, issuers, issuanceDate, mitigations);
+        String docId = "some/document/id";
+
+        cimitStubItemService.persistCimitStubItem(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(ciCode)
+                        .issuers(issuers)
+                        .issuanceDate(issuanceDate)
+                        .mitigations(mitigations)
+                        .documentIdentifier(docId)
+                        .build());
 
         verify(mockDataStore).create(cimitStubItemArgumentCaptor.capture(), any());
 
-        assertEquals(USER_ID, cimitStubItem.getUserId());
-        assertEquals(ciCode, cimitStubItem.getContraIndicatorCode());
-        assertEquals(issuanceDate, cimitStubItem.getIssuanceDate());
-        assertEquals(mitigations, cimitStubItem.getMitigations());
+        CimitStubItem capturedItem = cimitStubItemArgumentCaptor.getValue();
+
+        assertEquals(USER_ID, capturedItem.getUserId());
+        assertEquals(ciCode, capturedItem.getContraIndicatorCode());
+        assertEquals(issuers, capturedItem.getIssuers());
+        assertEquals(issuanceDate, capturedItem.getIssuanceDate());
+        assertEquals(mitigations, capturedItem.getMitigations());
+        assertEquals(docId, capturedItem.getDocumentIdentifier());
     }
 
     @Test

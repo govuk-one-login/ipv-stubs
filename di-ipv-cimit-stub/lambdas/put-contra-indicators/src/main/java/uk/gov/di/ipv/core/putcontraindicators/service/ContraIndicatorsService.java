@@ -18,8 +18,6 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
 
@@ -27,6 +25,7 @@ public class ContraIndicatorsService {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final String LOG_MESSAGE_DESCRIPTION = "description";
     private static final String LOG_ERROR_DESCRIPTION = "errorDescription";
+    private static final String LOG_ITEM_COUNT = "itemCount";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final ConfigService configService;
     private final CimitStubItemService cimitStubItemService;
@@ -44,20 +43,15 @@ public class ContraIndicatorsService {
 
     public void addUserCis(PutContraIndicatorsRequest request) throws CiPutException {
         try {
-            SignedJWT signedJWT = parseSignedJwt(request);
-            String userId = signedJWT.getJWTClaimsSet().getSubject();
-            var vcClaim = parseVcClaim(signedJWT);
-            if (vcClaim != null) {
-                var ci = vcClaim.evidence().get(0).ci();
-                if (ci == null || ci.isEmpty()) {
-                    LOGGER.info(
-                            new StringMapMessage().with(LOG_MESSAGE_DESCRIPTION, "No CI in VC"));
-                } else {
-                    List<CimitStubItem> cimitStubItems =
-                            mapToContraIndications(userId, vcClaim, signedJWT);
-                    saveOrUpdateCimitStubItems(userId, cimitStubItems);
-                }
-            }
+            var signedJWT = parseSignedJwt(request);
+            var cimitStubItems = toCimitStubItems(signedJWT);
+            cimitStubItems.forEach(cimitStubItemService::persistCimitStubItem);
+            LOGGER.info(
+                    new StringMapMessage()
+                            .with(
+                                    LOG_MESSAGE_DESCRIPTION,
+                                    "Inserted User CI data to the Cimit Stub DynamoDB Table.")
+                            .with(LOG_ITEM_COUNT, cimitStubItems.size()));
         } catch (Exception ex) {
             throw new CiPutException(ex.getMessage());
         }
@@ -108,14 +102,27 @@ public class ContraIndicatorsService {
         return vcClaim;
     }
 
-    private List<CimitStubItem> mapToContraIndications(
-            String userId, VcClaim vcClaim, SignedJWT signedJWT) throws ParseException {
+    private List<CimitStubItem> toCimitStubItems(SignedJWT signedJWT) throws ParseException {
+        var vcClaim = parseVcClaim(signedJWT);
+        if (vcClaim == null) {
+            LOGGER.info(
+                    new StringMapMessage()
+                            .with(LOG_MESSAGE_DESCRIPTION, "No VC claim found in jwt"));
+            return List.of();
+        }
 
-        Instant issuanceDate = getIssuanceDate(signedJWT.getJWTClaimsSet().getNotBeforeTime());
-        String iss = signedJWT.getJWTClaimsSet().getIssuer();
-        List<String> docId = getDocumentIdentifier(vcClaim);
+        var ci = vcClaim.evidence().get(0).ci();
+        if (ci == null || ci.isEmpty()) {
+            LOGGER.info(new StringMapMessage().with(LOG_MESSAGE_DESCRIPTION, "No CI in VC"));
+            return List.of();
+        }
 
-        return vcClaim.evidence().get(0).ci().stream()
+        var userId = signedJWT.getJWTClaimsSet().getSubject();
+        var iss = signedJWT.getJWTClaimsSet().getIssuer();
+        var issuanceDate = getIssuanceDate(signedJWT.getJWTClaimsSet().getNotBeforeTime());
+        var docId = getDocumentIdentifier(vcClaim);
+
+        return ci.stream()
                 .distinct()
                 .map(
                         ciCode ->
@@ -125,7 +132,7 @@ public class ContraIndicatorsService {
                                         .issuers(List.of(iss))
                                         .issuanceDate(issuanceDate)
                                         .mitigations(List.of())
-                                        .document(docId)
+                                        .documentIdentifier(docId)
                                         .build())
                 .toList();
     }
@@ -137,56 +144,15 @@ public class ContraIndicatorsService {
         return Instant.now();
     }
 
-    private List<String> getDocumentIdentifier(VcClaim vcClaim) {
+    private String getDocumentIdentifier(VcClaim vcClaim) {
         CredentialSubject credentialSubject = vcClaim.credentialSubject();
         if (credentialSubject.drivingPermit() != null
                 && !credentialSubject.drivingPermit().isEmpty()) {
-            return List.of(credentialSubject.drivingPermit().get(0).toIdentifier());
+            return credentialSubject.drivingPermit().get(0).toIdentifier();
         }
         if (credentialSubject.passport() != null && !credentialSubject.passport().isEmpty()) {
-            return List.of(credentialSubject.passport().get(0).toIdentifier());
+            return credentialSubject.passport().get(0).toIdentifier();
         }
-        return List.of();
-    }
-
-    private void saveOrUpdateCimitStubItems(String userId, List<CimitStubItem> cimitStubItems) {
-        List<CimitStubItem> dbCimitStubItems = cimitStubItemService.getCIsForUserId(userId);
-        cimitStubItems.forEach(
-                cimitStubItem -> {
-                    Optional<CimitStubItem> dbCimitStubItem =
-                            filterDbItemsForCiCode(
-                                    dbCimitStubItems, cimitStubItem.getContraIndicatorCode());
-                    if (dbCimitStubItem.isEmpty()) {
-                        cimitStubItemService.persistCimitStubItem(cimitStubItem);
-                    } else {
-                        CimitStubItem dbItem = dbCimitStubItem.get();
-                        dbItem.setIssuanceDate(cimitStubItem.getIssuanceDate());
-                        dbItem.setIssuers(
-                                mergeStringLists(dbItem.getIssuers(), cimitStubItem.getIssuers()));
-                        dbItem.setDocument(
-                                mergeStringLists(
-                                        dbItem.getDocument(), cimitStubItem.getDocument()));
-                        cimitStubItemService.updateCimitStubItem(dbItem);
-                    }
-                });
-        LOGGER.info("Inserted User CI data to the Cimit Stub DynamoDB Table.");
-    }
-
-    private List<String> mergeStringLists(List<String> listOne, List<String> listTwo) {
-        Stream<String> combinedStream = Stream.empty();
-        if (listOne != null) {
-            combinedStream = Stream.concat(combinedStream, listOne.stream());
-        }
-        if (listTwo != null) {
-            combinedStream = Stream.concat(combinedStream, listTwo.stream());
-        }
-        return combinedStream.distinct().toList();
-    }
-
-    private Optional<CimitStubItem> filterDbItemsForCiCode(
-            List<CimitStubItem> dbCimitStubItems, String code) {
-        return dbCimitStubItems.stream()
-                .filter(dbCimitStubItem -> dbCimitStubItem.getContraIndicatorCode().equals(code))
-                .findFirst();
+        return null;
     }
 }

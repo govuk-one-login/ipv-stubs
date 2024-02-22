@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
+import uk.gov.di.ipv.core.library.model.UserCisRequest;
 
 import java.time.Instant;
 import java.util.List;
@@ -25,7 +26,7 @@ public class CimitStubItem implements DynamodbItem {
     private Instant issuanceDate;
     private long ttl;
     private List<String> mitigations;
-    private List<String> document;
+    private String documentIdentifier;
 
     @DynamoDbPartitionKey
     public String getUserId() {
@@ -51,5 +52,26 @@ public class CimitStubItem implements DynamodbItem {
                         .sorted()
                         .distinct()
                         .toList();
+    }
+
+    public static CimitStubItem fromUserCiRequest(UserCisRequest ciRequest, String userId) {
+        return CimitStubItem.builder()
+                .userId(userId)
+                .contraIndicatorCode(ciRequest.getCode().toUpperCase())
+                .issuers(ciRequest.getIssuers())
+                .issuanceDate(
+                        ciRequest.getIssuanceDate() == null
+                                ? Instant.now()
+                                : Instant.parse(ciRequest.getIssuanceDate()))
+                .mitigations(listToUppercase(ciRequest.getMitigations()))
+                .documentIdentifier(ciRequest.getDocumentIdentifier())
+                .build();
+    }
+
+    public static List<String> listToUppercase(List<String> codes) {
+        if (codes != null) {
+            return codes.stream().map(String::toUpperCase).toList();
+        }
+        return codes;
     }
 }

@@ -44,26 +44,6 @@ public class CimitStubItemService {
         dataStore.create(cimitStubItem, CIMIT_STUB_TTL);
     }
 
-    public CimitStubItem persistCimitStub(
-            String userId,
-            String contraIndicatorCode,
-            List<String> issuers,
-            Instant issuanceDate,
-            List<String> mitigations) {
-
-        CimitStubItem cimitStubItem =
-                CimitStubItem.builder()
-                        .userId(userId)
-                        .contraIndicatorCode(contraIndicatorCode)
-                        .issuers(issuers)
-                        .issuanceDate(issuanceDate)
-                        .mitigations(mitigations)
-                        .build();
-
-        dataStore.create(cimitStubItem, CIMIT_STUB_TTL);
-        return cimitStubItem;
-    }
-
     public void updateCimitStubItem(CimitStubItem cimitStubItem) {
         cimitStubItem.setTtl(
                 Instant.now()

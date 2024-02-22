@@ -7,10 +7,10 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.di.ipv.core.library.model.UserCisRequest;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
-import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -27,16 +27,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class UserServiceTest {
+class UserServiceTest {
 
     @Mock private CimitStubItemService cimitStubItemService;
-
     @InjectMocks private UserService userService;
-
-    @Captor ArgumentCaptor<List<String>> issuerListArgumentCaptor;
+    @Captor private ArgumentCaptor<CimitStubItem> cimitStubItemArgumentCaptor;
 
     @Test
-    public void shouldReturnSuccessFromAddUserCis() {
+    void shouldReturnSuccessFromAddUserCis() {
         String userId = "user123";
         List<UserCisRequest> userCisRequests =
                 List.of(
@@ -45,6 +43,7 @@ public class UserServiceTest {
                                 .issuanceDate("2023-07-25T10:00:00Z")
                                 .issuers(List.of("https://issuer.example.com"))
                                 .mitigations(List.of("V01", "V03"))
+                                .documentIdentifier("document/this/that")
                                 .build(),
                         UserCisRequest.builder()
                                 .code("code2")
@@ -53,21 +52,23 @@ public class UserServiceTest {
                                 .mitigations(Collections.emptyList())
                                 .build());
 
-        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(new ArrayList<>());
-
         assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
 
         verify(cimitStubItemService, times(userCisRequests.size()))
-                .persistCimitStub(any(), any(), issuerListArgumentCaptor.capture(), any(), any());
-        verify(cimitStubItemService, never()).updateCimitStubItem(any());
+                .persistCimitStubItem(cimitStubItemArgumentCaptor.capture());
+
+        List<CimitStubItem> allCapturedCimitStubItems = cimitStubItemArgumentCaptor.getAllValues();
 
         assertEquals(
-                List.of("https://issuer.example.com"),
-                issuerListArgumentCaptor.getAllValues().get(0));
+                CimitStubItem.fromUserCiRequest(userCisRequests.get(0), userId),
+                allCapturedCimitStubItems.get(0));
+        assertEquals(
+                CimitStubItem.fromUserCiRequest(userCisRequests.get(1), userId),
+                allCapturedCimitStubItems.get(1));
     }
 
     @Test
-    public void shouldReturnFailedFromAddUserCisBadRequestExceptionThrown() {
+    void shouldReturnFailedFromAddUserCisBadRequestExceptionThrown() {
         String userId = "user123";
         List<UserCisRequest> userCisRequests =
                 List.of(
@@ -79,64 +80,19 @@ public class UserServiceTest {
         assertThrows(
                 BadRequestException.class, () -> userService.addUserCis(userId, userCisRequests));
 
-        verify(cimitStubItemService, never()).persistCimitStub(any(), any(), any(), any(), any());
+        verify(cimitStubItemService, never()).persistCimitStubItem(any());
     }
 
     @Test
-    public void shouldReturnSuccessFromAddUserCisForUpdateScenario() {
+    void shouldReturnSuccessFromUpdateUserCis() {
         String userId = "user123";
-        List<UserCisRequest> userCisRequests =
-                List.of(
-                        UserCisRequest.builder()
-                                .code("code1")
-                                .issuanceDate("2023-07-25T10:00:00Z")
-                                .mitigations(List.of("V01", "V03"))
-                                .issuers(List.of("https://issuer.example.com"))
-                                .build());
-        List<CimitStubItem> existingItems = new ArrayList<>();
-        existingItems.add(
-                CimitStubItem.builder()
-                        .userId(userId)
-                        .contraIndicatorCode("CODE1")
-                        .issuers(
-                                List.of(
-                                        "https://review-d.account.gov.uk",
-                                        "https://review-f.account.gov.uk"))
-                        .issuanceDate(Instant.now())
-                        .ttl(30000)
-                        .mitigations(new ArrayList<>())
-                        .build());
-
-        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
-
-        assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
-
-        ArgumentCaptor<CimitStubItem> cimitStubItemArgumentCaptor =
-                ArgumentCaptor.forClass(CimitStubItem.class);
-        verify(cimitStubItemService, times(1))
-                .updateCimitStubItem(cimitStubItemArgumentCaptor.capture());
-
-        List<CimitStubItem> updatedItem = cimitStubItemArgumentCaptor.getAllValues();
-
-        assertEquals(
-                List.of(
-                        "https://review-d.account.gov.uk",
-                        "https://review-f.account.gov.uk",
-                        "https://issuer.example.com"),
-                updatedItem.get(0).getIssuers());
-    }
-
-    @Test
-    public void shouldReturnSuccessFromUpdateUserCis() {
-        String userId = "user123";
-        List<UserCisRequest> userCisRequests =
-                List.of(
-                        UserCisRequest.builder()
-                                .code("code1")
-                                .issuers(List.of("https://issuer.example.com"))
-                                .issuanceDate("2023-07-25T10:00:00Z")
-                                .mitigations(List.of("V01"))
-                                .build());
+        UserCisRequest userCisRequest =
+                UserCisRequest.builder()
+                        .code("code1")
+                        .issuers(List.of("https://issuer.example.com"))
+                        .issuanceDate("2023-07-25T10:00:00Z")
+                        .mitigations(List.of("V01"))
+                        .build();
 
         List<CimitStubItem> existingItems = new ArrayList<>();
         existingItems.add(
@@ -150,18 +106,17 @@ public class UserServiceTest {
 
         when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
-        assertDoesNotThrow(() -> userService.updateUserCis(userId, userCisRequests));
+        assertDoesNotThrow(() -> userService.updateUserCis(userId, List.of(userCisRequest)));
 
-        verify(cimitStubItemService, times(userCisRequests.size()))
-                .persistCimitStub(any(), any(), issuerListArgumentCaptor.capture(), any(), any());
+        verify(cimitStubItemService).persistCimitStubItem(cimitStubItemArgumentCaptor.capture());
 
         assertEquals(
-                List.of("https://issuer.example.com"),
-                issuerListArgumentCaptor.getAllValues().get(0));
+                CimitStubItem.fromUserCiRequest(userCisRequest, userId),
+                cimitStubItemArgumentCaptor.getValue());
     }
 
     @Test
-    public void shouldReturnFailedFromUpdateUserCisBadRequestExceptionThrown() {
+    void shouldReturnFailedFromUpdateUserCisBadRequestExceptionThrown() {
         String userId = "user123";
         List<UserCisRequest> userCisRequests =
                 List.of(
@@ -178,15 +133,14 @@ public class UserServiceTest {
     }
 
     @Test
-    public void shouldReturnSuccessWithCurrentDifferentCIsFromUpdateUserCis() {
+    void shouldReturnSuccessWithCurrentDifferentCIsFromUpdateUserCis() {
         String userId = "user123";
-        List<UserCisRequest> userCisRequests =
-                List.of(
-                        UserCisRequest.builder()
-                                .code("code1")
-                                .issuanceDate("2023-07-25T10:00:00Z")
-                                .mitigations(List.of("V01"))
-                                .build());
+        UserCisRequest userCisRequest =
+                UserCisRequest.builder()
+                        .code("code1")
+                        .issuanceDate("2023-07-25T10:00:00Z")
+                        .mitigations(List.of("V01"))
+                        .build();
 
         List<CimitStubItem> existingItems =
                 List.of(
@@ -214,94 +168,12 @@ public class UserServiceTest {
 
         when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
 
-        assertDoesNotThrow(() -> userService.updateUserCis(userId, userCisRequests));
+        assertDoesNotThrow(() -> userService.updateUserCis(userId, List.of(userCisRequest)));
 
-        verify(cimitStubItemService, times(userCisRequests.size()))
-                .persistCimitStub(any(), any(), any(), any(), any());
-    }
+        verify(cimitStubItemService).persistCimitStubItem(cimitStubItemArgumentCaptor.capture());
 
-    @Test
-    public void shouldReturnSuccessFromAddUserCisWhenExistingMitigationsIsNull() {
-        String userId = "user123";
-        List<UserCisRequest> userCisRequests =
-                List.of(
-                        UserCisRequest.builder()
-                                .code("code1")
-                                .issuanceDate("2023-07-25T10:00:00Z")
-                                .mitigations(List.of("V01", "V03"))
-                                .build());
-        List<CimitStubItem> existingItems =
-                List.of(
-                        CimitStubItem.builder()
-                                .userId(userId)
-                                .contraIndicatorCode("CODE1")
-                                .issuanceDate(Instant.now())
-                                .ttl(30000)
-                                .mitigations(null)
-                                .build());
-
-        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
-
-        assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
-
-        verify(cimitStubItemService, times(1)).updateCimitStubItem(any());
-    }
-
-    @Test
-    public void shouldReturnSuccessFromAddUserCisWhenNewMitigationsIsNull() {
-        String userId = "user123";
-        List<UserCisRequest> userCisRequests =
-                List.of(
-                        UserCisRequest.builder()
-                                .code("code1")
-                                .issuanceDate("2023-07-25T10:00:00Z")
-                                .mitigations(null)
-                                .build());
-        List<CimitStubItem> existingItems =
-                List.of(
-                        CimitStubItem.builder()
-                                .userId(userId)
-                                .contraIndicatorCode("CODE1")
-                                .issuers(
-                                        List.of(
-                                                "https://review-d.account.gov.uk",
-                                                "https://review-f.account.gov.uk"))
-                                .issuanceDate(Instant.now())
-                                .ttl(30000)
-                                .mitigations(List.of("V01", "V03"))
-                                .build());
-
-        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
-
-        assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
-
-        verify(cimitStubItemService, times(1)).updateCimitStubItem(any());
-    }
-
-    @Test
-    public void shouldReturnSuccessFromAddUserCisWhenExistingAndNewMitigationsIsNull() {
-        String userId = "user123";
-        List<UserCisRequest> userCisRequests =
-                List.of(
-                        UserCisRequest.builder()
-                                .code("CODE1")
-                                .issuanceDate("2023-07-25T10:00:00Z")
-                                .mitigations(null)
-                                .build());
-        List<CimitStubItem> existingItems =
-                List.of(
-                        CimitStubItem.builder()
-                                .userId(userId)
-                                .contraIndicatorCode("CODE1")
-                                .issuanceDate(Instant.now())
-                                .ttl(30000)
-                                .mitigations(null)
-                                .build());
-
-        when(cimitStubItemService.getCIsForUserId(userId)).thenReturn(existingItems);
-
-        assertDoesNotThrow(() -> userService.addUserCis(userId, userCisRequests));
-
-        verify(cimitStubItemService, times(1)).updateCimitStubItem(any());
+        assertEquals(
+                CimitStubItem.fromUserCiRequest(userCisRequest, userId),
+                cimitStubItemArgumentCaptor.getValue());
     }
 }

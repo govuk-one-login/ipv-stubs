@@ -12,13 +12,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.di.ipv.core.library.model.UserCisRequest;
 import uk.gov.di.ipv.core.library.model.UserMitigationRequest;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.PendingMitigationService;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
-import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
 import uk.gov.di.ipv.core.stubmanagement.service.UserService;
 
 import java.io.IOException;
