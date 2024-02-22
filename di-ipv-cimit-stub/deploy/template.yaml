@@ -406,12 +406,12 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "userId"
           AttributeType: "S"
-        - AttributeName: "contraIndicatorCode"
+        - AttributeName: "sortKey"
           AttributeType: "S"
       KeySchema:
         - AttributeName: "userId"
           KeyType: "HASH"
-        - AttributeName: "contraIndicatorCode"
+        - AttributeName: "sortKey"
           KeyType: "RANGE"
       TimeToLiveSpecification:
         AttributeName: "ttl"

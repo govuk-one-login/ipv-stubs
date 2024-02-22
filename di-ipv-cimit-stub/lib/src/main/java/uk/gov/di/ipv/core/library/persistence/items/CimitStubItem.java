@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 @Builder
 public class CimitStubItem implements DynamodbItem {
     private String userId;
+    private String sortKey;
     private String contraIndicatorCode;
     private List<String> issuers;
     private Instant issuanceDate;
@@ -32,8 +33,9 @@ public class CimitStubItem implements DynamodbItem {
     }
 
     @DynamoDbSortKey
-    public String getContraIndicatorCode() {
-        return contraIndicatorCode;
+    public String getSortKey() {
+        this.sortKey = String.format("%s#%s", contraIndicatorCode, issuanceDate);
+        return sortKey;
     }
 
     public void addMitigations(List<String> newMitigations) {

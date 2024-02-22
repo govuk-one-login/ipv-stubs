@@ -94,7 +94,8 @@ public class StubManagementHandlerTest {
     @ParameterizedTest
     @ValueSource(strings = {"POST", "PUT"})
     void shouldAddPendingMitigationWhenValidMitigationRequest(String method) throws IOException {
-        when(mockCimitStubItemService.getCiForUserId("123", "456")).thenReturn(new CimitStubItem());
+        when(mockCimitStubItemService.getCiForUserId("123", "456"))
+                .thenReturn(List.of(new CimitStubItem()));
 
         UserMitigationRequest userMitigationRequest =
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
@@ -157,7 +158,8 @@ public class StubManagementHandlerTest {
 
     @Test
     void mitigationsPatternShouldHandleDefaultUserIdFormat() throws Exception {
-        when(mockCimitStubItemService.getCiForUserId("123", "456")).thenReturn(new CimitStubItem());
+        when(mockCimitStubItemService.getCiForUserId("123", "456"))
+                .thenReturn(List.of(new CimitStubItem()));
 
         String urlEncodedUserId = "urn%3Auuid%3Ac08630f8-330e-43f8-a782-21432a197fc5";
         UserMitigationRequest userMitigationRequest =

@@ -67,8 +67,7 @@ public class StubManagementHandler
             Map<String, String> pathParameters = event.getPathParameters();
             String userId =
                     URLDecoder.decode(
-                            pathParameters.get(USER_ID_PATH_PARAMS),
-                            StandardCharsets.UTF_8.toString());
+                            pathParameters.get(USER_ID_PATH_PARAMS), StandardCharsets.UTF_8);
             if (CIS_PATTERN.matcher(path).matches()) {
                 List<UserCisRequest> userCisRequests =
                         objectMapper.readValue(

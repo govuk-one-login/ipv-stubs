@@ -8,6 +8,9 @@ import uk.gov.di.ipv.core.library.persistence.DataStore;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.persistence.items.PendingMitigationItem;
 
+import java.util.Comparator;
+import java.util.List;
+
 import static uk.gov.di.ipv.core.library.config.ConfigurationVariable.CIMIT_STUB_TTL;
 import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.PENDING_MITIGATIONS_TABLE;
 
@@ -56,9 +59,9 @@ public class PendingMitigationService {
                             .with("userId", userId));
             return;
         }
-        CimitStubItem cimitItem =
+        List<CimitStubItem> cimitItems =
                 cimitService.getCiForUserId(userId, pendingMitigationItem.getMitigatedCi());
-        if (cimitItem == null) {
+        if (cimitItems == null || cimitItems.isEmpty()) {
             LOGGER.warn(
                     new StringMapMessage()
                             .with(DESCRIPTION, "No CI found for attempted mitigation")
@@ -68,15 +71,22 @@ public class PendingMitigationService {
             return;
         }
 
+        CimitStubItem itemToMitigate =
+                cimitItems.stream()
+                        .sorted(Comparator.comparing(CimitStubItem::getIssuanceDate))
+                        .reduce((first, second) -> second)
+                        .orElseThrow();
+
         switch (pendingMitigationItem.getRequestMethod()) {
-            case "PUT" -> cimitItem.setMitigations(pendingMitigationItem.getMitigationCodes());
-            case "POST" -> cimitItem.addMitigations(pendingMitigationItem.getMitigationCodes());
+            case "PUT" -> itemToMitigate.setMitigations(pendingMitigationItem.getMitigationCodes());
+            case "POST" -> itemToMitigate.addMitigations(
+                    pendingMitigationItem.getMitigationCodes());
             default -> throw new IllegalArgumentException(
                     String.format(
                             "Method not supported: %s", pendingMitigationItem.getRequestMethod()));
         }
 
-        cimitService.updateCimitStubItem(cimitItem);
+        cimitService.updateCimitStubItem(itemToMitigate);
         LOGGER.info(
                 new StringMapMessage()
                         .with(DESCRIPTION, "CI mitigated")

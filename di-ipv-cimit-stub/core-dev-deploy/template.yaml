@@ -363,17 +363,16 @@ Resources:
     Type: AWS::DynamoDB::Table
     # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
     Properties:
-      TableName: !Sub "cimit-stub-${Environment}"
       BillingMode: "PAY_PER_REQUEST"
       AttributeDefinitions:
         - AttributeName: "userId"
           AttributeType: "S"
-        - AttributeName: "contraIndicatorCode"
+        - AttributeName: "sortKey"
           AttributeType: "S"
       KeySchema:
         - AttributeName: "userId"
           KeyType: "HASH"
-        - AttributeName: "contraIndicatorCode"
+        - AttributeName: "sortKey"
           KeyType: "RANGE"
       TimeToLiveSpecification:
         AttributeName: "ttl"
@@ -387,7 +386,6 @@ Resources:
     Type: AWS::DynamoDB::Table
     # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
     Properties:
-      TableName: !Sub "cimit-stub-pending-mitigations-${Environment}"
       BillingMode: "PAY_PER_REQUEST"
       AttributeDefinitions:
         - AttributeName: "vcJti"

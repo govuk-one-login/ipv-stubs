@@ -115,7 +115,16 @@ public class DataStore<T extends DynamodbItem> {
         var key = Key.builder().partitionValue(partitionValue).build();
         return table.query(QueryConditional.keyEqualTo(key)).stream()
                 .flatMap(page -> page.items().stream())
-                .collect(Collectors.toList());
+                .toList();
+    }
+
+    public List<T> getItemsBySortKeyPrefix(String partitionValue, String sortPrefix) {
+        Key key = Key.builder().partitionValue(partitionValue).sortValue(sortPrefix).build();
+        QueryConditional queryConditional = QueryConditional.sortBeginsWith(key);
+
+        return table.query(queryConditional).stream()
+                .flatMap(page -> page.items().stream())
+                .toList();
     }
 
     public List<T> getItemsWithAttributeLessThanOrEqualValue(
