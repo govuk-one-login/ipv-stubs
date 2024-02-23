@@ -73,7 +73,7 @@ Resources:
       FunctionName: !Sub "getTicfVC-${Environment}"
       CodeUri: "../lambdas"
       Handler: ticfHandler.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs20.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -117,7 +117,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "es2020"
+        Target: "es2022"
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/ticfHandler.ts
@@ -135,7 +135,7 @@ Resources:
       FunctionName: !Sub "manageUserEvidence-${Environment}"
       CodeUri: "../lambdas"
       Handler: managementHandler.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs20.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -181,7 +181,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "es2020"
+        Target: "es2022"
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/management/handlers/managementHandler.ts

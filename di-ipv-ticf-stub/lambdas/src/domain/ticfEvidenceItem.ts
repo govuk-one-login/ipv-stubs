@@ -1,5 +1,5 @@
 export default interface TicfEvidenceItem {
-  type: string;
+  type?: string;
   ci?: string[];
   txn?: string;
 }
