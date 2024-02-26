@@ -64,7 +64,7 @@ class CimitStubItemServiceTest {
                 CimitStubItem.builder()
                         .userId(USER_ID)
                         .contraIndicatorCode(ciCode)
-                        .issuers(issuers)
+                        .issuer(issuers)
                         .issuanceDate(issuanceDate)
                         .mitigations(mitigations)
                         .documentIdentifier(docId)
@@ -76,7 +76,7 @@ class CimitStubItemServiceTest {
 
         assertEquals(USER_ID, capturedItem.getUserId());
         assertEquals(ciCode, capturedItem.getContraIndicatorCode());
-        assertEquals(issuers, capturedItem.getIssuers());
+        assertEquals(issuers, capturedItem.getIssuer());
         assertEquals(issuanceDate, capturedItem.getIssuanceDate());
         assertEquals(mitigations, capturedItem.getMitigations());
         assertEquals(docId, capturedItem.getDocumentIdentifier());

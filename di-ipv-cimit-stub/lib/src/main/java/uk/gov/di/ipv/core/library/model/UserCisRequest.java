@@ -14,7 +14,7 @@ import java.util.List;
 public class UserCisRequest {
     private String code;
     private String issuanceDate;
-    private List<String> issuers;
+    private String issuer;
     private List<String> mitigations;
     private String documentIdentifier;
 }

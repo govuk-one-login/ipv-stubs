@@ -22,7 +22,7 @@ public class CimitStubItem implements DynamodbItem {
     private String userId;
     private String sortKey;
     private String contraIndicatorCode;
-    private List<String> issuers;
+    private String issuer;
     private Instant issuanceDate;
     private long ttl;
     private List<String> mitigations;
@@ -58,7 +58,7 @@ public class CimitStubItem implements DynamodbItem {
         return CimitStubItem.builder()
                 .userId(userId)
                 .contraIndicatorCode(ciRequest.getCode().toUpperCase())
-                .issuers(ciRequest.getIssuers())
+                .issuer(ciRequest.getIssuer())
                 .issuanceDate(
                         ciRequest.getIssuanceDate() == null
                                 ? Instant.now()

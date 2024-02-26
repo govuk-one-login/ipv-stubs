@@ -65,7 +65,7 @@ public class ContraIndicatorsServiceTest {
                 CimitStubItem.builder()
                         .userId("urn:uuid:c23ec166-2c32-4f00-bdfe-b29398e36801")
                         .contraIndicatorCode("V03")
-                        .issuers(List.of("https://kbv-cri.stubs.account.gov.uk"))
+                        .issuer(List.of("https://kbv-cri.stubs.account.gov.uk"))
                         .issuanceDate(Instant.parse("2023-08-17T10:20:53Z"))
                         .mitigations(List.of())
                         .documentIdentifier(null)

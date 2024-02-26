@@ -1,7 +1,6 @@
 package uk.gov.di.ipv.core.getcontraindicatorcredential;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,24 +19,22 @@ import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialRes
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
-import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
-import uk.org.webcompere.systemstubs.jupiter.SystemStub;
-import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.CODE;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.CONTRA_INDICATORS;
+import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.DOCUMENT;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.ISSUANCE_DATE;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.ISSUERS;
 import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler.MITIGATION;
@@ -47,7 +44,7 @@ import static uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicator
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_EVIDENCE;
 
-@ExtendWith({SystemStubsExtension.class, MockitoExtension.class})
+@ExtendWith(MockitoExtension.class)
 class GetContraIndicatorCredentialHandlerTest {
 
     public static final String USER_ID = "user_id";
@@ -61,15 +58,12 @@ class GetContraIndicatorCredentialHandlerTest {
 
     private static final String CIMIT_COMPONENT_ID = "https://cimit.stubs.account.gov.uk";
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    public static final String CI_D02 = "D02";
 
     @Mock private Context mockContext;
     @Mock private ConfigService mockConfigService;
     @Mock private CimitStubItemService mockCimitStubItemService;
-    @InjectMocks private GetContraIndicatorCredentialHandler classToTest;
-
-    @SystemStub
-    private final EnvironmentVariables environmentVariables =
-            new EnvironmentVariables("CIMIT_COMPONENT_ID", "https://cimit.stubs.account.gov.uk");
+    @InjectMocks private GetContraIndicatorCredentialHandler getContraIndicatorCredentialHandler;
 
     @Test
     void shouldReturnSignedJwtWhenProvidedValidRequest()
@@ -82,7 +76,7 @@ class GetContraIndicatorCredentialHandlerTest {
                 CimitStubItem.builder()
                         .userId(USER_ID)
                         .contraIndicatorCode(CI_V_03)
-                        .issuers(List.of(ISSUERS_TEST))
+                        .issuer(ISSUERS_TEST)
                         .issuanceDate(issuanceDate)
                         .mitigations(List.of(MITIGATION_M_01))
                         .build());
@@ -95,23 +89,185 @@ class GetContraIndicatorCredentialHandlerTest {
                         .userId(USER_ID)
                         .build();
 
-        var response =
-                makeRequest(
-                        classToTest,
-                        objectMapper.writeValueAsString(getCiCredentialRequest),
-                        mockContext,
-                        GetCiCredentialResponse.class);
+        var response = makeRequest(getCiCredentialRequest);
+
+        verify(mockConfigService).getCimitSigningKey();
+        verify(mockConfigService).getCimitComponentId();
+        assertClaimsJWTIsValid(response.getVc(), issuanceDate);
+    }
+
+    @Test
+    void shouldDeduplicateUnmitigatedCi() throws Exception {
+        when(mockConfigService.getCimitSigningKey()).thenReturn(CIMIT_PRIVATE_KEY);
+        when(mockConfigService.getCimitComponentId()).thenReturn(CIMIT_COMPONENT_ID);
+        List<CimitStubItem> cimitStubItems = new ArrayList<>();
+        Instant issuanceDate = Instant.now();
+        cimitStubItems.add(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(CI_V_03)
+                        .issuer("issuer1")
+                        .issuanceDate(issuanceDate.minusSeconds(100L))
+                        .mitigations(new ArrayList<>(List.of()))
+                        .documentIdentifier(null)
+                        .build());
+        cimitStubItems.add(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(CI_V_03)
+                        .issuer("issuer1")
+                        .issuanceDate(issuanceDate)
+                        .mitigations(new ArrayList<>(List.of()))
+                        .documentIdentifier(null)
+                        .build());
+        cimitStubItems.add(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(CI_D02)
+                        .issuer("issuer2")
+                        .issuanceDate(issuanceDate.minusSeconds(100L))
+                        .mitigations(new ArrayList<>(List.of()))
+                        .documentIdentifier("docId/1")
+                        .build());
+        cimitStubItems.add(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(CI_D02)
+                        .issuer("issuer3")
+                        .issuanceDate(issuanceDate)
+                        .mitigations(new ArrayList<>(List.of()))
+                        .documentIdentifier("docId/2")
+                        .build());
+        when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
+
+        GetCiCredentialRequest getCiCredentialRequest =
+                GetCiCredentialRequest.builder()
+                        .govukSigninJourneyId("govuk_signin_journey_id")
+                        .ipAddress("ip_address")
+                        .userId(USER_ID)
+                        .build();
+
+        var response = makeRequest(getCiCredentialRequest);
 
         verify(mockConfigService).getCimitSigningKey();
         verify(mockConfigService).getCimitComponentId();
 
-        assertNotNull(response);
-        assertTrue(!response.equals("Failure"));
+        var signedJWT = SignedJWT.parse(response.getVc());
+        var claimsSet = signedJWT.getJWTClaimsSet();
 
-        final String contraIndicatorsVC =
-                new String(response.getVc().getBytes(), StandardCharsets.UTF_8);
+        assertEquals(USER_ID, claimsSet.getClaim(JWTClaimNames.SUBJECT));
+        assertEquals(CIMIT_COMPONENT_ID, claimsSet.getClaim(JWTClaimNames.ISSUER));
 
-        assertClaimsJWTIsValid(contraIndicatorsVC, issuanceDate);
+        JsonNode vc = objectMapper.readTree(claimsSet.toString()).get(VC_CLAIM);
+        assertEquals(2, vc.size());
+        assertEquals(SECURITY_CHECK_CREDENTIAL_VC_TYPE, vc.get(TYPE).get(0).asText());
+
+        JsonNode contraIndicators = vc.get(VC_EVIDENCE).get(0).get(CONTRA_INDICATORS);
+        assertEquals(2, contraIndicators.size());
+
+        JsonNode firstCINode = contraIndicators.get(0);
+        assertEquals(CI_V_03, firstCINode.get(CODE).asText());
+
+        JsonNode firstCiIssuers = firstCINode.get(ISSUERS);
+        assertEquals("[\"issuer1\"]", firstCiIssuers.toString());
+
+        assertEquals(issuanceDate.toString(), firstCINode.get(ISSUANCE_DATE).asText());
+
+        assertEquals(0, firstCINode.get(MITIGATION).size());
+        assertEquals(0, firstCINode.get(DOCUMENT).size());
+
+        JsonNode secondCiNode = contraIndicators.get(1);
+        assertEquals(CI_D02, secondCiNode.get(CODE).asText());
+
+        JsonNode issuers = secondCiNode.get(ISSUERS);
+        assertEquals("[\"issuer2\",\"issuer3\"]", issuers.toString());
+
+        assertEquals(issuanceDate.toString(), secondCiNode.get(ISSUANCE_DATE).asText());
+
+        assertEquals(0, secondCiNode.get(MITIGATION).size());
+        assertEquals("[\"docId/1\",\"docId/2\"]", secondCiNode.get(DOCUMENT).toString());
+
+        ECDSAVerifier verifier = new ECDSAVerifier(ECKey.parse(CIMIT_PUBLIC_JWK));
+        assertTrue(signedJWT.verify(verifier));
+    }
+
+    @Test
+    void shouldReturnSeparateCiForMitigatedCiWithUnmitigatedVersion() throws Exception {
+        when(mockConfigService.getCimitSigningKey()).thenReturn(CIMIT_PRIVATE_KEY);
+        when(mockConfigService.getCimitComponentId()).thenReturn(CIMIT_COMPONENT_ID);
+        List<CimitStubItem> cimitStubItems = new ArrayList<>();
+        Instant issuanceDate = Instant.now();
+        cimitStubItems.add(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(CI_D02)
+                        .issuer("issuer1")
+                        .issuanceDate(issuanceDate.minusSeconds(100L))
+                        .mitigations(List.of())
+                        .documentIdentifier("docId/1")
+                        .build());
+        cimitStubItems.add(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(CI_D02)
+                        .issuer("issuer2")
+                        .issuanceDate(issuanceDate.minusSeconds(200L))
+                        .mitigations(List.of())
+                        .documentIdentifier("docId/2")
+                        .build());
+        cimitStubItems.add(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(CI_D02)
+                        .issuer("issuer3")
+                        .issuanceDate(issuanceDate)
+                        .mitigations(List.of("M01"))
+                        .documentIdentifier("docId/3")
+                        .build());
+        when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
+
+        GetCiCredentialRequest getCiCredentialRequest =
+                GetCiCredentialRequest.builder()
+                        .govukSigninJourneyId("govuk_signin_journey_id")
+                        .ipAddress("ip_address")
+                        .userId(USER_ID)
+                        .build();
+
+        var response = makeRequest(getCiCredentialRequest);
+
+        var signedJWT = SignedJWT.parse(response.getVc());
+        var claimsSet = signedJWT.getJWTClaimsSet();
+
+        JsonNode vc = objectMapper.readTree(claimsSet.toString()).get(VC_CLAIM);
+
+        JsonNode contraIndicators = vc.get(VC_EVIDENCE).get(0).get(CONTRA_INDICATORS);
+        assertEquals(2, contraIndicators.size());
+
+        JsonNode firstCINode = contraIndicators.get(0);
+        assertEquals(CI_D02, firstCINode.get(CODE).asText());
+
+        assertEquals("[\"issuer1\",\"issuer2\"]", firstCINode.get(ISSUERS).toString());
+        assertEquals(
+                issuanceDate.minusSeconds(100L).toString(),
+                firstCINode.get(ISSUANCE_DATE).asText());
+        assertEquals(0, firstCINode.get(MITIGATION).size());
+        assertEquals("[\"docId/1\",\"docId/2\"]", firstCINode.get(DOCUMENT).toString());
+
+        JsonNode secondCiNode = contraIndicators.get(1);
+        assertEquals(CI_D02, secondCiNode.get(CODE).asText());
+
+        JsonNode issuers = secondCiNode.get(ISSUERS);
+        assertEquals("[\"issuer3\"]", issuers.toString());
+
+        assertEquals(issuanceDate.toString(), secondCiNode.get(ISSUANCE_DATE).asText());
+
+        assertEquals(
+                "[{\"mitigatingCredential\":[],\"code\":\"M01\"}]",
+                secondCiNode.get(MITIGATION).toString());
+        assertEquals("[\"docId/3\"]", secondCiNode.get(DOCUMENT).toString());
+
+        ECDSAVerifier verifier = new ECDSAVerifier(ECKey.parse(CIMIT_PUBLIC_JWK));
+        assertTrue(signedJWT.verify(verifier));
     }
 
     @Test
@@ -126,33 +282,26 @@ class GetContraIndicatorCredentialHandlerTest {
                         .userId(USER_ID)
                         .build();
 
-        var response =
-                makeRequest(
-                        classToTest,
-                        objectMapper.writeValueAsString(getCiCredentialRequest),
-                        mockContext,
-                        GetCiCredentialResponse.class);
+        var response = makeRequest(getCiCredentialRequest);
 
         verify(mockConfigService).getCimitSigningKey();
         verify(mockConfigService).getCimitComponentId();
 
-        assertNotNull(response);
-        assertTrue(response.getVc().equals("Failure"));
+        assertEquals("Failure", response.getVc());
     }
 
-    private <T extends GetCiCredentialResponse> T makeRequest(
-            RequestStreamHandler handler, String request, Context context, Class<T> classType)
-            throws IOException {
-        try (var inputStream = new ByteArrayInputStream(request.getBytes());
+    private GetCiCredentialResponse makeRequest(GetCiCredentialRequest request) throws IOException {
+        try (var inputStream = new ByteArrayInputStream(objectMapper.writeValueAsBytes(request));
                 var outputStream = new ByteArrayOutputStream()) {
-            handler.handleRequest(inputStream, outputStream, context);
-            return objectMapper.readValue(outputStream.toString(), classType);
+            getContraIndicatorCredentialHandler.handleRequest(
+                    inputStream, outputStream, mockContext);
+            return objectMapper.readValue(outputStream.toString(), GetCiCredentialResponse.class);
         }
     }
 
-    private void assertClaimsJWTIsValid(String request, Instant issuanceDate)
+    private void assertClaimsJWTIsValid(String credential, Instant issuanceDate)
             throws ParseException, JsonProcessingException, JOSEException {
-        SignedJWT signedJWT = SignedJWT.parse(request);
+        SignedJWT signedJWT = SignedJWT.parse(credential);
         JsonNode claimsSet = objectMapper.readTree(signedJWT.getJWTClaimsSet().toString());
 
         assertEquals(USER_ID, signedJWT.getJWTClaimsSet().getClaim(JWTClaimNames.SUBJECT));

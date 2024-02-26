@@ -28,13 +28,18 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Stream;
 
+import static java.util.Comparator.comparing;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_EVIDENCE;
 
@@ -47,6 +52,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
     public static final String CODE = "code";
     public static final String FAILURE_RESPONSE = "Failure";
     public static final String MITIGATION = "mitigation";
+    public static final String DOCUMENT = "document";
     public static final String MITIGATION_CREDENTIAL = "mitigatingCredential";
     public static final String ISSUANCE_DATE = "issuanceDate";
     public static final String ISSUERS = "issuers";
@@ -81,7 +87,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
             response = FAILURE_RESPONSE;
         }
 
-        if (response == null || !response.equals(FAILURE_RESPONSE)) {
+        if (response == null) {
             SignedJWT signedJWT;
             try {
                 signedJWT = generateJWT(getValidClaimsSetValues(event.getUserId()));
@@ -161,16 +167,56 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
 
     private List<Map<String, Object>> getContraIndicators(String userId) {
         List<Map<String, Object>> contraIndicators = new ArrayList<>();
-        List<CimitStubItem> cimitStubItems = cimitStubItemService.getCIsForUserId(userId);
-        for (CimitStubItem cimitStubItem : cimitStubItems) {
-            Map<String, Object> contraIndicator = new LinkedHashMap<>();
-            contraIndicator.put(CODE, cimitStubItem.getContraIndicatorCode());
-            contraIndicator.put(ISSUERS, cimitStubItem.getIssuers());
-            contraIndicator.put(ISSUANCE_DATE, cimitStubItem.getIssuanceDate().toString());
-            contraIndicator.put(MITIGATION, getMitigations(cimitStubItem.getMitigations()));
-            contraIndicators.add(contraIndicator);
+        List<CimitStubItem> cimitStubItems =
+                cimitStubItemService.getCIsForUserId(userId).stream()
+                        .sorted(comparing(CimitStubItem::getIssuanceDate))
+                        .toList();
+        for (CimitStubItem item : cimitStubItems) {
+            if (item.getMitigations() != null && !item.getMitigations().isEmpty()) {
+                contraIndicators.add(createContraIndicator(item));
+                continue;
+            }
+
+            contraIndicators.stream()
+                    .filter(ci -> ci.get(CODE).equals(item.getContraIndicatorCode()))
+                    .findFirst()
+                    .ifPresentOrElse(
+                            existingCi -> {
+                                ((Set<String>) existingCi.get(ISSUERS)).add(item.getIssuer());
+                                existingCi.put(
+                                        ISSUANCE_DATE,
+                                        Stream.of(
+                                                        Instant.parse(
+                                                                (String)
+                                                                        existingCi.get(
+                                                                                ISSUANCE_DATE)),
+                                                        item.getIssuanceDate())
+                                                .sorted(Instant::compareTo)
+                                                .reduce((first, second) -> second)
+                                                .orElseThrow()
+                                                .toString());
+                                if (item.getDocumentIdentifier() != null) {
+                                    ((Set<String>) existingCi.get(DOCUMENT))
+                                            .add(item.getDocumentIdentifier());
+                                }
+                            },
+                            () -> contraIndicators.add(createContraIndicator(item)));
         }
         return contraIndicators;
+    }
+
+    private Map<String, Object> createContraIndicator(CimitStubItem item) {
+        Map<String, Object> contraIndicator = new LinkedHashMap<>();
+        contraIndicator.put(CODE, item.getContraIndicatorCode());
+        contraIndicator.put(ISSUERS, new TreeSet<>(List.of(item.getIssuer())));
+        contraIndicator.put(ISSUANCE_DATE, item.getIssuanceDate().toString());
+        contraIndicator.put(MITIGATION, getMitigations(item.getMitigations()));
+        contraIndicator.put(
+                DOCUMENT,
+                item.getDocumentIdentifier() == null
+                        ? new TreeSet<>(List.of())
+                        : new TreeSet<>(List.of(item.getDocumentIdentifier())));
+        return contraIndicator;
     }
 
     private List<Map<String, Object>> getMitigations(List<String> mitigationCodes) {

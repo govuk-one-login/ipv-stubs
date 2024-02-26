@@ -41,14 +41,14 @@ class UserServiceTest {
                         UserCisRequest.builder()
                                 .code("code1")
                                 .issuanceDate("2023-07-25T10:00:00Z")
-                                .issuers(List.of("https://issuer.example.com"))
+                                .issuer(List.of("https://issuer.example.com"))
                                 .mitigations(List.of("V01", "V03"))
                                 .documentIdentifier("document/this/that")
                                 .build(),
                         UserCisRequest.builder()
                                 .code("code2")
                                 .issuanceDate("2023-07-25T10:00:00Z")
-                                .issuers(List.of("https://issuer.example.com"))
+                                .issuer(List.of("https://issuer.example.com"))
                                 .mitigations(Collections.emptyList())
                                 .build());
 
@@ -89,7 +89,7 @@ class UserServiceTest {
         UserCisRequest userCisRequest =
                 UserCisRequest.builder()
                         .code("code1")
-                        .issuers(List.of("https://issuer.example.com"))
+                        .issuer(List.of("https://issuer.example.com"))
                         .issuanceDate("2023-07-25T10:00:00Z")
                         .mitigations(List.of("V01"))
                         .build();

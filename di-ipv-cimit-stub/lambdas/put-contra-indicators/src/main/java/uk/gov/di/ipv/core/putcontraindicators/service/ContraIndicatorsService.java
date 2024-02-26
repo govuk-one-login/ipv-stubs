@@ -129,7 +129,7 @@ public class ContraIndicatorsService {
                                 CimitStubItem.builder()
                                         .userId(userId)
                                         .contraIndicatorCode(ciCode.toUpperCase())
-                                        .issuers(List.of(iss))
+                                        .issuer(iss)
                                         .issuanceDate(issuanceDate)
                                         .mitigations(List.of())
                                         .documentIdentifier(docId)
