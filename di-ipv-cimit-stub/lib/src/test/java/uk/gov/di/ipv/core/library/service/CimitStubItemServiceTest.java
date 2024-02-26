@@ -57,14 +57,14 @@ class CimitStubItemServiceTest {
         String ciCode = "V03";
         List<String> mitigations = List.of("V01", "V03");
         Instant issuanceDate = Instant.now();
-        List<String> issuers = List.of("https://address-cri.stubs.account.gov.uk");
+        String issuer = "https://address-cri.stubs.account.gov.uk";
         String docId = "some/document/id";
 
         cimitStubItemService.persistCimitStubItem(
                 CimitStubItem.builder()
                         .userId(USER_ID)
                         .contraIndicatorCode(ciCode)
-                        .issuer(issuers)
+                        .issuer(issuer)
                         .issuanceDate(issuanceDate)
                         .mitigations(mitigations)
                         .documentIdentifier(docId)
@@ -76,7 +76,7 @@ class CimitStubItemServiceTest {
 
         assertEquals(USER_ID, capturedItem.getUserId());
         assertEquals(ciCode, capturedItem.getContraIndicatorCode());
-        assertEquals(issuers, capturedItem.getIssuer());
+        assertEquals(issuer, capturedItem.getIssuer());
         assertEquals(issuanceDate, capturedItem.getIssuanceDate());
         assertEquals(mitigations, capturedItem.getMitigations());
         assertEquals(docId, capturedItem.getDocumentIdentifier());
