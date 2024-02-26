@@ -27,6 +27,21 @@ Parameters:
     Description: "The ARN of the permissions boundary to apply when creating IAM roles"
     Type: String
     Default: "none"
+  CodeSigningConfigArn:
+    Type: String
+    Description: Asserts that lambdas are signed when deployed.
+    Default: none
+  DeploymentStrategy:
+    Description: "Predefined deployment configuration for ECS application"
+    Type: String
+    Default: "None"
+    # Allowed values: See https://docs.aws.amazon.com/codedeploy/latest/userguide/deployment-configurations.html
+    AllowedValues:
+      - None
+      - CodeDeployDefault.ECSCanary10Percent5Minutes
+      - CodeDeployDefault.ECSCanary10Percent15Minutes
+      - ECSCanary50Percent5Minutes
+      - CodeDeployDefault.ECSAllAtOnce
 
   OrchestratorClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
@@ -463,14 +478,19 @@ Resources:
     Type: "AWS::ECS::Service"
     Properties:
       Cluster: !Ref OrchStubCluster
-      DeploymentConfiguration:
-        MaximumPercent: 200
-        MinimumHealthyPercent: 50
-        DeploymentCircuitBreaker:
-          Enable: true
-          Rollback: true
+      DeploymentConfiguration: !If 
+        - IsNotDevelopment
+        - MaximumPercent: 200
+          MinimumHealthyPercent: 50
+          DeploymentCircuitBreaker:
+            Enable: true
+            Rollback: true
+        - !Ref AWS::NoValue
       DeploymentController:
-        Type: ECS
+        Type: !If 
+        - IsNotDevelopment
+        - CODE_DEPLOY
+        - ECS
       DesiredCount: !FindInMap
         - EnvironmentConfiguration
         - !Ref AWS::AccountId
@@ -756,6 +776,35 @@ Resources:
             Condition:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+  
+  # *** Canary Deployment ***
+  
+  ECSBlueGreenDeploymentStack:
+    Type: AWS::CloudFormation::Stack
+    Condition: UseCanaryDeployment
+    Properties:
+      TemplateURL: "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/ecs-canary-deployment/template.yaml"
+      Parameters:
+        ECSClusterName: !Ref OrchStubCluster
+        ECSServiceName: !GetAtt OrchStubService.Name
+        TargetGroupName: !GetAtt LoadBalancerListenerTargetGroupECS.TargetGroupName
+        LoadBalancerListenerARN: !Ref LoadBalancerListener
+        LoadBalancerFullName: !GetAtt LoadBalancer.LoadBalancerFullName
+        ECSServiceTaskDefinition: !Ref ECSServiceTaskDefinition
+        DeploymentStrategy: !Ref DeploymentStrategy
+        VpcId: !Sub ${VpcStackName}-VpcId
+        ContainerName: app
+        ContainerPort: 8080
+        ELB4XXAlarmThreshold: 
+        ELB5XXAlarmThreshold: !FindInMap 
+        PermissionsBoundary: !If
+          - UsePermissionsBoundary
+          - !Ref PermissionsBoundary
+          - none
+        CodeSigningConfigArn: !If
+          - UseCodeSigning
+          - !Ref CodeSigningConfigArn
+          - !Ref AWS::NoValue
 
 Outputs:
   OrchStubEnvironment:
