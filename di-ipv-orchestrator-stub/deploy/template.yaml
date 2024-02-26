@@ -151,7 +151,8 @@ Conditions:
     - !Or
       - !Condition IsDevelopment
       - !Condition IsProduction
-
+  UseCodeSigning: !Not
+    - !Equals [ !Ref CodeSigningConfigArn, "none" ]
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
@@ -163,6 +164,8 @@ Conditions:
 Mappings:
   EnvironmentConfiguration:
     "130355686670": # Development
+      lb400ErrorLimit: 10
+      lb500ErrorLimit: 10
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
@@ -170,6 +173,8 @@ Mappings:
       platform: core
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "826978934233": #Core Stubs Build
+      lb400ErrorLimit: 10
+      lb500ErrorLimit: 10
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
@@ -177,6 +182,8 @@ Mappings:
       platform: core-stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "616199614141": #Stubs Build
+      lb400ErrorLimit: 10
+      lb500ErrorLimit: 10
       fargateCPUsize: "512"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
@@ -184,6 +191,8 @@ Mappings:
       platform: stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "388905755587": #Stubs Prod
+      lb400ErrorLimit: 10
+      lb500ErrorLimit: 10
       fargateCPUsize: "1024"
       fargateRAMsize: "2048"
       desiredTaskCount: 2
@@ -480,12 +489,12 @@ Resources:
       Cluster: !Ref OrchStubCluster
       DeploymentConfiguration: !If 
         - IsNotDevelopment
+        - !Ref AWS::NoValue
         - MaximumPercent: 200
           MinimumHealthyPercent: 50
           DeploymentCircuitBreaker:
             Enable: true
             Rollback: true
-        - !Ref AWS::NoValue
       DeploymentController:
         Type: !If 
         - IsNotDevelopment
@@ -780,8 +789,8 @@ Resources:
   # *** Canary Deployment ***
   
   ECSBlueGreenDeploymentStack:
+    Condition: IsNotDevelopment
     Type: AWS::CloudFormation::Stack
-    Condition: UseCanaryDeployment
     Properties:
       TemplateURL: "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/ecs-canary-deployment/template.yaml"
       Parameters:
@@ -795,8 +804,9 @@ Resources:
         VpcId: !Sub ${VpcStackName}-VpcId
         ContainerName: app
         ContainerPort: 8080
-        ELB4XXAlarmThreshold: 
-        ELB5XXAlarmThreshold: !FindInMap 
+        ELB4XXAlarmThreshold: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, lb400ErrorLimit ]
+        ELB5XXAlarmThreshold: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, lb500ErrorLimit ]
+        TargetGroupHTTPCodeMatcher: "200,401"
         PermissionsBoundary: !If
           - UsePermissionsBoundary
           - !Ref PermissionsBoundary
