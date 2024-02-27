@@ -132,7 +132,7 @@ public class ContraIndicatorsService {
                                         .issuer(iss)
                                         .issuanceDate(issuanceDate)
                                         .mitigations(List.of())
-                                        .documentIdentifier(docId)
+                                        .document(docId)
                                         .build())
                 .toList();
     }

@@ -26,7 +26,7 @@ public class CimitStubItem implements DynamodbItem {
     private Instant issuanceDate;
     private long ttl;
     private List<String> mitigations;
-    private String documentIdentifier;
+    private String document;
 
     @DynamoDbPartitionKey
     public String getUserId() {
@@ -64,7 +64,7 @@ public class CimitStubItem implements DynamodbItem {
                                 ? Instant.now()
                                 : Instant.parse(ciRequest.getIssuanceDate()))
                 .mitigations(listToUppercase(ciRequest.getMitigations()))
-                .documentIdentifier(ciRequest.getDocumentIdentifier())
+                .document(ciRequest.getDocument())
                 .build();
     }
 

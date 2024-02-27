@@ -39,10 +39,8 @@ import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLA
 
 @ExtendWith(MockitoExtension.class)
 class GetContraIndicatorCredentialHandlerTest {
-
     private static final String USER_ID = "user_id";
     private static final String CI_V03 = "V03";
-    private static final String CI_D02 = "D02";
     private static final String MITIGATION_M01 = "M01";
     private static final String CIMIT_PRIVATE_KEY =
             "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO";
@@ -117,7 +115,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                                 MITIGATION_M01,
                                                 List.of(MitigatingCredential.EMPTY))))
                         .incompleteMitigation(List.of())
-                        .document(new TreeSet<>())
+                        .document(null)
                         .txn(evidenceTxn)
                         .build();
         assertEquals(expectedCi, firstContraIndicator);
@@ -127,47 +125,32 @@ class GetContraIndicatorCredentialHandlerTest {
     }
 
     @Test
-    void shouldDeduplicateUnmitigatedCi() throws Exception {
+    void shouldDeduplicateCiWithSameCodeAndNoDocument() throws Exception {
         when(mockConfigService.getCimitSigningKey()).thenReturn(CIMIT_PRIVATE_KEY);
         when(mockConfigService.getCimitComponentId()).thenReturn(CIMIT_COMPONENT_ID);
+
         List<CimitStubItem> cimitStubItems = new ArrayList<>();
         Instant issuanceDate = Instant.now();
+
         cimitStubItems.add(
                 CimitStubItem.builder()
                         .userId(USER_ID)
                         .contraIndicatorCode(CI_V03)
                         .issuer("issuer1")
                         .issuanceDate(issuanceDate.minusSeconds(100L))
-                        .mitigations(new ArrayList<>(List.of()))
-                        .documentIdentifier(null)
+                        .mitigations(List.of())
+                        .document(null)
                         .build());
         cimitStubItems.add(
                 CimitStubItem.builder()
                         .userId(USER_ID)
                         .contraIndicatorCode(CI_V03)
-                        .issuer("issuer1")
-                        .issuanceDate(issuanceDate)
-                        .mitigations(new ArrayList<>(List.of()))
-                        .documentIdentifier(null)
-                        .build());
-        cimitStubItems.add(
-                CimitStubItem.builder()
-                        .userId(USER_ID)
-                        .contraIndicatorCode(CI_D02)
                         .issuer("issuer2")
-                        .issuanceDate(issuanceDate.minusSeconds(100L))
-                        .mitigations(new ArrayList<>(List.of()))
-                        .documentIdentifier("docId/1")
-                        .build());
-        cimitStubItems.add(
-                CimitStubItem.builder()
-                        .userId(USER_ID)
-                        .contraIndicatorCode(CI_D02)
-                        .issuer("issuer3")
                         .issuanceDate(issuanceDate)
-                        .mitigations(new ArrayList<>(List.of()))
-                        .documentIdentifier("docId/2")
+                        .mitigations(List.of("M01"))
+                        .document(null)
                         .build());
+
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
 
         GetCiCredentialRequest getCiCredentialRequest =
@@ -179,9 +162,6 @@ class GetContraIndicatorCredentialHandlerTest {
 
         var response = makeRequest(getCiCredentialRequest);
 
-        verify(mockConfigService).getCimitSigningKey();
-        verify(mockConfigService).getCimitComponentId();
-
         var signedJWT = SignedJWT.parse(response.getVc());
         var claimsSet = signedJWT.getJWTClaimsSet();
         var vcClaim =
@@ -190,69 +170,53 @@ class GetContraIndicatorCredentialHandlerTest {
         var evidenceTxn = vcClaim.evidence().get(0).txn();
 
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
-        assertEquals(2, contraIndicators.size());
 
-        ContraIndicator expectedFirstCi =
-                ContraIndicator.builder()
-                        .code(CI_V03)
-                        .issuers(new TreeSet<>(List.of("issuer1")))
-                        .issuanceDate(issuanceDate.toString())
-                        .mitigation(List.of())
-                        .incompleteMitigation(List.of())
-                        .document(new TreeSet<>())
-                        .txn(evidenceTxn)
-                        .build();
-        assertEquals(expectedFirstCi, contraIndicators.get(0));
+        var expectedCi =
+                List.of(
+                        ContraIndicator.builder()
+                                .code(CI_V03)
+                                .issuers(new TreeSet<>(List.of("issuer1", "issuer2")))
+                                .issuanceDate(issuanceDate.toString())
+                                .mitigation(
+                                        List.of(
+                                                new Mitigation(
+                                                        "M01",
+                                                        List.of(MitigatingCredential.EMPTY))))
+                                .incompleteMitigation(List.of())
+                                .document(null)
+                                .txn(evidenceTxn)
+                                .build());
 
-        ContraIndicator expectedSecondCi =
-                ContraIndicator.builder()
-                        .code(CI_D02)
-                        .issuers(new TreeSet<>(List.of("issuer2", "issuer3")))
-                        .issuanceDate(issuanceDate.toString())
-                        .mitigation(List.of())
-                        .incompleteMitigation(List.of())
-                        .document(new TreeSet<>(List.of("docId/1", "docId/2")))
-                        .txn(evidenceTxn)
-                        .build();
-        assertEquals(expectedSecondCi, contraIndicators.get(1));
-
-        ECDSAVerifier verifier = new ECDSAVerifier(ECKey.parse(CIMIT_PUBLIC_JWK));
-        assertTrue(signedJWT.verify(verifier));
+        assertEquals(expectedCi, contraIndicators);
     }
 
     @Test
-    void shouldReturnSeparateCiForMitigatedCiWithUnmitigatedVersion() throws Exception {
+    void shouldNotDeduplicateCiWithSameCodeAndDifferentDocument() throws Exception {
         when(mockConfigService.getCimitSigningKey()).thenReturn(CIMIT_PRIVATE_KEY);
         when(mockConfigService.getCimitComponentId()).thenReturn(CIMIT_COMPONENT_ID);
+
         List<CimitStubItem> cimitStubItems = new ArrayList<>();
         Instant issuanceDate = Instant.now();
+
         cimitStubItems.add(
                 CimitStubItem.builder()
                         .userId(USER_ID)
-                        .contraIndicatorCode(CI_D02)
+                        .contraIndicatorCode(CI_V03)
                         .issuer("issuer1")
                         .issuanceDate(issuanceDate.minusSeconds(100L))
-                        .mitigations(List.of())
-                        .documentIdentifier("docId/1")
+                        .mitigations(new ArrayList<>(List.of()))
+                        .document("doc1")
                         .build());
         cimitStubItems.add(
                 CimitStubItem.builder()
                         .userId(USER_ID)
-                        .contraIndicatorCode(CI_D02)
+                        .contraIndicatorCode(CI_V03)
                         .issuer("issuer2")
-                        .issuanceDate(issuanceDate.minusSeconds(200L))
-                        .mitigations(List.of())
-                        .documentIdentifier("docId/2")
-                        .build());
-        cimitStubItems.add(
-                CimitStubItem.builder()
-                        .userId(USER_ID)
-                        .contraIndicatorCode(CI_D02)
-                        .issuer("issuer3")
                         .issuanceDate(issuanceDate)
-                        .mitigations(List.of(MITIGATION_M01))
-                        .documentIdentifier("docId/3")
+                        .mitigations(new ArrayList<>(List.of()))
+                        .document("doc2")
                         .build());
+
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
 
         GetCiCredentialRequest getCiCredentialRequest =
@@ -272,38 +236,91 @@ class GetContraIndicatorCredentialHandlerTest {
         var evidenceTxn = vcClaim.evidence().get(0).txn();
 
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
-        assertEquals(2, contraIndicators.size());
 
-        ContraIndicator expectedFirstCi =
-                ContraIndicator.builder()
-                        .code(CI_D02)
-                        .issuers(new TreeSet<>(List.of("issuer1", "issuer2")))
-                        .issuanceDate(issuanceDate.minusSeconds(100L).toString())
-                        .mitigation(List.of())
-                        .incompleteMitigation(List.of())
-                        .document(new TreeSet<>(List.of("docId/1", "docId/2")))
-                        .txn(evidenceTxn)
+        var expectedCi =
+                List.of(
+                        ContraIndicator.builder()
+                                .code(CI_V03)
+                                .issuers(new TreeSet<>(List.of("issuer1")))
+                                .issuanceDate(issuanceDate.minusSeconds(100L).toString())
+                                .mitigation(List.of())
+                                .incompleteMitigation(List.of())
+                                .document("doc1")
+                                .txn(evidenceTxn)
+                                .build(),
+                        ContraIndicator.builder()
+                                .code(CI_V03)
+                                .issuers(new TreeSet<>(List.of("issuer2")))
+                                .issuanceDate(issuanceDate.toString())
+                                .mitigation(List.of())
+                                .incompleteMitigation(List.of())
+                                .document("doc2")
+                                .txn(evidenceTxn)
+                                .build());
+
+        assertEquals(expectedCi, contraIndicators);
+    }
+
+    @Test
+    void shouldDeduplicateCiWithSameCodeAndSameDocument() throws Exception {
+        when(mockConfigService.getCimitSigningKey()).thenReturn(CIMIT_PRIVATE_KEY);
+        when(mockConfigService.getCimitComponentId()).thenReturn(CIMIT_COMPONENT_ID);
+
+        List<CimitStubItem> cimitStubItems = new ArrayList<>();
+        Instant issuanceDate = Instant.now();
+
+        cimitStubItems.add(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(CI_V03)
+                        .issuer("issuer1")
+                        .issuanceDate(issuanceDate.minusSeconds(100L))
+                        .mitigations(new ArrayList<>(List.of()))
+                        .document("doc1")
+                        .build());
+        cimitStubItems.add(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(CI_V03)
+                        .issuer("issuer2")
+                        .issuanceDate(issuanceDate)
+                        .mitigations(new ArrayList<>(List.of()))
+                        .document("doc1")
+                        .build());
+
+        when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
+
+        GetCiCredentialRequest getCiCredentialRequest =
+                GetCiCredentialRequest.builder()
+                        .govukSigninJourneyId("govuk_signin_journey_id")
+                        .ipAddress("ip_address")
+                        .userId(USER_ID)
                         .build();
-        assertEquals(expectedFirstCi, contraIndicators.get(0));
 
-        ContraIndicator expectedSecondCi =
-                ContraIndicator.builder()
-                        .code(CI_D02)
-                        .issuers(new TreeSet<>(List.of("issuer3")))
-                        .issuanceDate(issuanceDate.toString())
-                        .mitigation(
-                                List.of(
-                                        new Mitigation(
-                                                MITIGATION_M01,
-                                                List.of(MitigatingCredential.EMPTY))))
-                        .incompleteMitigation(List.of())
-                        .document(new TreeSet<>(List.of("docId/3")))
-                        .txn(evidenceTxn)
-                        .build();
-        assertEquals(expectedSecondCi, contraIndicators.get(1));
+        var response = makeRequest(getCiCredentialRequest);
 
-        ECDSAVerifier verifier = new ECDSAVerifier(ECKey.parse(CIMIT_PUBLIC_JWK));
-        assertTrue(signedJWT.verify(verifier));
+        var signedJWT = SignedJWT.parse(response.getVc());
+        var claimsSet = signedJWT.getJWTClaimsSet();
+        var vcClaim =
+                objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+
+        var evidenceTxn = vcClaim.evidence().get(0).txn();
+
+        var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
+
+        var expectedCi =
+                List.of(
+                        ContraIndicator.builder()
+                                .code(CI_V03)
+                                .issuers(new TreeSet<>(List.of("issuer1", "issuer2")))
+                                .issuanceDate(issuanceDate.toString())
+                                .mitigation(List.of())
+                                .incompleteMitigation(List.of())
+                                .document("doc1")
+                                .txn(evidenceTxn)
+                                .build());
+
+        assertEquals(expectedCi, contraIndicators);
     }
 
     @Test

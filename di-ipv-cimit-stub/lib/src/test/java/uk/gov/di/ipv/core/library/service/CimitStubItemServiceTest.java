@@ -67,7 +67,7 @@ class CimitStubItemServiceTest {
                         .issuer(issuer)
                         .issuanceDate(issuanceDate)
                         .mitigations(mitigations)
-                        .documentIdentifier(docId)
+                        .document(docId)
                         .build());
 
         verify(mockDataStore).create(cimitStubItemArgumentCaptor.capture(), any());
@@ -79,7 +79,7 @@ class CimitStubItemServiceTest {
         assertEquals(issuer, capturedItem.getIssuer());
         assertEquals(issuanceDate, capturedItem.getIssuanceDate());
         assertEquals(mitigations, capturedItem.getMitigations());
-        assertEquals(docId, capturedItem.getDocumentIdentifier());
+        assertEquals(docId, capturedItem.getDocument());
     }
 
     @Test

@@ -43,7 +43,7 @@ class UserServiceTest {
                                 .issuanceDate("2023-07-25T10:00:00Z")
                                 .issuer("https://issuer.example.com")
                                 .mitigations(List.of("V01", "V03"))
-                                .documentIdentifier("document/this/that")
+                                .document("document/this/that")
                                 .build(),
                         UserCisRequest.builder()
                                 .code("code2")

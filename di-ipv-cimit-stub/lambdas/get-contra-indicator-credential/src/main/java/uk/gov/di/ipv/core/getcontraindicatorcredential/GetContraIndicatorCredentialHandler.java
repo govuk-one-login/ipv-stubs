@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
@@ -141,42 +141,38 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
 
         var ciForVc = new ArrayList<ContraIndicator>();
         for (var datebaseCi : ciFromDatabase) {
-            if (datebaseCi.getMitigations() != null && !datebaseCi.getMitigations().isEmpty()) {
-                ciForVc.add(createContraIndicator(datebaseCi, txnUuid));
-                continue;
-            }
-
             ciForVc.stream()
-                    .filter(vcCi -> vcCi.getCode().equals(datebaseCi.getContraIndicatorCode()))
+                    .filter(vcCi -> ciShouldBeMerged(datebaseCi, vcCi))
                     .findFirst()
                     .ifPresentOrElse(
-                            existingCi -> {
-                                existingCi.getIssuers().add(datebaseCi.getIssuer());
-                                existingCi.setIssuanceDate(
-                                        Stream.of(
-                                                        Instant.parse(existingCi.getIssuanceDate()),
-                                                        datebaseCi.getIssuanceDate())
-                                                .sorted(Instant::compareTo)
-                                                .reduce((first, second) -> second)
-                                                .orElseThrow()
-                                                .toString());
-                                if (datebaseCi.getDocumentIdentifier() != null) {
-                                    existingCi
-                                            .getDocument()
-                                            .add(datebaseCi.getDocumentIdentifier());
-                                }
+                            vcCi -> {
+                                vcCi.getIssuers().add(datebaseCi.getIssuer());
+                                vcCi.setIssuanceDate(datebaseCi.getIssuanceDate().toString());
+                                vcCi
+                                        .getMitigation()
+                                        .addAll(getMitigations(datebaseCi.getMitigations()));
                             },
                             () -> ciForVc.add(createContraIndicator(datebaseCi, txnUuid)));
         }
         return ciForVc;
     }
 
+    private boolean ciShouldBeMerged(
+            CimitStubItem ciBeingProcessed, ContraIndicator ciAlreadyProcessed) {
+        boolean ciCodesMatch =
+                ciBeingProcessed.getContraIndicatorCode().equals(ciAlreadyProcessed.getCode());
+        boolean documentsMatch =
+                ciBeingProcessed.getDocument() == null
+                        ? ciAlreadyProcessed.getDocument() == null
+                        : ciBeingProcessed.getDocument().equals(ciAlreadyProcessed.getDocument());
+
+        return ciCodesMatch && documentsMatch;
+    }
+
     private ContraIndicator createContraIndicator(CimitStubItem item, List<String> txnUuid) {
         return new ContraIndicator(
                 item.getContraIndicatorCode(),
-                item.getDocumentIdentifier() == null
-                        ? new TreeSet<>(List.of())
-                        : new TreeSet<>(List.of(item.getDocumentIdentifier())),
+                item.getDocument(),
                 item.getIssuanceDate().toString(),
                 new TreeSet<>(List.of(item.getIssuer())),
                 getMitigations(item.getMitigations()),
@@ -187,6 +183,6 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
     private List<Mitigation> getMitigations(List<String> mitigationCodes) {
         return mitigationCodes.stream()
                 .map(ciCode -> new Mitigation(ciCode, List.of(MitigatingCredential.EMPTY)))
-                .toList();
+                .collect(Collectors.toList());
     }
 }

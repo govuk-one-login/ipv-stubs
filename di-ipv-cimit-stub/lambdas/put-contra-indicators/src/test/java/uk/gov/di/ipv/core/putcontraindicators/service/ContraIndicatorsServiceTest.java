@@ -68,7 +68,7 @@ public class ContraIndicatorsServiceTest {
                         .issuer("https://kbv-cri.stubs.account.gov.uk")
                         .issuanceDate(Instant.parse("2023-08-17T10:20:53Z"))
                         .mitigations(List.of())
-                        .documentIdentifier(null)
+                        .document(null)
                         .sortKey("V03#2023-08-17T10:20:53Z")
                         .build();
 
@@ -145,8 +145,7 @@ public class ContraIndicatorsServiceTest {
         verify(mockDataStore, never()).update(any());
 
         assertEquals(
-                "passport/GBR/321654987",
-                cimitStubItemArgumentCaptor.getValue().getDocumentIdentifier());
+                "passport/GBR/321654987", cimitStubItemArgumentCaptor.getValue().getDocument());
     }
 
     @Test
@@ -168,6 +167,6 @@ public class ContraIndicatorsServiceTest {
 
         assertEquals(
                 "drivingPermit/GB/DVLA/DECER607085KE9LN/2018-04-19",
-                cimitStubItemArgumentCaptor.getValue().getDocumentIdentifier());
+                cimitStubItemArgumentCaptor.getValue().getDocument());
     }
 }

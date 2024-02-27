@@ -12,7 +12,7 @@ import java.util.SortedSet;
 @Builder
 public final class ContraIndicator {
     private String code;
-    private SortedSet<String> document;
+    private String document;
     private String issuanceDate;
     private SortedSet<String> issuers;
     private List<Mitigation> mitigation;
@@ -21,7 +21,7 @@ public final class ContraIndicator {
 
     public ContraIndicator(
             String code,
-            SortedSet<String> document,
+            String document,
             String issuanceDate,
             SortedSet<String> issuers,
             List<Mitigation> mitigation,

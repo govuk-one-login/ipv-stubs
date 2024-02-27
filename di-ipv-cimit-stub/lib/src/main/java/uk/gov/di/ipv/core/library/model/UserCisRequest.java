@@ -16,5 +16,5 @@ public class UserCisRequest {
     private String issuanceDate;
     private String issuer;
     private List<String> mitigations;
-    private String documentIdentifier;
+    private String document;
 }
