@@ -1241,7 +1241,8 @@
         "passport": [
           {
             "documentNumber": "824159121",
-            "expiryDate": "2030-01-01"
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
           }
         ]
       }
@@ -1272,7 +1273,8 @@
         "passport": [
           {
             "expiryDate": "2030-01-01",
-            "documentNumber": "321654987"
+            "documentNumber": "321654987",
+            "icaoIssuerCode": "GBR"
           }
         ]
       }
@@ -1369,7 +1371,8 @@
         "passport": [
           {
             "documentNumber": "321654987",
-            "expiryDate": "2030-01-01"
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
           }
         ]
       }
