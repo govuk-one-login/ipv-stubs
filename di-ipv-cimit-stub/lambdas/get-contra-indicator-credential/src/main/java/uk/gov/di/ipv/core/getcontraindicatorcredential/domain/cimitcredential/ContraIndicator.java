@@ -17,6 +17,7 @@ public final class ContraIndicator {
     private SortedSet<String> issuers;
     private List<Mitigation> mitigation;
     private List<Mitigation> incompleteMitigation;
+    private List<String> txn;
 
     public ContraIndicator(
             String code,
@@ -24,12 +25,14 @@ public final class ContraIndicator {
             String issuanceDate,
             SortedSet<String> issuers,
             List<Mitigation> mitigation,
-            List<Mitigation> incompleteMitigation) {
+            List<Mitigation> incompleteMitigation,
+            List<String> txn) {
         this.code = code;
         this.document = document;
         this.issuanceDate = issuanceDate;
         this.issuers = issuers;
         this.mitigation = mitigation;
         this.incompleteMitigation = incompleteMitigation;
+        this.txn = txn;
     }
 }

@@ -98,8 +98,13 @@ class GetContraIndicatorCredentialHandlerTest {
 
         assertEquals(List.of("VerifiableCredential", "SecurityCheckCredential"), vcClaim.type());
 
+        var evidenceTxn = vcClaim.evidence().get(0).txn();
+
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
         assertEquals(1, contraIndicators.size());
+
+        var firstContraIndicator = contraIndicators.get(0);
+        assertEquals(evidenceTxn, firstContraIndicator.getTxn());
 
         ContraIndicator expectedCi =
                 ContraIndicator.builder()
@@ -113,8 +118,9 @@ class GetContraIndicatorCredentialHandlerTest {
                                                 List.of(MitigatingCredential.EMPTY))))
                         .incompleteMitigation(List.of())
                         .document(new TreeSet<>())
+                        .txn(evidenceTxn)
                         .build();
-        assertEquals(expectedCi, contraIndicators.get(0));
+        assertEquals(expectedCi, firstContraIndicator);
 
         ECDSAVerifier verifier = new ECDSAVerifier(ECKey.parse(CIMIT_PUBLIC_JWK));
         assertTrue(signedJWT.verify(verifier));
@@ -181,6 +187,8 @@ class GetContraIndicatorCredentialHandlerTest {
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
 
+        var evidenceTxn = vcClaim.evidence().get(0).txn();
+
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
         assertEquals(2, contraIndicators.size());
 
@@ -192,6 +200,7 @@ class GetContraIndicatorCredentialHandlerTest {
                         .mitigation(List.of())
                         .incompleteMitigation(List.of())
                         .document(new TreeSet<>())
+                        .txn(evidenceTxn)
                         .build();
         assertEquals(expectedFirstCi, contraIndicators.get(0));
 
@@ -203,6 +212,7 @@ class GetContraIndicatorCredentialHandlerTest {
                         .mitigation(List.of())
                         .incompleteMitigation(List.of())
                         .document(new TreeSet<>(List.of("docId/1", "docId/2")))
+                        .txn(evidenceTxn)
                         .build();
         assertEquals(expectedSecondCi, contraIndicators.get(1));
 
@@ -259,6 +269,8 @@ class GetContraIndicatorCredentialHandlerTest {
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
 
+        var evidenceTxn = vcClaim.evidence().get(0).txn();
+
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
         assertEquals(2, contraIndicators.size());
 
@@ -270,6 +282,7 @@ class GetContraIndicatorCredentialHandlerTest {
                         .mitigation(List.of())
                         .incompleteMitigation(List.of())
                         .document(new TreeSet<>(List.of("docId/1", "docId/2")))
+                        .txn(evidenceTxn)
                         .build();
         assertEquals(expectedFirstCi, contraIndicators.get(0));
 
@@ -285,6 +298,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                                 List.of(MitigatingCredential.EMPTY))))
                         .incompleteMitigation(List.of())
                         .document(new TreeSet<>(List.of("docId/3")))
+                        .txn(evidenceTxn)
                         .build();
         assertEquals(expectedSecondCi, contraIndicators.get(1));
 

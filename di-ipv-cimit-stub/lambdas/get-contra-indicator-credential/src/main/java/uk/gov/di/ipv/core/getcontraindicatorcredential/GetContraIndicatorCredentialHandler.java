@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
@@ -123,10 +124,16 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
     }
 
     private VcClaim generateVc(String userId) {
-        return new VcClaim(List.of(new Evidence(getContraIndicators(userId))));
+        var txnUuid = List.of(UUID.randomUUID().toString());
+        var contraIndicators = getContraIndicators(userId, txnUuid);
+        return new VcClaim(
+                List.of(
+                        new Evidence(
+                                contraIndicators,
+                                contraIndicators.isEmpty() ? List.of() : txnUuid)));
     }
 
-    private List<ContraIndicator> getContraIndicators(String userId) {
+    private List<ContraIndicator> getContraIndicators(String userId, List<String> txnUuid) {
         var ciFromDatabase =
                 cimitStubItemService.getCIsForUserId(userId).stream()
                         .sorted(comparing(CimitStubItem::getIssuanceDate))
@@ -135,7 +142,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         var ciForVc = new ArrayList<ContraIndicator>();
         for (var datebaseCi : ciFromDatabase) {
             if (datebaseCi.getMitigations() != null && !datebaseCi.getMitigations().isEmpty()) {
-                ciForVc.add(createContraIndicator(datebaseCi));
+                ciForVc.add(createContraIndicator(datebaseCi, txnUuid));
                 continue;
             }
 
@@ -159,12 +166,12 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                                             .add(datebaseCi.getDocumentIdentifier());
                                 }
                             },
-                            () -> ciForVc.add(createContraIndicator(datebaseCi)));
+                            () -> ciForVc.add(createContraIndicator(datebaseCi, txnUuid)));
         }
         return ciForVc;
     }
 
-    private ContraIndicator createContraIndicator(CimitStubItem item) {
+    private ContraIndicator createContraIndicator(CimitStubItem item, List<String> txnUuid) {
         return new ContraIndicator(
                 item.getContraIndicatorCode(),
                 item.getDocumentIdentifier() == null
@@ -173,7 +180,8 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                 item.getIssuanceDate().toString(),
                 new TreeSet<>(List.of(item.getIssuer())),
                 getMitigations(item.getMitigations()),
-                List.of());
+                List.of(),
+                txnUuid);
     }
 
     private List<Mitigation> getMitigations(List<String> mitigationCodes) {
