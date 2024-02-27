@@ -225,7 +225,7 @@ public class IpvHandler {
             throws OrchestratorStubException, URISyntaxException {
         URI resolve =
                 getIpvBackchannelEndpoint(targetEnvironment).resolve(IPV_BACKCHANNEL_TOKEN_PATH);
-        logger.info("token url is " + resolve);
+        logger.debug("token url is " + resolve);
 
         SignedJWT signedClientJwt;
 
