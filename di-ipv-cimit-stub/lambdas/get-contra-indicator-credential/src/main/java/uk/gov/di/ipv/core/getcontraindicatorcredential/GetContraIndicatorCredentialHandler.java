@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
@@ -148,9 +147,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                             vcCi -> {
                                 vcCi.getIssuers().add(datebaseCi.getIssuer());
                                 vcCi.setIssuanceDate(datebaseCi.getIssuanceDate().toString());
-                                vcCi
-                                        .getMitigation()
-                                        .addAll(getMitigations(datebaseCi.getMitigations()));
+                                vcCi.setMitigation(getMitigations(datebaseCi.getMitigations()));
                             },
                             () -> ciForVc.add(createContraIndicator(datebaseCi, txnUuid)));
         }
@@ -183,6 +180,6 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
     private List<Mitigation> getMitigations(List<String> mitigationCodes) {
         return mitigationCodes.stream()
                 .map(ciCode -> new Mitigation(ciCode, List.of(MitigatingCredential.EMPTY)))
-                .collect(Collectors.toList());
+                .toList();
     }
 }
