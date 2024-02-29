@@ -447,6 +447,84 @@
                         <tr class="govuk-table__row">
                             <td class="govuk-table__cell">
                                 <fieldset class="govuk-fieldset">
+                                    <div class="govuk-date-input" id="vcNotBeforeOverride">
+                                        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                                            <h1 class="govuk-fieldset__heading">
+                                                Override VC Not Before (optional)
+                                            </h1>
+                                        </legend>
+                                        <div class="govuk-form-group">
+                                            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                                                <div class="govuk-checkboxes__item">
+                                                    <input class="govuk-checkboxes__input" type="checkbox" name="vcNotBeforeFlg" id="vcNotBeforeFlg">
+                                                    <label class="govuk-label govuk-checkboxes__label" for="vc_not_before">Include VC Not Before</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="govuk-form-group" id="vc_not_before_override" style="display:none">
+                                            <div id="vc_not_before-hint" class="govuk-hint">
+                                                Defaults to six months ago
+                                            </div>
+                                            <div class="govuk-date-input" id="vcNotBefore">
+                                                <div class="govuk-date-input__item">
+                                                    <div class="govuk-form-group">
+                                                        <label class="govuk-label govuk-date-input__label" for="vc-not-before-day">
+                                                            Day
+                                                        </label>
+                                                        <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="vc-not-before-day" name="vcNotBeforeDay" type="text" inputmode="numeric">
+                                                    </div>
+                                                </div>
+                                                <div class="govuk-date-input__item">
+                                                    <div class="govuk-form-group">
+                                                        <label class="govuk-label govuk-date-input__label" for="vc-not-before-month">
+                                                            Month
+                                                        </label>
+                                                        <input class="govuk-input govuk-date-input__input govuk-input--width-2" id="vcNotBeforeMonth" name="vcNotBeforeMonth" type="text" inputmode="numeric">
+                                                    </div>
+                                                </div>
+                                                <div class="govuk-date-input__item">
+                                                    <div class="govuk-form-group">
+                                                        <label class="govuk-label govuk-date-input__label" for="vcNotBeforeYear">
+                                                            Year
+                                                        </label>
+                                                        <input class="govuk-input govuk-date-input__input govuk-input--width-4" id="vcNotBeforeYear" name="vcNotBeforeYear" type="text" inputmode="numeric">
+                                                    </div>
+                                                </div>
+<!--                                                add fields for hours minutes and second-->
+                                                <div class="govuk-date-input__item">
+                                                    <div class="govuk-form-group">
+                                                        <label class="govuk-label" for="strength">
+                                                            Hours
+                                                        </label>
+                                                        <input class="govuk-input govuk-input--width-2" id="vcNotBeforeHours" name="vcNotBeforeHours" type="number" min="0" step="1" value="00">
+                                                    </div>
+                                                </div>
+                                                <div class="govuk-date-input__item">
+                                                    <div class="govuk-form-group">
+                                                        <label class="govuk-label" for="validity">
+                                                            Minutes
+                                                        </label>
+                                                        <input class="govuk-input govuk-input--width-2" id="vcNotBeforeMinutes" name="vcNotBeforeMinutes" type="number" min="0" step="1" value="00">
+                                                    </div>
+                                                </div>
+                                                <div class="govuk-date-input__item">
+                                                    <div class="govuk-form-group">
+                                                        <label class="govuk-label" for="activityHistory">
+                                                            Seconds
+                                                        </label>
+                                                        <input class="govuk-input govuk-input--width-2" id="vcNotBeforeSeconds" name="vcNotBeforeSeconds" type="number" min="0" step="1" value="00">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </td>
+                        </tr>
+
+                        <tr class="govuk-table__row">
+                            <td class="govuk-table__cell">
+                                <fieldset class="govuk-fieldset">
                                     <div class="govuk-date-input" id="vcJwtExpiry">
                                         <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
                                             <h1 class="govuk-fieldset__heading">
@@ -667,6 +745,34 @@
         }
       });
     }
+
+    const vcNotBeforeCheckbox = document.getElementById('vcNotBeforeFlg');
+    const vcNotBeforeOverride = document.getElementById('vc_not_before_override');
+
+    if (vcNotBeforeCheckbox) {
+      vcNotBeforeCheckbox.addEventListener('change', function() {
+        if(this.checked) {
+          vcNotBeforeOverride.style.display = 'block';
+        } else {
+          vcNotBeforeOverride.style.display = 'none';
+        }
+      });
+    }
+
+//     set the default value for not before to six months ago
+    const defaultDate = new Date();
+    defaultDate.setMonth(defaultDate.getMonth() - 6);
+    const defaultDay = defaultDate.getDate();
+    const defaultMonth = defaultDate.getMonth() + 1;
+    const defaultYear = defaultDate.getFullYear();
+    document.getElementById('vcNotBeforeDay').value = defaultDay;
+    document.getElementById('vcNotBeforeMonth').value = defaultMonth;
+    document.getElementById('vcNotBeforeYear').value = defaultYear;
+    document.getElementById('vcNotBeforeHours').value = defaultDate.getHours();
+    document.getElementById('vcNotBeforeMinutes').value = defaultDate.getMinutes();
+    document.getElementById('vcNotBeforeSeconds').value = defaultDate.getSeconds();
+
+
 </script>
 
 </body>

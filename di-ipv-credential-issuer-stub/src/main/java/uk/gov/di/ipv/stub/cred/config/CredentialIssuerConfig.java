@@ -33,6 +33,13 @@ public class CredentialIssuerConfig {
     public static final String EXPIRY_HOURS = "expHours";
     public static final String EXPIRY_MINUTES = "expMinutes";
     public static final String EXPIRY_SECONDS = "expSeconds";
+    public static final String VC_NOT_BEFORE_FLAG = "vcNotBeforeFlg";
+    public static final String VC_NOT_BEFORE_DAY = "vcNotBeforeDay";
+    public static final String VC_NOT_BEFORE_MONTH = "vcNotBeforeMonth";
+    public static final String VC_NOT_BEFORE_YEAR = "vcNotBeforeYear";
+    public static final String VC_NOT_BEFORE_HOURS = "vcNotBeforeHours";
+    public static final String VC_NOT_BEFORE_MINUTES = "vcNotBeforeMinutes";
+    public static final String VC_NOT_BEFORE_SECONDS = "vcNotBeforeSeconds";
 
     private static final String CREDENTIAL_ISSUER_TYPE_VAR = "CREDENTIAL_ISSUER_TYPE";
 
