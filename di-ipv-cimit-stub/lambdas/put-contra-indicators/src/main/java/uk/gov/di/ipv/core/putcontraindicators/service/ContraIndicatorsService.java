@@ -111,7 +111,8 @@ public class ContraIndicatorsService {
             return List.of();
         }
 
-        var ci = vcClaim.evidence().get(0).ci();
+        var evidence = vcClaim.evidence().get(0);
+        var ci = evidence.ci();
         if (ci == null || ci.isEmpty()) {
             LOGGER.info(new StringMapMessage().with(LOG_MESSAGE_DESCRIPTION, "No CI in VC"));
             return List.of();
@@ -133,6 +134,7 @@ public class ContraIndicatorsService {
                                         .issuanceDate(issuanceDate)
                                         .mitigations(List.of())
                                         .document(docId)
+                                        .txn(evidence.txn())
                                         .build())
                 .toList();
     }
