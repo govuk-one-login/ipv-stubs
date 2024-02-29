@@ -23,12 +23,12 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: '0'
 
       - name: Checkout config repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: govuk-one-login/ipv-config
           token: ${{ secrets.IPV_CONFIG_PAT }}
@@ -44,7 +44,7 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Login to GDS Dev Dynatrace Container Registry
         uses: docker/login-action@v3
@@ -116,7 +116,7 @@ jobs:
         run: sam build -t cf-template.yaml
 
       - name: Deploy SAM app
-        uses: govuk-one-login/devplatform-upload-action@v3.3
+        uses: govuk-one-login/devplatform-upload-action@v3.5
         with:
             artifact-bucket-name: ${{ secrets.CORE_CRI_PP_ARTIFACT_BUCKET_NAME }}
             signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}

@@ -32,9 +32,9 @@ dependencies {
 		}
 	}
 
-	testImplementation "org.junit.jupiter:junit-jupiter:5.9.3",
+	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2",
 			"org.mockito:mockito-junit-jupiter:5.4.0",
-			'uk.org.webcompere:system-stubs-jupiter:2.0.2'
+			'uk.org.webcompere:system-stubs-jupiter:2.1.6'
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
