@@ -8,13 +8,13 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import uk.gov.di.ipv.core.library.model.UserCisRequest;
 import uk.gov.di.ipv.core.library.model.UserMitigationRequest;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 import uk.gov.di.ipv.core.library.service.PendingMitigationService;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
-import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
 import uk.gov.di.ipv.core.stubmanagement.service.UserService;
 
 import java.io.IOException;
@@ -62,13 +62,12 @@ public class StubManagementHandler
             APIGatewayProxyRequestEvent event, Context context) {
         String httpMethod = event.getHttpMethod();
         try {
-            String path = URLDecoder.decode(event.getPath(), StandardCharsets.UTF_8.toString());
+            String path = URLDecoder.decode(event.getPath(), StandardCharsets.UTF_8);
             LOGGER.info("Received '{}' event with path '{}'", httpMethod, path);
             Map<String, String> pathParameters = event.getPathParameters();
             String userId =
                     URLDecoder.decode(
-                            pathParameters.get(USER_ID_PATH_PARAMS),
-                            StandardCharsets.UTF_8.toString());
+                            pathParameters.get(USER_ID_PATH_PARAMS), StandardCharsets.UTF_8);
             if (CIS_PATTERN.matcher(path).matches()) {
                 List<UserCisRequest> userCisRequests =
                         objectMapper.readValue(
@@ -101,7 +100,7 @@ public class StubManagementHandler
             }
             return buildSuccessResponse();
         } catch (IOException e) {
-            LOGGER.error("IOException :" + e.getMessage());
+            LOGGER.error(String.format("IOException : %s", e.getMessage()));
             return buildErrorResponse("Invalid request body.", 400);
         } catch (BadRequestException e) {
             LOGGER.error(e.getMessage());
@@ -109,7 +108,7 @@ public class StubManagementHandler
         } catch (DataNotFoundException e) {
             return buildErrorResponse(e.getMessage(), 404);
         } catch (Exception e) {
-            LOGGER.info("Exception :" + e.getMessage());
+            LOGGER.info(String.format("Exception : %s", e.getMessage()));
             return buildErrorResponse(e.getMessage(), 500);
         }
     }

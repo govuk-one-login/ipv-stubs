@@ -75,7 +75,8 @@ class PendingMitigationServiceTest {
         pendingMitigationItem.setRequestMethod("POST");
 
         when(mockDataStore.getItem("aJwtId", false)).thenReturn(pendingMitigationItem);
-        when(mockCimitStubItemService.getCiForUserId("aUserId", "CI")).thenReturn(cimitStubItem);
+        when(mockCimitStubItemService.getCiForUserId("aUserId", "CI"))
+                .thenReturn(List.of(cimitStubItem));
 
         service.completePendingMitigation("aJwtId", "aUserId", mockCimitStubItemService);
 
@@ -89,7 +90,8 @@ class PendingMitigationServiceTest {
         cimitStubItem.setMitigations(List.of("M03"));
 
         when(mockDataStore.getItem("aJwtId", false)).thenReturn(pendingMitigationItem);
-        when(mockCimitStubItemService.getCiForUserId("aUserId", "CI")).thenReturn(cimitStubItem);
+        when(mockCimitStubItemService.getCiForUserId("aUserId", "CI"))
+                .thenReturn(List.of(cimitStubItem));
 
         service.completePendingMitigation("aJwtId", "aUserId", mockCimitStubItemService);
 
@@ -102,7 +104,8 @@ class PendingMitigationServiceTest {
         pendingMitigationItem.setRequestMethod("PUT");
 
         when(mockDataStore.getItem("aJwtId", false)).thenReturn(pendingMitigationItem);
-        when(mockCimitStubItemService.getCiForUserId("aUserId", "CI")).thenReturn(cimitStubItem);
+        when(mockCimitStubItemService.getCiForUserId("aUserId", "CI"))
+                .thenReturn(List.of(cimitStubItem));
 
         service.completePendingMitigation("aJwtId", "aUserId", mockCimitStubItemService);
 
@@ -116,7 +119,8 @@ class PendingMitigationServiceTest {
         cimitStubItem.setMitigations(List.of("M03"));
 
         when(mockDataStore.getItem("aJwtId", false)).thenReturn(pendingMitigationItem);
-        when(mockCimitStubItemService.getCiForUserId("aUserId", "CI")).thenReturn(cimitStubItem);
+        when(mockCimitStubItemService.getCiForUserId("aUserId", "CI"))
+                .thenReturn(List.of(cimitStubItem));
 
         service.completePendingMitigation("aJwtId", "aUserId", mockCimitStubItemService);
 
@@ -148,7 +152,8 @@ class PendingMitigationServiceTest {
         pendingMitigationItem.setRequestMethod("DELETE");
 
         when(mockDataStore.getItem("aJwtId", false)).thenReturn(pendingMitigationItem);
-        when(mockCimitStubItemService.getCiForUserId("aUserId", "CI")).thenReturn(cimitStubItem);
+        when(mockCimitStubItemService.getCiForUserId("aUserId", "CI"))
+                .thenReturn(List.of(cimitStubItem));
 
         assertThrows(
                 IllegalArgumentException.class,

@@ -23,7 +23,6 @@ dependencies {
 			"org.apache.logging.log4j:log4j-api:2.17.1",
 			"org.apache.logging.log4j:log4j-core:2.17.1",
 			"com.nimbusds:oauth2-oidc-sdk:9.27",
-			"com.google.code.gson:gson:2.10.1",
 			project(":di-ipv-cimit-stub:lib")
 
 	compileOnly "org.projectlombok:lombok:1.18.28"

@@ -1,9 +1,10 @@
 package uk.gov.di.ipv.core.library.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.core.library.persistence.DataStore;
@@ -12,8 +13,10 @@ import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import java.time.Instant;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,16 +27,10 @@ class CimitStubItemServiceTest {
 
     private static final String USER_ID = "user-id-1";
     private static final String DB_TTL = "1800";
+    @Captor private ArgumentCaptor<CimitStubItem> cimitStubItemArgumentCaptor;
     @Mock private ConfigService mockConfigService;
-
     @Mock private DataStore<CimitStubItem> mockDataStore;
-
-    private CimitStubItemService classToTest;
-
-    @BeforeEach
-    void setUp() {
-        classToTest = new CimitStubItemService(mockDataStore, mockConfigService);
-    }
+    @InjectMocks private CimitStubItemService cimitStubItemService;
 
     @Test
     void shouldReturnCredentialIssuersFromDataStoreForSpecificUserId() {
@@ -47,12 +44,12 @@ class CimitStubItemServiceTest {
 
         when(mockDataStore.getItems(USER_ID)).thenReturn(cimitStubItems);
 
-        var result = classToTest.getCIsForUserId(USER_ID);
+        var result = cimitStubItemService.getCIsForUserId(USER_ID);
 
         assertTrue(
                 result.stream()
                         .map(CimitStubItem::getContraIndicatorCode)
-                        .anyMatch(item -> ciCode.equals(item)));
+                        .anyMatch(ciCode::equals));
     }
 
     @Test
@@ -60,18 +57,39 @@ class CimitStubItemServiceTest {
         String ciCode = "V03";
         List<String> mitigations = List.of("V01", "V03");
         Instant issuanceDate = Instant.now();
-        List<String> issuers = List.of("https://address-cri.stubs.account.gov.uk");
-        CimitStubItem cimitStubItem =
-                classToTest.persistCimitStub(USER_ID, ciCode, issuers, issuanceDate, mitigations);
+        String issuer = "https://address-cri.stubs.account.gov.uk";
+        String docId = "some/document/id";
 
-        ArgumentCaptor<CimitStubItem> cimitStubItemArgumentCaptor =
-                ArgumentCaptor.forClass(CimitStubItem.class);
+        cimitStubItemService.persistCimitStubItem(
+                CimitStubItem.builder()
+                        .userId(USER_ID)
+                        .contraIndicatorCode(ciCode)
+                        .issuer(issuer)
+                        .issuanceDate(issuanceDate)
+                        .mitigations(mitigations)
+                        .document(docId)
+                        .build());
+
         verify(mockDataStore).create(cimitStubItemArgumentCaptor.capture(), any());
 
-        assertEquals(USER_ID, cimitStubItem.getUserId());
-        assertEquals(ciCode, cimitStubItem.getContraIndicatorCode());
-        assertEquals(issuanceDate, cimitStubItem.getIssuanceDate());
-        assertEquals(mitigations, cimitStubItem.getMitigations());
+        CimitStubItem capturedItem = cimitStubItemArgumentCaptor.getValue();
+
+        assertEquals(USER_ID, capturedItem.getUserId());
+        assertEquals(ciCode, capturedItem.getContraIndicatorCode());
+        assertEquals(issuer, capturedItem.getIssuer());
+        assertEquals(issuanceDate, capturedItem.getIssuanceDate());
+        assertEquals(mitigations, capturedItem.getMitigations());
+        assertEquals(docId, capturedItem.getDocument());
+    }
+
+    @Test
+    void persistCimitStubItemShouldCreateAnItem() {
+        CimitStubItem itemToPersist = CimitStubItem.builder().userId("some-user").build();
+
+        cimitStubItemService.persistCimitStubItem(itemToPersist);
+
+        verify(mockDataStore).create(cimitStubItemArgumentCaptor.capture(), eq(CIMIT_STUB_TTL));
+        assertEquals(itemToPersist, cimitStubItemArgumentCaptor.getValue());
     }
 
     @Test
@@ -84,14 +102,14 @@ class CimitStubItemServiceTest {
                         .issuanceDate(Instant.now())
                         .build();
         when(mockConfigService.getSsmParameter(CIMIT_STUB_TTL)).thenReturn(DB_TTL);
-        classToTest.updateCimitStubItem(cimitStubItem);
+        cimitStubItemService.updateCimitStubItem(cimitStubItem);
         verify(mockDataStore, times(1)).update(any());
     }
 
     @Test
     void shouldDeleteCimitStubItem() {
         String ciCode = "D02";
-        classToTest.deleteCimitStubItem(USER_ID, ciCode);
+        cimitStubItemService.deleteCimitStubItem(USER_ID, ciCode);
         verify(mockDataStore, times(1)).delete(any(), any());
     }
 }

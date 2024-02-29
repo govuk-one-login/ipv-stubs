@@ -3,7 +3,6 @@ package uk.gov.di.ipv.core.putcontraindicators;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,7 +27,6 @@ import static org.mockito.Mockito.doThrow;
 class PutContraIndicatorsHandlerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final Gson gson = new Gson();
     @Mock private Context mockContext;
 
     @Mock private ContraIndicatorsService mockCimitService;
@@ -44,9 +42,9 @@ class PutContraIndicatorsHandlerTest {
                         .signedJwt("signed_jwt")
                         .build();
 
-        Gson gson = new Gson();
         String expectedResponse =
-                gson.toJson(PutContraIndicatorsResponse.builder().result("success").build());
+                objectMapper.writeValueAsString(
+                        PutContraIndicatorsResponse.builder().result("success").build());
 
         doNothing().when(mockCimitService).addUserCis(putContraIndicatorsRequest);
 
@@ -62,7 +60,7 @@ class PutContraIndicatorsHandlerTest {
     }
 
     @Test
-    void shouldThrowExceptionForInvalidRequest() throws IOException, CiPutException {
+    void shouldThrowExceptionForInvalidRequest() throws CiPutException {
         assertThrows(
                 IOException.class,
                 () -> {
@@ -84,7 +82,8 @@ class PutContraIndicatorsHandlerTest {
                         .build();
 
         String expectedResponse =
-                gson.toJson(PutContraIndicatorsResponse.builder().result("fail").build());
+                objectMapper.writeValueAsString(
+                        PutContraIndicatorsResponse.builder().result("fail").build());
 
         doThrow(new CiPutException("Failed to the CIs to the Cimit Stub Table"))
                 .when(mockCimitService)

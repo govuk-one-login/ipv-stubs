@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSortKey;
+import uk.gov.di.ipv.core.library.model.UserCisRequest;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @DynamoDbBean
@@ -20,11 +20,13 @@ import java.util.stream.Stream;
 @Builder
 public class CimitStubItem implements DynamodbItem {
     private String userId;
+    private String sortKey;
     private String contraIndicatorCode;
-    private List<String> issuers;
+    private String issuer;
     private Instant issuanceDate;
     private long ttl;
     private List<String> mitigations;
+    private String document;
 
     @DynamoDbPartitionKey
     public String getUserId() {
@@ -32,8 +34,9 @@ public class CimitStubItem implements DynamodbItem {
     }
 
     @DynamoDbSortKey
-    public String getContraIndicatorCode() {
-        return contraIndicatorCode;
+    public String getSortKey() {
+        this.sortKey = String.format("%s#%s", contraIndicatorCode, issuanceDate);
+        return sortKey;
     }
 
     public void addMitigations(List<String> newMitigations) {
@@ -48,6 +51,27 @@ public class CimitStubItem implements DynamodbItem {
                 Stream.concat(this.mitigations.stream(), newMitigations.stream())
                         .sorted()
                         .distinct()
-                        .collect(Collectors.toList());
+                        .toList();
+    }
+
+    public static CimitStubItem fromUserCiRequest(UserCisRequest ciRequest, String userId) {
+        return CimitStubItem.builder()
+                .userId(userId)
+                .contraIndicatorCode(ciRequest.getCode().toUpperCase())
+                .issuer(ciRequest.getIssuer())
+                .issuanceDate(
+                        ciRequest.getIssuanceDate() == null
+                                ? Instant.now()
+                                : Instant.parse(ciRequest.getIssuanceDate()))
+                .mitigations(listToUppercase(ciRequest.getMitigations()))
+                .document(ciRequest.getDocument())
+                .build();
+    }
+
+    private static List<String> listToUppercase(List<String> codes) {
+        if (codes != null) {
+            return codes.stream().map(String::toUpperCase).toList();
+        }
+        return codes;
     }
 }

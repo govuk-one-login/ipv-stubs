@@ -61,65 +61,6 @@ Mappings:
       accountId: "457601271792"
 
 Resources:
-  # lambda to stub cimit getContraIndicators
-  GetContraIndicatorsFunction:
-    Type: AWS::Serverless::Function
-    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
-    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
-    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
-    # checkov:skip=CKV_AWS_173: doing it later
-    DependsOn:
-      - "GetContraIndicatorsFunctionLogGroup"
-    Properties:
-      FunctionName: !Sub "getContraIndicators-${Environment}"
-      CodeUri: "../lambdas/get-contra-indicators"
-      Handler: uk.gov.di.ipv.core.getcontraindicators.GetContraIndicatorsHandler::handleRequest
-      Runtime: java17
-      PackageType: Zip
-      Architectures:
-        - arm64
-      MemorySize: 2048
-      Tracing: Active
-      Environment:
-        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
-        Variables:
-          ENVIRONMENT: !Sub "${Environment}"
-          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
-      VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-        SecurityGroupIds:
-          - !GetAtt CimitLambdaSecurityGroup.GroupId
-      Policies:
-        - VPCAccessPolicy: { }
-        - DynamoDBReadPolicy:
-            TableName: !Ref CimitStubTable
-        - KMSDecryptPolicy:
-            KeyId: !Ref DynamoDBKmsKey
-      AutoPublishAlias: live
-
-  GetContraIndicatorsFunctionCoreDev01InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref GetContraIndicatorsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
-
-  GetContraIndicatorsFunctionCoreDev02InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref GetContraIndicatorsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
-  GetContraIndicatorsFunctionCoreBuildInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref GetContraIndicatorsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, build, accountId ]
-
   # lambda to stub cimit postMitigations
   PostMitigationsFunction:
     Type: AWS::Serverless::Function
@@ -375,13 +316,6 @@ Resources:
             Path: /user/{userId}/mitigations/{ci}
             Method: PUT
 
-  GetContraIndicatorsFunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 14
-      LogGroupName: !Sub "/aws/lambda/getContraIndicators-${Environment}"
-      KmsKeyId: !GetAtt LoggingKmsKey.Arn
-
   PostMitigationsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -429,17 +363,16 @@ Resources:
     Type: AWS::DynamoDB::Table
     # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
     Properties:
-      TableName: !Sub "cimit-stub-${Environment}"
       BillingMode: "PAY_PER_REQUEST"
       AttributeDefinitions:
         - AttributeName: "userId"
           AttributeType: "S"
-        - AttributeName: "contraIndicatorCode"
+        - AttributeName: "sortKey"
           AttributeType: "S"
       KeySchema:
         - AttributeName: "userId"
           KeyType: "HASH"
-        - AttributeName: "contraIndicatorCode"
+        - AttributeName: "sortKey"
           KeyType: "RANGE"
       TimeToLiveSpecification:
         AttributeName: "ttl"
@@ -453,7 +386,6 @@ Resources:
     Type: AWS::DynamoDB::Table
     # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
     Properties:
-      TableName: !Sub "cimit-stub-pending-mitigations-${Environment}"
       BillingMode: "PAY_PER_REQUEST"
       AttributeDefinitions:
         - AttributeName: "vcJti"

@@ -2,12 +2,12 @@ package uk.gov.di.ipv.core.getcontraindicatorcredential;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -16,6 +16,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.StringMapMessage;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialRequest;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialResponse;
+import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.ContraIndicator;
+import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.Evidence;
+import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.MitigatingCredential;
+import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.Mitigation;
+import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.VcClaim;
+import uk.gov.di.ipv.core.getcontraindicatorcredential.factory.ECDSASignerFactory;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
@@ -23,47 +29,43 @@ import uk.gov.di.ipv.core.library.service.ConfigService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Base64;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.TreeSet;
+import java.util.UUID;
 
+import static java.util.Comparator.comparing;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
-import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_EVIDENCE;
 
 public class GetContraIndicatorCredentialHandler implements RequestStreamHandler {
 
+    private static final String FAILURE_RESPONSE = "Failure";
     private static final Logger LOGGER = LogManager.getLogger();
-    public static final String SECURITY_CHECK_CREDENTIAL_VC_TYPE = "SecurityCheckCredential";
-    public static final String TYPE = "type";
-    public static final String CONTRA_INDICATORS = "contraIndicator";
-    public static final String CODE = "code";
-    public static final String FAILURE_RESPONSE = "Failure";
-    public static final String MITIGATION = "mitigation";
-    public static final String MITIGATION_CREDENTIAL = "mitigatingCredential";
-    public static final String ISSUANCE_DATE = "issuanceDate";
-    public static final String ISSUERS = "issuers";
-
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final JWSHeader JWT_HEADER =
+            new JWSHeader.Builder(JWSAlgorithm.ES256).type(JOSEObjectType.JWT).build();
     private final ConfigService configService;
     private final CimitStubItemService cimitStubItemService;
+    private final ECDSASignerFactory signerFactory;
 
     public GetContraIndicatorCredentialHandler() {
         this.configService = new ConfigService();
         this.cimitStubItemService = new CimitStubItemService(configService);
+        this.signerFactory = new ECDSASignerFactory();
     }
 
     public GetContraIndicatorCredentialHandler(
-            ConfigService configService, CimitStubItemService cimitStubItemService) {
+            ConfigService configService,
+            CimitStubItemService cimitStubItemService,
+            ECDSASignerFactory signerFactory) {
         this.configService = configService;
         this.cimitStubItemService = cimitStubItemService;
+        this.signerFactory = signerFactory;
     }
 
     @Override
@@ -74,17 +76,17 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         GetCiCredentialRequest event = null;
         String response = null;
         try {
-            event = mapper.readValue(input, GetCiCredentialRequest.class);
+            event = OBJECT_MAPPER.readValue(input, GetCiCredentialRequest.class);
         } catch (Exception e) {
             LOGGER.error(
                     new StringMapMessage().with("Unable to parse input request", e.getMessage()));
             response = FAILURE_RESPONSE;
         }
 
-        if (response == null || !response.equals(FAILURE_RESPONSE)) {
+        if (response == null) {
             SignedJWT signedJWT;
             try {
-                signedJWT = generateJWT(getValidClaimsSetValues(event.getUserId()));
+                signedJWT = generateJWT(event.getUserId());
                 response = signedJWT.serialize();
             } catch (Exception ex) {
                 LOGGER.error(
@@ -96,96 +98,91 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                 response = FAILURE_RESPONSE;
             }
         }
-        mapper.writeValue(output, new GetCiCredentialResponse(response));
+        OBJECT_MAPPER.writeValue(output, new GetCiCredentialResponse(response));
     }
 
-    private SignedJWT generateJWT(Map<String, Object> claimsSetValues)
-            throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
-        ECDSASigner signer = new ECDSASigner(getPrivateKey());
-
-        SignedJWT signedJWT =
-                new SignedJWT(
-                        new JWSHeader.Builder(JWSAlgorithm.ES256).type(JOSEObjectType.JWT).build(),
-                        generateClaimsSet(claimsSetValues));
-        signedJWT.sign(signer);
+    private SignedJWT generateJWT(String userId)
+            throws JOSEException, NoSuchAlgorithmException, InvalidKeySpecException {
+        SignedJWT signedJWT = new SignedJWT(JWT_HEADER, generateClaimsSet(userId));
+        signedJWT.sign(signerFactory.getSigner(configService.getCimitSigningKey()));
 
         return signedJWT;
     }
 
-    private ECPrivateKey getPrivateKey() throws InvalidKeySpecException, NoSuchAlgorithmException {
-        var EC_PRIVATE_KEY = configService.getCimitSigningKey();
-        return (ECPrivateKey)
-                KeyFactory.getInstance("EC")
-                        .generatePrivate(
-                                new PKCS8EncodedKeySpec(
-                                        Base64.getDecoder().decode(EC_PRIVATE_KEY)));
-    }
-
-    private JWTClaimsSet generateClaimsSet(Map<String, Object> claimsSetValues) {
+    private JWTClaimsSet generateClaimsSet(String userId) {
+        var now = Instant.now();
         return new JWTClaimsSet.Builder()
-                .claim(JWTClaimNames.SUBJECT, claimsSetValues.get(JWTClaimNames.SUBJECT))
-                .claim(JWTClaimNames.ISSUER, claimsSetValues.get(JWTClaimNames.ISSUER))
-                .claim(JWTClaimNames.NOT_BEFORE, claimsSetValues.get(JWTClaimNames.NOT_BEFORE))
+                .claim(JWTClaimNames.SUBJECT, userId)
+                .claim(JWTClaimNames.ISSUER, configService.getCimitComponentId())
+                .claim(JWTClaimNames.NOT_BEFORE, now.getEpochSecond())
+                .claim(JWTClaimNames.EXPIRATION_TIME, now.plusSeconds(60L * 15L).getEpochSecond())
                 .claim(
-                        JWTClaimNames.EXPIRATION_TIME,
-                        claimsSetValues.get(JWTClaimNames.EXPIRATION_TIME))
-                .claim(VC_CLAIM, claimsSetValues.get(VC_CLAIM))
+                        VC_CLAIM,
+                        OBJECT_MAPPER.convertValue(
+                                generateVc(userId), new TypeReference<Map<String, Object>>() {}))
                 .build();
     }
 
-    private Map<String, Object> getValidClaimsSetValues(String userId) {
-        return Map.of(
-                JWTClaimNames.SUBJECT,
-                userId,
-                JWTClaimNames.ISSUER,
-                configService.getCimitComponentId(),
-                JWTClaimNames.ISSUED_AT,
-                OffsetDateTime.now().toEpochSecond(),
-                JWTClaimNames.NOT_BEFORE,
-                OffsetDateTime.now().toEpochSecond(),
-                JWTClaimNames.EXPIRATION_TIME,
-                OffsetDateTime.now().plusSeconds(15 * 60).toEpochSecond(),
-                VC_CLAIM,
-                generateVC(userId));
+    private VcClaim generateVc(String userId) {
+        var txnUuid = List.of(UUID.randomUUID().toString());
+        var contraIndicators = getContraIndicators(userId, txnUuid);
+        return new VcClaim(
+                List.of(
+                        new Evidence(
+                                contraIndicators,
+                                contraIndicators.isEmpty() ? List.of() : txnUuid)));
     }
 
-    private Map<String, Object> generateVC(String userId) {
-        Map<String, Object> vc = new LinkedHashMap<>();
-        vc.put(TYPE, new String[] {SECURITY_CHECK_CREDENTIAL_VC_TYPE});
-        Map<String, Object> evidence = new LinkedHashMap<>();
-        evidence.put(TYPE, "SecurityCheck");
-        evidence.put(CONTRA_INDICATORS, getContraIndicators(userId));
-        vc.put(VC_EVIDENCE, List.of(evidence));
-        return vc;
-    }
+    private List<ContraIndicator> getContraIndicators(String userId, List<String> txnUuid) {
+        var ciFromDatabase =
+                cimitStubItemService.getCIsForUserId(userId).stream()
+                        .sorted(comparing(CimitStubItem::getIssuanceDate))
+                        .toList();
 
-    private List<Map<String, Object>> getContraIndicators(String userId) {
-        List<Map<String, Object>> contraIndicators = new ArrayList<>();
-        List<CimitStubItem> cimitStubItems = cimitStubItemService.getCIsForUserId(userId);
-        for (CimitStubItem cimitStubItem : cimitStubItems) {
-            Map<String, Object> contraIndicator = new LinkedHashMap<>();
-            contraIndicator.put(CODE, cimitStubItem.getContraIndicatorCode());
-            contraIndicator.put(ISSUERS, cimitStubItem.getIssuers());
-            contraIndicator.put(ISSUANCE_DATE, cimitStubItem.getIssuanceDate().toString());
-            contraIndicator.put(MITIGATION, getMitigations(cimitStubItem.getMitigations()));
-            contraIndicators.add(contraIndicator);
+        var ciForVc = new ArrayList<ContraIndicator>();
+        for (var datebaseCi : ciFromDatabase) {
+            ciForVc.stream()
+                    .filter(vcCi -> ciShouldBeMerged(datebaseCi, vcCi))
+                    .findFirst()
+                    .ifPresentOrElse(
+                            vcCi -> {
+                                vcCi.getIssuers().add(datebaseCi.getIssuer());
+                                vcCi.setIssuanceDate(datebaseCi.getIssuanceDate().toString());
+                                vcCi.setMitigation(getMitigations(datebaseCi.getMitigations()));
+                            },
+                            () -> ciForVc.add(createContraIndicator(datebaseCi, txnUuid)));
         }
-        return contraIndicators;
+        return ciForVc;
     }
 
-    private List<Map<String, Object>> getMitigations(List<String> mitigationCodes) {
-        List<Map<String, Object>> mitigations = new ArrayList<>();
-        for (String mitigationCode : mitigationCodes) {
-            Map<String, Object> mitigation = new LinkedHashMap<>();
-            mitigation.put(CODE, mitigationCode);
-            mitigation.put(MITIGATION_CREDENTIAL, getMitigationCredentials());
-            mitigations.add(mitigation);
+    private boolean ciShouldBeMerged(
+            CimitStubItem ciBeingProcessed, ContraIndicator ciAlreadyProcessed) {
+        boolean ciCodesMatch =
+                ciBeingProcessed.getContraIndicatorCode().equals(ciAlreadyProcessed.getCode());
+        boolean documentsMatch =
+                Objects.equals(ciAlreadyProcessed.getDocument(), ciBeingProcessed.getDocument());
+
+        return ciCodesMatch && documentsMatch;
+    }
+
+    private ContraIndicator createContraIndicator(CimitStubItem item, List<String> txnUuid) {
+        return new ContraIndicator(
+                item.getContraIndicatorCode(),
+                item.getDocument(),
+                item.getIssuanceDate().toString(),
+                new TreeSet<>(List.of(item.getIssuer())),
+                getMitigations(item.getMitigations()),
+                List.of(),
+                txnUuid);
+    }
+
+    private List<Mitigation> getMitigations(List<String> mitigationCodes) {
+        if (mitigationCodes == null) {
+            LOGGER.warn("Mitigations on CimitStubItem are null");
+            return List.of();
         }
-        return mitigations;
-    }
-
-    private List<Map<String, Object>> getMitigationCredentials() {
-        List<Map<String, Object>> mitigationCredentials = new ArrayList<>();
-        return mitigationCredentials;
+        return mitigationCodes.stream()
+                .map(ciCode -> new Mitigation(ciCode, List.of(MitigatingCredential.EMPTY)))
+                .toList();
     }
 }

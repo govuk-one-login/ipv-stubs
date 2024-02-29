@@ -12,13 +12,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.di.ipv.core.library.model.UserCisRequest;
 import uk.gov.di.ipv.core.library.model.UserMitigationRequest;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.PendingMitigationService;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.BadRequestException;
 import uk.gov.di.ipv.core.stubmanagement.exceptions.DataNotFoundException;
-import uk.gov.di.ipv.core.stubmanagement.model.UserCisRequest;
 import uk.gov.di.ipv.core.stubmanagement.service.UserService;
 
 import java.io.IOException;
@@ -94,7 +94,8 @@ public class StubManagementHandlerTest {
     @ParameterizedTest
     @ValueSource(strings = {"POST", "PUT"})
     void shouldAddPendingMitigationWhenValidMitigationRequest(String method) throws IOException {
-        when(mockCimitStubItemService.getCiForUserId("123", "456")).thenReturn(new CimitStubItem());
+        when(mockCimitStubItemService.getCiForUserId("123", "456"))
+                .thenReturn(List.of(new CimitStubItem()));
 
         UserMitigationRequest userMitigationRequest =
                 UserMitigationRequest.builder().mitigations(List.of("V01")).build();
@@ -157,7 +158,8 @@ public class StubManagementHandlerTest {
 
     @Test
     void mitigationsPatternShouldHandleDefaultUserIdFormat() throws Exception {
-        when(mockCimitStubItemService.getCiForUserId("123", "456")).thenReturn(new CimitStubItem());
+        when(mockCimitStubItemService.getCiForUserId("123", "456"))
+                .thenReturn(List.of(new CimitStubItem()));
 
         String urlEncodedUserId = "urn%3Auuid%3Ac08630f8-330e-43f8-a782-21432a197fc5";
         UserMitigationRequest userMitigationRequest =

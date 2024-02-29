@@ -8,12 +8,17 @@ import uk.gov.di.ipv.core.library.persistence.DataStore;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.persistence.items.PendingMitigationItem;
 
+import java.util.Comparator;
+import java.util.List;
+
 import static uk.gov.di.ipv.core.library.config.ConfigurationVariable.CIMIT_STUB_TTL;
 import static uk.gov.di.ipv.core.library.config.EnvironmentVariable.PENDING_MITIGATIONS_TABLE;
 
 public class PendingMitigationService {
     private static final Logger LOGGER = LogManager.getLogger();
     public static final String DESCRIPTION = "description";
+    public static final String JWT_ID = "jwtId";
+    public static final String USER_ID = "userId";
     private final DataStore<PendingMitigationItem> dataStore;
 
     public PendingMitigationService(ConfigService configService) {
@@ -52,36 +57,44 @@ public class PendingMitigationService {
             LOGGER.info(
                     new StringMapMessage()
                             .with(DESCRIPTION, "No pending mitigations found")
-                            .with("jwtId", jwtId)
-                            .with("userId", userId));
+                            .with(JWT_ID, jwtId)
+                            .with(USER_ID, userId));
             return;
         }
-        CimitStubItem cimitItem =
+        List<CimitStubItem> cimitItems =
                 cimitService.getCiForUserId(userId, pendingMitigationItem.getMitigatedCi());
-        if (cimitItem == null) {
+        if (cimitItems == null || cimitItems.isEmpty()) {
             LOGGER.warn(
                     new StringMapMessage()
                             .with(DESCRIPTION, "No CI found for attempted mitigation")
-                            .with("jwtId", jwtId)
-                            .with("userId", userId)
+                            .with(JWT_ID, jwtId)
+                            .with(USER_ID, userId)
                             .with("ci", pendingMitigationItem.getMitigatedCi()));
             return;
         }
 
+        // Mitigate the most recently received CI. In practice, we should only have one
+        CimitStubItem itemToMitigate =
+                cimitItems.stream()
+                        .sorted(Comparator.comparing(CimitStubItem::getIssuanceDate))
+                        .reduce((first, second) -> second)
+                        .orElseThrow();
+
         switch (pendingMitigationItem.getRequestMethod()) {
-            case "PUT" -> cimitItem.setMitigations(pendingMitigationItem.getMitigationCodes());
-            case "POST" -> cimitItem.addMitigations(pendingMitigationItem.getMitigationCodes());
+            case "PUT" -> itemToMitigate.setMitigations(pendingMitigationItem.getMitigationCodes());
+            case "POST" -> itemToMitigate.addMitigations(
+                    pendingMitigationItem.getMitigationCodes());
             default -> throw new IllegalArgumentException(
                     String.format(
                             "Method not supported: %s", pendingMitigationItem.getRequestMethod()));
         }
 
-        cimitService.updateCimitStubItem(cimitItem);
+        cimitService.updateCimitStubItem(itemToMitigate);
         LOGGER.info(
                 new StringMapMessage()
                         .with(DESCRIPTION, "CI mitigated")
-                        .with("jwtId", jwtId)
-                        .with("userId", userId)
+                        .with(JWT_ID, jwtId)
+                        .with(USER_ID, userId)
                         .with("ci", pendingMitigationItem.getMitigatedCi()));
     }
 }

@@ -36,28 +36,12 @@ public class CimitStubItemService {
         return dataStore.getItems(userId);
     }
 
-    public CimitStubItem getCiForUserId(String userId, String ci) {
-        return dataStore.getItem(userId, ci.toUpperCase());
+    public List<CimitStubItem> getCiForUserId(String userId, String ci) {
+        return dataStore.getItemsBySortKeyPrefix(userId, ci);
     }
 
-    public CimitStubItem persistCimitStub(
-            String userId,
-            String contraIndicatorCode,
-            List<String> issuers,
-            Instant issuanceDate,
-            List<String> mitigations) {
-
-        CimitStubItem cimitStubItem =
-                CimitStubItem.builder()
-                        .userId(userId)
-                        .contraIndicatorCode(contraIndicatorCode)
-                        .issuers(issuers)
-                        .issuanceDate(issuanceDate)
-                        .mitigations(mitigations)
-                        .build();
-
+    public void persistCimitStubItem(CimitStubItem cimitStubItem) {
         dataStore.create(cimitStubItem, CIMIT_STUB_TTL);
-        return cimitStubItem;
     }
 
     public void updateCimitStubItem(CimitStubItem cimitStubItem) {

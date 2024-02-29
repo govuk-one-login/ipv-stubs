@@ -1,6 +1,5 @@
-package uk.gov.di.ipv.core.stubmanagement.model;
+package uk.gov.di.ipv.core.library.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,16 +12,9 @@ import java.util.List;
 @Data
 @Builder
 public class UserCisRequest {
-
-    @JsonProperty("code")
     private String code;
-
-    @JsonProperty("issuanceDate")
     private String issuanceDate;
-
-    @JsonProperty("issuers")
-    private List<String> issuers;
-
-    @JsonProperty("mitigations")
+    private String issuer;
     private List<String> mitigations;
+    private String document;
 }

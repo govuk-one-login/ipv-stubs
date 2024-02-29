@@ -1,5 +1,5 @@
 # CIMIT lambda stubs
-This will create stubs for the CIMIT lambdas getContraIndicators, getContraIndicatorCredential,
+This will create stubs for the CIMIT lambdas getContraIndicatorCredential,
 putContraIndicators, postMitigations and stubManagement.
 
 Sample postMitigations POST request should look like
@@ -18,14 +18,6 @@ Sample putContraIndicators PUT request should look like
   "signed_jwt": "value3"
 }
 ```
-Sample getContraIndicators GET request should look like
-```
-{
-  "govuk_signin_journey_id": "value1",
-  "ip_address": "value2",
-  "user_id": "value3"
-}
-```
 Sample getContraIndicatorCredential GET request should look like
 ```
 {
@@ -39,16 +31,16 @@ Sample getContraIndicatorCredential GET request should look like
 
 There is a management API which can be used to set up state in the CiMit stub. Below are some sample requests
 
-### Create a new or update an existing CI
+### Create a new CI
 
 ```bash
-curl -X POST -d '[{"code": "X01", "issuers": ["https://issuer.example"], "mitigations": ["M01"], "issuanceDate": "2007-12-03T10:15:30.00Z"}]' -H "x-api-key: <API gateway API key>" https://<cimit-stub-domain>/user/<userId>/cis
+curl -X POST -d '[{"code": "X01", "issuer": "https://issuer.example", "mitigations": ["M01"], "issuanceDate": "2007-12-03T10:15:30.00Z", "document": "a-document-identifier"}]' -H "x-api-key: <API gateway API key>" https://<cimit-stub-domain>/user/<userId>/cis
 ```
 
 ### Replace an existing CI
 
 ```bash
-curl -X PUT -d '[{"code": "X01", "issuers": ["https://issuer.example"], "mitigations": ["M01"], "issuanceDate": "2007-12-03T10:15:30.00Z"}]' -H "x-api-key: <API gateway API key>" https://<cimit-stub-domain>/user/<userId>/cis
+curl -X PUT -d '[{"code": "X01", "issuer": "https://issuer.example", "mitigations": ["M01"], "issuanceDate": "2007-12-03T10:15:30.00Z", "document": "a-document-identifier"}]' -H "x-api-key: <API gateway API key>" https://<cimit-stub-domain>/user/<userId>/cis
 ```
 
 ### Update a CI with a pending mitigation
