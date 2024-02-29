@@ -376,6 +376,49 @@ public class AuthorizeHandler {
                         }
                     }
 
+                    String notBeforeFlag =
+                            queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_FLAG);
+
+                    Instant now = Instant.now();
+                    Long nbf = now.getEpochSecond();
+                    if (notBeforeFlag != null
+                            && notBeforeFlag.equals(
+                                    CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE)) {
+                        int nbfDay =
+                                Integer.parseInt(
+                                        queryParamsMap.value(
+                                                CredentialIssuerConfig.VC_NOT_BEFORE_DAY));
+                        int nbfMonth =
+                                Integer.parseInt(
+                                        queryParamsMap.value(
+                                                CredentialIssuerConfig.VC_NOT_BEFORE_MONTH));
+                        int nbfYear =
+                                Integer.parseInt(
+                                        queryParamsMap.value(
+                                                CredentialIssuerConfig.VC_NOT_BEFORE_YEAR));
+                        int nbfHours =
+                                Integer.parseInt(
+                                        queryParamsMap.value(
+                                                CredentialIssuerConfig.VC_NOT_BEFORE_HOURS));
+                        int nbfMinutes =
+                                Integer.parseInt(
+                                        queryParamsMap.value(
+                                                CredentialIssuerConfig.VC_NOT_BEFORE_MINUTES));
+                        int nbfSeconds =
+                                Integer.parseInt(
+                                        queryParamsMap.value(
+                                                CredentialIssuerConfig.VC_NOT_BEFORE_SECONDS));
+                        nbf =
+                                Instant.ofEpochSecond(0)
+                                        .plusSeconds(nbfSeconds)
+                                        .plusSeconds(60L * nbfMinutes)
+                                        .plusSeconds(3600L * nbfHours)
+                                        .plusSeconds(86400L * nbfDay)
+                                        .plusSeconds(2592000L * nbfMonth)
+                                        .plusSeconds(31536000L * nbfYear)
+                                        .getEpochSecond();
+                    }
+
                     String signedVcJwt =
                             verifiableCredentialGenerator
                                     .generate(
@@ -384,7 +427,8 @@ public class AuthorizeHandler {
                                                     gpgMap,
                                                     userId,
                                                     clientIdValue,
-                                                    exp))
+                                                    exp,
+                                                    nbf))
                                     .serialize();
 
                     if (CredentialIssuerConfig.isEnabled(

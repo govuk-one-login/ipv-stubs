@@ -108,7 +108,8 @@ public class VerifiableCredentialGeneratorTest {
                         evidence,
                         userId,
                         "clientIdValid",
-                        Instant.now().getEpochSecond() + 300);
+                        Instant.now().getEpochSecond() + 300,
+                        Instant.now().getEpochSecond());
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 
@@ -209,7 +210,8 @@ public class VerifiableCredentialGeneratorTest {
                         evidence,
                         userId,
                         "clientIdValid",
-                        Instant.now().getEpochSecond());
+                        Instant.now().getEpochSecond(),
+                        null);
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 
@@ -241,7 +243,8 @@ public class VerifiableCredentialGeneratorTest {
                         "strength", 4,
                         "validity", 2);
         String userId = "user-id";
-        Credential credential = new Credential(attributes, evidence, userId, "clientIdValid", null);
+        Credential credential =
+                new Credential(attributes, evidence, userId, "clientIdValid", null, null);
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 
