@@ -35,6 +35,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.UUID;
 
@@ -159,9 +160,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         boolean ciCodesMatch =
                 ciBeingProcessed.getContraIndicatorCode().equals(ciAlreadyProcessed.getCode());
         boolean documentsMatch =
-                ciBeingProcessed.getDocument() == null
-                        ? ciAlreadyProcessed.getDocument() == null
-                        : ciBeingProcessed.getDocument().equals(ciAlreadyProcessed.getDocument());
+                Objects.equals(ciAlreadyProcessed.getDocument(), ciBeingProcessed.getDocument());
 
         return ciCodesMatch && documentsMatch;
     }
@@ -178,6 +177,10 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
     }
 
     private List<Mitigation> getMitigations(List<String> mitigationCodes) {
+        if (mitigationCodes == null) {
+            LOGGER.warn("Mitigations on CimitStubItem are null");
+            return List.of();
+        }
         return mitigationCodes.stream()
                 .map(ciCode -> new Mitigation(ciCode, List.of(MitigatingCredential.EMPTY)))
                 .toList();

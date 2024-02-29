@@ -68,7 +68,7 @@ public class CimitStubItem implements DynamodbItem {
                 .build();
     }
 
-    public static List<String> listToUppercase(List<String> codes) {
+    private static List<String> listToUppercase(List<String> codes) {
         if (codes != null) {
             return codes.stream().map(String::toUpperCase).toList();
         }
