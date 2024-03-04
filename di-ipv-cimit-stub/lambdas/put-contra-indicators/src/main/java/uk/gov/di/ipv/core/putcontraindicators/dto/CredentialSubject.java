@@ -5,4 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record CredentialSubject(List<DrivingPermit> drivingPermit, List<Passport> passport) {}
+public record CredentialSubject(
+        List<DrivingPermit> drivingPermit,
+        List<Passport> passport,
+        List<ResidencePermit> residencePermit) {}

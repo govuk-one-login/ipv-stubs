@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.core.putcontraindicators.service;
 
+import com.amazonaws.util.CollectionUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.logging.log4j.LogManager;
@@ -9,7 +10,6 @@ import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsRequest;
-import uk.gov.di.ipv.core.putcontraindicators.dto.CredentialSubject;
 import uk.gov.di.ipv.core.putcontraindicators.dto.Evidence;
 import uk.gov.di.ipv.core.putcontraindicators.dto.VcClaim;
 import uk.gov.di.ipv.core.putcontraindicators.exceptions.CiPutException;
@@ -145,13 +145,17 @@ public class ContraIndicatorsService {
     }
 
     private String getDocumentIdentifier(VcClaim vcClaim) {
-        CredentialSubject credentialSubject = vcClaim.credentialSubject();
-        if (credentialSubject.drivingPermit() != null
-                && !credentialSubject.drivingPermit().isEmpty()) {
-            return credentialSubject.drivingPermit().get(0).toIdentifier();
-        }
-        if (credentialSubject.passport() != null && !credentialSubject.passport().isEmpty()) {
-            return credentialSubject.passport().get(0).toIdentifier();
+        var credentialSubject = vcClaim.credentialSubject();
+        if (credentialSubject != null) {
+            if (!CollectionUtils.isNullOrEmpty(credentialSubject.drivingPermit())) {
+                return credentialSubject.drivingPermit().get(0).toIdentifier();
+            }
+            if (!CollectionUtils.isNullOrEmpty(credentialSubject.passport())) {
+                return credentialSubject.passport().get(0).toIdentifier();
+            }
+            if (!CollectionUtils.isNullOrEmpty(credentialSubject.residencePermit())) {
+                return credentialSubject.residencePermit().get(0).toIdentifier();
+            }
         }
         return null;
     }
