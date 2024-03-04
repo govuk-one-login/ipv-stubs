@@ -27,6 +27,21 @@ Parameters:
     Description: "The ARN of the permissions boundary to apply when creating IAM roles"
     Type: String
     Default: "none"
+  CodeSigningConfigArn:
+    Type: String
+    Description: Asserts that lambdas are signed when deployed.
+    Default: none
+  DeploymentStrategy:
+    Description: "Predefined deployment configuration for ECS application"
+    Type: String
+    Default: "None"
+    # Allowed values: See https://docs.aws.amazon.com/codedeploy/latest/userguide/deployment-configurations.html
+    AllowedValues:
+      - None
+      - CodeDeployDefault.ECSCanary10Percent5Minutes
+      - CodeDeployDefault.ECSCanary10Percent15Minutes
+      - ECSCanary50Percent5Minutes
+      - CodeDeployDefault.ECSAllAtOnce
 
   OrchestratorClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
@@ -136,7 +151,8 @@ Conditions:
     - !Or
       - !Condition IsDevelopment
       - !Condition IsProduction
-
+  UseCodeSigning: !Not
+    - !Equals [ !Ref CodeSigningConfigArn, "none" ]
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
@@ -148,6 +164,8 @@ Conditions:
 Mappings:
   EnvironmentConfiguration:
     "130355686670": # Development
+      lb400ErrorLimit: 10
+      lb500ErrorLimit: 10
       fargateCPUsize: "256"
       fargateRAMsize: "512"
       desiredTaskCount: 1
@@ -155,6 +173,8 @@ Mappings:
       platform: core
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "826978934233": #Core Stubs Build
+      lb400ErrorLimit: 10
+      lb500ErrorLimit: 10
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
@@ -162,6 +182,8 @@ Mappings:
       platform: core-stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "616199614141": #Stubs Build
+      lb400ErrorLimit: 10
+      lb500ErrorLimit: 10
       fargateCPUsize: "512"
       fargateRAMsize: "1024"
       desiredTaskCount: 1
@@ -169,6 +191,8 @@ Mappings:
       platform: stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "388905755587": #Stubs Prod
+      lb400ErrorLimit: 10
+      lb500ErrorLimit: 10
       fargateCPUsize: "1024"
       fargateRAMsize: "2048"
       desiredTaskCount: 2
@@ -463,14 +487,19 @@ Resources:
     Type: "AWS::ECS::Service"
     Properties:
       Cluster: !Ref OrchStubCluster
-      DeploymentConfiguration:
-        MaximumPercent: 200
-        MinimumHealthyPercent: 50
-        DeploymentCircuitBreaker:
-          Enable: true
-          Rollback: true
+      DeploymentConfiguration: !If 
+        - IsNotDevelopment
+        - !Ref AWS::NoValue
+        - MaximumPercent: 200
+          MinimumHealthyPercent: 50
+          DeploymentCircuitBreaker:
+            Enable: true
+            Rollback: true
       DeploymentController:
-        Type: ECS
+        Type: !If 
+        - IsNotDevelopment
+        - CODE_DEPLOY
+        - ECS
       DesiredCount: !FindInMap
         - EnvironmentConfiguration
         - !Ref AWS::AccountId
@@ -756,6 +785,36 @@ Resources:
             Condition:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+  
+  # *** Canary Deployment ***
+  
+  ECSBlueGreenDeploymentStack:
+    Condition: IsNotDevelopment
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/ecs-canary-deployment/template.yaml"
+      Parameters:
+        ECSClusterName: !Ref OrchStubCluster
+        ECSServiceName: !GetAtt OrchStubService.Name
+        TargetGroupName: !GetAtt LoadBalancerListenerTargetGroupECS.TargetGroupName
+        LoadBalancerListenerARN: !Ref LoadBalancerListener
+        LoadBalancerFullName: !GetAtt LoadBalancer.LoadBalancerFullName
+        ECSServiceTaskDefinition: !Ref ECSServiceTaskDefinition
+        DeploymentStrategy: !Ref DeploymentStrategy
+        VpcId: !Sub ${VpcStackName}-VpcId
+        ContainerName: app
+        ContainerPort: 8080
+        ELB4XXAlarmThreshold: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, lb400ErrorLimit ]
+        ELB5XXAlarmThreshold: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, lb500ErrorLimit ]
+        TargetGroupHTTPCodeMatcher: "200,401"
+        PermissionsBoundary: !If
+          - UsePermissionsBoundary
+          - !Ref PermissionsBoundary
+          - none
+        CodeSigningConfigArn: !If
+          - UseCodeSigning
+          - !Ref CodeSigningConfigArn
+          - !Ref AWS::NoValue
 
 Outputs:
   OrchStubEnvironment:
