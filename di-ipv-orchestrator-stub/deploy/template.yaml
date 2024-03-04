@@ -519,7 +519,10 @@ Resources:
           Subnets:
             - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
             - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-      TaskDefinition: !Ref ECSServiceTaskDefinition
+      TaskDefinition: !If
+        - IsNotDevelopment
+        - !Ref AWS::NoValue
+        - !Ref ECSServiceTaskDefinition
     DependsOn:
       - LoadBalancerListener
 
