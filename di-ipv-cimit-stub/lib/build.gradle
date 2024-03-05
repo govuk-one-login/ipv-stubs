@@ -21,8 +21,8 @@ dependencies {
 			'uk.org.webcompere:system-stubs-jupiter:2.1.6'
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-	compileOnly "org.projectlombok:lombok:1.18.28"
-	annotationProcessor "org.projectlombok:lombok:1.18.28"
+	compileOnly "org.projectlombok:lombok:1.18.30"
+	annotationProcessor "org.projectlombok:lombok:1.18.30"
 }
 
 java {
