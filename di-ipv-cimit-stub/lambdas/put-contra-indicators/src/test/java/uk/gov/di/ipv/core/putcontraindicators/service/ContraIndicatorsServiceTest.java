@@ -70,6 +70,7 @@ public class ContraIndicatorsServiceTest {
                         .mitigations(List.of())
                         .document(null)
                         .sortKey("V03#2023-08-17T10:20:53Z")
+                        .txn("18fbfe93-2e71-44bb-88c5-0f7de60fbe80")
                         .build();
 
         assertEquals(expectedItem, cimitStubItemArgumentCaptor.getValue());

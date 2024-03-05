@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -62,6 +63,9 @@ class GetContraIndicatorCredentialHandlerTest {
     private static final String ISSUER_4 = "issuer4";
     private static final String DOC_1 = "doc1";
     private static final String DOC_2 = "doc2";
+    private static final String TXN_1 = "1";
+    private static final String TXN_2 = "2";
+    private static final String TXN_3 = "3";
 
     @Mock private Context mockContext;
     @Mock private ConfigService mockConfigService;
@@ -85,6 +89,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuer(ISSUER_1)
                                 .issuanceDate(NOW)
                                 .mitigations(List.of(MITIGATION_M01))
+                                .txn(TXN_1)
                                 .build());
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
 
@@ -106,12 +111,13 @@ class GetContraIndicatorCredentialHandlerTest {
         assertEquals(List.of("VerifiableCredential", "SecurityCheckCredential"), vcClaim.type());
 
         var evidenceTxn = vcClaim.evidence().get(0).txn();
+        assertEquals(List.of(TXN_1), new ArrayList<>(evidenceTxn));
 
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
         assertEquals(1, contraIndicators.size());
 
         var firstContraIndicator = contraIndicators.get(0);
-        assertEquals(evidenceTxn, firstContraIndicator.getTxn());
+        assertEquals(List.of(TXN_1), firstContraIndicator.getTxn());
 
         ContraIndicator expectedCi =
                 ContraIndicator.builder()
@@ -125,7 +131,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                                 List.of(MitigatingCredential.EMPTY))))
                         .incompleteMitigation(List.of())
                         .document(null)
-                        .txn(evidenceTxn)
+                        .txn(evidenceTxn.stream().toList())
                         .build();
         assertEquals(expectedCi, firstContraIndicator);
 
@@ -144,6 +150,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW)
                                 .mitigations(List.of())
                                 .document(DOC_1)
+                                .txn(TXN_1)
                                 .build());
 
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
@@ -153,7 +160,6 @@ class GetContraIndicatorCredentialHandlerTest {
         var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
-        var evidenceTxn = vcClaim.evidence().get(0).txn();
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
         var expectedCi =
@@ -165,7 +171,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .mitigation(List.of())
                                 .incompleteMitigation(List.of())
                                 .document(DOC_1)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_1))
                                 .build());
 
         assertEquals(expectedCi, contraIndicators);
@@ -182,6 +188,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW)
                                 .mitigations(List.of(MITIGATION_M01))
                                 .document(DOC_1)
+                                .txn(TXN_1)
                                 .build());
 
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
@@ -191,7 +198,6 @@ class GetContraIndicatorCredentialHandlerTest {
         var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
-        var evidenceTxn = vcClaim.evidence().get(0).txn();
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
         var expectedCi =
@@ -207,7 +213,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                                         List.of(MitigatingCredential.EMPTY))))
                                 .incompleteMitigation(List.of())
                                 .document(DOC_1)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_1))
                                 .build());
 
         assertEquals(expectedCi, contraIndicators);
@@ -224,6 +230,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW.minusSeconds(100L))
                                 .mitigations(List.of())
                                 .document(DOC_1)
+                                .txn(TXN_1)
                                 .build(),
                         CimitStubItem.builder()
                                 .userId(USER_ID)
@@ -232,6 +239,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW)
                                 .mitigations(List.of())
                                 .document(DOC_2)
+                                .txn(TXN_2)
                                 .build());
 
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
@@ -241,7 +249,6 @@ class GetContraIndicatorCredentialHandlerTest {
         var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
-        var evidenceTxn = vcClaim.evidence().get(0).txn();
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
         var expectedCi =
@@ -253,7 +260,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .mitigation(List.of())
                                 .incompleteMitigation(List.of())
                                 .document(DOC_1)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_1))
                                 .build(),
                         ContraIndicator.builder()
                                 .code(CI_D02)
@@ -262,7 +269,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .mitigation(List.of())
                                 .incompleteMitigation(List.of())
                                 .document(DOC_2)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_2))
                                 .build());
 
         assertEquals(expectedCi, contraIndicators);
@@ -279,6 +286,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW.minusSeconds(100L))
                                 .mitigations(List.of())
                                 .document(DOC_1)
+                                .txn(TXN_1)
                                 .build(),
                         CimitStubItem.builder()
                                 .userId(USER_ID)
@@ -287,6 +295,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW)
                                 .mitigations(List.of(MITIGATION_M01))
                                 .document(DOC_2)
+                                .txn(TXN_2)
                                 .build());
 
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
@@ -296,7 +305,6 @@ class GetContraIndicatorCredentialHandlerTest {
         var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
-        var evidenceTxn = vcClaim.evidence().get(0).txn();
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
         var expectedCi =
@@ -308,7 +316,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .mitigation(List.of())
                                 .incompleteMitigation(List.of())
                                 .document(DOC_1)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_1))
                                 .build(),
                         ContraIndicator.builder()
                                 .code(CI_D02)
@@ -321,7 +329,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                                         List.of(MitigatingCredential.EMPTY))))
                                 .incompleteMitigation(List.of())
                                 .document(DOC_2)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_2))
                                 .build());
 
         assertEquals(expectedCi, contraIndicators);
@@ -338,6 +346,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW.minusSeconds(100L))
                                 .mitigations(List.of(MITIGATION_M01))
                                 .document(DOC_1)
+                                .txn(TXN_1)
                                 .build(),
                         CimitStubItem.builder()
                                 .userId(USER_ID)
@@ -346,6 +355,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW)
                                 .mitigations(List.of(MITIGATION_M01))
                                 .document(DOC_2)
+                                .txn(TXN_2)
                                 .build());
 
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
@@ -355,7 +365,6 @@ class GetContraIndicatorCredentialHandlerTest {
         var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
-        var evidenceTxn = vcClaim.evidence().get(0).txn();
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
         var expectedCi =
@@ -371,7 +380,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                                         List.of(MitigatingCredential.EMPTY))))
                                 .incompleteMitigation(List.of())
                                 .document(DOC_1)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_1))
                                 .build(),
                         ContraIndicator.builder()
                                 .code(CI_D02)
@@ -384,7 +393,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                                         List.of(MitigatingCredential.EMPTY))))
                                 .incompleteMitigation(List.of())
                                 .document(DOC_2)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_2))
                                 .build());
 
         assertEquals(expectedCi, contraIndicators);
@@ -401,6 +410,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW.minusSeconds(100L))
                                 .mitigations(List.of())
                                 .document(DOC_1)
+                                .txn(TXN_1)
                                 .build(),
                         CimitStubItem.builder()
                                 .userId(USER_ID)
@@ -409,6 +419,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW)
                                 .mitigations(List.of())
                                 .document(DOC_1)
+                                .txn(TXN_2)
                                 .build());
 
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
@@ -418,7 +429,6 @@ class GetContraIndicatorCredentialHandlerTest {
         var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
-        var evidenceTxn = vcClaim.evidence().get(0).txn();
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
         var expectedCi =
@@ -430,7 +440,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .mitigation(List.of())
                                 .incompleteMitigation(List.of())
                                 .document(DOC_1)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_2))
                                 .build());
 
         assertEquals(expectedCi, contraIndicators);
@@ -447,6 +457,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW.minusSeconds(100L))
                                 .mitigations(List.of(MITIGATION_M01))
                                 .document(DOC_1)
+                                .txn(TXN_1)
                                 .build(),
                         CimitStubItem.builder()
                                 .userId(USER_ID)
@@ -455,6 +466,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW)
                                 .mitigations(List.of())
                                 .document(DOC_1)
+                                .txn(TXN_2)
                                 .build());
 
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
@@ -464,7 +476,6 @@ class GetContraIndicatorCredentialHandlerTest {
         var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
-        var evidenceTxn = vcClaim.evidence().get(0).txn();
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
         var expectedCi =
@@ -476,7 +487,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .mitigation(List.of())
                                 .incompleteMitigation(List.of())
                                 .document(DOC_1)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_2))
                                 .build());
 
         assertEquals(expectedCi, contraIndicators);
@@ -493,6 +504,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW.minusSeconds(100L))
                                 .mitigations(List.of(MITIGATION_M01))
                                 .document(DOC_1)
+                                .txn(TXN_1)
                                 .build(),
                         CimitStubItem.builder()
                                 .userId(USER_ID)
@@ -501,6 +513,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW)
                                 .mitigations(List.of(MITIGATION_M01))
                                 .document(DOC_1)
+                                .txn(TXN_2)
                                 .build());
 
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
@@ -510,7 +523,6 @@ class GetContraIndicatorCredentialHandlerTest {
         var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
-        var evidenceTxn = vcClaim.evidence().get(0).txn();
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
         var expectedCi =
@@ -526,7 +538,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                                         List.of(MitigatingCredential.EMPTY))))
                                 .incompleteMitigation(List.of())
                                 .document(DOC_1)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_2))
                                 .build());
 
         assertEquals(expectedCi, contraIndicators);
@@ -543,6 +555,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW.minusSeconds(100L))
                                 .mitigations(List.of())
                                 .document(DOC_1)
+                                .txn(TXN_1)
                                 .build(),
                         CimitStubItem.builder()
                                 .userId(USER_ID)
@@ -551,6 +564,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW)
                                 .mitigations(List.of())
                                 .document(DOC_2)
+                                .txn(TXN_2)
                                 .build(),
                         CimitStubItem.builder()
                                 .userId(USER_ID)
@@ -559,6 +573,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW.minusSeconds(50L))
                                 .mitigations(List.of())
                                 .document(null)
+                                .txn(TXN_3)
                                 .build(),
                         CimitStubItem.builder()
                                 .userId(USER_ID)
@@ -567,6 +582,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .issuanceDate(NOW)
                                 .mitigations(List.of())
                                 .document(null)
+                                .txn(TXN_3)
                                 .build());
 
         when(mockCimitStubItemService.getCIsForUserId(USER_ID)).thenReturn(cimitStubItems);
@@ -588,7 +604,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .mitigation(List.of())
                                 .incompleteMitigation(List.of())
                                 .document(DOC_1)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_1))
                                 .build(),
                         ContraIndicator.builder()
                                 .code(CI_V03)
@@ -597,7 +613,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .mitigation(List.of())
                                 .incompleteMitigation(List.of())
                                 .document(null)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_3))
                                 .build(),
                         ContraIndicator.builder()
                                 .code(CI_D02)
@@ -606,9 +622,10 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .mitigation(List.of())
                                 .incompleteMitigation(List.of())
                                 .document(DOC_2)
-                                .txn(evidenceTxn)
+                                .txn(List.of(TXN_2))
                                 .build());
 
+        assertEquals(evidenceTxn, new TreeSet<>(List.of(TXN_1, TXN_2, TXN_3)));
         assertEquals(expectedCi, contraIndicators);
     }
 

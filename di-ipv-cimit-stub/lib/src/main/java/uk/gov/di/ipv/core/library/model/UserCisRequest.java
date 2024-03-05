@@ -17,4 +17,5 @@ public class UserCisRequest {
     private String issuer;
     private List<String> mitigations;
     private String document;
+    private String txn;
 }
