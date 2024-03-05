@@ -7,7 +7,7 @@ Globals:
 
 Description: >-
   This creates the necessary components to deploy IPV Orch Stub onto ECS
-  Fargate within the dev platform VPC and private subnets (provided as parameters).
+  Fargate within the dev platform VPC and private subnets (provided as parameters)
 
 Parameters:
   Environment:
