@@ -33,6 +33,7 @@ public class CredentialIssuerConfig {
     public static final String EXPIRY_HOURS = "expHours";
     public static final String EXPIRY_MINUTES = "expMinutes";
     public static final String EXPIRY_SECONDS = "expSeconds";
+    public static final String VC_NOT_BEFORE_FLAG_CHK_BOX_VALUE = "on";
     public static final String VC_NOT_BEFORE_FLAG = "vcNotBeforeFlg";
     public static final String VC_NOT_BEFORE_DAY = "vcNotBeforeDay";
     public static final String VC_NOT_BEFORE_MONTH = "vcNotBeforeMonth";

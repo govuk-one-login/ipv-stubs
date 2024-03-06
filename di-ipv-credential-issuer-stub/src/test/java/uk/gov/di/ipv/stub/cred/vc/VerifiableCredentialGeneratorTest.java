@@ -2,6 +2,7 @@ package uk.gov.di.ipv.stub.cred.vc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jwt.SignedJWT;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,6 +34,7 @@ import static com.nimbusds.jwt.JWTClaimNames.NOT_BEFORE;
 import static com.nimbusds.jwt.JWTClaimNames.SUBJECT;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -211,7 +213,7 @@ public class VerifiableCredentialGeneratorTest {
                         userId,
                         "clientIdValid",
                         Instant.now().getEpochSecond(),
-                        null);
+                        Instant.now().getEpochSecond() + 300);
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 
@@ -219,6 +221,7 @@ public class VerifiableCredentialGeneratorTest {
                 objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");
 
         assertNotNull(claimsSetTree.get(EXPIRATION_TIME));
+        assertNotNull(claimsSetTree.get(NOT_BEFORE));
         assertNull(
                 claimsSetTree
                         .get(VC_CLAIM)
@@ -262,5 +265,28 @@ public class VerifiableCredentialGeneratorTest {
                         .get(VC_CREDENTIAL_SUBJECT)
                         .get(CREDENTIAL_SUBJECT_ADDRESS));
         assertNull(claimsSetTree.get(EXPIRATION_TIME));
+    }
+
+    @Test
+    void shouldNotIncludeNotBeforeThatAreNotPopulated() throws Exception {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("name", List.of());
+        attributes.put("birthDate", List.of(Map.of("value", "1984-09-28")));
+
+        Map<String, Object> evidence =
+                Map.of(
+                        "type", "CriStubCheck",
+                        "strength", 4,
+                        "validity", 2);
+        String userId = "user-id";
+        Credential credential =
+                new Credential(attributes, evidence, userId, "clientIdValid", null, null);
+
+        SignedJWT verifiableCredential = vcGenerator.generate(credential);
+
+        JsonNode claimsSetTree =
+                objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");
+
+        assertInstanceOf(NullNode.class, claimsSetTree.get(NOT_BEFORE));
     }
 }

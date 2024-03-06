@@ -59,6 +59,8 @@ import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -408,15 +410,10 @@ public class AuthorizeHandler {
                                 Integer.parseInt(
                                         queryParamsMap.value(
                                                 CredentialIssuerConfig.VC_NOT_BEFORE_SECONDS));
-                        nbf =
-                                Instant.ofEpochSecond(0)
-                                        .plusSeconds(nbfSeconds)
-                                        .plusSeconds(60L * nbfMinutes)
-                                        .plusSeconds(3600L * nbfHours)
-                                        .plusSeconds(86400L * nbfDay)
-                                        .plusSeconds(2592000L * nbfMonth)
-                                        .plusSeconds(31536000L * nbfYear)
-                                        .getEpochSecond();
+                        LocalDateTime ldt = LocalDateTime.of(nbfYear, nbfMonth, nbfDay, nbfHours, nbfMinutes, nbfSeconds);
+                        Instant nbfInstant = ldt.atZone(ZoneId.systemDefault()).toInstant();
+                        nbf = nbfInstant.getEpochSecond();
+
                     }
 
                     String signedVcJwt =
