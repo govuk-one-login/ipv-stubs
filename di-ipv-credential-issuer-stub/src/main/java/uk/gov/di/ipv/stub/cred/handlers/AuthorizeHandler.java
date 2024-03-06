@@ -410,10 +410,16 @@ public class AuthorizeHandler {
                                 Integer.parseInt(
                                         queryParamsMap.value(
                                                 CredentialIssuerConfig.VC_NOT_BEFORE_SECONDS));
-                        LocalDateTime ldt = LocalDateTime.of(nbfYear, nbfMonth, nbfDay, nbfHours, nbfMinutes, nbfSeconds);
+                        LocalDateTime ldt =
+                                LocalDateTime.of(
+                                        nbfYear,
+                                        nbfMonth,
+                                        nbfDay,
+                                        nbfHours,
+                                        nbfMinutes,
+                                        nbfSeconds);
                         Instant nbfInstant = ldt.atZone(ZoneId.systemDefault()).toInstant();
                         nbf = nbfInstant.getEpochSecond();
-
                     }
 
                     String signedVcJwt =
