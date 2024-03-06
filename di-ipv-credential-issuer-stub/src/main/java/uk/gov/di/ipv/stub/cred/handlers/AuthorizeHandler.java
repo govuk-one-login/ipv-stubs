@@ -386,40 +386,7 @@ public class AuthorizeHandler {
                     if (notBeforeFlag != null
                             && notBeforeFlag.equals(
                                     CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE)) {
-                        int nbfDay =
-                                Integer.parseInt(
-                                        queryParamsMap.value(
-                                                CredentialIssuerConfig.VC_NOT_BEFORE_DAY));
-                        int nbfMonth =
-                                Integer.parseInt(
-                                        queryParamsMap.value(
-                                                CredentialIssuerConfig.VC_NOT_BEFORE_MONTH));
-                        int nbfYear =
-                                Integer.parseInt(
-                                        queryParamsMap.value(
-                                                CredentialIssuerConfig.VC_NOT_BEFORE_YEAR));
-                        int nbfHours =
-                                Integer.parseInt(
-                                        queryParamsMap.value(
-                                                CredentialIssuerConfig.VC_NOT_BEFORE_HOURS));
-                        int nbfMinutes =
-                                Integer.parseInt(
-                                        queryParamsMap.value(
-                                                CredentialIssuerConfig.VC_NOT_BEFORE_MINUTES));
-                        int nbfSeconds =
-                                Integer.parseInt(
-                                        queryParamsMap.value(
-                                                CredentialIssuerConfig.VC_NOT_BEFORE_SECONDS));
-                        LocalDateTime ldt =
-                                LocalDateTime.of(
-                                        nbfYear,
-                                        nbfMonth,
-                                        nbfDay,
-                                        nbfHours,
-                                        nbfMinutes,
-                                        nbfSeconds);
-                        Instant nbfInstant = ldt.atZone(ZoneId.systemDefault()).toInstant();
-                        nbf = nbfInstant.getEpochSecond();
+                        nbf = getNbf(queryParamsMap);
                     }
 
                     String signedVcJwt =
@@ -501,6 +468,29 @@ public class AuthorizeHandler {
                 }
                 return null;
             };
+
+    private static Long getNbf(QueryParamsMap queryParamsMap) {
+        Long nbf;
+        int nbfDay =
+                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_DAY));
+        int nbfMonth =
+                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_MONTH));
+        int nbfYear =
+                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_YEAR));
+        int nbfHours =
+                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_HOURS));
+        int nbfMinutes =
+                Integer.parseInt(
+                        queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_MINUTES));
+        int nbfSeconds =
+                Integer.parseInt(
+                        queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_SECONDS));
+        LocalDateTime ldt =
+                LocalDateTime.of(nbfYear, nbfMonth, nbfDay, nbfHours, nbfMinutes, nbfSeconds);
+        Instant nbfInstant = ldt.atZone(ZoneId.systemDefault()).toInstant();
+        nbf = nbfInstant.getEpochSecond();
+        return nbf;
+    }
 
     private void processMitigatedCIs(
             String userId, QueryParamsMap queryParamsMap, String signedVcJwt)
