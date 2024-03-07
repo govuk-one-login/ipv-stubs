@@ -82,7 +82,6 @@ public class IpvHandler {
 
                 response.cookie("targetEnvironment", environment);
 
-                String errorType = request.queryMap().get("error").value();
                 String userIdTextValue = request.queryMap().get("userIdText").value();
                 String signInJourneyIdText = request.queryMap().get("signInJourneyIdText").value();
                 List<String> vtr =
@@ -112,7 +111,6 @@ public class IpvHandler {
                                 signInJourneyIdText,
                                 ORCHESTRATOR_STUB_STATE.getValue(),
                                 vtr,
-                                errorType,
                                 userEmailAddress,
                                 reproveIdentityClaimValue,
                                 environment,

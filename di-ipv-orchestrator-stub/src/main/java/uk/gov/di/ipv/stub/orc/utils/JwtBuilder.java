@@ -64,7 +64,6 @@ public class JwtBuilder {
             String signInJourneyId,
             String state,
             List<String> vtr,
-            String errorType,
             String userEmailAddress,
             ReproveIdentityClaimValue reproveIdentityValue,
             String environment,
@@ -75,15 +74,6 @@ public class JwtBuilder {
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
                     JsonProcessingException {
         String audience = getIpvCoreAudience(environment);
-        String redirectUri = ORCHESTRATOR_REDIRECT_URL;
-
-        if (errorType != null) {
-            if (errorType.equals("recoverable")) {
-                audience = INVALID_AUDIENCE;
-            } else {
-                redirectUri = INVALID_REDIRECT_URI;
-            }
-        }
 
         Instant now = Instant.now();
         var jarClaims =
@@ -102,7 +92,7 @@ public class JwtBuilder {
                         .claim("claims", jarClaimsMap)
                         .claim("client_id", ORCHESTRATOR_CLIENT_ID)
                         .claim("response_type", ResponseType.Value.CODE.toString())
-                        .claim("redirect_uri", redirectUri)
+                        .claim("redirect_uri", ORCHESTRATOR_REDIRECT_URL)
                         .claim("state", state)
                         .claim("govuk_signin_journey_id", signInJourneyId)
                         .claim("persistent_session_id", UUID.randomUUID().toString())
