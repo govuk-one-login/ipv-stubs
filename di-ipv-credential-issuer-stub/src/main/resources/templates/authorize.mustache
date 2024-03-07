@@ -759,8 +759,7 @@
     }
 
 //     set the default value for not before to six months ago
-    const defaultDate = new Date();
-    defaultDate.setMonth(defaultDate.getMonth() - 6);
+    const defaultDate = new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000);
     const defaultDay = defaultDate.getDate();
     const defaultMonth = defaultDate.getMonth() + 1;
     const defaultYear = defaultDate.getFullYear();
