@@ -385,7 +385,7 @@ public class AuthorizeHandler {
                     Long nbf = now.getEpochSecond();
                     if (notBeforeFlag != null
                             && notBeforeFlag.equals(
-                                    CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE)) {
+                                    CredentialIssuerConfig.VC_NOT_BEFORE_FLAG_CHK_BOX_VALUE)) {
                         nbf = getNbf(queryParamsMap);
                     }
 
@@ -485,9 +485,9 @@ public class AuthorizeHandler {
         int nbfSeconds =
                 Integer.parseInt(
                         queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_SECONDS));
-        LocalDateTime ldt =
+        LocalDateTime localDateTime =
                 LocalDateTime.of(nbfYear, nbfMonth, nbfDay, nbfHours, nbfMinutes, nbfSeconds);
-        Instant nbfInstant = ldt.atZone(ZoneId.systemDefault()).toInstant();
+        Instant nbfInstant = localDateTime.atZone(ZoneId.of("Europe/London")).toInstant();
         nbf = nbfInstant.getEpochSecond();
         return nbf;
     }
