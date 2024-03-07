@@ -8,18 +8,21 @@ public class Credential {
     private final String userId;
     private final String clientId;
     private final Long exp;
+    private final Long nbf;
 
     public Credential(
             Map<String, Object> attributes,
             Map<String, Object> evidence,
             String userId,
             String clientId,
-            Long exp) {
+            Long exp,
+            Long nbf) {
         this.attributes = attributes;
         this.evidence = evidence;
         this.userId = userId;
         this.clientId = clientId;
         this.exp = exp;
+        this.nbf = nbf;
     }
 
     public Map<String, Object> getAttributes() {
@@ -40,5 +43,9 @@ public class Credential {
 
     public Long getExp() {
         return exp;
+    }
+
+    public Long getNbf() {
+        return nbf;
     }
 }

@@ -588,6 +588,11 @@ class AuthorizeHandlerTest {
         assertEquals("test context", viewParamsCaptor.getValue().get("context").toString());
     }
 
+    @Test
+    void doAuthorizeShouldUseNotBeforeValueWhenNotBeforeInRequest() throws Exception {
+        Map<String, String[]> queryParams = validGenerateResponseQueryParams();
+    }
+
     private String createExpectedErrorQueryStringParams(ErrorObject error) {
         return createExpectedErrorQueryStringParams(error.getCode(), error.getDescription());
     }
@@ -719,6 +724,15 @@ class AuthorizeHandlerTest {
         queryParams.put(CredentialIssuerConfig.EXPIRY_HOURS, new String[] {"5"});
         queryParams.put(CredentialIssuerConfig.EXPIRY_MINUTES, new String[] {"0"});
         queryParams.put(CredentialIssuerConfig.EXPIRY_SECONDS, new String[] {"0"});
+        queryParams.put(
+                CredentialIssuerConfig.VC_NOT_BEFORE_FLAG,
+                new String[] {CredentialIssuerConfig.VC_NOT_BEFORE_FLAG_CHK_BOX_VALUE});
+        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_DAY, new String[] {"1"});
+        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_MONTH, new String[] {"1"});
+        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_YEAR, new String[] {"2022"});
+        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_HOURS, new String[] {"0"});
+        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_MINUTES, new String[] {"0"});
+        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_SECONDS, new String[] {"0"});
         return queryParams;
     }
 

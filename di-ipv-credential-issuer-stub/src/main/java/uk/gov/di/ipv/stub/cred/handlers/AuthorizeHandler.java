@@ -59,6 +59,8 @@ import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -376,6 +378,17 @@ public class AuthorizeHandler {
                         }
                     }
 
+                    String notBeforeFlag =
+                            queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_FLAG);
+
+                    Instant now = Instant.now();
+                    Long nbf = now.getEpochSecond();
+                    if (notBeforeFlag != null
+                            && notBeforeFlag.equals(
+                                    CredentialIssuerConfig.VC_NOT_BEFORE_FLAG_CHK_BOX_VALUE)) {
+                        nbf = getNbf(queryParamsMap);
+                    }
+
                     String signedVcJwt =
                             verifiableCredentialGenerator
                                     .generate(
@@ -384,7 +397,8 @@ public class AuthorizeHandler {
                                                     gpgMap,
                                                     userId,
                                                     clientIdValue,
-                                                    exp))
+                                                    exp,
+                                                    nbf))
                                     .serialize();
 
                     if (CredentialIssuerConfig.isEnabled(
@@ -454,6 +468,29 @@ public class AuthorizeHandler {
                 }
                 return null;
             };
+
+    private static Long getNbf(QueryParamsMap queryParamsMap) {
+        Long nbf;
+        int nbfDay =
+                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_DAY));
+        int nbfMonth =
+                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_MONTH));
+        int nbfYear =
+                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_YEAR));
+        int nbfHours =
+                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_HOURS));
+        int nbfMinutes =
+                Integer.parseInt(
+                        queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_MINUTES));
+        int nbfSeconds =
+                Integer.parseInt(
+                        queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_SECONDS));
+        LocalDateTime localDateTime =
+                LocalDateTime.of(nbfYear, nbfMonth, nbfDay, nbfHours, nbfMinutes, nbfSeconds);
+        Instant nbfInstant = localDateTime.atZone(ZoneId.of("Europe/London")).toInstant();
+        nbf = nbfInstant.getEpochSecond();
+        return nbf;
+    }
 
     private void processMitigatedCIs(
             String userId, QueryParamsMap queryParamsMap, String signedVcJwt)

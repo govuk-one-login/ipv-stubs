@@ -18,7 +18,6 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.spec.EncodedKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.time.Instant;
 import java.util.*;
 
 import static com.nimbusds.jwt.JWTClaimNames.AUDIENCE;
@@ -95,7 +94,6 @@ public class VerifiableCredentialGenerator {
     private SignedJWT generateAndSignVerifiableCredentialJwt(
             Credential credential, Map<String, Object> vc)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
-        Instant now = Instant.now();
         JWTClaimsSet.Builder claim =
                 new JWTClaimsSet.Builder()
                         .claim(SUBJECT, credential.getUserId())
@@ -104,7 +102,7 @@ public class VerifiableCredentialGenerator {
                                 AUDIENCE,
                                 ConfigService.getClientConfig(credential.getClientId())
                                         .getAudienceForVcJwt())
-                        .claim(NOT_BEFORE, now.getEpochSecond())
+                        .claim(NOT_BEFORE, credential.getNbf())
                         .claim(
                                 JWT_ID,
                                 String.format(
@@ -114,6 +112,7 @@ public class VerifiableCredentialGenerator {
         if (!Objects.isNull(credential.getExp())) {
             claim = claim.claim(EXPIRATION_TIME, credential.getExp());
         }
+
         JWTClaimsSet claimsSet = claim.build();
 
         KeyFactory kf = KeyFactory.getInstance(EC_ALGO);
