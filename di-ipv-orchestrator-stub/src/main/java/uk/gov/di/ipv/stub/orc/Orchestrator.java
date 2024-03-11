@@ -26,6 +26,7 @@ public class Orchestrator {
         }
         Spark.get("/", HomeHandler.serveHomePage);
         Spark.get("/authorize", ipvHandler.doAuthorize);
+        Spark.get("/authorize-error", ipvHandler.doAuthorizeError);
         Spark.get("/callback", ipvHandler.doCallback);
 
         Spark.internalServerError(

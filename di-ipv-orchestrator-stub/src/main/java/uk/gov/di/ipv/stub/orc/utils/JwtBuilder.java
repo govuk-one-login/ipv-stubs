@@ -20,6 +20,7 @@ import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.ResponseType;
+import uk.gov.di.ipv.stub.orc.models.JarClaims;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -50,7 +51,8 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_STAG
 public class JwtBuilder {
     public static final String URN_UUID = "urn:uuid:";
     public static final String INVALID_AUDIENCE = "invalid-audience";
-    public static final String INVALID_REDIRECT_URI = "http://example.com";
+    public static final String INVALID_REDIRECT_URI = "invalid-redirect-uri";
+    public static final String INVALID_INHERITED_ID = "invalid-jwt";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public enum ReproveIdentityClaimValue {
@@ -68,29 +70,38 @@ public class JwtBuilder {
             String userEmailAddress,
             ReproveIdentityClaimValue reproveIdentityValue,
             String environment,
-            boolean duringMigration,
-            String credentialSubject,
-            String evidence,
-            String vot)
+            boolean includeInheritedId,
+            String inheritedIdSubject,
+            String inheritedIdEvidence,
+            String inheritedIdVot)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
                     JsonProcessingException {
         String audience = getIpvCoreAudience(environment);
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
+        var inheritedIdJwt =
+                includeInheritedId
+                        ? InheritedIdentityJwtBuilder.generate(
+                                        userId,
+                                        inheritedIdVot,
+                                        inheritedIdSubject,
+                                        inheritedIdEvidence)
+                                .serialize()
+                        : null;
+
         if (errorType != null) {
-            if (errorType.equals("recoverable")) {
-                audience = INVALID_AUDIENCE;
-            } else {
-                redirectUri = INVALID_REDIRECT_URI;
+            switch (errorType) {
+                case "recoverable" -> audience = INVALID_AUDIENCE;
+                case "non-recoverable" -> redirectUri = INVALID_REDIRECT_URI;
+                case "inherited-identity" -> inheritedIdJwt = INVALID_INHERITED_ID;
             }
         }
 
-        Instant now = Instant.now();
-        var jarClaims =
-                JarClaimsBuilder.buildJarClaims(
-                        userId, vot, duringMigration, credentialSubject, evidence);
+        var jarClaims = new JarClaims(inheritedIdJwt);
         var jarClaimsMap =
                 objectMapper.convertValue(jarClaims, new TypeReference<Map<String, Object>>() {});
+
+        Instant now = Instant.now();
         var claimSetBuilder =
                 new JWTClaimsSet.Builder()
                         .subject(userId)
