@@ -5,7 +5,8 @@ public class OrchestratorConfig {
     public static final String IPV_ENDPOINT =
             getConfigValue("IPV_ENDPOINT", "https://identity.build.account.gov.uk/");
     public static final String IPV_BACKCHANNEL_ENDPOINT =
-            getConfigValue("IPV_BACKCHANNEL_ENDPOINT", "https://api.identity.build.account.gov.uk/");
+            getConfigValue(
+                    "IPV_BACKCHANNEL_ENDPOINT", "https://api.identity.build.account.gov.uk/");
     public static final String IPV_BACKCHANNEL_TOKEN_PATH =
             getConfigValue("IPV_BACKCHANNEL_TOKEN_PATH", "/dev/token");
     public static final String IPV_BACKCHANNEL_USER_IDENTITY_PATH =

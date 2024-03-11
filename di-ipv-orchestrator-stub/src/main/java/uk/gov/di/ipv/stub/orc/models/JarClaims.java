@@ -12,7 +12,6 @@ public record JarClaims(JarUserInfo userInfo) {
                         null,
                         inheritedIdentityJwt == null
                                 ? null
-                                : new InheritedIdentityJwtClaim(List.of(inheritedIdentityJwt)))
-        );
+                                : new InheritedIdentityJwtClaim(List.of(inheritedIdentityJwt))));
     }
 }
