@@ -3,17 +3,15 @@ package uk.gov.di.ipv.stub.orc.config;
 public class OrchestratorConfig {
     public static final String PORT = getConfigValue("ORCHESTRATOR_PORT", "8083");
     public static final String IPV_ENDPOINT =
-            getConfigValue("IPV_ENDPOINT", "https://di-ipv-core-front.london.cloudapps.digital/");
+            getConfigValue("IPV_ENDPOINT", "https://identity.build.account.gov.uk/");
     public static final String IPV_BACKCHANNEL_ENDPOINT =
-            getConfigValue(
-                    "IPV_BACKCHANNEL_ENDPOINT",
-                    "https://ea8lfzcdq0.execute-api.eu-west-2.amazonaws.com/");
+            getConfigValue("IPV_BACKCHANNEL_ENDPOINT", "https://api.identity.build.account.gov.uk/");
     public static final String IPV_BACKCHANNEL_TOKEN_PATH =
             getConfigValue("IPV_BACKCHANNEL_TOKEN_PATH", "/dev/token");
     public static final String IPV_BACKCHANNEL_USER_IDENTITY_PATH =
             getConfigValue("IPV_BACKCHANNEL_USER_IDENTITY_PATH", "/dev/user-identity");
     public static final String ORCHESTRATOR_CLIENT_ID =
-            getConfigValue("ORCHESTRATOR_CLIENT_ID", "di-ipv-orchestrator-stub");
+            getConfigValue("ORCHESTRATOR_CLIENT_ID", "orchestrator");
     public static final String ORCHESTRATOR_REDIRECT_URL =
             getConfigValue("ORCHESTRATOR_REDIRECT_URL", "http://localhost:8083/callback");
     public static final String ORCHESTRATOR_CLIENT_SIGNING_KEY =
@@ -37,9 +35,7 @@ public class OrchestratorConfig {
     public static final String ORCHESTRATOR_CLIENT_JWT_TTL =
             getConfigValue("ORCHESTRATOR_CLIENT_JWT_TTL", "900");
     public static final String IPV_CORE_AUDIENCE =
-            getConfigValue(
-                    "IPV_CORE_AUDIENCE",
-                    "https://build-di-ipv-cri-uk-passport-front.london.cloudapps.digital");
+            getConfigValue("IPV_CORE_AUDIENCE", "https://identity.build.account.gov.uk");
     public static final boolean BASIC_AUTH_ENABLE =
             Boolean.parseBoolean(getConfigValue("ORCHESTRATOR_BASIC_AUTH_ENABLE", "false"));
     public static final String BASIC_AUTH_USERNAME =
