@@ -82,6 +82,8 @@ public class IpvHandler {
     private static final String INHERITED_ID_EVIDENCE_PARAM = "evidenceJsonPayload";
     private static final String ERROR_TYPE_PARAM = "error";
 
+    private static final String ENVIRONMENT_COOKIE = "targetEnvironment";
+
     private static final State ORCHESTRATOR_STUB_STATE = new State("orchestrator-stub-state");
 
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
@@ -89,7 +91,7 @@ public class IpvHandler {
     public Route doAuthorize =
             (Request request, Response response) -> {
                 var environment = request.queryMap().get(ENVIRONMENT_PARAM).value();
-                response.cookie("targetEnvironment", environment);
+                response.cookie(ENVIRONMENT_COOKIE, environment);
                 response.redirect(getAuthorizeRedirect(request.queryMap(), null));
                 return null;
             };
@@ -98,7 +100,7 @@ public class IpvHandler {
             (Request request, Response response) -> {
                 var environment = request.queryMap().get(ENVIRONMENT_PARAM).value();
                 var errorType = request.queryMap().get(ERROR_TYPE_PARAM).value();
-                response.cookie("targetEnvironment", environment);
+                response.cookie(ENVIRONMENT_COOKIE, environment);
                 response.redirect(getAuthorizeRedirect(request.queryMap(), errorType));
                 return null;
             };
@@ -187,7 +189,7 @@ public class IpvHandler {
             (Request request, Response response) -> {
                 List<Map<String, Object>> mustacheData;
                 Map<String, Object> moustacheDataModel = new HashMap<>();
-                String targetBackend = request.cookie("targetEnvironment");
+                String targetBackend = request.cookie(ENVIRONMENT_COOKIE);
 
                 try {
                     var authorizationCode = getAuthorizationCode(request);
