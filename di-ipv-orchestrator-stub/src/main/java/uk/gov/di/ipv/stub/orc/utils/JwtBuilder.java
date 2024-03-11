@@ -20,10 +20,7 @@ import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.ResponseType;
-import uk.gov.di.ipv.stub.orc.models.Essential;
-import uk.gov.di.ipv.stub.orc.models.InheritedIdentityJwtClaim;
 import uk.gov.di.ipv.stub.orc.models.JarClaims;
-import uk.gov.di.ipv.stub.orc.models.JarUserInfo;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -82,11 +79,15 @@ public class JwtBuilder {
         String audience = getIpvCoreAudience(environment);
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
-        var inheritedIdJwt = includeInheritedId
-                ? InheritedIdentityJwtBuilder.generate(
-                        userId, inheritedIdVot, inheritedIdSubject, inheritedIdEvidence)
-                .serialize()
-                : null;
+        var inheritedIdJwt =
+                includeInheritedId
+                        ? InheritedIdentityJwtBuilder.generate(
+                                        userId,
+                                        inheritedIdVot,
+                                        inheritedIdSubject,
+                                        inheritedIdEvidence)
+                                .serialize()
+                        : null;
 
         if (errorType != null) {
             switch (errorType) {

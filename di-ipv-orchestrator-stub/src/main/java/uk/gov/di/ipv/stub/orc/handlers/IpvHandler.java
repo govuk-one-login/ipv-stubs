@@ -77,7 +77,7 @@ public class IpvHandler {
     private static final String REPROVE_IDENTITY_PARAM = "reproveIdentity";
     private static final String EMAIL_ADDRESS_PARAM = "emailAddress";
     private static final String INHERITED_ID_INCLUDED_PARAM = "duringMigration";
-    private static final String INHERITED_ID_VOT_PARAM ="votText";
+    private static final String INHERITED_ID_VOT_PARAM = "votText";
     private static final String INHERITED_ID_SUBJECT_PARAM = "jsonPayload";
     private static final String INHERITED_ID_EVIDENCE_PARAM = "evidenceJsonPayload";
     private static final String ERROR_TYPE_PARAM = "error";
@@ -86,37 +86,38 @@ public class IpvHandler {
 
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
 
-    public Route doAuthorize = (Request request, Response response) -> {
-        var environment = request.queryMap().get(ENVIRONMENT_PARAM).value();
-        response.cookie("targetEnvironment", environment);
-        response.redirect(getAuthorizeRedirect(request.queryMap(), null));
-        return null;
-    };
+    public Route doAuthorize =
+            (Request request, Response response) -> {
+                var environment = request.queryMap().get(ENVIRONMENT_PARAM).value();
+                response.cookie("targetEnvironment", environment);
+                response.redirect(getAuthorizeRedirect(request.queryMap(), null));
+                return null;
+            };
 
-    public Route doAuthorizeError = (Request request, Response response) -> {
-        var environment = request.queryMap().get(ENVIRONMENT_PARAM).value();
-        var errorType = request.queryMap().get(ERROR_TYPE_PARAM).value();
-        response.cookie("targetEnvironment", environment);
-        response.redirect(getAuthorizeRedirect(request.queryMap(), errorType));
-        return null;
-    };
+    public Route doAuthorizeError =
+            (Request request, Response response) -> {
+                var environment = request.queryMap().get(ENVIRONMENT_PARAM).value();
+                var errorType = request.queryMap().get(ERROR_TYPE_PARAM).value();
+                response.cookie("targetEnvironment", environment);
+                response.redirect(getAuthorizeRedirect(request.queryMap(), errorType));
+                return null;
+            };
 
-    private String getAuthorizeRedirect(
-            QueryParamsMap queryMap,
-            String errorType) throws Exception {
+    private String getAuthorizeRedirect(QueryParamsMap queryMap, String errorType)
+            throws Exception {
         var environment = queryMap.get(ENVIRONMENT_PARAM).value();
         var userIdTextValue = queryMap.get(USER_ID_PARAM).value();
         var signInJourneyIdText = queryMap.get(JOURNEY_ID_PARAM).value();
-        var vtr = Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
-                .map(String::trim)
-                .filter(value -> !value.isEmpty())
-                .toList();
+        var vtr =
+                Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
+                        .map(String::trim)
+                        .filter(value -> !value.isEmpty())
+                        .toList();
         var userEmailAddress = queryMap.get(EMAIL_ADDRESS_PARAM).value();
         var reproveIdentityString = queryMap.get(REPROVE_IDENTITY_PARAM).value();
         var reproveIdentityClaimValue =
                 StringUtils.isNotBlank(reproveIdentityString)
-                        ? JwtBuilder.ReproveIdentityClaimValue.valueOf(
-                        reproveIdentityString)
+                        ? JwtBuilder.ReproveIdentityClaimValue.valueOf(reproveIdentityString)
                         : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
 
         var includeInheritedId =
@@ -146,13 +147,12 @@ public class IpvHandler {
         EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);
         var authRequest =
                 new AuthorizationRequest.Builder(
-                        new ResponseType(ResponseType.Value.CODE),
-                        new ClientID(ORCHESTRATOR_CLIENT_ID))
+                                new ResponseType(ResponseType.Value.CODE),
+                                new ClientID(ORCHESTRATOR_CLIENT_ID))
                         .state(ORCHESTRATOR_STUB_STATE)
                         .scope(new Scope("openid"))
                         .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
-                        .endpointURI(
-                                getIpvEndpoint(environment).resolve("/oauth2/authorize"))
+                        .endpointURI(getIpvEndpoint(environment).resolve("/oauth2/authorize"))
                         .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
                         .build();
 
