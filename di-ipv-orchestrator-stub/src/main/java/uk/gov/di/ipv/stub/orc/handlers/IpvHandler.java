@@ -34,6 +34,7 @@ import com.nimbusds.openid.connect.sdk.UserInfoResponse;
 import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -68,76 +69,95 @@ public class IpvHandler {
 
     private static final String CREDENTIALS_URL_PROPERTY =
             "https://vocab.account.gov.uk/v1/credentialJWT";
-    private static final String JSON_PAYLOAD_PARAM = "jsonPayload";
-    private static final String EVIDENCE_JSON_PAYLOAD_PARAM = "evidenceJsonPayload";
-    private static final String DURING_MIGRATION = "duringMigration";
+
+    private static final String USER_ID_PARAM = "userIdText";
+    private static final String JOURNEY_ID_PARAM = "signInJourneyIdText";
+    private static final String VTR_PARAM = "vtrText";
+    private static final String ENVIRONMENT_PARAM = "targetEnvironment";
+    private static final String REPROVE_IDENTITY_PARAM = "reproveIdentity";
+    private static final String EMAIL_ADDRESS_PARAM = "emailAddress";
+    private static final String INHERITED_ID_INCLUDED_PARAM = "duringMigration";
+    private static final String INHERITED_ID_VOT_PARAM ="votText";
+    private static final String INHERITED_ID_SUBJECT_PARAM = "jsonPayload";
+    private static final String INHERITED_ID_EVIDENCE_PARAM = "evidenceJsonPayload";
+    private static final String ERROR_TYPE_PARAM = "error";
 
     private static final State ORCHESTRATOR_STUB_STATE = new State("orchestrator-stub-state");
 
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
 
-    public Route doAuthorize =
-            (Request request, Response response) -> {
-                String environment = request.queryMap().get("targetEnvironment").value();
+    public Route doAuthorize = (Request request, Response response) -> {
+        var environment = request.queryMap().get(ENVIRONMENT_PARAM).value();
+        response.cookie("targetEnvironment", environment);
+        response.redirect(getAuthorizeRedirect(request.queryMap(), null));
+        return null;
+    };
 
-                response.cookie("targetEnvironment", environment);
+    public Route doAuthorizeError = (Request request, Response response) -> {
+        var environment = request.queryMap().get(ENVIRONMENT_PARAM).value();
+        var errorType = request.queryMap().get(ERROR_TYPE_PARAM).value();
+        response.cookie("targetEnvironment", environment);
+        response.redirect(getAuthorizeRedirect(request.queryMap(), errorType));
+        return null;
+    };
 
-                String errorType = request.queryMap().get("error").value();
-                String userIdTextValue = request.queryMap().get("userIdText").value();
-                String signInJourneyIdText = request.queryMap().get("signInJourneyIdText").value();
-                List<String> vtr =
-                        Arrays.stream(request.queryMap("vtrText").value().split(","))
-                                .map(String::trim)
-                                .filter(value -> !value.isEmpty())
-                                .toList();
-                String vot = request.queryMap().get("votText").value();
-                String userEmailAddress = request.queryMap().get("emailAddress").value();
-                String reproveIdentityString = request.queryMap().get("reproveIdentity").value();
-                JwtBuilder.ReproveIdentityClaimValue reproveIdentityClaimValue =
-                        StringUtils.isNotBlank(reproveIdentityString)
-                                ? JwtBuilder.ReproveIdentityClaimValue.valueOf(
-                                        reproveIdentityString)
-                                : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
+    private String getAuthorizeRedirect(
+            QueryParamsMap queryMap,
+            String errorType) throws Exception {
+        var environment = queryMap.get(ENVIRONMENT_PARAM).value();
+        var userIdTextValue = queryMap.get(USER_ID_PARAM).value();
+        var signInJourneyIdText = queryMap.get(JOURNEY_ID_PARAM).value();
+        var vtr = Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .toList();
+        var userEmailAddress = queryMap.get(EMAIL_ADDRESS_PARAM).value();
+        var reproveIdentityString = queryMap.get(REPROVE_IDENTITY_PARAM).value();
+        var reproveIdentityClaimValue =
+                StringUtils.isNotBlank(reproveIdentityString)
+                        ? JwtBuilder.ReproveIdentityClaimValue.valueOf(
+                        reproveIdentityString)
+                        : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
 
-                String credentialSubject = request.queryMap().value(JSON_PAYLOAD_PARAM);
-                String evidence = request.queryMap().value(EVIDENCE_JSON_PAYLOAD_PARAM);
-                boolean duringMigration =
-                        Objects.equals(request.queryMap().value(DURING_MIGRATION), "checked");
+        var includeInheritedId =
+                Objects.equals(queryMap.value(INHERITED_ID_INCLUDED_PARAM), "checked");
+        var inheritedIdVot = queryMap.get(INHERITED_ID_VOT_PARAM).value();
+        var inheritedIdSubject = queryMap.value(INHERITED_ID_SUBJECT_PARAM);
+        var inheritedIdEvidence = queryMap.value(INHERITED_ID_EVIDENCE_PARAM);
 
-                String userId = getUserIdValue(userIdTextValue);
+        var userId = getUserIdValue(userIdTextValue);
 
-                JWTClaimsSet claims =
-                        JwtBuilder.buildAuthorizationRequestClaims(
-                                userId,
-                                signInJourneyIdText,
-                                ORCHESTRATOR_STUB_STATE.getValue(),
-                                vtr,
-                                errorType,
-                                userEmailAddress,
-                                reproveIdentityClaimValue,
-                                environment,
-                                duringMigration,
-                                credentialSubject,
-                                evidence,
-                                vot);
+        JWTClaimsSet claims =
+                JwtBuilder.buildAuthorizationRequestClaims(
+                        userId,
+                        signInJourneyIdText,
+                        ORCHESTRATOR_STUB_STATE.getValue(),
+                        vtr,
+                        errorType,
+                        userEmailAddress,
+                        reproveIdentityClaimValue,
+                        environment,
+                        includeInheritedId,
+                        inheritedIdSubject,
+                        inheritedIdEvidence,
+                        inheritedIdVot);
 
-                SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
-                EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);
-                var authRequest =
-                        new AuthorizationRequest.Builder(
-                                        new ResponseType(ResponseType.Value.CODE),
-                                        new ClientID(ORCHESTRATOR_CLIENT_ID))
-                                .state(ORCHESTRATOR_STUB_STATE)
-                                .scope(new Scope("openid"))
-                                .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
-                                .endpointURI(
-                                        getIpvEndpoint(environment).resolve("/oauth2/authorize"))
-                                .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
-                                .build();
+        SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
+        EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);
+        var authRequest =
+                new AuthorizationRequest.Builder(
+                        new ResponseType(ResponseType.Value.CODE),
+                        new ClientID(ORCHESTRATOR_CLIENT_ID))
+                        .state(ORCHESTRATOR_STUB_STATE)
+                        .scope(new Scope("openid"))
+                        .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
+                        .endpointURI(
+                                getIpvEndpoint(environment).resolve("/oauth2/authorize"))
+                        .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
+                        .build();
 
-                response.redirect(authRequest.toURI().toString());
-                return null;
-            };
+        return authRequest.toURI().toString();
+    }
 
     private URI getIpvEndpoint(String environment) throws URISyntaxException {
         String url =
