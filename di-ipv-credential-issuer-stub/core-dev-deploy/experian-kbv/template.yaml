@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >-
-  This creates the necessary components to deploy IPV KBV Credential Issuer
+  This creates the necessary components to deploy IPV Experian KBV Credential Issuer
   Stub onto ECS Fargate within the dev platform VPC and private subnets
   (provided as parameters).
 
@@ -108,13 +108,13 @@ Resources:
     Properties:
       DomainName: !If
         - IsDev01
-        - !Sub "kbv-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "kbv-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "experian-kbv-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "experian-kbv-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
       DomainValidationOptions:
         - DomainName: !If
             - IsDev01
-            - !Sub "kbv-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !If [IsDev02, !Sub "kbv-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+            - !Sub "experian-kbv-${Environment}.01.core.dev.stubs.account.gov.uk"
+            - !If [IsDev02, !Sub "experian-kbv-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
           HostedZoneId: !If
             - IsDev01
             - !ImportValue Dev01StubsHostedZoneId
@@ -127,8 +127,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsDev01
-        - !Sub "kbv-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "kbv-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "experian-kbv-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "experian-kbv-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
       DomainNameConfigurations:
         - CertificateArn: !Ref CriStubSSLCert
           EndpointType: REGIONAL
@@ -139,8 +139,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsDev01
-        - !Sub "kbv-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "kbv-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "experian-kbv-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "experian-kbv-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -154,8 +154,8 @@ Resources:
       Type: A
       Name: !If
         - IsDev01
-        - !Sub "kbv-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "kbv-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "experian-kbv-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "experian-kbv-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
       HostedZoneId: !If
         - IsDev01
         - !ImportValue Dev01StubsHostedZoneId
@@ -251,7 +251,7 @@ Resources:
   ApiGwHttpEndpoint:
     Type: "AWS::ApiGatewayV2::Api"
     Properties:
-      Name: !Sub ${AWS::StackName}-kbv-cri-api-gw
+      Name: !Sub ${AWS::StackName}-experian-kbv-cri-api-gw
       ProtocolType: HTTP
 
   ApiGwHttpEndpointIntegration:
@@ -301,7 +301,7 @@ Resources:
   APIGWAccessLogsGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-kbv-cri-api-gw-accesslogs
+      LogGroupName: !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-experian-kbv-cri-api-gw-accesslogs
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
