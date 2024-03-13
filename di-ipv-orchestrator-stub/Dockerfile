@@ -1,10 +1,10 @@
-FROM openjdk:17-jdk-slim AS build
+FROM amazoncorretto:17-alpine3.17-jdk AS build
 COPY . /home/gradle
 WORKDIR /home/gradle
 RUN ./gradlew build --no-daemon --stacktrace
 
 
-FROM openjdk:17-jdk-slim
+FROM amazoncorretto:17-alpine3.17-jdk
 
 ENV PORT 8083
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007
