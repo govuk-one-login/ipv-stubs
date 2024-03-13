@@ -1,33 +1,93 @@
 {
   "data": [
     {
-      "criType": "UK Passport (Stub)",
-      "label": "Mary Watson (Valid) Passport",
+      "criType": "Address (Stub)",
+      "label": "Alice Doe Valid Address",
       "payload": {
-        "name": [
+        "address": [
           {
-            "nameParts": [
-              {
-                "value": "Mary",
-                "type": "GivenName"
-              },
-              {
-                "value": "Watson",
-                "type": "FamilyName"
-              }
-            ]
+            "buildingName": "221C",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1980-01-02"
           }
-        ],
-        "birthDate": [
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Alice Parker Valid Address",
+      "payload": {
+        "address": [
           {
-            "value": "1932-02-25"
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
           }
-        ],
-        "passport": [
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Bob Parker Valid Address",
+      "payload": {
+        "address": [
           {
-            "documentNumber": "824159121",
-            "expiryDate": "2030-01-01",
-            "icaoIssuerCode": "GBR"
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1951-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "James Moriarty (Invalid) Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "111B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 1XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Joe Shmoe Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "122",
+            "streetName": "BURNS CRESCENT",
+            "postalCode": "EH1 9GP",
+            "addressLocality": "EDINBURGH",
+            "validFrom": "1995-01-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Kenneth Decerqueira (Valid Experian) Address",
+      "payload": {
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
           }
         ]
       }
@@ -48,101 +108,79 @@
       }
     },
     {
-      "criType": "Claimed Identity (Stub)",
-      "label": "Mary Watson",
+      "criType": "Address (Stub)",
+      "label": "Saul Goodman Valid Address",
       "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Mary",
-                "type": "GivenName"
-              },
-              {
-                "value": "Watson",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1932-02-25"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Fraud Check (Stub)",
-      "label": "Mary Watson (Valid) Fraud",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Mary",
-                "type": "GivenName"
-              },
-              {
-                "value": "Watson",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1932-02-25"
-          }
-        ],
         "address": [
           {
-            "buildingName": "221B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 6XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
+            "buildingName": "29",
+            "streetName": "CHURCH LANE",
+            "postalCode": "TN61 8PQ",
+            "addressLocality": "TUNBRIDGE WELLS",
+            "validFrom": "1996-01-01"
           }
         ]
       }
     },
     {
-      "criType": "Experian Knowledge Based Verification (Stub)",
-      "label": "Mary Watson (Valid) KBV",
+      "criType": "Bank account verification (Stub)",
+      "label": "Alice Parker BAV",
       "payload": {
         "name": [
           {
             "nameParts": [
               {
-                "value": "Mary",
+                "value": "Aliçe",
                 "type": "GivenName"
               },
               {
-                "value": "Watson",
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parkér",
                 "type": "FamilyName"
               }
             ]
           }
         ],
-        "birthDate": [
+        "bankAccount": [
           {
-            "value": "1932-02-25"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "221B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 6XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
+            "sortCode": "103233",
+            "accountNumber": "12345678"
           }
         ]
       }
     },
     {
-      "criType": "UK Passport (Stub)",
-      "label": "James Moriarty (Invalid) Passport",
+      "criType": "Bank account verification (Stub)",
+      "label": "Bob Parker BAV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Böb",
+                "type": "GivenName"
+              },
+              {
+                "value": "Pârker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "bankAccount": [
+          {
+            "sortCode": "103233",
+            "accountNumber": "12345678"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Bank account verification (Stub)",
+      "label": "James Moriarty BAV",
       "payload": {
         "name": [
           {
@@ -158,31 +196,145 @@
             ]
           }
         ],
-        "birthDate": [
+        "bankAccount": [
           {
-            "value": "1939-10-09"
-          }
-        ],
-        "passport": [
-          {
-            "documentNumber": "532114382",
-            "expiryDate": "2030-01-01",
-            "icaoIssuerCode": "GBR"
+            "sortCode": "103233",
+            "accountNumber": "12345678"
           }
         ]
       }
     },
     {
-      "criType": "Address (Stub)",
-      "label": "James Moriarty (Invalid) Address",
+      "criType": "Bank account verification (Stub)",
+      "label": "Kenneth Decerqueira BAV",
       "payload": {
-        "address": [
+        "name": [
           {
-            "buildingName": "111B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 1XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "bankAccount": [
+          {
+            "sortCode": "103233",
+            "accountNumber": "12345678"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Bank account verification (Stub)",
+      "label": "Mary Watson BAV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "bankAccount": [
+          {
+            "sortCode": "103233",
+            "accountNumber": "12345678"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity (Stub)",
+      "label": "Alice Doe",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Laura",
+                "type": "GivenName"
+              },
+              {
+                "value": "Doe",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity (Stub)",
+      "label": "Alice Parker",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Joe Shmoe",
+                "type": "GivenName"
+              },
+              {
+                "value": "Doe The Ball",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1985-02-08"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity (Stub)",
+      "label": "Bob Parker",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Bob",
+                "type": "GivenName"
+              },
+              {
+                "value": "Pa rk'er",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
           }
         ]
       }
@@ -213,18 +365,18 @@
       }
     },
     {
-      "criType": "Fraud Check (Stub)",
-      "label": "James Moriarty (Invalid) Fraud",
+      "criType": "Claimed Identity (Stub)",
+      "label": "Joe Shmoe",
       "payload": {
         "name": [
           {
             "nameParts": [
               {
-                "value": "James",
+                "value": "Joe Shmoe",
                 "type": "GivenName"
               },
               {
-                "value": "Moriarty",
+                "value": "Doe The Ball",
                 "type": "FamilyName"
               }
             ]
@@ -232,99 +384,7 @@
         ],
         "birthDate": [
           {
-            "value": "1939-10-09"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "111B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 1XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Experian Knowledge Based Verification (Stub)",
-      "label": "James Moriarty (Invalid) KBV",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "James",
-                "type": "GivenName"
-              },
-              {
-                "value": "Moriarty",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1939-10-09"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "111B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 1XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "UK Passport (Stub)",
-      "label": "Kenneth Decerqueira (Valid Experian) Passport",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Kenneth",
-                "type": "GivenName"
-              },
-              {
-                "value": "Decerqueira",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1965-07-08"
-          }
-        ],
-        "passport": [
-          {
-            "documentNumber": "321654987",
-            "expiryDate": "2030-01-01",
-            "icaoIssuerCode": "GBR"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Address (Stub)",
-      "label": "Kenneth Decerqueira (Valid Experian) Address",
-      "payload": {
-        "address": [
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HADLEY ROAD",
-            "postalCode": "BA2 5AA",
-            "buildingNumber": "8",
-            "addressLocality": "BATH",
-            "validFrom": "2000-01-01"
+            "value": "1985-02-08"
           }
         ]
       }
@@ -355,150 +415,8 @@
       }
     },
     {
-      "criType": "Fraud Check (Stub)",
-      "label": "Kenneth Decerqueira (Valid Experian) Fraud",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Kenneth",
-                "type": "GivenName"
-              },
-              {
-                "value": "Decerqueira",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1965-07-08"
-          }
-        ],
-        "address": [
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HADLEY ROAD",
-            "postalCode": "BA2 5AA",
-            "buildingNumber": "8",
-            "addressLocality": "BATH",
-            "validFrom": "2000-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Experian Knowledge Based Verification (Stub)",
-      "label": "Kenneth Decerqueira (Valid Experian) KBV",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Kenneth",
-                "type": "GivenName"
-              },
-              {
-                "value": "Decerqueira",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1965-07-08"
-          }
-        ],
-        "address": [
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HADLEY ROAD",
-            "postalCode": "BA2 5AA",
-            "buildingNumber": "8",
-            "addressLocality": "BATH",
-            "validFrom": "2000-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "HMRC Knowledge Based Verification (Stub)",
-      "label": "Kenneth Decerqueira (Valid Experian) HMRC KBV",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Kenneth",
-                "type": "GivenName"
-              },
-              {
-                "value": "Decerqueira",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1965-07-08"
-          }
-        ],
-        "address": [
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HADLEY ROAD",
-            "postalCode": "BA2 5AA",
-            "buildingNumber": "8",
-            "addressLocality": "BATH",
-            "validFrom": "2000-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "HMRC Knowledge Based Verification (Stub)",
-      "label": "James Moriarty (Invalid) HMRC KBV",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "James",
-                "type": "GivenName"
-              },
-              {
-                "value": "Moriarty",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1939-10-09"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "111B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 1XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "HMRC Knowledge Based Verification (Stub)",
-      "label": "Mary Watson (Valid) HMRC KBV",
+      "criType": "Claimed Identity (Stub)",
+      "label": "Mary Watson",
       "payload": {
         "name": [
           {
@@ -518,200 +436,30 @@
           {
             "value": "1932-02-25"
           }
-        ],
-        "address": [
-          {
-            "buildingName": "221B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 6XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "HMRC Knowledge Based Verification (Stub)",
-      "label": "Alice Parker (Valid) HMRC KBV",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Aliçe",
-                "type": "GivenName"
-              },
-              {
-                "value": "Jane",
-                "type": "GivenName"
-              },
-              {
-                "value": "Parkér",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-01-01"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "HMRC Knowledge Based Verification (Stub)",
-      "label": "Bob Parker (Valid) HMRC KBV",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Böb",
-                "type": "GivenName"
-              },
-              {
-                "value": "Pârker",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-11-09"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1951-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "DOC Checking App (Stub)",
-      "label": "Joe Shmoe (Valid) Driving Licence",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Joe Shmoe",
-                "type": "GivenName"
-              },
-              {
-                "value": "Doe The Ball",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1985-02-08"
-          }
-        ],
-        "address": [
-          {
-            "postalCode": "EH1 9GP"
-          }
-        ],
-        "drivingPermit": [
-          {
-            "personalNumber": "DOE99802085J99FG",
-            "fullAddress": "122 BURNS CRESCENT EDINBURGH EH1 9GP",
-            "expiryDate": "2023-01-18",
-            "issueNumber": "5",
-            "issuedBy": "DVLA",
-            "issueDate": "2010-01-18"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Address (Stub)",
-      "label": "Joe Shmoe Valid Address",
-      "payload": {
-        "address": [
-          {
-            "buildingName": "122",
-            "streetName": "BURNS CRESCENT",
-            "postalCode": "EH1 9GP",
-            "addressLocality": "EDINBURGH",
-            "validFrom": "1995-01-02"
-          }
         ]
       }
     },
     {
       "criType": "Claimed Identity (Stub)",
-      "label": "Joe Shmoe",
+      "label": "Saul Goodman",
       "payload": {
         "name": [
           {
             "nameParts": [
               {
-                "value": "Joe Shmoe",
-                "type": "GivenName"
+                "type": "GivenName",
+                "value": "SAUL"
               },
               {
-                "value": "Doe The Ball",
-                "type": "FamilyName"
+                "type": "FamilyName",
+                "value": "GOODMAN"
               }
             ]
           }
         ],
         "birthDate": [
           {
-            "value": "1985-02-08"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Fraud Check (Stub)",
-      "label": "Joe Shmoe (Valid) Fraud",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Joe Shmoe",
-                "type": "GivenName"
-              },
-              {
-                "value": "Doe The Ball",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1985-02-08"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "122",
-            "streetName": "BURNS CRESCENT",
-            "postalCode": "EH1 9GP",
-            "addressLocality": "EDINBURGH",
-            "validFrom": "1995-01-02"
+            "value": "1995-08-16"
           }
         ]
       }
@@ -752,738 +500,6 @@
             "icaoIssuerCode": "GBR",
             "documentNumber": "123456789",
             "expiryDate": "2022-02-02"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Address (Stub)",
-      "label": "Alice Doe Valid Address",
-      "payload": {
-        "address": [
-          {
-            "buildingName": "221C",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 6XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1980-01-02"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Claimed Identity (Stub)",
-      "label": "Alice Doe",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Alice",
-                "type": "GivenName"
-              },
-              {
-                "value": "Jane",
-                "type": "GivenName"
-              },
-              {
-                "value": "Laura",
-                "type": "GivenName"
-              },
-              {
-                "value": "Doe",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Fraud Check (Stub)",
-      "label": "Alice Doe (Valid) Fraud",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Alice",
-                "type": "GivenName"
-              },
-              {
-                "value": "Jane",
-                "type": "GivenName"
-              },
-              {
-                "value": "Laura",
-                "type": "GivenName"
-              },
-              {
-                "value": "Doe",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-01-01"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "221C",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 6XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1980-01-02"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Driving Licence (Stub)",
-      "label": "Alice Parker (Valid) DVLA Licence",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Alice",
-                "type": "GivenName"
-              },
-              {
-                "value": "Jane",
-                "type": "GivenName"
-              },
-              {
-                "value": "Parker",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-01-01"
-          }
-        ],
-        "drivingPermit": [
-          {
-            "issuedBy": "DVLA",
-            "issueDate": "2005-02-02",
-            "personalNumber": "PARKE710112PBFGA",
-            "expiryDate": "2032-02-02",
-            "issueNumber": "23"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Address (Stub)",
-      "label": "Saul Goodman Valid Address",
-      "payload": {
-        "address": [
-          {
-            "buildingName": "29",
-            "streetName": "CHURCH LANE",
-            "postalCode": "TN61 8PQ",
-            "addressLocality": "TUNBRIDGE WELLS",
-            "validFrom": "1996-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Fraud Check (Stub)",
-      "label": "Saul Goodman (Valid) Fraud",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "type": "GivenName",
-                "value": "SAUL"
-              },
-              {
-                "type": "FamilyName",
-                "value": "GOODMAN"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1995-08-16"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "29",
-            "streetName": "CHURCH LANE",
-            "postalCode": "TN61 8PQ",
-            "addressLocality": "TUNBRIDGE WELLS",
-            "validFrom": "1996-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Claimed Identity (Stub)",
-      "label": "Saul Goodman",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "type": "GivenName",
-                "value": "SAUL"
-              },
-              {
-                "type": "FamilyName",
-                "value": "GOODMAN"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1995-08-16"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Address (Stub)",
-      "label": "Alice Parker Valid Address",
-      "payload": {
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Claimed Identity (Stub)",
-      "label": "Alice Parker",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Joe Shmoe",
-                "type": "GivenName"
-              },
-              {
-                "value": "Doe The Ball",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1985-02-08"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Fraud Check (Stub)",
-      "label": "Alice Parker (Valid) Fraud",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Alice",
-                "type": "GivenName"
-              },
-              {
-                "value": "Jane",
-                "type": "GivenName"
-              },
-              {
-                "value": "Par-ker",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-01-01"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Experian Knowledge Based Verification (Stub)",
-      "label": "Alice Parker (Valid) KBV",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Aliçe",
-                "type": "GivenName"
-              },
-              {
-                "value": "Jane",
-                "type": "GivenName"
-              },
-              {
-                "value": "Parkér",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-01-01"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
-          }
-        ]
-      }
-    },  
-    {
-      "criType": "Driving Licence (Stub)",
-      "label": "Bob Parker (Valid) DVA Licence",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Bob",
-                "type": "GivenName"
-              },
-              {
-                "value": "Parker",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-11-09"
-          }
-        ],
-        "drivingPermit": [
-          {
-            "issuedBy": "DVA",
-            "issueDate": "2005-02-02",
-            "personalNumber": "55667789",
-            "expiryDate": "2032-02-02"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Address (Stub)",
-      "label": "Bob Parker Valid Address",
-      "payload": {
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1951-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Claimed Identity (Stub)",
-      "label": "Bob Parker",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Bob",
-                "type": "GivenName"
-              },
-              {
-                "value": "Pa rk'er",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-11-09"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Fraud Check (Stub)",
-      "label": "Bob Parker (Valid) Fraud",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Bob",
-                "type": "GivenName"
-              },
-              {
-                "value": "Pa rk'er",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-11-09"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1951-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Experian Knowledge Based Verification (Stub)",
-      "label": "Bob Parker (Valid) KBV",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Böb",
-                "type": "GivenName"
-              },
-              {
-                "value": "Pârker",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-11-09"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1951-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Face to Face Check (Stub)",
-      "label": "Mary Watson (Valid Passport)",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Mary",
-                "type": "GivenName"
-              },
-              {
-                "value": "Watson",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1932-02-25"
-          }
-        ],
-        "passport": [
-          {
-            "documentNumber": "824159121",
-            "expiryDate": "2030-01-01",
-            "icaoIssuerCode": "GBR"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Face to Face Check (Stub)",
-      "label": "Kenneth Decerqueira (Valid Passport)",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "type": "GivenName",
-                "value": "Kenneth"
-              },
-              {
-                "type": "FamilyName",
-                "value": "Decerqueira"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1965-07-08"
-          }
-        ],
-        "passport": [
-          {
-            "expiryDate": "2030-01-01",
-            "documentNumber": "321654987",
-            "icaoIssuerCode": "GBR"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Face to Face Check (Stub)",
-      "label": "Saul Goodman (Valid BRP)",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Saul",
-                "type": "GivenName"
-              },
-              {
-                "value": "Goodman",
-                "type": "GivenName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1995-08-16"
-          }
-        ],
-        "residencePermit": [
-          {
-            "icaoIssuerCode": "UTO",
-            "documentType": "CR",
-            "documentNumber": "AX66K69P2",
-            "expiryDate": "2030-07-13"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Face to Face Check (Stub)",
-      "label": "Saul Goodman (Valid EEA Card)",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Saul",
-                "type": "GivenName"
-              },
-              {
-                "value": "Goodman",
-                "type": "GivenName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1995-08-16"
-          }
-        ],
-        "idCard": [
-          {
-            "icaoIssuerCode": "NLD",
-            "documentNumber": "SPEC12031",
-            "expiryDate": "2031-08-02",
-            "issueDate": "2021-08-02"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "DOC Checking App (Stub)",
-      "label": "Kenneth Decerqueira (Valid Experian) Passport",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Kenneth",
-                "type": "GivenName"
-              },
-              {
-                "value": "Decerqueira",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1965-07-08"
-          }
-        ],
-        "passport": [
-          {
-            "documentNumber": "321654987",
-            "expiryDate": "2030-01-01",
-            "icaoIssuerCode": "GBR"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Face to Face Check (Stub)",
-      "label": "Alice Parker (Valid) DVLA Licence",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Alice",
-                "type": "GivenName"
-              },
-              {
-                "value": "Jane",
-                "type": "GivenName"
-              },
-              {
-                "value": "Parker",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-01-01"
-          }
-        ],
-        "drivingPermit": [
-          {
-            "issuedBy": "DVLA",
-            "issueDate": "2005-02-02",
-            "personalNumber": "PARKE710112PBFGA",
-            "expiryDate": "2032-02-02"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "DOC Checking App (Stub)",
-      "label": "Alice Parker (Valid) DVLA Licence",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Alice",
-                "type": "GivenName"
-              },
-              {
-                "value": "Jane",
-                "type": "GivenName"
-              },
-              {
-                "value": "Parker",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-01-01"
-          }
-        ],
-        "drivingPermit": [
-          {
-            "issuedBy": "DVLA",
-            "issueDate": "2005-02-02",
-            "personalNumber": "PARKE710112PBFGA",
-            "expiryDate": "2032-02-02"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "DOC Checking App (Stub)",
-      "label": "Alice Parker (Valid) BRP",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Alice",
-                "type": "GivenName"
-              },
-              {
-                "value": "Jane",
-                "type": "GivenName"
-              },
-              {
-                "value": "Parker",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-01-01"
-          }
-        ],
-        "residencePermit": [
-          {
-            "documentType": "IR",
-            "icaoIssuerCode": "GBR",
-            "documentNumber": "ZR8016200",
-            "expiryDate": "2024-02-02"
           }
         ]
       }
@@ -1564,6 +580,152 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
+      "label": "Alice Parker (Valid) BRP",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "residencePermit": [
+          {
+            "documentType": "IR",
+            "icaoIssuerCode": "GBR",
+            "documentNumber": "ZR8016200",
+            "expiryDate": "2024-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Alice Parker (Valid) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2005-02-02",
+            "personalNumber": "PARKE710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Joe Shmoe (Valid) Driving Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Joe Shmoe",
+                "type": "GivenName"
+              },
+              {
+                "value": "Doe The Ball",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1985-02-08"
+          }
+        ],
+        "address": [
+          {
+            "postalCode": "EH1 9GP"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "personalNumber": "DOE99802085J99FG",
+            "fullAddress": "122 BURNS CRESCENT EDINBURGH EH1 9GP",
+            "expiryDate": "2023-01-18",
+            "issueNumber": "5",
+            "issuedBy": "DVLA",
+            "issueDate": "2010-01-18"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Kenneth Decerqueira (Valid Experian) Passport",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "321654987",
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
       "label": "Saul Goodman (Valid) BRC",
       "payload": {
         "name": [
@@ -1591,6 +753,882 @@
             "expiryDate": "2030-07-13",
             "icaoIssuerCode": "UTO",
             "documentType": "CR"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Alice Parker (Valid) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2005-02-02",
+            "personalNumber": "PARKE710112PBFGA",
+            "expiryDate": "2032-02-02",
+            "issueNumber": "23"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Bob Parker (Valid) DVA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Bob",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVA",
+            "issueDate": "2005-02-02",
+            "personalNumber": "55667789",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Experian Knowledge Based Verification (Stub)",
+      "label": "Alice Parker (Valid) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Aliçe",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parkér",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Experian Knowledge Based Verification (Stub)",
+      "label": "Bob Parker (Valid) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Böb",
+                "type": "GivenName"
+              },
+              {
+                "value": "Pârker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1951-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Experian Knowledge Based Verification (Stub)",
+      "label": "James Moriarty (Invalid) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "James",
+                "type": "GivenName"
+              },
+              {
+                "value": "Moriarty",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1939-10-09"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "111B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 1XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Experian Knowledge Based Verification (Stub)",
+      "label": "Kenneth Decerqueira (Valid Experian) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Experian Knowledge Based Verification (Stub)",
+      "label": "Mary Watson (Valid) KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "221B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Alice Parker (Valid) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2005-02-02",
+            "personalNumber": "PARKE710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Kenneth Decerqueira (Valid Passport)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Kenneth"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Decerqueira"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "passport": [
+          {
+            "expiryDate": "2030-01-01",
+            "documentNumber": "321654987",
+            "icaoIssuerCode": "GBR"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Mary Watson (Valid Passport)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "824159121",
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Saul Goodman (Valid BRP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Saul",
+                "type": "GivenName"
+              },
+              {
+                "value": "Goodman",
+                "type": "GivenName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1995-08-16"
+          }
+        ],
+        "residencePermit": [
+          {
+            "icaoIssuerCode": "UTO",
+            "documentType": "CR",
+            "documentNumber": "AX66K69P2",
+            "expiryDate": "2030-07-13"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Saul Goodman (Valid EEA Card)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Saul",
+                "type": "GivenName"
+              },
+              {
+                "value": "Goodman",
+                "type": "GivenName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1995-08-16"
+          }
+        ],
+        "idCard": [
+          {
+            "icaoIssuerCode": "NLD",
+            "documentNumber": "SPEC12031",
+            "expiryDate": "2031-08-02",
+            "issueDate": "2021-08-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Alice Doe (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Laura",
+                "type": "GivenName"
+              },
+              {
+                "value": "Doe",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "221C",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1980-01-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Alice Parker (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Par-ker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Bob Parker (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Bob",
+                "type": "GivenName"
+              },
+              {
+                "value": "Pa rk'er",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1951-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "James Moriarty (Invalid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "James",
+                "type": "GivenName"
+              },
+              {
+                "value": "Moriarty",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1939-10-09"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "111B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 1XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Joe Shmoe (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Joe Shmoe",
+                "type": "GivenName"
+              },
+              {
+                "value": "Doe The Ball",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1985-02-08"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "122",
+            "streetName": "BURNS CRESCENT",
+            "postalCode": "EH1 9GP",
+            "addressLocality": "EDINBURGH",
+            "validFrom": "1995-01-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Kenneth Decerqueira (Valid Experian) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Mary Watson (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "221B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Saul Goodman (Valid) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "SAUL"
+              },
+              {
+                "type": "FamilyName",
+                "value": "GOODMAN"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1995-08-16"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "29",
+            "streetName": "CHURCH LANE",
+            "postalCode": "TN61 8PQ",
+            "addressLocality": "TUNBRIDGE WELLS",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "HMRC Knowledge Based Verification (Stub)",
+      "label": "Alice Parker (Valid) HMRC KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Aliçe",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parkér",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "HMRC Knowledge Based Verification (Stub)",
+      "label": "Bob Parker (Valid) HMRC KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Böb",
+                "type": "GivenName"
+              },
+              {
+                "value": "Pârker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1951-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "HMRC Knowledge Based Verification (Stub)",
+      "label": "James Moriarty (Invalid) HMRC KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "James",
+                "type": "GivenName"
+              },
+              {
+                "value": "Moriarty",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1939-10-09"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "111B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 1XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "HMRC Knowledge Based Verification (Stub)",
+      "label": "Kenneth Decerqueira (Valid Experian) HMRC KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "HMRC Knowledge Based Verification (Stub)",
+      "label": "Mary Watson (Valid) HMRC KBV",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "221B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
           }
         ]
       }
@@ -1631,17 +1669,17 @@
     },
     {
       "criType": "National Insurance Number (Stub)",
-      "label": "Mary Watson (Valid) National Insurance",
+      "label": "Bob Parker (Valid) National Insurance",
       "payload": {
         "name": [
           {
             "nameParts": [
               {
-                "value": "Mary",
+                "value": "Böb",
                 "type": "GivenName"
               },
               {
-                "value": "Watson",
+                "value": "Pârker",
                 "type": "FamilyName"
               }
             ]
@@ -1649,7 +1687,7 @@
         ],
         "birthDate": [
           {
-            "value": "1932-02-25"
+            "value": "1970-11-09"
           }
         ],
         "socialSecurityRecord": [
@@ -1691,89 +1729,7 @@
     },
     {
       "criType": "National Insurance Number (Stub)",
-      "label": "Bob Parker (Valid) National Insurance",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Böb",
-                "type": "GivenName"
-              },
-              {
-                "value": "Pârker",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-11-09"
-          }
-        ],
-        "socialSecurityRecord": [
-          {
-            "personalNumber": "AA000003D"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Bank account verification (Stub)",
-      "label": "Kenneth Decerqueira BAV",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Kenneth",
-                "type": "GivenName"
-              },
-              {
-                "value": "Decerqueira",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "bankAccount": [
-          {
-            "sortCode": "103233",
-            "accountNumber": "12345678"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Bank account verification (Stub)",
-      "label": "James Moriarty BAV",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "James",
-                "type": "GivenName"
-              },
-              {
-                "value": "Moriarty",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "bankAccount": [
-          {
-            "sortCode": "103233",
-            "accountNumber": "12345678"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Bank account verification (Stub)",
-      "label": "Mary Watson BAV",
+      "label": "Mary Watson (Valid) National Insurance",
       "payload": {
         "name": [
           {
@@ -1789,66 +1745,110 @@
             ]
           }
         ],
-        "bankAccount": [
+        "birthDate": [
           {
-            "sortCode": "103233",
-            "accountNumber": "12345678"
+            "value": "1932-02-25"
+          }
+        ],
+        "socialSecurityRecord": [
+          {
+            "personalNumber": "AA000003D"
           }
         ]
       }
     },
     {
-      "criType": "Bank account verification (Stub)",
-      "label": "Alice Parker BAV",
+      "criType": "UK Passport (Stub)",
+      "label": "James Moriarty (Invalid) Passport",
       "payload": {
         "name": [
           {
             "nameParts": [
               {
-                "value": "Aliçe",
+                "value": "James",
                 "type": "GivenName"
               },
               {
-                "value": "Jane",
-                "type": "GivenName"
-              },
-              {
-                "value": "Parkér",
+                "value": "Moriarty",
                 "type": "FamilyName"
               }
             ]
           }
         ],
-        "bankAccount": [
+        "birthDate": [
           {
-            "sortCode": "103233",
-            "accountNumber": "12345678"
+            "value": "1939-10-09"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "532114382",
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
           }
         ]
       }
     },
     {
-      "criType": "Bank account verification (Stub)",
-      "label": "Bob Parker BAV",
+      "criType": "UK Passport (Stub)",
+      "label": "Kenneth Decerqueira (Valid Experian) Passport",
       "payload": {
         "name": [
           {
             "nameParts": [
               {
-                "value": "Böb",
+                "value": "Kenneth",
                 "type": "GivenName"
               },
               {
-                "value": "Pârker",
+                "value": "Decerqueira",
                 "type": "FamilyName"
               }
             ]
           }
         ],
-        "bankAccount": [
+        "birthDate": [
           {
-            "sortCode": "103233",
-            "accountNumber": "12345678"
+            "value": "1965-07-08"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "321654987",
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "UK Passport (Stub)",
+      "label": "Mary Watson (Valid) Passport",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Mary",
+                "type": "GivenName"
+              },
+              {
+                "value": "Watson",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "824159121",
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
           }
         ]
       }
