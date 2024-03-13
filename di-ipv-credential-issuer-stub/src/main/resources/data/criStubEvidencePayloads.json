@@ -34,7 +34,7 @@
       }
     },
     {
-      "criType": "Knowledge Based Verification (Stub)",
+      "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "Passed verification (M1A) with checkDetails",
       "payload": {
         "type": "IdentityCheck",
@@ -59,7 +59,7 @@
       }
     },
     {
-      "criType": "Knowledge Based Verification (Stub)",
+      "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "Failed verification with failedCheckDetails",
       "payload": {
         "type": "IdentityCheck",

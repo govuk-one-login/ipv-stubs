@@ -107,7 +107,7 @@
       }
     },
     {
-      "criType": "Knowledge Based Verification (Stub)",
+      "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "Mary Watson (Valid) KBV",
       "payload": {
         "name": [
@@ -247,7 +247,7 @@
       }
     },
     {
-      "criType": "Knowledge Based Verification (Stub)",
+      "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "James Moriarty (Invalid) KBV",
       "payload": {
         "name": [
@@ -391,7 +391,7 @@
       }
     },
     {
-      "criType": "Knowledge Based Verification (Stub)",
+      "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "Kenneth Decerqueira (Valid Experian) KBV",
       "payload": {
         "name": [
@@ -1037,7 +1037,7 @@
       }
     },
     {
-      "criType": "Knowledge Based Verification (Stub)",
+      "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "Alice Parker (Valid) KBV",
       "payload": {
         "name": [
@@ -1182,7 +1182,7 @@
       }
     },
     {
-      "criType": "Knowledge Based Verification (Stub)",
+      "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "Bob Parker (Valid) KBV",
       "payload": {
         "name": [
