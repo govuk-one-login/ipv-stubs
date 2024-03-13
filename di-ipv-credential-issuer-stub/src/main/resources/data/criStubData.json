@@ -829,6 +829,40 @@
       }
     },
     {
+      "criType": "Driving Licence (Stub)",
+      "label": "Kenneth Decerqueira (Valid) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2005-02-02",
+            "personalNumber": "DECER607085K98FGA",
+            "expiryDate": "2032-02-02",
+            "issueNumber": "34"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "Alice Parker (Valid) KBV",
       "payload": {
@@ -1753,6 +1787,42 @@
         "socialSecurityRecord": [
           {
             "personalNumber": "AA000003D"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "UK Passport (Stub)",
+      "label": "Alice Parker (Valid) Passport",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Parker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "44442444",
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
           }
         ]
       }
