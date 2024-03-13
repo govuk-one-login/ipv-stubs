@@ -121,14 +121,14 @@
                 <div class="govuk-form-group" id="custom_evidence_block"></div>
                 <div class="govuk-form-group"> <textarea class="govuk-textarea" id="evidenceJsonPayload" name="evidenceJsonPayload" rows="5"  aria-describedby="more-detail-hint"></textarea></div>
             </div>
-            <input class="govuk-button" data-module="govuk-button" type="submit" value="Full journey route">
+            <input id="full-journey-button" class="govuk-button" data-module="govuk-button" type="submit" value="Full journey route">
             <label class="govuk-label" for="error">Choose an error type:</label>
             <select class="govuk-select" name="error" id="error">
                 <option value="recoverable">Recoverable</option>
                 <option value="non-recoverable">Non-Recoverable</option>
                 <option value="inherited-identity">Inherited identity</option>
             </select>
-            <input class="govuk-button" data-module="govuk-button" type="submit" value="Error journey route" formaction="/authorize-error">
+            <input id="error-journey-button" class="govuk-button" data-module="govuk-button" type="submit" value="Error journey route" formaction="/authorize-error">
         </form>
     </main>
 </div>
