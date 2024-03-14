@@ -52,6 +52,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/driving-license/env/VC_TTL_SECONDS" #pragma: allowlist secret
+  MitigationEnabled:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/credential-issuer/driving-license/env/MITIGATION_ENABLED" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -496,6 +500,8 @@ Resources:
             Value: !Ref CredentialIssuerName
           - Name: CREDENTIAL_ISSUER_TYPE
             Value: !Ref CredentialIssuerType
+          - Name: MITIGATION_ENABLED
+            Value: !Ref MitigationEnabled
           - Name: CLIENT_AUDIENCE
             Value: !Ref ClientAudience
           - Name: VC_ISSUER
