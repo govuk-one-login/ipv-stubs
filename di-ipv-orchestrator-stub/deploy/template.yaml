@@ -164,7 +164,7 @@ Conditions:
 Mappings:
   EnvironmentConfiguration:
     "130355686670": # Development
-      lb400ErrorLimit: 10
+      lb400ErrorLimit: 100
       lb500ErrorLimit: 10
       fargateCPUsize: "256"
       fargateRAMsize: "512"
@@ -173,7 +173,7 @@ Mappings:
       platform: core
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "826978934233": #Core Stubs Build
-      lb400ErrorLimit: 10
+      lb400ErrorLimit: 100
       lb500ErrorLimit: 10
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
@@ -182,7 +182,7 @@ Mappings:
       platform: core-stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "616199614141": #Stubs Build
-      lb400ErrorLimit: 10
+      lb400ErrorLimit: 100
       lb500ErrorLimit: 10
       fargateCPUsize: "512"
       fargateRAMsize: "1024"
@@ -191,7 +191,7 @@ Mappings:
       platform: stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "388905755587": #Stubs Prod
-      lb400ErrorLimit: 10
+      lb400ErrorLimit: 100
       lb500ErrorLimit: 10
       fargateCPUsize: "1024"
       fargateRAMsize: "2048"
@@ -487,7 +487,7 @@ Resources:
     Type: "AWS::ECS::Service"
     Properties:
       Cluster: !Ref OrchStubCluster
-      DeploymentConfiguration: !If 
+      DeploymentConfiguration: !If
         - IsNotDevelopment
         - !Ref AWS::NoValue
         - MaximumPercent: 200
@@ -496,7 +496,7 @@ Resources:
             Enable: true
             Rollback: true
       DeploymentController:
-        Type: !If 
+        Type: !If
         - IsNotDevelopment
         - CODE_DEPLOY
         - ECS
@@ -788,9 +788,9 @@ Resources:
             Condition:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
-  
+
   # *** Canary Deployment ***
-  
+
   ECSBlueGreenDeploymentStack:
     Condition: IsNotDevelopment
     Type: AWS::CloudFormation::Stack
