@@ -195,7 +195,7 @@ Mappings:
       lb500ErrorLimit: 10
       fargateCPUsize: "1024"
       fargateRAMsize: "2048"
-      desiredTaskCount: 2
+      desiredTaskCount: 4
       environment: production
       platform: stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
