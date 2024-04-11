@@ -795,7 +795,7 @@ Resources:
     Condition: IsNotDevelopment
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/ecs-canary-deployment/template.yaml"
+      TemplateURL: "https://template-storage-templatebucket-1upzyw6v9cs42.s3.eu-west-2.amazonaws.com/ecs-canary-deployment/template.yaml?versionId=RLuCcu0SXw5m6qJPl6LeqMrzYZEUR7Xp" # v1.2.2
       Parameters:
         ECSClusterName: !Ref OrchStubCluster
         ECSServiceName: !GetAtt OrchStubService.Name
