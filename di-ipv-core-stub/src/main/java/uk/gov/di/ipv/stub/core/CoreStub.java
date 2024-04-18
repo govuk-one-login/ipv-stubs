@@ -37,6 +37,7 @@ public class CoreStub {
         Spark.get("/credential-issuers", coreStubHandler.showCredentialIssuer);
         Spark.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
         Spark.get("/edit-postcode", coreStubHandler.editPostcode);
+        Spark.get("/evidence-request", coreStubHandler.evidenceRequest);
         Spark.get("/authorize", coreStubHandler.authorize);
         Spark.get("/user-search", coreStubHandler.userSearch);
         Spark.get("/edit-user", coreStubHandler.editUser);

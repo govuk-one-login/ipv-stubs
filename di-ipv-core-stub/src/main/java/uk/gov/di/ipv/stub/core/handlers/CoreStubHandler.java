@@ -433,6 +433,14 @@ public class CoreStubHandler {
                         Map.of("cri", credentialIssuerId), "edit-postcode.mustache");
             };
 
+    public Route evidenceRequest =
+            (Request request, Response response) -> {
+                LOGGER.info("checkEvidence Requested Start");
+                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                return ViewHelper.render(
+                        Map.of("cri", credentialIssuerId), "evidence-request.mustache");
+            };
+
     private String createBackendSessionRequestJSONReply(AuthorizationRequest authorizationRequest) {
         // Splits the QueryString from the Auth URI.  Turning the list of parameters
         // (key1=value1&key2=value2 etc...) into a json object.
