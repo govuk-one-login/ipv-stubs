@@ -29,7 +29,6 @@ import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.AuthorizationResponse;
 import com.nimbusds.oauth2.sdk.ParseException;
 import com.nimbusds.oauth2.sdk.ResponseType;
-import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.SerializeException;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenRequest;
@@ -49,6 +48,7 @@ import spark.Request;
 import spark.utils.StringUtils;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
+import uk.gov.di.ipv.stub.core.config.uatuser.EvidenceRequestClaims;
 import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
 
 import java.io.IOException;
@@ -93,6 +93,7 @@ public class HandlerHelper {
     private static final String CLIENT_SESSION_ID = "govuk_signin_journey_id";
     public static final String UNKNOWN_ENV_VAR = "unknown";
     public static final String API_KEY_HEADER = "x-api-key";
+    public static final String EVIDENCE_REQUESTED = "evidence_requested";
 
     private final ECKey ecSigningKey;
     private final ObjectMapper objectMapper;
@@ -234,14 +235,19 @@ public class HandlerHelper {
     }
 
     public <T> AuthorizationRequest createAuthorizationJAR(
-            State state, CredentialIssuer credentialIssuer, T sharedClaims)
+            State state,
+            CredentialIssuer credentialIssuer,
+            T sharedClaims,
+            EvidenceRequestClaims evidenceRequest)
             throws JOSEException, java.text.ParseException {
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
-        JWTClaimsSet claimsSet =
-                createJWTClaimsSets(state, credentialIssuer, sharedClaims, clientID);
 
+        JWTClaimsSet claimsSet =
+                createJWTClaimsSets(
+                        state, credentialIssuer, clientID, sharedClaims, evidenceRequest);
         // The only difference (frontend/backend) are the ClaimSets are created above for the
         // frontend and clientID is already set in the backend ClaimSet
+        LOGGER.info("ClaimsSets generated: {}", claimsSet);
         return createBackEndAuthorizationJAR(credentialIssuer, claimsSet);
     }
 
@@ -275,18 +281,36 @@ public class HandlerHelper {
         return signedJWT;
     }
 
-    public <T> JWTClaimsSet createJWTClaimsSets(
-            State state, CredentialIssuer credentialIssuer, T sharedClaims, ClientID clientID) {
+    public JWTClaimsSet createJWTClaimsSets(
+            State state,
+            CredentialIssuer credentialIssuer,
+            ClientID clientID,
+            Object sharedClaims,
+            EvidenceRequestClaims evidenceRequest) {
+        return createJWTClaimsSetBuilder(
+                        state, credentialIssuer, clientID, sharedClaims, evidenceRequest)
+                .build();
+    }
+
+    public JWTClaimsSet createJWTClaimsSets(
+            State state,
+            CredentialIssuer credentialIssuer,
+            ClientID clientID,
+            Object sharedClaims) {
+        return createJWTClaimsSetBuilder(state, credentialIssuer, clientID, sharedClaims, null)
+                .build();
+    }
+
+    private <T> JWTClaimsSet.Builder createJWTClaimsSetBuilder(
+            State state,
+            CredentialIssuer credentialIssuer,
+            ClientID clientID,
+            T sharedClaims,
+            EvidenceRequestClaims evidenceRequest) {
 
         Instant now = Instant.now();
 
-        JWTClaimsSet authClaimsSet =
-                new AuthorizationRequest.Builder(ResponseType.CODE, clientID)
-                        .redirectionURI(CoreStubConfig.CORE_STUB_REDIRECT_URL)
-                        .scope(new Scope("openid"))
-                        .state(state)
-                        .build()
-                        .toJWTClaimsSet();
+        JWTClaimsSet authClaimsSet = createAuthorizationClaims(state, clientID);
 
         JWTClaimsSet.Builder claimsSetBuilder =
                 new JWTClaimsSet.Builder(authClaimsSet)
@@ -307,8 +331,18 @@ public class HandlerHelper {
             Map<String, Object> map = convertToMap(sharedClaims);
             claimsSetBuilder.claim(SHARED_CLAIMS, map);
         }
+        if (Objects.nonNull(evidenceRequest)) {
+            claimsSetBuilder.claim(EVIDENCE_REQUESTED, evidenceRequest);
+        }
+        return claimsSetBuilder;
+    }
 
-        return claimsSetBuilder.build();
+    private JWTClaimsSet createAuthorizationClaims(State state, ClientID clientID) {
+        return new AuthorizationRequest.Builder(ResponseType.CODE, clientID)
+                .redirectionURI(CoreStubConfig.CORE_STUB_REDIRECT_URL)
+                .state(state)
+                .build()
+                .toJWTClaimsSet();
     }
 
     public CredentialIssuer findCredentialIssuer(String credentialIssuerId) {

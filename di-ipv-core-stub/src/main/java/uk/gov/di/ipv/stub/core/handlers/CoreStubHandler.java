@@ -22,6 +22,7 @@ import spark.Route;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
 import uk.gov.di.ipv.stub.core.config.uatuser.DisplayIdentity;
+import uk.gov.di.ipv.stub.core.config.uatuser.EvidenceRequestClaims;
 import uk.gov.di.ipv.stub.core.config.uatuser.FindDateOfBirth;
 import uk.gov.di.ipv.stub.core.config.uatuser.FullName;
 import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
@@ -183,8 +184,12 @@ public class CoreStubHandler {
                         handlerHelper.findCredentialIssuer(
                                 Objects.requireNonNull(request.queryParams("cri")));
                 var postcode = request.queryParams("postcode");
+                var strengthScore = request.queryParams("score");
+                var scoringPolicy = request.queryParams("evidence_request");
+
                 if (credentialIssuer.sendIdentityClaims()
                         && Objects.isNull(request.queryParams("postcode"))) {
+                    saveEvidenceRequestToSessionIfPresent(request, strengthScore, scoringPolicy);
                     return ViewHelper.render(
                             Map.of(
                                     "cri",
@@ -263,12 +268,19 @@ public class CoreStubHandler {
             throws ParseException, JOSEException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
+        EvidenceRequestClaims evidenceRequest = request.session().attribute("evidence_request");
+
+        if (!Objects.isNull(evidenceRequest)) {
+            LOGGER.info("✅  Retrieved evidence request from session to {}", evidenceRequest);
+            request.session().removeAttribute("evidence_request");
+        }
 
         AuthorizationRequest authRequest;
 
         try {
             authRequest =
-                    handlerHelper.createAuthorizationJAR(state, credentialIssuer, sharedClaims);
+                    handlerHelper.createAuthorizationJAR(
+                            state, credentialIssuer, sharedClaims, evidenceRequest);
         } catch (JOSEException joseException) {
             LOGGER.error("JOSEException occurred," + joseException.getMessage());
             throw joseException;
@@ -355,8 +367,8 @@ public class CoreStubHandler {
                 return handlerHelper.createJWTClaimsSets(
                         state,
                         credentialIssuer,
-                        claimIdentity,
-                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID));
+                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
+                        claimIdentity);
             };
 
     public Route backendGenerateInitialClaimsSetPostCode =
@@ -382,8 +394,8 @@ public class CoreStubHandler {
                 return handlerHelper.createJWTClaimsSets(
                         state,
                         credentialIssuerId,
-                        claimIdentity,
-                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID));
+                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
+                        claimIdentity);
             };
     public Route createBackendSessionRequest =
             (Request request, Response response) -> {
@@ -431,6 +443,14 @@ public class CoreStubHandler {
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
                 return ViewHelper.render(
                         Map.of("cri", credentialIssuerId), "edit-postcode.mustache");
+            };
+
+    public Route evidenceRequest =
+            (Request request, Response response) -> {
+                LOGGER.info("checkEvidence Requested Start");
+                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                return ViewHelper.render(
+                        Map.of("cri", credentialIssuerId), "evidence-request.mustache");
             };
 
     private String createBackendSessionRequestJSONReply(AuthorizationRequest authorizationRequest) {
@@ -493,5 +513,15 @@ public class CoreStubHandler {
         var state = new State();
         stateSession.put(state.getValue(), credentialIssuer);
         return state;
+    }
+
+    private static void saveEvidenceRequestToSessionIfPresent(
+            Request request, String strengthScore, String scoringPolicy) {
+        if (Objects.nonNull(strengthScore) && Objects.nonNull(scoringPolicy)) {
+            EvidenceRequestClaims evidenceRequest =
+                    new EvidenceRequestClaims(scoringPolicy, Integer.valueOf(strengthScore));
+            LOGGER.info("✅  Saving evidence request to session to {}", evidenceRequest);
+            request.session().attribute("evidence_request", evidenceRequest);
+        }
     }
 }

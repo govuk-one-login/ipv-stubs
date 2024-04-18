@@ -53,16 +53,47 @@
 		<a href="/" class="govuk-back-link">Back</a>
 		<div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
 			<h2 class="govuk-heading-xl">
-				Enter Postcode for test user
-			</h2>
+                Check - Evidence Requested
+            </h2>
 		</div>
-
-		<legend class="govuk-fieldset__legend govuk-label">Postcode (optional)</legend>
+		<legend class="govuk-fieldset__legend govuk-label"></legend>
         <form action="/credential-issuer?cri={{cri}}">
             <input type="hidden" name="cri" value="{{cri}}">
             <div class="govuk-form-group">
-                <input class="govuk-input govuk-input--width-10" id="postcode" name="postcode" type="text">
-                <button class="govuk-button" data-module="govuk-button">Continue</button>
+                <fieldset class="govuk-fieldset" aria-describedby="waste-hint">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                        <h1 class="govuk-fieldset__heading">
+                            Select - Evidence Requested
+                        </h1>
+                    </legend>
+                    <div id="waste-hint" class="govuk-hint"></div>
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-!-margin-bottom-5" for="score">
+                                Scoring Policy:
+                            </label>
+                            <select class="govuk-select" id="evidence" name="evidence_request">
+                                <option value="gpg45" selected>gpg45</option>
+                                <option value="notgpg45">Not gpg45</option>
+                            </select>
+                        </div>
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-!-margin-bottom-5" for="score">
+                                Strength Score:
+                            </label>
+                            <select class="govuk-select" id="score" name="score">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="govuk-button-group govuk-!-margin-top-9">
+                        <button class="govuk-button" data-module="govuk-button">Continue</button>
+                    </div>
+                </fieldset>
             </div>
         </form>
     </main>
