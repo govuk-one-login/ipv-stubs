@@ -17,8 +17,8 @@ public record CredentialIssuer(
     public boolean isAddressCri() {
         return this.id.contains("address");
     }
+
     public boolean isCheckHmrcCri() {
         return this.id.contains("check-hmrc");
     }
-
 }
