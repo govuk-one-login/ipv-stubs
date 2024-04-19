@@ -8,7 +8,7 @@ import CredentialResponse from "../../src/domain/credentialResponse";
 import CredentialRequest from "../../src/domain/credentialRequest";
 
 const TEST_CLIENTID = "TEST_CLIENTID";
-const TEST_SECRET = "TEST_SECRET";
+const TEST_SECRET = "TEST_SECRET"; //pragma: allowlist secret
 const TEST_ACCESS_TOKEN = "TEST_ACCESS_TOKEN";
 const TOKEN_LIFETIME = 200;
 
