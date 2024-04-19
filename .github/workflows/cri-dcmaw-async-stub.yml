@@ -1,4 +1,4 @@
-name: TICF CRI Stub Build Build & Push
+name: DCMAW async CRI Stub Build Build & Push
 on:
   workflow_dispatch:
   push:

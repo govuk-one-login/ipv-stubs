@@ -305,7 +305,7 @@ Resources:
       DomainName: !If
         - IsNonProd
         - !Sub "dcmaw-async.${Environment}.stubs.account.gov.uk"
-        - ticf.stubs.account.gov.uk
+        - dcmaw-async.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
             - IsNonProd
@@ -326,7 +326,7 @@ Resources:
         - IsNonProd
         - !Sub "dcmaw-async.${Environment}.stubs.account.gov.uk"
         - dcmaw-async.stubs.account.gov.uk
-      RegionalCertificateArn: !Ref TicfStubSSLCert
+      RegionalCertificateArn: !Ref DcmawAsyncStubSSLCert
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -339,11 +339,11 @@ Resources:
       DomainName: !If
         - IsNonProd
         - !Sub "dcmaw-async.${Environment}.stubs.account.gov.uk"
-        - ticf.stubs.account.gov.uk
+        - dcmaw-async.stubs.account.gov.uk
       RestApiId: !Ref RestApiGateway
       Stage: !Ref RestApiGateway.Stage
     DependsOn:
-      - TicfStubRestApiDomain
+      - DcmawAsyncStubRestApiDomain
       - RestApiGateway
 
   # dns record
