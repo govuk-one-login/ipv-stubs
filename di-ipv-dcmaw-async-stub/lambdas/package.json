@@ -7,7 +7,9 @@
   "license": "GDS",
   "dependencies": {
     "@aws-lambda-powertools/parameters": "^1.16.0",
-    "basic-auth": "^2.0.1"
+    "@aws-sdk/client-ssm": "^3.556.0",
+    "basic-auth": "^2.0.1",
+    "esbuild": "^0.20.2"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.109",

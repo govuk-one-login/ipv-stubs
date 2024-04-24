@@ -1,4 +1,4 @@
-import { getParameter } from "@aws-lambda-powertools/parameters/lib/ssm";
+import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 
 const CONFIG_PARAMETER_NAME = "config";
 
