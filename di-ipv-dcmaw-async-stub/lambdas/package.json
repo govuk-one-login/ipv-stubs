@@ -1,0 +1,32 @@
+{
+  "name": "dcmaw-async-stub",
+  "description": "DCMAW Async CRI stub",
+  "version": "1.0.0",
+  "private": true,
+  "author": "IPVCore",
+  "license": "GDS",
+  "dependencies": {
+    "@aws-lambda-powertools/parameters": "^1.16.0",
+    "basic-auth": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.109",
+    "@types/basic-auth": "^1.1.8",
+    "@types/jest": "^29.5.10",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "prettier": "3.2.5",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.3.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "compile": "tsc",
+    "check": "eslint --ext=ts .. && prettier --list-different .",
+    "fix": "eslint --ext=ts --quiet --fix .. && prettier --write .",
+    "lint": "./node_modules/.bin/eslint .."
+  }
+}

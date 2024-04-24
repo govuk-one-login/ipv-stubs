@@ -1,0 +1,70 @@
+name: DCMAW async CRI Stub Build Build & Push
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - di-ipv-dcmaw-async-stub/**
+      - .github/workflows/cri-dcmaw-async-stub.yml
+
+jobs:
+  buildAndPush:
+    name: Build and push
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      AWS_REGION: eu-west-2
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+
+      - name: Set up AWS creds
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          role-to-assume: ${{ secrets.DCMAW_ASYNC_STUB_BUILD_GH_ROLE }}
+          aws-region: eu-west-2
+
+      - name: Set up SAM cli
+        uses: aws-actions/setup-sam@v2
+
+      - name: Set up esbuild
+        run: curl -fsSL https://esbuild.github.io/dl/latest | sh
+
+      - name: add esbuild to path
+        run: echo "${GITHUB_WORKSPACE}" >> $GITHUB_PATH
+
+      - name: check esbuild works
+        run: esbuild --version
+
+      - name: SAM Validate
+        working-directory: ./di-ipv-dcmaw-async-stub/deploy
+        run: sam validate --region ${{ env.AWS_REGION }}
+
+      - name: Generate code signing config
+        id: signing
+        uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc
+        with:
+          template: ./di-ipv-dcmaw-async-stub/deploy/template.yaml
+          profile: ${{ secrets.SIGNING_PROFILE_NAME }}
+
+      - name: npm install
+        working-directory: ./di-ipv-dcmaw-async-stub/lambdas
+        run: npm ci
+
+      - name: SAM build and test
+        working-directory: ./di-ipv-dcmaw-async-stub/deploy
+        run: sam build
+
+      - name: Deploy SAM app
+        uses: alphagov/di-devplatform-upload-action@v3
+        with:
+          artifact-bucket-name: ${{ secrets.DCMAW_ASYNC_STUB_BUILD_S3_BUCKET }}
+          signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+          working-directory: ./di-ipv-dcmaw-async-stub/deploy
+          template-file: template.yaml
+

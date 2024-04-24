@@ -1,0 +1,145 @@
+openapi: 3.0.3
+info:
+  title: "DCMAW Async Stub"
+  description: "The api presented by DCMAW async stub"
+  version: "1.0.0"
+paths:
+  /healthcheck:
+    get:
+      description: "returns a 200 for Route53 health checks to use"
+      responses:
+        200:
+          description: "A healthcheck response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "MOCK"
+        requestTemplates:
+          application/json: "{\"statusCode\":200}"
+        responses:
+          200:
+            statusCode: 200
+            responseTemplates:
+              application/json: "{\"healthcheck\": \"ok\"}"
+  /async/token:
+    post:
+      description: Returns an access token
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/TokenRequestBody"
+      responses:
+        200:
+          description: "Success response "
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponseBody"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetDcmawAsyncAccessTokenFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: '{"result": "success"}'
+
+  /async/credential:
+    post:
+      description: Returns a pending credential
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CredentialRequestBody"
+      responses:
+        201:
+          description: "Success response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CredentialResponseBody"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetDcmawAsyncVcFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 201
+            responseTemplates:
+              application/json: '{"result": "success"}'
+
+components:
+  schemas:
+    TokenRequestBody:
+      description: Request body for token request
+      required:
+        - grant_type
+      type: object
+      properties:
+        grant_type:
+          type: string
+          description: The grant type - should be "client_credentials"
+    TokenResponseBody:
+      description: Response body from the asyncToken endpoint
+      required:
+        - access_token
+        - token_type
+        - expires_in
+      properties:
+        access_token:
+          type: string
+          description: The access token
+        token_type:
+          type: string
+          description: The token type - should be "Bearer"
+        expires_in:
+          type: integer
+          description: The length of time the token is valid for in seconds
+    CredentialRequestBody:
+      description: Request body for credential request
+      type: object
+      required:
+        - client_id
+        - sub
+        - govuk_signin_journey_id
+        - state
+      properties:
+        client_id:
+          type: string
+          description: The client ID
+        sub:
+          type: string
+          description: The user ID of the subject
+        govuk_signin_journey_id:
+          type: string
+          description: Journey id
+        state:
+          type: string
+          description: A random value
+        redirect_uri:
+          type: string
+          description: The url for the app to redirect to in the MAM journey
+    CredentialResponseBody:
+      description: Response body from the asyncCredential endpoint
+      type: object
+      required:
+        - sub
+        - "https://vocab.account.gov.uk/v1/credentialStatus"
+      properties:
+        sub:
+          type: string
+          description: The user ID of the subject
+        "https://vocab.account.gov.uk/v1/credentialStatus":
+          type: string
+          description: The status of the credential. Should be "pending"
