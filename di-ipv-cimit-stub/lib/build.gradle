@@ -9,20 +9,22 @@ repositories {
 }
 
 dependencies {
-	implementation "com.amazonaws:aws-java-sdk-dynamodb:1.12.692",
-			"software.amazon.awssdk:dynamodb-enhanced:2.25.11",
-			"software.amazon.lambda:powertools-parameters:1.16.1",
-			"software.amazon.awssdk:kms:2.25.22",
-			"org.apache.logging.log4j:log4j-api:2.23.0",
-			"org.apache.logging.log4j:log4j-core:2.23.1"
+	implementation platform(libs.awsSdkBom),
+			libs.awsSdkDynamodb,
+			libs.awsSdkDynamodbEnhanced,
+			libs.awsSdkKms,
+			libs.awsSdkUrlConnectionClient,
+			libs.bundles.log4j,
+			libs.powertoolsParameters
 
-	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2",
-			"org.mockito:mockito-junit-jupiter:5.4.0",
-			'uk.org.webcompere:system-stubs-jupiter:2.1.6'
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation libs.junitJupiter,
+			libs.mockitoJunit,
+			libs.systemStubs
 
-	compileOnly "org.projectlombok:lombok:1.18.30"
-	annotationProcessor "org.projectlombok:lombok:1.18.30"
+	testRuntimeOnly libs.junitPlatform
+
+	compileOnly libs.lombok
+	annotationProcessor libs.lombok
 }
 
 java {

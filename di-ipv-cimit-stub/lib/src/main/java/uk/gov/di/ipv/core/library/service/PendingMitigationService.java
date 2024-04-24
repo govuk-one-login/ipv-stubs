@@ -22,13 +22,11 @@ public class PendingMitigationService {
     private final DataStore<PendingMitigationItem> dataStore;
 
     public PendingMitigationService(ConfigService configService) {
-        boolean isRunningLocally = configService.isRunningLocally();
         dataStore =
                 new DataStore<>(
                         configService.getEnvironmentVariable(PENDING_MITIGATIONS_TABLE),
                         PendingMitigationItem.class,
-                        DataStore.getClient(isRunningLocally),
-                        isRunningLocally,
+                        DataStore.getClient(),
                         configService);
     }
 

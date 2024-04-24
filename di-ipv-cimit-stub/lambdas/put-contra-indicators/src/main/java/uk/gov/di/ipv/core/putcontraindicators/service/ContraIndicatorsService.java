@@ -1,6 +1,5 @@
 package uk.gov.di.ipv.core.putcontraindicators.service;
 
-import com.amazonaws.util.CollectionUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.logging.log4j.LogManager;
@@ -149,16 +148,20 @@ public class ContraIndicatorsService {
     private String getDocumentIdentifier(VcClaim vcClaim) {
         var credentialSubject = vcClaim.credentialSubject();
         if (credentialSubject != null) {
-            if (!CollectionUtils.isNullOrEmpty(credentialSubject.drivingPermit())) {
+            if (!isNullOrEmpty(credentialSubject.drivingPermit())) {
                 return credentialSubject.drivingPermit().get(0).toIdentifier();
             }
-            if (!CollectionUtils.isNullOrEmpty(credentialSubject.passport())) {
+            if (!isNullOrEmpty(credentialSubject.passport())) {
                 return credentialSubject.passport().get(0).toIdentifier();
             }
-            if (!CollectionUtils.isNullOrEmpty(credentialSubject.residencePermit())) {
+            if (!isNullOrEmpty(credentialSubject.residencePermit())) {
                 return credentialSubject.residencePermit().get(0).toIdentifier();
             }
         }
         return null;
+    }
+
+    private boolean isNullOrEmpty(List<?> list) {
+        return list == null || list.isEmpty();
     }
 }

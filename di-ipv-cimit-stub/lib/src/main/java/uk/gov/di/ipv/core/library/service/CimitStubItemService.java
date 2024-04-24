@@ -17,13 +17,11 @@ public class CimitStubItemService {
 
     public CimitStubItemService(ConfigService configService) {
         this.configService = configService;
-        boolean isRunningLocally = this.configService.isRunningLocally();
         dataStore =
                 new DataStore<>(
                         this.configService.getEnvironmentVariable(CIMIT_STUB_TABLE_NAME),
                         CimitStubItem.class,
-                        DataStore.getClient(isRunningLocally),
-                        isRunningLocally,
+                        DataStore.getClient(),
                         configService);
     }
 

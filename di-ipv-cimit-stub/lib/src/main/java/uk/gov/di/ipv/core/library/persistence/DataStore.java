@@ -12,7 +12,6 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DynamoDbException;
@@ -20,55 +19,35 @@ import uk.gov.di.ipv.core.library.config.ConfigurationVariable;
 import uk.gov.di.ipv.core.library.persistence.items.DynamodbItem;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 
-import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static software.amazon.awssdk.regions.Region.EU_WEST_2;
+
 public class DataStore<T extends DynamodbItem> {
-
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final String LOCALHOST_URI = "http://localhost:4567";
-    private static boolean isRunningLocally;
-
     private final Class<T> typeParameterClass;
-
     private final ConfigService configService;
-
     private final DynamoDbTable<T> table;
 
     public DataStore(
             String tableName,
             Class<T> typeParameterClass,
-            DynamoDbEnhancedClient dynamoDbEnhancedClient,
-            boolean isRunningLocally,
+            DynamoDbEnhancedClient client,
             ConfigService configService) {
         this.typeParameterClass = typeParameterClass;
         this.configService = configService;
-        DataStore.isRunningLocally = isRunningLocally;
         this.table =
-                dynamoDbEnhancedClient.table(
+                client.table(
                         tableName, TableSchema.fromBean(this.typeParameterClass));
     }
 
-    public static DynamoDbEnhancedClient getClient(boolean isRunningLocally) {
-        DynamoDbClient client =
-                isRunningLocally
-                        ? createLocalDbClient()
-                        : DynamoDbClient.builder()
-                                .httpClient(UrlConnectionHttpClient.create())
-                                .build();
+    public static DynamoDbEnhancedClient getClient() {
+        var client = DynamoDbClient.builder().region(EU_WEST_2).httpClient(UrlConnectionHttpClient.create()).build();
 
         return DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
-    }
-
-    private static DynamoDbClient createLocalDbClient() {
-        return DynamoDbClient.builder()
-                .endpointOverride(URI.create(LOCALHOST_URI))
-                .httpClient(UrlConnectionHttpClient.create())
-                .region(Region.EU_WEST_2)
-                .build();
     }
 
     public void create(T item, ConfigurationVariable tableTtl) {

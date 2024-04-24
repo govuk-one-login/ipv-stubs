@@ -1,6 +1,6 @@
 plugins {
 	id "java"
-	id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+	alias libs.plugins.postCompileWeaving
 }
 
 group "uk.gov.di.ipv"
@@ -15,27 +15,23 @@ java {
 }
 
 dependencies {
-	implementation "com.amazonaws:aws-lambda-java-core:1.2.1",
-			"com.nimbusds:oauth2-oidc-sdk:9.27",
-			"org.apache.logging.log4j:log4j-api:2.23.0",
-			"org.apache.logging.log4j:log4j-core:2.23.1",
+
+	implementation libs.awsLambdaJavaCore,
+			libs.nimbusdsOauth2OidcSdk,
+			libs.bundles.log4j,
 			project(":di-ipv-cimit-stub:lib")
 
-	compileOnly "org.projectlombok:lombok:1.18.30"
-	annotationProcessor "org.projectlombok:lombok:1.18.30"
+	compileOnly libs.lombok
+	annotationProcessor libs.lombok
 
-	aspect "software.amazon.lambda:powertools-logging:1.18.0",
-			"software.amazon.lambda:powertools-tracing:1.16.1"
-	aspect('org.aspectj:aspectjrt') {
-		version {
-			strictly '1.9.8'
-		}
-	}
+	aspect libs.powertoolsLogging,
+			libs.aspectj
 
-	testImplementation "org.junit.jupiter:junit-jupiter:5.10.2",
-			"org.mockito:mockito-junit-jupiter:5.4.0",
-			'uk.org.webcompere:system-stubs-jupiter:2.1.6'
-	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation libs.junitJupiter,
+			libs.mockitoJunit,
+			libs.systemStubs
+
+	testRuntimeOnly libs.junitPlatform
 }
 
 test {

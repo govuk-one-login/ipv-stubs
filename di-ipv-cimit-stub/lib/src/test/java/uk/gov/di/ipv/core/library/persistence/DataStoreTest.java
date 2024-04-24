@@ -56,7 +56,6 @@ class DataStoreTest {
                         TEST_TABLE_NAME,
                         CimitStubItem.class,
                         mockDynamoDbEnhancedClient,
-                        false,
                         mockConfigService);
     }
 

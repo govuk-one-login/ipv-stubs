@@ -2,7 +2,6 @@ package uk.gov.di.ipv.core.stubmanagement.service;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.awssdk.utils.StringUtils;
 import uk.gov.di.ipv.core.library.model.UserCisRequest;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
@@ -57,7 +56,7 @@ public class UserService {
     }
 
     private static void checkCICodes(List<UserCisRequest> userCisRequest) {
-        if (userCisRequest.stream().anyMatch(user -> StringUtils.isEmpty(user.getCode()))) {
+        if (userCisRequest.stream().anyMatch(user -> user.getCode() == null || user.getCode().isEmpty())) {
             throw new BadRequestException("CI codes cannot be empty.");
         }
     }
