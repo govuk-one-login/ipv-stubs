@@ -72,7 +72,7 @@ Resources:
     Properties:
       FunctionName: !Sub "getDcmawAsyncVc-${Environment}"
       CodeUri: "../lambdas"
-      Handler: asyncCredentialHandler.handler
+      Handler: credentialHandler.handler
       Runtime: nodejs20.x
       PackageType: Zip
       Architectures:
@@ -96,7 +96,7 @@ Resources:
       Policies:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
-            ParameterName: stubs/core/dcmawAsync/*
+            ParameterName: stubs/core/dcmaw-async/*
       AutoPublishAlias: live
       Events:
         GetDcmawAsyncVc:
@@ -127,7 +127,7 @@ Resources:
     Properties:
       FunctionName: !Sub "getDcmawAsyncAccessToken-${Environment}"
       CodeUri: "../lambdas"
-      Handler: asyncTokenHandler.handler
+      Handler: tokenHandler.handler
       Runtime: nodejs20.x
       PackageType: Zip
       Architectures:
@@ -147,7 +147,7 @@ Resources:
       Policies:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
-            ParameterName: stubs/core/dcmawAsync/*
+            ParameterName: stubs/core/dcmaw-async/*
       AutoPublishAlias: live
       Events:
         GetDcmawAsyncAccessToken:
