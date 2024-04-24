@@ -45,7 +45,7 @@ export async function handler(
 }
 
 function getAccessToken(event: APIGatewayProxyEventV2): string | undefined {
-  const authHeaderValue = event.headers.authorization;
+  const authHeaderValue = event?.headers?.authorization?.trim();
 
   if (authHeaderValue === undefined) {
     return undefined;
