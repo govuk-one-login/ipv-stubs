@@ -45,12 +45,6 @@ jobs:
         working-directory: ./di-ipv-dcmaw-async-stub/deploy
         run: sam validate --region ${{ env.AWS_REGION }}
 
-      #- name: SAM Package
-      #  working-directory: ./update-ecs-env-vars/deploy
-      #  env:
-      #    ARTIFACT_BUCKET: ${{ secrets.UPDATE_ECS_ARTIFACT_BUCKET_NAME }}
-      #  run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
-
       - name: Generate code signing config
         id: signing
         uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc

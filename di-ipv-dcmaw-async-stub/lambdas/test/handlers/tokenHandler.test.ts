@@ -69,7 +69,7 @@ describe("DCMAW Async credential handler", function () {
     expect(response.access_token).toBeUndefined();
   });
 
-  it("returns an error for a request without and authorisation header", async () => {
+  it("returns an error for a request without an authorisation header", async () => {
     // arrange
     const event = getValidEvent();
     event.headers["authorization"] = undefined;
