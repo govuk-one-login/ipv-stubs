@@ -1,4 +1,5 @@
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
+import getErrorMessage from "./errorReporting";
 
 const CONFIG_PARAMETER_NAME = "config";
 
@@ -15,12 +16,20 @@ interface Config extends SsmConfig {
 
 async function getSsmConfig(basePath: string): Promise<SsmConfig> {
   const parameterPath = basePath + CONFIG_PARAMETER_NAME;
-  const configString = await getParameter(parameterPath);
+
+  let configString
+  try {
+    configString = await getParameter(parameterPath);
+  }
+  catch (error) {
+    throw new Error(`Error thrown getting parameter ${parameterPath}: ${getErrorMessage(error)}`);
+  }
+
   if (configString === undefined) {
     throw new Error(`Could not retrieve ssm parameter: ${parameterPath}`);
   }
 
-  return JSON.parse(configString) as SsmConfig;
+  return Promise.resolve(JSON.parse(configString) as SsmConfig);
 }
 
 function getEnvironmentVariable(variableName: string): string {
@@ -36,11 +45,11 @@ export default async function getConfig(): Promise<Config> {
 
   const ssmConfig = await getSsmConfig(paramBasePath);
 
-  return {
+  return Promise.resolve({
     dcmawAsyncParamBasePath: paramBasePath,
     dummyAccessTokenValue: ssmConfig.dummyAccessTokenValue,
     dummyClientId: ssmConfig.dummyClientId,
     dummySecret: ssmConfig.dummySecret,
     tokenLifetimeSeconds: ssmConfig.tokenLifetimeSeconds,
-  };
+  });
 }

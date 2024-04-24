@@ -348,7 +348,7 @@ Resources:
         'Fn::Transform':
           Name: "AWS::Include"
           Parameters:
-            Location: "../openAPI/dcmaw-async-external.yaml" # qq:DCC what's this file?
+            Location: "../openAPI/dcmaw-async-external.yaml"
       ApiKeySourceType: HEADER #pragma: allowlist secret
       Auth:
         ApiKeyRequired: true #pragma: allowlist secret
