@@ -443,7 +443,7 @@
         "type": "IdentityCheck",
         "strengthScore": 2,
         "validityScore": 0,
-        "ci": ["QQQ"],
+        "ci": ["D02"],
         "failedCheckDetails": [
           {
             "checkMethod": "data"
