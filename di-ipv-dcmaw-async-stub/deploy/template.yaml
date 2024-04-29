@@ -244,14 +244,14 @@ Resources:
     Type: AWS::Logs::LogGroup
     # checkov:skip=CKV_AWS_158: No need for customer managed keys for short lived logs
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/getDcmawAsyncVc-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   GetDcmawAsyncAccessTokenFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/getDcmawAsyncAccessToken-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -407,7 +407,7 @@ Resources:
   RestApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/dcmawAsyncRestApi-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 

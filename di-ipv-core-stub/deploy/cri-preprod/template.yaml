@@ -380,7 +380,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/apigateway/${AWS::StackName}-api-gw-accesslogs
-      RetentionInDays: 14
+      RetentionInDays: 30
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   # Private Application Load Balancer
@@ -534,7 +534,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub /aws/ecs/${AWS::StackName}-CoreStub-ECS
-      RetentionInDays: 14
+      RetentionInDays: 30
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   ECSServiceTaskDefinition:

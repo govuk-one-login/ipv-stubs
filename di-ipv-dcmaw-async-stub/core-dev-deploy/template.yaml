@@ -211,14 +211,14 @@ Resources:
   GetDcmawAsyncVcFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/getDcmawAsyncVc-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   GetDcmawAsyncAccessTokenFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/getDcmawAsyncAccessToken-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -374,7 +374,7 @@ Resources:
   RestApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/dcmawAsyncRestApi-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 

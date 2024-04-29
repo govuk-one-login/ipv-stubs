@@ -357,28 +357,28 @@ Resources:
   PostMitigationsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/postMitigations-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   PutContraIndicatorsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/putContraIndicators-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   GetContraIndicatorCredentialFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/getContraIndicatorCredential-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   StubManagementFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/stubManagement-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -605,7 +605,7 @@ Resources:
   RestApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/restApi-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
