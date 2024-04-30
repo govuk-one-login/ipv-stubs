@@ -20,6 +20,7 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
+import uk.gov.di.ipv.stub.cred.domain.AuthRequest;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
@@ -299,7 +300,13 @@ public class TokenHandlerTest {
         QueryParamsMap queryParamsMap = new QueryParamsMap(mockHttpRequest);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
-        requestedErrorResponseService.persist("anAuthCode", queryParamsMap);
+        requestedErrorResponseService.persist(
+                "anAuthCode",
+                AuthRequest.builder()
+                        .requestedError("access_denied")
+                        .requestedErrorDescription("an error description")
+                        .requestedErrorEndpoint("token")
+                        .build());
 
         String errorResponse =
                 (String) tokenHandler.issueAccessToken.handle(mockRequest, mockResponse);

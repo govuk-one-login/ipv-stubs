@@ -110,7 +110,6 @@ public class VerifiableCredentialGeneratorTest {
                         evidence,
                         userId,
                         "clientIdValid",
-                        Instant.now().getEpochSecond() + 300,
                         Instant.now().getEpochSecond());
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
@@ -138,11 +137,6 @@ public class VerifiableCredentialGeneratorTest {
         assertEquals("https://issuer.example.com", claimsSetTree.path(ISSUER).asText());
         assertEquals(userId, claimsSetTree.path(SUBJECT).asText());
         assertNotNull(claimsSetTree.path(NOT_BEFORE));
-        assertNotNull(claimsSetTree.get(EXPIRATION_TIME));
-        assertEquals(
-                300000,
-                claimsSetTree.path(EXPIRATION_TIME).asLong()
-                        - claimsSetTree.path(NOT_BEFORE).asLong());
 
         final Matcher uuidMatcher = JTI_PATTERN.matcher(claimsSetTree.path(JWT_ID).asText());
         assertTrue(uuidMatcher.matches());
@@ -212,7 +206,6 @@ public class VerifiableCredentialGeneratorTest {
                         evidence,
                         userId,
                         "clientIdValid",
-                        Instant.now().getEpochSecond(),
                         Instant.now().getEpochSecond() + 300);
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
@@ -220,7 +213,6 @@ public class VerifiableCredentialGeneratorTest {
         JsonNode claimsSetTree =
                 objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");
 
-        assertNotNull(claimsSetTree.get(EXPIRATION_TIME));
         assertNotNull(claimsSetTree.get(NOT_BEFORE));
         assertNull(
                 claimsSetTree
@@ -246,8 +238,7 @@ public class VerifiableCredentialGeneratorTest {
                         "strength", 4,
                         "validity", 2);
         String userId = "user-id";
-        Credential credential =
-                new Credential(attributes, evidence, userId, "clientIdValid", null, null);
+        Credential credential = new Credential(attributes, evidence, userId, "clientIdValid", null);
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 
@@ -279,8 +270,7 @@ public class VerifiableCredentialGeneratorTest {
                         "strength", 4,
                         "validity", 2);
         String userId = "user-id";
-        Credential credential =
-                new Credential(attributes, evidence, userId, "clientIdValid", null, null);
+        Credential credential = new Credential(attributes, evidence, userId, "clientIdValid", null);
 
         SignedJWT verifiableCredential = vcGenerator.generate(credential);
 

@@ -29,7 +29,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
-import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
@@ -85,6 +84,18 @@ import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CRI_MITIGATION_ENABLED_PARAM;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_API_KEY;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_URL;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.MITIGATED_CIS;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.STRENGTH;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VALIDITY;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_DAY;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_FLAG;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_HOURS;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_MINUTES;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_MONTH;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_SECONDS;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_YEAR;
 
 @ExtendWith({SystemStubsExtension.class, MockitoExtension.class})
 class AuthorizeHandlerTest {
@@ -369,41 +380,10 @@ class AuthorizeHandlerTest {
         Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
         assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
         assertEquals("test-value", persistedAttributes.get("test"));
-        assertArrayEquals(new String[] {"A01", "D03"}, (String[]) persistedEvidence.get("ci"));
         assertEquals("IdentityCheck", persistedEvidence.get("type"));
         assertNotNull(persistedEvidence.get("txn"));
         assertNotNull(persistedEvidence.get("strengthScore"));
         assertNotNull(persistedEvidence.get("validityScore"));
-        assertNotNull(persistedCredential.getValue().getExp());
-
-        verify(mockCredentialService)
-                .persist(eq(mockSignedJwt.serialize()), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
-    }
-
-    @Test
-    void generateResponseShouldPersistSharedAttributesCombinedWithJsonInput_withoutVCExp()
-            throws Exception {
-        Map<String, String[]> queryParams = validGenerateResponseQueryParams();
-        queryParams.remove(CredentialIssuerConfig.EXPIRY_FLAG);
-        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-        when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
-
-        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
-
-        ArgumentCaptor<Credential> persistedCredential = ArgumentCaptor.forClass(Credential.class);
-
-        verify(mockVcGenerator).generate(persistedCredential.capture());
-        Map<String, Object> persistedAttributes = persistedCredential.getValue().getAttributes();
-        Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
-        assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
-        assertEquals("test-value", persistedAttributes.get("test"));
-        assertArrayEquals(new String[] {"A01", "D03"}, (String[]) persistedEvidence.get("ci"));
-        assertEquals("IdentityCheck", persistedEvidence.get("type"));
-        assertNotNull(persistedEvidence.get("txn"));
-        assertNotNull(persistedEvidence.get("strengthScore"));
-        assertNotNull(persistedEvidence.get("validityScore"));
-        assertNull(persistedCredential.getValue().getExp());
 
         verify(mockCredentialService)
                 .persist(eq(mockSignedJwt.serialize()), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
@@ -438,13 +418,9 @@ class AuthorizeHandlerTest {
             throws Exception {
         environmentVariables.set("MITIGATION_ENABLED", "True");
         Map<String, String[]> queryParams = validGenerateResponseQueryParams();
-        queryParams.put(
-                CredentialIssuerConfig.MITIGATED_CONTRAINDICATORS_PARAM, new String[] {"V03"});
-        queryParams.put(
-                CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM,
-                new String[] {"http://test.com"});
-        queryParams.put(
-                CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM, new String[] {"api:key"});
+        queryParams.put(MITIGATED_CIS, new String[] {"V03"});
+        queryParams.put(CIMIT_STUB_URL, new String[] {"http://test.com"});
+        queryParams.put(CIMIT_STUB_API_KEY, new String[] {"api:key"});
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
@@ -472,8 +448,6 @@ class AuthorizeHandlerTest {
         verify(mockVcGenerator).generate(persistedCredential.capture());
         verify(mockCredentialService)
                 .persist(eq(mockSignedJwt.serialize()), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
-
-        assertNotNull(persistedCredential.getValue().getExp());
     }
 
     @Test
@@ -482,13 +456,9 @@ class AuthorizeHandlerTest {
                     throws Exception {
         environmentVariables.set("MITIGATION_ENABLED", "True");
         Map<String, String[]> queryParams = validGenerateResponseQueryParams();
-        queryParams.put(
-                CredentialIssuerConfig.MITIGATED_CONTRAINDICATORS_PARAM, new String[] {"V03"});
-        queryParams.put(
-                CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM,
-                new String[] {"http://test.com"});
-        queryParams.put(
-                CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM, new String[] {"api:key"});
+        queryParams.put(MITIGATED_CIS, new String[] {"V03"});
+        queryParams.put(CIMIT_STUB_URL, new String[] {"http://test.com"});
+        queryParams.put(CIMIT_STUB_API_KEY, new String[] {"api:key"});
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
         when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
@@ -738,25 +708,16 @@ class AuthorizeHandlerTest {
         queryParams.put(
                 RequestParamConstants.RESOURCE_ID,
                 new String[] {"26c6ad15-a595-4e13-9497-f7c891fabe1d"});
-        queryParams.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, new String[] {"2"});
-        queryParams.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, new String[] {"3"});
-        queryParams.put(
-                CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, new String[] {"A01, D03"});
-        queryParams.put(
-                CredentialIssuerConfig.EXPIRY_FLAG,
-                new String[] {CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE});
-        queryParams.put(CredentialIssuerConfig.EXPIRY_HOURS, new String[] {"5"});
-        queryParams.put(CredentialIssuerConfig.EXPIRY_MINUTES, new String[] {"0"});
-        queryParams.put(CredentialIssuerConfig.EXPIRY_SECONDS, new String[] {"0"});
-        queryParams.put(
-                CredentialIssuerConfig.VC_NOT_BEFORE_FLAG,
-                new String[] {CredentialIssuerConfig.VC_NOT_BEFORE_FLAG_CHK_BOX_VALUE});
-        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_DAY, new String[] {"1"});
-        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_MONTH, new String[] {"1"});
-        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_YEAR, new String[] {"2022"});
-        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_HOURS, new String[] {"0"});
-        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_MINUTES, new String[] {"0"});
-        queryParams.put(CredentialIssuerConfig.VC_NOT_BEFORE_SECONDS, new String[] {"0"});
+        queryParams.put(STRENGTH, new String[] {"2"});
+        queryParams.put(VALIDITY, new String[] {"3"});
+        queryParams.put(MITIGATED_CIS, new String[] {"A01, D03"});
+        queryParams.put(VC_NOT_BEFORE_FLAG, new String[] {"on"});
+        queryParams.put(VC_NOT_BEFORE_DAY, new String[] {"1"});
+        queryParams.put(VC_NOT_BEFORE_MONTH, new String[] {"1"});
+        queryParams.put(VC_NOT_BEFORE_YEAR, new String[] {"2022"});
+        queryParams.put(VC_NOT_BEFORE_HOURS, new String[] {"0"});
+        queryParams.put(VC_NOT_BEFORE_MINUTES, new String[] {"0"});
+        queryParams.put(VC_NOT_BEFORE_SECONDS, new String[] {"0"});
         return queryParams;
     }
 

@@ -80,6 +80,7 @@ public class CredentialIssuer {
         Spark.get("/", healthCheckHandler.healthy);
         Spark.get("/authorize", authorizeHandler.doAuthorize);
         Spark.post("/authorize", authorizeHandler.generateResponse);
+        Spark.post("/api/authorize", authorizeHandler.apiAuthorize);
         Spark.post("/token", tokenHandler.issueAccessToken);
         if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
             Spark.post("/credentials/issue", docAppCredentialHandler.getResource);
