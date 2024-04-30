@@ -143,16 +143,16 @@ Parameters:
 Conditions:
   IsDevelopment: !Not
     - !Or
-      - !Equals [ !Ref Environment, "build"]
-      - !Equals [ !Ref Environment, "production"]
-  IsNotDevelopment: !Not [ !Condition IsDevelopment ]
-  IsProduction: !Equals [ !Ref Environment, production ]
+      - !Equals [!Ref Environment, "build"]
+      - !Equals [!Ref Environment, "production"]
+  IsNotDevelopment: !Not [!Condition IsDevelopment]
+  IsProduction: !Equals [!Ref Environment, production]
   IsNonProd: !Not
     - !Or
       - !Condition IsDevelopment
       - !Condition IsProduction
   UseCodeSigning: !Not
-    - !Equals [ !Ref CodeSigningConfigArn, "none" ]
+    - !Equals [!Ref CodeSigningConfigArn, "none"]
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
@@ -195,7 +195,7 @@ Mappings:
       lb500ErrorLimit: 10
       fargateCPUsize: "1024"
       fargateRAMsize: "2048"
-      desiredTaskCount: 4
+      desiredTaskCount: 1
       environment: production
       platform: stubs
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
@@ -301,19 +301,21 @@ Resources:
       GroupDescription: >-
         Orch Stub ECS Security Group outbound permissions ruleset
       SecurityGroupEgress:
-        - DestinationPrefixListId: !FindInMap [SecurityGroups, PrefixListIds, dynamodb]
+        - DestinationPrefixListId:
+            !FindInMap [SecurityGroups, PrefixListIds, dynamodb]
           Description: Allow outbound traffic to dynamodb vpc endpoint
           IpProtocol: tcp
           FromPort: 443
           ToPort: 443
-        - DestinationPrefixListId: !FindInMap [SecurityGroups, PrefixListIds, s3]
+        - DestinationPrefixListId:
+            !FindInMap [SecurityGroups, PrefixListIds, s3]
           Description: Allow outbound traffic to s3 vpc endpoint
           IpProtocol: tcp
           FromPort: 443
           ToPort: 443
         - DestinationSecurityGroupId: !If
             - IsNotDevelopment
-            - Fn::ImportValue:  !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+            - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
             - !ImportValue InterfaceVpcEndpointSecurityGroupId
           Description: Allow outbound traffic to AWS Services vpc endpoint security group
           IpProtocol: tcp
@@ -497,9 +499,9 @@ Resources:
             Rollback: true
       DeploymentController:
         Type: !If
-        - IsNotDevelopment
-        - CODE_DEPLOY
-        - ECS
+          - IsNotDevelopment
+          - CODE_DEPLOY
+          - ECS
       DesiredCount: !FindInMap
         - EnvironmentConfiguration
         - !Ref AWS::AccountId
@@ -535,7 +537,7 @@ Resources:
         - !Ref AWS::AccountId
         - desiredTaskCount
       ResourceId: !Join
-        - '/'
+        - "/"
         - - "service"
           - !Ref OrchStubCluster
           - !GetAtt OrchStubService.Name
@@ -550,7 +552,7 @@ Resources:
       PolicyName: OrchStubAutoScalingPolicy
       PolicyType: TargetTrackingScaling
       ResourceId: !Join
-        - '/'
+        - "/"
         - - "service"
           - !Ref OrchStubCluster
           - !GetAtt OrchStubService.Name
@@ -576,74 +578,86 @@ Resources:
       ContainerDefinitions:
         - Essential: true
           Image: !If [
-            IsNotDevelopment,
-            CONTAINER-IMAGE-PLACEHOLDER,
-            !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/orch-stub-development:${ImageTag}",
-          ] # Uses build account and ECR when not in development.
+              IsNotDevelopment,
+              CONTAINER-IMAGE-PLACEHOLDER,
+              !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/orch-stub-development:${ImageTag}",
+            ] # Uses build account and ECR when not in development.
           Name: app
           Environment:
-          - Name: JBP_CONFIG_OPEN_JDK_JRE
-            Value: !Ref JbpConfigOpenJdkJre
-          - Name: JAVA_OPTS
-            Value: !Ref JavaOpts
-          - Name: ORCHESTRATOR_CLIENT_ID
-            Value: !Ref OrchestratorClientId
-          - Name: ORCHESTRATOR_REDIRECT_URL
-            Value: !Ref OrchestratorRedirectUrl
-          - Name: ORCHESTRATOR_CLIENT_JWT_TTL
-            Value: !Ref OrchestratorClientJwtTtl
-          - Name: ORCHESTRATOR_PORT
-            Value: !Ref OrchestratorPort
-          - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
-            Value: !Ref OrchestratorClientSigningKey
-          - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
-            Value: !Ref OrchestratorDefaultJarEncryptionPublicKey
-          - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY
-            Value: !Ref OrchestratorBuildJarEncryptionPublicKey
-          - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY
-            Value: !Ref OrchestratorStagingJarEncryptionPublicKey
-          - Name: ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY
-            Value: !Ref OrchestratorIntegrationJarEncryptionPublicKey
-          - Name: IPV_BACKCHANNEL_ENDPOINT
-            Value: !Ref IpvBackchannelEndpoint
-          - Name: IPV_BACKCHANNEL_TOKEN_PATH
-            Value: !Ref IpvBackchannelTokenPath
-          - Name: IPV_BACKCHANNEL_USER_IDENTITY_PATH
-            Value: !Ref IpvBackchannelUserIdentityPath
-          - Name: IPV_ENDPOINT
-            Value: !Ref IpvEndpoint
-          - Name: IPV_CORE_AUDIENCE
-            Value: !Ref IpvCoreAudience
-          - Name: ORCHESTRATOR_BASIC_AUTH_ENABLE
-            Value: !Ref OrchestratorBasicAuthEnable
-          - Name: ORCHESTRATOR_BASIC_AUTH_USERNAME
-            Value: !Ref OrchestratorBasicAuthUsername
-          - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
-            Value: !Ref OrchestratorBasicAuthPassword
-          - Name: INHERITED_IDENTITY_JWT_SIGNING_KEY
-            Value: !Ref InheritedIdentityJwtSigningKey
-          - Name: INHERITED_IDENTITY_JWT_TTL
-            Value: !Ref InheritedIdentityJwtTtl
-          - Name: INHERITED_IDENTITY_JWT_ISSUER
-            Value: !Ref InheritedIdentityJwtIssuer
-          - Name: INHERITED_IDENTITY_JWT_VTM
-            Value: !Ref InheritedIdentityJwtVtm
+            - Name: JBP_CONFIG_OPEN_JDK_JRE
+              Value: !Ref JbpConfigOpenJdkJre
+            - Name: JAVA_OPTS
+              Value: !Ref JavaOpts
+            - Name: ORCHESTRATOR_CLIENT_ID
+              Value: !Ref OrchestratorClientId
+            - Name: ORCHESTRATOR_REDIRECT_URL
+              Value: !Ref OrchestratorRedirectUrl
+            - Name: ORCHESTRATOR_CLIENT_JWT_TTL
+              Value: !Ref OrchestratorClientJwtTtl
+            - Name: ORCHESTRATOR_PORT
+              Value: !Ref OrchestratorPort
+            - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
+              Value: !Ref OrchestratorClientSigningKey
+            - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: !Ref OrchestratorDefaultJarEncryptionPublicKey
+            - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: !Ref OrchestratorBuildJarEncryptionPublicKey
+            - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: !Ref OrchestratorStagingJarEncryptionPublicKey
+            - Name: ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: !Ref OrchestratorIntegrationJarEncryptionPublicKey
+            - Name: IPV_BACKCHANNEL_ENDPOINT
+              Value: !Ref IpvBackchannelEndpoint
+            - Name: IPV_BACKCHANNEL_TOKEN_PATH
+              Value: !Ref IpvBackchannelTokenPath
+            - Name: IPV_BACKCHANNEL_USER_IDENTITY_PATH
+              Value: !Ref IpvBackchannelUserIdentityPath
+            - Name: IPV_ENDPOINT
+              Value: !Ref IpvEndpoint
+            - Name: IPV_CORE_AUDIENCE
+              Value: !Ref IpvCoreAudience
+            - Name: ORCHESTRATOR_BASIC_AUTH_ENABLE
+              Value: !Ref OrchestratorBasicAuthEnable
+            - Name: ORCHESTRATOR_BASIC_AUTH_USERNAME
+              Value: !Ref OrchestratorBasicAuthUsername
+            - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
+              Value: !Ref OrchestratorBasicAuthPassword
+            - Name: INHERITED_IDENTITY_JWT_SIGNING_KEY
+              Value: !Ref InheritedIdentityJwtSigningKey
+            - Name: INHERITED_IDENTITY_JWT_TTL
+              Value: !Ref InheritedIdentityJwtTtl
+            - Name: INHERITED_IDENTITY_JWT_ISSUER
+              Value: !Ref InheritedIdentityJwtIssuer
+            - Name: INHERITED_IDENTITY_JWT_VTM
+              Value: !Ref InheritedIdentityJwtVtm
           Secrets:
             - Name: DT_TENANT
               ValueFrom: !Join
-                - ''
-                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ]
-                  - ':DT_TENANT::'
+                - ""
+                - - !FindInMap [
+                      EnvironmentConfiguration,
+                      !Ref AWS::AccountId,
+                      dynatraceSecretArn,
+                    ]
+                  - ":DT_TENANT::"
             - Name: DT_TENANTTOKEN
               ValueFrom: !Join
-                - ''
-                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ]
-                  - ':DT_TENANTTOKEN::'
+                - ""
+                - - !FindInMap [
+                      EnvironmentConfiguration,
+                      !Ref AWS::AccountId,
+                      dynatraceSecretArn,
+                    ]
+                  - ":DT_TENANTTOKEN::"
             - Name: DT_CONNECTION_POINT
               ValueFrom: !Join
-              - ''
-              - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ]
-                - ':DT_CONNECTION_POINT::'
+                - ""
+                - - !FindInMap [
+                      EnvironmentConfiguration,
+                      !Ref AWS::AccountId,
+                      dynatraceSecretArn,
+                    ]
+                  - ":DT_CONNECTION_POINT::"
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -653,9 +667,19 @@ Resources:
               awslogs-group: !Ref ECSAccessLogsGroup
               awslogs-region: !Sub ${AWS::Region}
               awslogs-stream-prefix: !Sub orch-stub-${Environment}
-      Cpu: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, fargateCPUsize ]
+      Cpu:
+        !FindInMap [
+          EnvironmentConfiguration,
+          !Ref AWS::AccountId,
+          fargateCPUsize,
+        ]
       ExecutionRoleArn: !GetAtt ECSTaskExecutionRole.Arn
-      Memory: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, fargateRAMsize ]
+      Memory:
+        !FindInMap [
+          EnvironmentConfiguration,
+          !Ref AWS::AccountId,
+          fargateRAMsize,
+        ]
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
@@ -807,8 +831,18 @@ Resources:
         VpcId: !Sub ${VpcStackName}-VpcId
         ContainerName: app
         ContainerPort: 8080
-        ELB4XXAlarmThreshold: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, lb400ErrorLimit ]
-        ELB5XXAlarmThreshold: !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, lb500ErrorLimit ]
+        ELB4XXAlarmThreshold:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref AWS::AccountId,
+            lb400ErrorLimit,
+          ]
+        ELB5XXAlarmThreshold:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref AWS::AccountId,
+            lb500ErrorLimit,
+          ]
         TargetGroupHTTPCodeMatcher: "200,401"
         PermissionsBoundary: !If
           - UsePermissionsBoundary
