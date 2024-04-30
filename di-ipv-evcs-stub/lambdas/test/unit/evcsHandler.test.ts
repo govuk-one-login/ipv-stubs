@@ -52,12 +52,22 @@ const TEST_REQUEST = {
   ]
 };
 
+const TEST_NO_VC_REQUEST = {
+  persistVCs: [
+  ]
+};
+
 const TEST_PATH_PARAM = {
   userId: testUserId,
 } as APIGatewayProxyEventPathParameters;
 
 const TEST_EVENT = {
   body: JSON.stringify(TEST_REQUEST),
+  pathParameters: TEST_PATH_PARAM,
+} as APIGatewayProxyEventV2;
+
+const TEST_NO_VC_EVENT = {
+  body: JSON.stringify(TEST_NO_VC_REQUEST),
   pathParameters: TEST_PATH_PARAM,
 } as APIGatewayProxyEventV2;
 
@@ -105,7 +115,20 @@ describe("EVCS handler", function () {
     // assert
     expect(result.statusCode).toEqual(400);
   });
-  
+
+  it("returns a 400 for an no vc request", async () => {
+    // arrange
+    const event = {
+      ...TEST_NO_VC_EVENT
+    };
+
+    // act
+    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(400);
+  });
+
   it("returns a 400 for an invalid request", async () => {
       // arrange
       const event = {
