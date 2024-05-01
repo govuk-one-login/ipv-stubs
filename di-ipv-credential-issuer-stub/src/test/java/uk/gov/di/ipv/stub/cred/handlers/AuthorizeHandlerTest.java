@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.EncryptionMethod;
@@ -70,6 +71,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -106,6 +108,7 @@ class AuthorizeHandlerTest {
     public static final String VALID_RESPONSE_TYPE = "code";
     public static final String INVALID_REDIRECT_URI = "invalid-redirect-uri";
     public static final String INVALID_RESPONSE_TYPE = "cosssde";
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().enable(INDENT_OUTPUT);
     private Response mockResponse;
     private Request mockRequest;
     private ViewHelper mockViewHelper;
@@ -258,7 +261,9 @@ class AuthorizeHandlerTest {
                 Boolean.parseBoolean(viewParamsCaptor.getValue().get("isEvidenceType").toString()));
 
         Map<String, Object> claims = DefaultSharedClaims();
-        assertEquals(gson.toJson(claims), viewParamsCaptor.getValue().get("shared_claims"));
+        assertEquals(
+                OBJECT_MAPPER.writeValueAsString(claims),
+                viewParamsCaptor.getValue().get("shared_claims"));
     }
 
     @Test
@@ -280,7 +285,9 @@ class AuthorizeHandlerTest {
                 Boolean.parseBoolean(viewParamsCaptor.getValue().get("isEvidenceType").toString()));
 
         Map<String, Object> claims = DefaultSharedClaims();
-        assertEquals(gson.toJson(claims), viewParamsCaptor.getValue().get("shared_claims"));
+        assertEquals(
+                OBJECT_MAPPER.writeValueAsString(claims),
+                viewParamsCaptor.getValue().get("shared_claims"));
         assertFalse((Boolean) viewParamsCaptor.getValue().get(CRI_MITIGATION_ENABLED_PARAM));
     }
 
@@ -330,14 +337,12 @@ class AuthorizeHandlerTest {
     }
 
     @Test
-    void generateResponseShouldReturn302WithAuthCodeQueryParamWhenValidAuthRequest()
-            throws Exception {
+    void formAuthorizeShouldReturn302WithAuthCodeQueryParamWhenValidAuthRequest() throws Exception {
         QueryParamsMap queryParamsMap = toQueryParamsMap(validGenerateResponseQueryParams());
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
         when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-        String result =
-                (String) authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+        String result = (String) authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
 
         ArgumentCaptor<String> redirectUriCaptor = ArgumentCaptor.forClass(String.class);
         assertNull(result);
@@ -349,15 +354,14 @@ class AuthorizeHandlerTest {
     }
 
     @Test
-    void generateResponseShouldCallDoAuthorizeMethodWhenInvalidJsonPayloadProvided()
-            throws Exception {
+    void formAuthorizeShouldCallDoAuthorizeMethodWhenInvalidJsonPayloadProvided() throws Exception {
         Map<String, String[]> queryParams = validGenerateResponseQueryParams();
         queryParams.put(RequestParamConstants.JSON_PAYLOAD, new String[] {"invalid-json"});
         QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
 
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
-        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+        authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
 
         verify(mockResponse)
                 .redirect(
@@ -366,12 +370,12 @@ class AuthorizeHandlerTest {
     }
 
     @Test
-    void generateResponseShouldPersistSharedAttributesCombinedWithJsonInput() throws Exception {
+    void formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput() throws Exception {
         QueryParamsMap queryParamsMap = toQueryParamsMap(validGenerateResponseQueryParams());
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
         when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+        authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
 
         ArgumentCaptor<Credential> persistedCredential = ArgumentCaptor.forClass(Credential.class);
 
@@ -390,7 +394,7 @@ class AuthorizeHandlerTest {
     }
 
     @Test
-    void generateResponseShouldNotIncludeSharedAttributesForUserAssertedCriType() throws Exception {
+    void formAuthorizeShouldNotIncludeSharedAttributesForUserAssertedCriType() throws Exception {
         environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "USER_ASSERTED");
         Map<String, String[]> queryParams = validGenerateResponseQueryParams();
         queryParams.put("ci", new String[] {""});
@@ -398,7 +402,7 @@ class AuthorizeHandlerTest {
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
         when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+        authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
 
         ArgumentCaptor<Credential> persistedCredential = ArgumentCaptor.forClass(Credential.class);
 
@@ -414,7 +418,7 @@ class AuthorizeHandlerTest {
     }
 
     @Test
-    void generateResponseShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled()
+    void formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled()
             throws Exception {
         environmentVariables.set("MITIGATION_ENABLED", "True");
         Map<String, String[]> queryParams = validGenerateResponseQueryParams();
@@ -431,7 +435,7 @@ class AuthorizeHandlerTest {
         when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
         when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+        authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
 
         ArgumentCaptor<HttpRequest> requestArgumentCaptor =
                 ArgumentCaptor.forClass(HttpRequest.class);
@@ -452,7 +456,7 @@ class AuthorizeHandlerTest {
 
     @Test
     void
-            generateResponseShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled_postFailed()
+            formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled_postFailed()
                     throws Exception {
         environmentVariables.set("MITIGATION_ENABLED", "True");
         Map<String, String[]> queryParams = validGenerateResponseQueryParams();
@@ -470,7 +474,7 @@ class AuthorizeHandlerTest {
         when(httpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                 .thenReturn(httpResponse);
 
-        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+        authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
 
         verify(httpClient, times(1)).send(any(), any());
 
@@ -481,7 +485,7 @@ class AuthorizeHandlerTest {
     }
 
     @Test
-    void generateResponseShouldRedirectWithRequestedOAuthErrorResponse() throws Exception {
+    void formAuthorizeShouldRedirectWithRequestedOAuthErrorResponse() throws Exception {
         Map<String, String[]> queryParams = validGenerateResponseQueryParams();
         queryParams.put(
                 RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"invalid_request"});
@@ -494,7 +498,7 @@ class AuthorizeHandlerTest {
 
         when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
-        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+        authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
 
         verify(mockResponse)
                 .redirect(

@@ -303,9 +303,9 @@ public class TokenHandlerTest {
         requestedErrorResponseService.persist(
                 "anAuthCode",
                 AuthRequest.builder()
-                        .requestedError("access_denied")
-                        .requestedErrorDescription("an error description")
-                        .requestedErrorEndpoint("token")
+                        .error("access_denied")
+                        .errorDescription("an error description")
+                        .errorEndpoint("token")
                         .build());
 
         String errorResponse =

@@ -1,5 +1,7 @@
 package uk.gov.di.ipv.stub.cred.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import spark.QueryParamsMap;
@@ -41,13 +43,19 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFO
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VERIFICATION;
 
 @Builder
+@AllArgsConstructor
 @Getter
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthRequest {
+    private static final String CHECKED = "checked";
+    private static final String ON = "on";
+    private static final String UTC = "UTC";
 
     private String clientId;
-    private String jar; // REQUEST
+    private String request;
+    private String resourceId;
 
-    private String credentialSubject; // JSON_PAYLOAD
+    private String credentialSubjectJson;
 
     private String evidenceScore;
     private String validityScore;
@@ -55,13 +63,12 @@ public class AuthRequest {
     private String fraudScore;
     private String verificationScore;
     private String biometricVerificationScore;
-    private String evidencePayload;
+    private String evidenceJson;
 
     private List<String> cis;
-
     private List<String> mitigatedCis;
     private String cimitStubUrl;
-    private String cimitStubApikey;
+    private String cimitStubApiKey;
 
     private boolean sendF2fVcToQueue;
     private boolean sendF2fErrorToQueue;
@@ -70,43 +77,45 @@ public class AuthRequest {
     private boolean nbfFlag;
     private Long nbf;
 
-    private String resourceId;
+    private String errorEndpoint;
+    private String error;
+    private String errorDescription;
+    private String userInfoError;
 
-    private String requestedErrorEndpoint;
-    private String requestedError;
-    private String requestedErrorDescription;
-    private String requestedUserInfoError;
+    public AuthRequest() {
+        // Used by Jackson for deserialization
+    }
 
     public static AuthRequest fromQueryMap(QueryParamsMap paramsMap) {
         return AuthRequest.builder()
                 .clientId(paramsMap.value(CLIENT_ID))
-                .jar(paramsMap.value(REQUEST))
-                .credentialSubject(paramsMap.value(JSON_PAYLOAD))
+                .request(paramsMap.value(REQUEST))
+                .credentialSubjectJson(paramsMap.value(JSON_PAYLOAD))
                 .evidenceScore(paramsMap.value(STRENGTH))
                 .validityScore(paramsMap.value(VALIDITY))
                 .activityScore(paramsMap.value(ACTIVITY_HISTORY))
                 .fraudScore(paramsMap.value(FRAUD))
                 .verificationScore(paramsMap.value(VERIFICATION))
                 .biometricVerificationScore(paramsMap.value(BIOMETRIC_VERIFICATION))
-                .evidencePayload(paramsMap.value(EVIDENCE_JSON_PAYLOAD))
+                .evidenceJson(paramsMap.value(EVIDENCE_JSON_PAYLOAD))
                 .cis(splitCommaDelimitedStringValue(paramsMap.value(CI)))
                 .mitigatedCis(splitCommaDelimitedStringValue(paramsMap.value(MITIGATED_CIS)))
                 .cimitStubUrl(paramsMap.value(CIMIT_STUB_URL))
-                .cimitStubApikey(paramsMap.value(CIMIT_STUB_API_KEY))
-                .sendF2fVcToQueue("checked".equals(paramsMap.value(F2F_SEND_VC_QUEUE)))
-                .sendF2fErrorToQueue("checked".equals(paramsMap.value(F2F_SEND_ERROR_QUEUE)))
+                .cimitStubApiKey(paramsMap.value(CIMIT_STUB_API_KEY))
+                .sendF2fVcToQueue(CHECKED.equals(paramsMap.value(F2F_SEND_VC_QUEUE)))
+                .sendF2fErrorToQueue(CHECKED.equals(paramsMap.value(F2F_SEND_ERROR_QUEUE)))
                 .f2fQueueName(paramsMap.value(F2F_STUB_QUEUE_NAME))
-                .nbfFlag("on".equals(paramsMap.value(VC_NOT_BEFORE_FLAG)))
-                .nbf(getNbf(paramsMap))
+                .nbfFlag(ON.equals(paramsMap.value(VC_NOT_BEFORE_FLAG)))
+                .nbf(generateNbf(paramsMap))
                 .resourceId(paramsMap.value(RESOURCE_ID))
-                .requestedErrorEndpoint(paramsMap.value(REQUESTED_OAUTH_ERROR_ENDPOINT))
-                .requestedError(paramsMap.value(REQUESTED_OAUTH_ERROR))
-                .requestedErrorDescription(paramsMap.value(REQUESTED_OAUTH_ERROR_DESCRIPTION))
-                .requestedUserInfoError(paramsMap.value(REQUESTED_USERINFO_ERROR))
+                .errorEndpoint(paramsMap.value(REQUESTED_OAUTH_ERROR_ENDPOINT))
+                .error(paramsMap.value(REQUESTED_OAUTH_ERROR))
+                .errorDescription(paramsMap.value(REQUESTED_OAUTH_ERROR_DESCRIPTION))
+                .userInfoError(paramsMap.value(REQUESTED_USERINFO_ERROR))
                 .build();
     }
 
-    private static Long getNbf(QueryParamsMap paramsMap) {
+    private static Long generateNbf(QueryParamsMap paramsMap) {
         try {
             return LocalDateTime.of(
                             Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_YEAR)),
@@ -115,7 +124,7 @@ public class AuthRequest {
                             Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_HOURS)),
                             Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_MINUTES)),
                             Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_SECONDS)))
-                    .atZone(ZoneId.of("UTC"))
+                    .atZone(ZoneId.of(UTC))
                     .toInstant()
                     .getEpochSecond();
         } catch (NumberFormatException e) {

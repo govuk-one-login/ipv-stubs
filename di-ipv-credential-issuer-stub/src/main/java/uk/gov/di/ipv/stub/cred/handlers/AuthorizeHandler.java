@@ -2,8 +2,6 @@ package uk.gov.di.ipv.stub.cred.handlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.crypto.RSADecrypter;
@@ -66,6 +64,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME_DEFAULT;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_URL;
@@ -76,13 +75,14 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.ACTIVITY_HI
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CI;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.F2F_STUB_QUEUE_NAME;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.FRAUD;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.RESOURCE_ID;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.STRENGTH;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VALIDITY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VERIFICATION;
 
 public class AuthorizeHandler {
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().enable(INDENT_OUTPUT);
 
     public static final String REQUEST_SCOPE = "scope";
     public static final String REQUEST_CONTEXT = "context";
@@ -93,12 +93,9 @@ public class AuthorizeHandler {
     public static final String CRI_STUB_EVIDENCE_PAYLOADS = "cri_stub_evidence_payloads";
     public static final String CRI_MITIGATION_ENABLED_PARAM = "isCriMitigationEnabled";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
-
     private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String ERROR_CODE_INVALID_REQUEST_JWT = "invalid_request_jwt";
 
-    private static final String RESOURCE_ID_PARAM = "resourceId";
     private static final String IS_EVIDENCE_TYPE_PARAM = "isEvidenceType";
     private static final String IS_EVIDENCE_DRIVING_LICENCE_TYPE_PARAM =
             "isEvidenceDrivingLicenceType";
@@ -108,13 +105,11 @@ public class AuthorizeHandler {
     private static final String IS_DOC_CHECKING_TYPE_PARAM = "isDocCheckingType";
     private static final String IS_USER_ASSERTED_TYPE = "isUserAssertedType";
     private static final String IS_F2F_TYPE = "isF2FType";
-
     private static final String IS_NINO_TYPE = "isNINOType";
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
 
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private static final List<CriType> NO_SHARED_ATTRIBUTES_CRI_TYPES =
             List.of(USER_ASSERTED_CRI_TYPE, DOC_CHECK_APP_CRI_TYPE);
 
@@ -123,8 +118,8 @@ public class AuthorizeHandler {
     private final RequestedErrorResponseService requestedErrorResponseService;
     private final ES256SignatureVerifier es256SignatureVerifier = new ES256SignatureVerifier();
     private ViewHelper viewHelper;
-    private VerifiableCredentialGenerator verifiableCredentialGenerator;
-    private HttpClient httpClient;
+    private final VerifiableCredentialGenerator verifiableCredentialGenerator;
+    private final HttpClient httpClient;
 
     public AuthorizeHandler(
             ViewHelper viewHelper,
@@ -142,7 +137,7 @@ public class AuthorizeHandler {
         this.httpClient = httpClient;
     }
 
-    public Route doAuthorize =
+    public final Route doAuthorize =
             (Request request, Response response) -> {
                 QueryParamsMap queryParamsMap = request.queryMap();
 
@@ -222,7 +217,7 @@ public class AuthorizeHandler {
                 LOGGER.info("criType: {}", criType.value);
 
                 Map<String, Object> frontendParams = new HashMap<>();
-                frontendParams.put(RESOURCE_ID_PARAM, UUID.randomUUID().toString());
+                frontendParams.put(RESOURCE_ID, UUID.randomUUID().toString());
                 frontendParams.put(
                         IS_EVIDENCE_TYPE_PARAM,
                         criType.equals(CriType.EVIDENCE_CRI_TYPE)
@@ -266,165 +261,145 @@ public class AuthorizeHandler {
                 return viewHelper.render(frontendParams, "authorize.mustache");
             };
 
-    public Route apiAuthorize =
-            (Request request, Response response) -> {
-                String body = request.body();
-                return null;
-            };
+    public final Route apiAuthorize =
+            (Request request, Response response) ->
+                    generateResponse(
+                            OBJECT_MAPPER.readValue(request.body(), AuthRequest.class), response);
 
-    public Route generateResponse =
-            (Request request, Response response) -> {
-                var authRequest = AuthRequest.fromQueryMap(request.queryMap());
+    public final Route formAuthorize =
+            (Request request, Response response) ->
+                    generateResponse(AuthRequest.fromQueryMap(request.queryMap()), response);
 
-                AuthorizationErrorResponse requestedAuthErrorResponse =
-                        handleRequestedError(authRequest);
-                if (requestedAuthErrorResponse != null) {
-                    response.redirect(requestedAuthErrorResponse.toURI().toString());
-                    return null;
+    private String generateResponse(AuthRequest authRequest, Response response)
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
+                    ParseException {
+        AuthorizationErrorResponse requestedAuthErrorResponse = handleRequestedError(authRequest);
+        if (requestedAuthErrorResponse != null) {
+            response.redirect(requestedAuthErrorResponse.toURI().toString());
+            return null;
+        }
+
+        var clientIdValue = authRequest.getClientId();
+        var jar = authRequest.getRequest();
+
+        ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
+
+        if (clientConfig == null) {
+            response.status(HttpServletResponse.SC_BAD_REQUEST);
+            return "Error: Could not find client configuration details for: " + clientIdValue;
+        }
+
+        SignedJWT signedJWT = getSignedJWT(jar, clientConfig.getEncryptionPrivateKey());
+        String redirectUri =
+                signedJWT.getJWTClaimsSet().getClaim(RequestParamConstants.REDIRECT_URI).toString();
+        String userId = signedJWT.getJWTClaimsSet().getSubject();
+        String state = signedJWT.getJWTClaimsSet().getClaim(RequestParamConstants.STATE).toString();
+
+        try {
+            var attributesMap = generateEvidenceMap(authRequest.getCredentialSubjectJson());
+
+            Map<String, Object> credentialAttributesMap;
+
+            if (NO_SHARED_ATTRIBUTES_CRI_TYPES.contains(getCriType())) {
+                credentialAttributesMap = attributesMap;
+            } else {
+                Map<String, Object> combinedAttributeJson =
+                        generateEvidenceMap(getSharedAttributes(signedJWT.getJWTClaimsSet()));
+                combinedAttributeJson.putAll(attributesMap);
+                credentialAttributesMap = combinedAttributeJson;
+            }
+
+            Map<String, Object> evidenceMap;
+            var evidenceJsonPayload = authRequest.getEvidenceJson();
+            if (evidenceJsonPayload == null || evidenceJsonPayload.isEmpty()) {
+                evidenceMap =
+                        generateGpg45Score(
+                                getCriType(),
+                                authRequest.getEvidenceScore(),
+                                authRequest.getValidityScore(),
+                                authRequest.getActivityScore(),
+                                authRequest.getFraudScore(),
+                                authRequest.getVerificationScore(),
+                                authRequest.getBiometricVerificationScore());
+            } else {
+                evidenceMap = generateEvidenceMap(evidenceJsonPayload);
+                if (evidenceMap.get(CredentialIssuerConfig.EVIDENCE_TXN_PARAM) == null) {
+                    evidenceMap.put(
+                            CredentialIssuerConfig.EVIDENCE_TXN_PARAM,
+                            UUID.randomUUID().toString());
                 }
+            }
 
-                var clientIdValue = authRequest.getClientId();
-                var jar = authRequest.getJar();
+            if (authRequest.getCis() != null && !authRequest.getCis().isEmpty()) {
+                evidenceMap.put(CI, authRequest.getCis());
+            }
 
-                ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
+            Long nbf =
+                    authRequest.getNbf() != null
+                            ? authRequest.getNbf()
+                            : Instant.now().getEpochSecond();
 
-                if (clientConfig == null) {
-                    response.status(HttpServletResponse.SC_BAD_REQUEST);
-                    return "Error: Could not find client configuration details for: "
-                            + clientIdValue;
-                }
+            String signedVcJwt =
+                    verifiableCredentialGenerator
+                            .generate(
+                                    new Credential(
+                                            credentialAttributesMap,
+                                            evidenceMap,
+                                            userId,
+                                            clientIdValue,
+                                            nbf))
+                            .serialize();
 
-                SignedJWT signedJWT = getSignedJWT(jar, clientConfig.getEncryptionPrivateKey());
-                String redirectUri =
-                        signedJWT
-                                .getJWTClaimsSet()
-                                .getClaim(RequestParamConstants.REDIRECT_URI)
-                                .toString();
-                String userId = signedJWT.getJWTClaimsSet().getSubject();
-                String state =
-                        signedJWT
-                                .getJWTClaimsSet()
-                                .getClaim(RequestParamConstants.STATE)
-                                .toString();
+            if (CredentialIssuerConfig.isEnabled(
+                    CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
+                processMitigatedCIs(userId, authRequest, signedVcJwt);
+            }
 
-                try {
-                    var attributesMap = generateJsonPayload(authRequest.getCredentialSubject());
+            if (authRequest.isSendF2fVcToQueue() && !authRequest.isSendF2fErrorToQueue()) {
+                HTTPRequest httpRequest =
+                        new HTTPRequest(HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
+                F2FEnqueueLambdaRequest enqueueLambdaRequest =
+                        new F2FEnqueueLambdaRequest(
+                                authRequest.getF2fQueueName(),
+                                new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
+                                10);
+                httpRequest.setQuery(OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest));
+                httpRequest.send();
+            }
 
-                    Map<String, Object> credentialAttributesMap;
-                    if (NO_SHARED_ATTRIBUTES_CRI_TYPES.contains(getCriType())) {
-                        credentialAttributesMap = attributesMap;
-                    } else {
-                        Map<String, Object> combinedAttributeJson =
-                                generateJsonPayload(
-                                        getSharedAttributes(signedJWT.getJWTClaimsSet()));
-                        combinedAttributeJson.putAll(attributesMap);
-                        credentialAttributesMap = combinedAttributeJson;
-                    }
+            if (authRequest.isSendF2fErrorToQueue()) {
+                HTTPRequest httpRequest =
+                        new HTTPRequest(HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
+                F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
+                        new F2FErrorEnqueueLambdaRequest(
+                                authRequest.getF2fQueueName(),
+                                new F2FQueueErrorEvent(
+                                        userId, state, "access_denied", "Something went wrong"),
+                                10);
+                httpRequest.setQuery(OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest));
+                httpRequest.send();
+            }
 
-                    Map<String, Object> gpgMap;
-                    var evidenceJsonPayload = authRequest.getEvidencePayload();
-                    if (evidenceJsonPayload == null || evidenceJsonPayload.isEmpty()) {
-                        gpgMap =
-                                generateGpg45Score(
-                                        getCriType(),
-                                        authRequest.getEvidenceScore(),
-                                        authRequest.getValidityScore(),
-                                        authRequest.getActivityScore(),
-                                        authRequest.getFraudScore(),
-                                        authRequest.getVerificationScore(),
-                                        authRequest.getBiometricVerificationScore());
-                    } else {
-                        gpgMap = generateJsonPayload(evidenceJsonPayload);
-                        if (gpgMap.get(CredentialIssuerConfig.EVIDENCE_TXN_PARAM) == null) {
-                            gpgMap.put(
-                                    CredentialIssuerConfig.EVIDENCE_TXN_PARAM,
-                                    UUID.randomUUID().toString());
-                        }
-                    }
+            AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
+            persistData(
+                    authRequest, successResponse.getAuthorizationCode(), signedVcJwt, redirectUri);
 
-                    if (!authRequest.getCis().isEmpty()) {
-                        gpgMap.put(CI, authRequest.getCis());
-                    }
-
-                    Long nbf =
-                            authRequest.isNbfFlag()
-                                    ? authRequest.getNbf()
-                                    : Instant.now().getEpochSecond();
-
-                    String signedVcJwt =
-                            verifiableCredentialGenerator
-                                    .generate(
-                                            new Credential(
-                                                    credentialAttributesMap,
-                                                    gpgMap,
-                                                    userId,
-                                                    clientIdValue,
-                                                    nbf))
-                                    .serialize();
-
-                    if (CredentialIssuerConfig.isEnabled(
-                            CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
-                        processMitigatedCIs(userId, authRequest, signedVcJwt);
-                    }
-
-                    if (authRequest.isSendF2fVcToQueue() && !authRequest.isSendF2fErrorToQueue()) {
-                        HTTPRequest httpRequest =
-                                new HTTPRequest(
-                                        HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        F2FEnqueueLambdaRequest enqueueLambdaRequest =
-                                new F2FEnqueueLambdaRequest(
-                                        authRequest.getF2fQueueName(),
-                                        new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
-                                        10);
-                        String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
-                        httpRequest.setQuery(body);
-                        httpRequest.send();
-                    }
-
-                    if (authRequest.isSendF2fErrorToQueue()) {
-                        HTTPRequest httpRequest =
-                                new HTTPRequest(
-                                        HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
-                        F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
-                                new F2FErrorEnqueueLambdaRequest(
-                                        authRequest.getF2fQueueName(),
-                                        new F2FQueueErrorEvent(
-                                                userId,
-                                                state,
-                                                "access_denied",
-                                                "Something went wrong"),
-                                        10);
-                        String body = OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest);
-                        httpRequest.setQuery(body);
-                        httpRequest.send();
-                    }
-
-                    AuthorizationSuccessResponse successResponse =
-                            generateAuthCode(state, redirectUri);
-                    persistData(
-                            authRequest,
-                            successResponse.getAuthorizationCode(),
-                            signedVcJwt,
-                            redirectUri);
-
-                    response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
-                    response.redirect(successResponse.toURI().toString());
-                } catch (CriStubException e) {
-                    AuthorizationErrorResponse errorResponse =
-                            generateErrorResponse(e, redirectUri);
-                    response.redirect(errorResponse.toURI().toString());
-                }
-                return null;
-            };
+            response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
+            response.redirect(successResponse.toURI().toString());
+        } catch (CriStubException e) {
+            AuthorizationErrorResponse errorResponse = generateErrorResponse(e, redirectUri);
+            response.redirect(errorResponse.toURI().toString());
+        }
+        return null;
+    }
 
     private void processMitigatedCIs(String userId, AuthRequest authRequest, String signedVcJwt)
             throws CriStubException {
         var mitigatedCis = authRequest.getMitigatedCis();
-        if (!mitigatedCis.isEmpty()) {
+        if (mitigatedCis != null && !mitigatedCis.isEmpty()) {
             LOGGER.info("Processing mitigated CI's");
             String cimitStubUrl = authRequest.getCimitStubUrl();
-            String cimitStubApikey = authRequest.getCimitStubApikey();
+            String cimitStubApikey = authRequest.getCimitStubApiKey();
             String postUrlTemplate = "/user/%s/mitigations/%s";
             for (String ciCode : mitigatedCis) {
                 String jwtId;
@@ -510,7 +485,7 @@ public class AuthorizeHandler {
         this.requestedErrorResponseService.persist(authorizationCode.getValue(), authRequest);
     }
 
-    private Map<String, Object> generateJsonPayload(String payload) throws CriStubException {
+    private Map<String, Object> generateEvidenceMap(String payload) throws CriStubException {
         if (StringUtils.isBlank(payload)) payload = "{}";
         try {
             return OBJECT_MAPPER.readValue(payload, Map.class);
@@ -841,23 +816,20 @@ public class AuthorizeHandler {
     }
 
     private String getSharedAttributes(JWTClaimsSet claimsSet) {
-        String sharedAttributesJson;
         try {
             Map<String, Object> sharedAttributes = claimsSet.getJSONObjectClaim(SHARED_CLAIMS);
             if (sharedAttributes == null) {
                 LOGGER.error("shared_claims not found in JWT");
                 return "shared_claims not found in JWT";
             }
-            sharedAttributesJson = gson.toJson(sharedAttributes);
-            return sharedAttributesJson;
-        } catch (ParseException e) {
+            return OBJECT_MAPPER.writeValueAsString(sharedAttributes);
+        } catch (ParseException | JsonProcessingException e) {
             LOGGER.error("Failed to parse something: {}", e.getMessage());
             return String.format("Error: failed to parse something: %s", e.getMessage());
         }
     }
 
     private String getEvidenceRequested(JWTClaimsSet claimsSet) {
-        String evidenceRequestedJson;
         try {
             Map<String, Object> evidenceRequested =
                     claimsSet.getJSONObjectClaim(EVIDENCE_REQUESTED);
@@ -865,9 +837,8 @@ public class AuthorizeHandler {
                 LOGGER.error("evidence_requested not found in JWT");
                 return "evidence_requested not found in JWT";
             }
-            evidenceRequestedJson = gson.toJson(evidenceRequested);
-            return evidenceRequestedJson;
-        } catch (ParseException e) {
+            return OBJECT_MAPPER.writeValueAsString(evidenceRequested);
+        } catch (ParseException | JsonProcessingException e) {
             LOGGER.error("Failed to parse something: {}", e.getMessage());
             return String.format("Error: failed to parse something: %s", e.getMessage());
         }
