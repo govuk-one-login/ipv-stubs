@@ -49,17 +49,56 @@ paths:
                 properties:
                   result:
                     type: string
+        400:
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                type: "object"
       x-amazon-apigateway-integration:
         type: "aws_proxy"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostEvcsUserVCsFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsUserVCsFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 202
+            responseTemplates:
+              application/json: '{"result": "success"}'
+    get:
+      description: "Returns a list of User Verifiable Credentials"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "The list of Verifiable Credentials"
+          content:
+            application/json:
+              schema:
+                type: "object"
+        400:
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsUserVCsFunction.Arn}:live/invocations
+        passthroughBehavior: "when_no_match"
         responses:
           default:
             statusCode: 200
             responseTemplates:
               application/json: '{"result": "success"}'
+
 components:
   schemas:
     PostUserVCRequestBody:

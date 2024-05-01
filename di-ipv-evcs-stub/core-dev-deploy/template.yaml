@@ -61,16 +61,16 @@ Mappings:
 
 Resources:
   # lambda to stub EVCS - postEvcsUserVCs
-  PostEvcsUserVCsFunction:
+  EvcsUserVCsFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
     # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
     # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     # checkov:skip=CKV_AWS_173: doing it later
     DependsOn:
-      - "PostEvcsUserVCsFunctionLogGroup"
+      - "EvcsUserVCsFunctionLogGroup"
     Properties:
-      FunctionName: !Sub "postEvcsUserVCs-${Environment}"
+      FunctionName: !Sub "evcsUserVCs-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsHandler.handler
       Runtime: nodejs20.x
@@ -106,12 +106,18 @@ Resources:
             TableName: !Ref EvcsStubUserVcsStoreTable
       AutoPublishAlias: live
       Events:
-        GetEvcsVC:
+        PostUserVCs:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
             Path: /vcs/{userId}
             Method: POST
+        GetUserVCs:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /vcs/{userId}
+            Method: GET
     Metadata:
       # Manage esbuild properties
       BuildMethod: esbuild
@@ -122,28 +128,28 @@ Resources:
         EntryPoints:
           - src/handlers/evcsHandler.ts
 
-  PostEvcsUserVCsFunctionCoreDev01InvokePermission:
+  EvcsUserVCsFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref PostEvcsUserVCsFunction
+      FunctionName: !Ref EvcsUserVCsFunction
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
-  PostEvcsUserVCsFunctionCoreDev02InvokePermission:
+  EvcsUserVCsFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref PostEvcsUserVCsFunction
+      FunctionName: !Ref EvcsUserVCsFunction
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
-  PostEvcsUserVCsFunctionCoreBuildInvokePermission:
+  EvcsUserVCsFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref PostEvcsUserVCsFunction
+      FunctionName: !Ref EvcsUserVCsFunction
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
-  PostEvcsUserVCsFunctionLogGroup:
+  EvcsUserVCsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     # checkov:skip=CKV_AWS_158: No need for customer managed keys for short lived logs
     Properties:
@@ -316,7 +322,7 @@ Resources:
 
   RestApiGateway:
     Type: AWS::Serverless::Api
-    DependsOn: PostEvcsUserVCsFunction
+    DependsOn: EvcsUserVCsFunction
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
       Name: !Sub EVCS API Gateway ${Environment}

@@ -3,7 +3,7 @@ import { DynamoDB } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
 
 import {
-    APIGatewayProxyEventV2,
+    APIGatewayProxyEvent,
     APIGatewayProxyEventPathParameters,
     APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
@@ -64,30 +64,88 @@ const TEST_PATH_PARAM = {
 const TEST_EVENT = {
   body: JSON.stringify(TEST_REQUEST),
   pathParameters: TEST_PATH_PARAM,
-} as APIGatewayProxyEventV2;
+} as APIGatewayProxyEvent;
+
+const TEST_GET_EVENT = {
+  pathParameters: TEST_PATH_PARAM,
+} as APIGatewayProxyEvent;
 
 const TEST_NO_VC_EVENT = {
   body: JSON.stringify(TEST_NO_VC_REQUEST),
   pathParameters: TEST_PATH_PARAM,
-} as APIGatewayProxyEventV2;
+} as APIGatewayProxyEvent;
 
 const TEST_EVENT_WITHOUT_USER_PARAM = {
   body: JSON.stringify(TEST_REQUEST),
-} as APIGatewayProxyEventV2;
+} as APIGatewayProxyEvent;
 
 describe("EVCS handler", function () {
-  it("returns a successful response", async () => {
+  it("successfully retrieve and return user VCs response, No VCs in this case", async () => {
+    // arrange
+    const event = {
+      ...TEST_GET_EVENT,
+      httpMethod: "GET"
+    };
+    jest.mocked(getParameter).mockResolvedValue("1800");
+    // act
+    const result = (await handler(
+      event
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(200);
+    const parseResult = JSON.parse(result.body as string);
+    expect(0).toEqual(parseResult.vcs.length);
+  });
+
+  it("successfully process post request to persist user VCs", async () => {
       // arrange
+      const event = {
+        ...TEST_EVENT,
+        httpMethod: "POST"
+      };
       jest.mocked(getParameter).mockResolvedValue("1800");
       // act
       const result = (await handler(
-        TEST_EVENT
+        event
       )) as APIGatewayProxyStructuredResultV2;
 
       // assert
       expect(result.statusCode).toEqual(202);
       const response = await dynamoDocClient.send(getCommand);
       expect(decodedTestUserId).toEqual(response.Item?.userId);
+  });
+
+  it("successfully persist and then returns user VCs response", async () => {
+    // arrange
+    const postEvent = {
+      ...TEST_EVENT,
+      httpMethod: "POST"
+    };
+    jest.mocked(getParameter).mockResolvedValue("1800");
+    // act
+    const postResult = (await handler(
+      postEvent
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(postResult.statusCode).toEqual(202);
+
+    // arrange
+    const event = {
+      ...TEST_GET_EVENT,
+      httpMethod: "GET"
+    };
+    jest.mocked(getParameter).mockResolvedValue("1800");
+    // act
+    const result = (await handler(
+      event
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(200);
+    const parseResult = JSON.parse(result.body as string);
+    expect(1).toEqual(parseResult.vcs.length);
   });
 
   it("returns a 400 when userId path paran not passed", async () => {
@@ -106,7 +164,8 @@ describe("EVCS handler", function () {
     // arrange
     const event = {
       ...TEST_EVENT,
-      body: undefined,
+      body: null,
+      httpMethod: "POST"
     };
 
     // act
@@ -119,7 +178,8 @@ describe("EVCS handler", function () {
   it("returns a 400 for an no vc request", async () => {
     // arrange
     const event = {
-      ...TEST_NO_VC_EVENT
+      ...TEST_NO_VC_EVENT,
+      httpMethod: "POST"
     };
 
     // act
@@ -134,6 +194,7 @@ describe("EVCS handler", function () {
       const event = {
         ...TEST_EVENT,
         body: "invalid json",
+        httpMethod: "POST"
       };
 
       // act
@@ -141,5 +202,20 @@ describe("EVCS handler", function () {
 
       // assert
       expect(result.statusCode).toEqual(400);
+  });
+
+  it("returns a 500 for missing SSM parameter, failure at service", async () => {
+    // arrange
+    jest.mocked(getParameter).mockResolvedValueOnce(undefined);
+    const event = {
+      ...TEST_EVENT,
+      httpMethod: "POST"
+    };
+
+    // act
+    const result = (await handler(event,)) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(500);
   });
 });
