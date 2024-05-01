@@ -51,6 +51,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_DEV" #pragma: allowlist secret
+  ApiKeyCriHmrcKbvDev:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_HMRC_KBV_DEV" #pragma: allowlist secret
   ApiKeyCriAddressBuild:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -79,6 +83,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_BUILD" #pragma: allowlist secret
+  ApiKeyCriHmrcKbvBuild:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_HMRC_KBV_BUILD" #pragma: allowlist secret
   ApiKeyCriAddressStaging:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -119,6 +127,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_STAGING" #pragma: allowlist secret
+  ApiKeyCriHmrcKbvStaging:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_HMRC_KBV_STAGING" #pragma: allowlist secret
   ApiKeyCriAddressIntegration:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -139,6 +151,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_PASSPORTA_INTEGRATION" #pragma: allowlist secret
+  ApiKeyCriHmrcKbvIntegration:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/core/cri/env/API_KEY_CRI_HMRC_KBV_INTEGRATION" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -665,6 +681,8 @@ Resources:
             Value: !Ref ApiKeyCriDrivingPermitDev
           - Name: API_KEY_CRI_PASSPORTA_DEV
             Value: !Ref ApiKeyCriPassportDev
+          - Name: API_KEY_CRI_HMRC_KBV_DEV
+            Value: !Ref ApiKeyCriHmrcKbvDev
           - Name: API_KEY_CRI_ADDRESS_BUILD
             Value: !Ref ApiKeyCriAddressBuild
           - Name: API_KEY_CRI_KBV_BUILD
@@ -675,6 +693,8 @@ Resources:
             Value: !Ref ApiKeyCriDrivingPermitBuild
           - Name: API_KEY_CRI_PASSPORTA_BUILD
             Value: !Ref ApiKeyCriPassportBuild
+          - Name: API_KEY_CRI_HMRC_KBV_BUILD
+            Value: !Ref ApiKeyCriHmrcKbvBuild
           - Name: API_KEY_CRI_TOY_DEV
             Value: !Ref ApiKeyCriToyDev
           - Name: API_KEY_CRI_TOY_BUILD
@@ -699,6 +719,8 @@ Resources:
             Value: !Ref ApiKeyCriDrivingPermitStaging
           - Name: API_KEY_CRI_PASSPORTA_STAGING
             Value: !Ref ApiKeyCriPassportStaging
+          - Name: API_KEY_CRI_HMRC_KBV_STAGING
+            Value: !Ref ApiKeyCriHmrcKbvStaging
           - Name: API_KEY_CRI_ADDRESS_INTEGRATION
             Value: !Ref ApiKeyCriAddressIntegration
           - Name: API_KEY_CRI_KBV_INTEGRATION
@@ -709,6 +731,8 @@ Resources:
             Value: !Ref ApiKeyCriDrivingPermitIntegration
           - Name: API_KEY_CRI_PASSPORTA_INTEGRATION
             Value: !Ref ApiKeyCriPassportIntegration
+          - Name: API_KEY_CRI_HMRC_KBV_INTEGRATION
+            Value: !Ref ApiKeyCriHmrcKbvIntegration
           - Name: ENABLE_BASIC_AUTH
             Value: !Ref EnableBasicAuth
           Secrets:

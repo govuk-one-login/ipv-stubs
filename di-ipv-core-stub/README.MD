@@ -42,6 +42,7 @@ API_KEY_CRI_KBV_INTEGRATION | API key for a CRI environment, set by hand with `c
 API_KEY_CRI_FRAUD_BUILD | API key for a CRI environment, set by hand with `cf` cli ||
 API_KEY_CRI_DL_BUILD | API key for a CRI environment, set by hand with `cf` cli ||
 API_KEY_CRI_PASSPORTA_BUILD | API key for a CRI environment, set by hand with `cf` cli ||
+API_KEY_CRI_HMRC_KBV_BUILD | API key for a CRI environment, set by hand with `cf` cli ||
 
 ## Running locally
 
