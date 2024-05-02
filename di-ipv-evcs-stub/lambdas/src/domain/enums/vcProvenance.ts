@@ -1,4 +1,4 @@
-enum VCProvenience {
+enum VCProvenance {
   ONLINE = "ONLINE",
   OFFLINE = "OFFLINE",
   EXTERNAL = "EXTERNAL",
@@ -6,4 +6,4 @@ enum VCProvenience {
   OTHER = "OTHER"
 }
 
-export default VCProvenience;
+export default VCProvenance;

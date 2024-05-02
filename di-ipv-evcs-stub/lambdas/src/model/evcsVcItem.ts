@@ -6,6 +6,6 @@ export default interface EvcsVcItem {
   vc: string;
   state: string;
   metadata: VCMetadata;
-  provenience: string;
+  provenance: string;
   ttl: number;
 }

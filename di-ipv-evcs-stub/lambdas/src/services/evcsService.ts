@@ -4,6 +4,7 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import PostRequest from "../domain/postRequest";
 import VcStateMetadata from "../domain/vcStateMetadata";
 import ServiceResponse from "../domain/serviceResponse";
+import AllState from "../domain/enums/allState";
 import EvcsVcItem from "../model/evcsVcItem";
 
 import { config } from "../common/config";
@@ -28,7 +29,7 @@ export async function processPostUserVCsRequest(
           vc: persistVC.vc,
           state: persistVC.state,
           metadata: persistVC.metadata!,
-          provenience: persistVC.provenience!,
+          provenance: persistVC.provenance!,
           ttl: await getTtl(),
         };
         await saveUserVC(vcItem);
@@ -63,7 +64,7 @@ export async function processGetUserVCsRequest(
   for (const item of evcsVcItems) {
     const vcItem: VcStateMetadata = {
         vc: item.vc,
-        state: item.state,
+        state: AllState[item.state as keyof typeof AllState],
         metadata: item.metadata!,
     };
     vcItems.push(vcItem);
