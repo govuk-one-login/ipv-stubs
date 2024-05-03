@@ -1,8 +1,8 @@
-import AllState from "./enums/allState";
+import VcState from "./enums/vcState";
 import VCMetadata from "./vcMetadata";
 
 export default interface VcStateMetadata {
     vc: string;
-    state: AllState;
+    state: VcState;
     metadata?: VCMetadata;
 }

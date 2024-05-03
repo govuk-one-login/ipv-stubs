@@ -1,4 +1,4 @@
-enum AllState {
+enum VcState {
     CURRENT = "CURRENT",
     PENDING = "PENDING",
     VERIFICATION = "VERIFICATION",
@@ -8,4 +8,4 @@ enum AllState {
     VERIFICATION_ARCHIVED = "VERIFICATION_ARCHIVED"
   }
 
-  export default AllState;
+  export default VcState;

@@ -17,7 +17,7 @@ export async function handler(
   try {
     let request;
     let res: ServiceResponse = {
-      response: undefined
+      response: Object
     };
     switch(event.httpMethod) {
       case "POST":

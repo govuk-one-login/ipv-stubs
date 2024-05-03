@@ -1,10 +1,9 @@
-import { DynamoDB, GetItemInput, PutItemInput } from "@aws-sdk/client-dynamodb";
+import { DynamoDB, QueryInput, PutItemInput } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import PostRequest from "../domain/postRequest";
-import VcStateMetadata from "../domain/vcStateMetadata";
 import ServiceResponse from "../domain/serviceResponse";
-import AllState from "../domain/enums/allState";
+import VcState from "../domain/enums/vcState";
 import EvcsVcItem from "../model/evcsVcItem";
 
 import { config } from "../common/config";
@@ -27,6 +26,7 @@ export async function processPostUserVCsRequest(
       const vcItem: EvcsVcItem = {
           userId: userId,
           vc: persistVC.vc,
+          vcSignature: persistVC.vc.split('.')[2],
           state: persistVC.state,
           metadata: persistVC.metadata!,
           provenance: persistVC.provenance!,
@@ -47,33 +47,34 @@ export async function processGetUserVCsRequest(
   userId: string
 ): Promise<ServiceResponse> {
   console.info(`Get user record.`);
-  const getItemInput: GetItemInput = {
+  const getItemInput: QueryInput = {
     TableName: config.evcsStubUserVCsTableName,
-    Key: marshall({
-      userId: userId,
-    }),
+    KeyConditionExpression: "#userId = :userIdValue",
+    FilterExpression: "#state = :stateValue",
+    ExpressionAttributeNames: {
+      '#userId': 'userId',
+      '#state': 'state'
+    },
+    ExpressionAttributeValues : {
+      ':userIdValue': { S: userId },
+      ':stateValue': { S: VcState.CURRENT }
+    }
   };
-  const items = (await dynamoClient.scan(getItemInput)).Items;
-  console.info(`Total VCs retrived - ${JSON.stringify(items?.length)}`);
-  const evcsVcItems: EvcsVcItem[] = [];
-  items?.forEach((item) => {
-    evcsVcItems.push(unmarshall(item) as EvcsVcItem);
-  });
-
-  const vcItems: Array<VcStateMetadata> = [];
-  for (const item of evcsVcItems) {
-    const vcItem: VcStateMetadata = {
-        vc: item.vc,
-        state: AllState[item.state as keyof typeof AllState],
-        metadata: item.metadata!,
-    };
-    vcItems.push(vcItem);
-  }
+  console.info(`Query Input - ${JSON.stringify(getItemInput)}`);
+  const items = (await dynamoClient.query(getItemInput)).Items ?? [];
+  console.info(`Total VCs retrived - ${items?.length}`);
+  const vcItems = items
+                  .map((item) => unmarshall(item) as EvcsVcItem)
+                  .map((evcsItem) => ({
+                    vc: evcsItem.vc,
+                    state: evcsItem.state as VcState,
+                    metadata: evcsItem.metadata,
+                  }));
 
   return {
     response: {
       vcs: vcItems,
-      afterKey: "chk what to pass"
+      afterKey: "pagination will be implemented later"
     },
     statusCode: 200
   };
