@@ -2,6 +2,9 @@ import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
 import { buildApiResponse } from "../common/apiResponses";
 import PostRequest from "../domain/postRequest";
 import ServiceResponse from "../domain/serviceResponse";
+import PersistVC from "../domain/persistVC";
+import { CreateVcStates } from  "../domain/enums/vcState";
+
 import { processPostUserVCsRequest } from "../services/evcsService";
 import { processGetUserVCsRequest } from "../services/evcsService";
 
@@ -57,10 +60,20 @@ function parsePostRequest(event: APIGatewayProxyEvent): PostRequest {
   if (
     !postRequest ||
     !postRequest.persistVCs ||
-    postRequest.persistVCs.length <= 0
+    postRequest.persistVCs.length <= 0 ||
+    ! isValidCreateVcState(postRequest.persistVCs)
   ) {
     throw new Error("Invalid request");
   }
 
   return postRequest;
+}
+
+function isValidCreateVcState(persistVCs: PersistVC[]): boolean {
+  for (const persistVC of persistVCs) {
+    if (! (persistVC.state in CreateVcStates)) {
+      return false;
+    }
+  }
+  return true;
 }

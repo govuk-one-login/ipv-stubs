@@ -1,10 +1,10 @@
-import CreateState from "./enums/createState";
+import VcState from  "./enums/vcState";
 import VCMetadata from "./vcMetadata";
 import VCProvenance from "./enums/vcProvenance";
 
 export default interface PersistVC {
     vc: string;
-    state: CreateState;
+    state: VcState;
     metadata?: VCMetadata;
     provenance?: VCProvenance;
 }
