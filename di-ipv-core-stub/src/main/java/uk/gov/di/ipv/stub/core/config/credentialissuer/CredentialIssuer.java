@@ -21,4 +21,8 @@ public record CredentialIssuer(
     public boolean isCheckHmrcCri() {
         return this.id.contains("check-hmrc");
     }
+
+    public boolean isHmrcKbvCri() {
+        return this.id.contains("hmrc-kbv-cri");
+    }
 }
