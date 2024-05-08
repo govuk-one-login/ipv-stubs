@@ -16,7 +16,6 @@ import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
-import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
@@ -67,7 +66,7 @@ import java.util.UUID;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME_DEFAULT;
-import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_URL;
+import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getConfigValue;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
 import static uk.gov.di.ipv.stub.cred.config.CriType.DOC_CHECK_APP_CRI_TYPE;
 import static uk.gov.di.ipv.stub.cred.config.CriType.USER_ASSERTED_CRI_TYPE;
@@ -93,7 +92,8 @@ public class AuthorizeHandler {
     public static final String CRI_STUB_EVIDENCE_PAYLOADS = "cri_stub_evidence_payloads";
     public static final String CRI_MITIGATION_ENABLED_PARAM = "isCriMitigationEnabled";
 
-    private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
+    private static final String APPLICATION_X_WWW_FORM_URLENCODED =
+            "application/x-www-form-urlencoded";
     private static final String ERROR_CODE_INVALID_REQUEST_JWT = "invalid_request_jwt";
 
     private static final String IS_EVIDENCE_TYPE_PARAM = "isEvidenceType";
@@ -109,6 +109,8 @@ public class AuthorizeHandler {
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String F2F_STUB_QUEUE_URL = "F2F_STUB_QUEUE_URL";
 
     private static final List<CriType> NO_SHARED_ATTRIBUTES_CRI_TYPES =
             List.of(USER_ASSERTED_CRI_TYPE, DOC_CHECK_APP_CRI_TYPE);
@@ -181,7 +183,7 @@ public class AuthorizeHandler {
                                                     .toString()),
                                     ResponseMode.QUERY);
 
-                    response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
+                    response.type(APPLICATION_X_WWW_FORM_URLENCODED);
                     response.redirect(errorResponse.toURI().toString());
                     // No content required in response
                     return null;
@@ -262,13 +264,17 @@ public class AuthorizeHandler {
             };
 
     public final Route apiAuthorize =
-            (Request request, Response response) ->
-                    generateResponse(
-                            OBJECT_MAPPER.readValue(request.body(), AuthRequest.class), response);
+            (Request request, Response response) -> {
+                response.type(APPLICATION_JSON);
+                return generateResponse(
+                        OBJECT_MAPPER.readValue(request.body(), AuthRequest.class), response);
+            };
 
     public final Route formAuthorize =
-            (Request request, Response response) ->
-                    generateResponse(AuthRequest.fromQueryMap(request.queryMap()), response);
+            (Request request, Response response) -> {
+                response.type(APPLICATION_X_WWW_FORM_URLENCODED);
+                return generateResponse(AuthRequest.fromQueryMap(request.queryMap()), response);
+            };
 
     private String generateResponse(AuthRequest authRequest, Response response)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
@@ -330,8 +336,8 @@ public class AuthorizeHandler {
                 }
             }
 
-            if (authRequest.getCis() != null && !authRequest.getCis().isEmpty()) {
-                evidenceMap.put(CI, authRequest.getCis());
+            if (authRequest.getCi() != null && !authRequest.getCi().isEmpty()) {
+                evidenceMap.put(CI, authRequest.getCi());
             }
 
             Long nbf =
@@ -356,38 +362,59 @@ public class AuthorizeHandler {
             }
 
             if (authRequest.isSendF2fVcToQueue() && !authRequest.isSendF2fErrorToQueue()) {
-                HTTPRequest httpRequest =
-                        new HTTPRequest(HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
                 F2FEnqueueLambdaRequest enqueueLambdaRequest =
                         new F2FEnqueueLambdaRequest(
                                 authRequest.getF2fQueueName(),
                                 new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
                                 10);
-                httpRequest.setQuery(OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest));
-                httpRequest.send();
+
+                HttpRequest request =
+                        HttpRequest.newBuilder()
+                                .uri(URI.create(getConfigValue(F2F_STUB_QUEUE_URL)))
+                                .POST(
+                                        HttpRequest.BodyPublishers.ofString(
+                                                OBJECT_MAPPER.writeValueAsString(
+                                                        enqueueLambdaRequest)))
+                                .build();
+
+                httpClient.send(request, null);
             }
 
             if (authRequest.isSendF2fErrorToQueue()) {
-                HTTPRequest httpRequest =
-                        new HTTPRequest(HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
                 F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
                         new F2FErrorEnqueueLambdaRequest(
                                 authRequest.getF2fQueueName(),
                                 new F2FQueueErrorEvent(
                                         userId, state, "access_denied", "Something went wrong"),
                                 10);
-                httpRequest.setQuery(OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest));
-                httpRequest.send();
+
+                HttpRequest request =
+                        HttpRequest.newBuilder()
+                                .uri(URI.create(getConfigValue(F2F_STUB_QUEUE_URL)))
+                                .POST(
+                                        HttpRequest.BodyPublishers.ofString(
+                                                OBJECT_MAPPER.writeValueAsString(
+                                                        enqueueLambdaRequest)))
+                                .build();
+
+                httpClient.send(request, null);
             }
 
             AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
             persistData(
                     authRequest, successResponse.getAuthorizationCode(), signedVcJwt, redirectUri);
 
-            response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
             response.redirect(successResponse.toURI().toString());
         } catch (CriStubException e) {
             AuthorizationErrorResponse errorResponse = generateErrorResponse(e, redirectUri);
+            response.redirect(errorResponse.toURI().toString());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            AuthorizationErrorResponse errorResponse =
+                    generateErrorResponse(
+                            new CriStubException(
+                                    "f2f_queue_exception", "Failed to send VC to F2F queue", e),
+                            redirectUri);
             response.redirect(errorResponse.toURI().toString());
         }
         return null;
@@ -395,7 +422,7 @@ public class AuthorizeHandler {
 
     private void processMitigatedCIs(String userId, AuthRequest authRequest, String signedVcJwt)
             throws CriStubException {
-        var mitigatedCis = authRequest.getMitigatedCis();
+        var mitigatedCis = authRequest.getMitigatedCi();
         if (mitigatedCis != null && !mitigatedCis.isEmpty()) {
             LOGGER.info("Processing mitigated CI's");
             String cimitStubUrl = authRequest.getCimitStubUrl();
@@ -417,7 +444,7 @@ public class AuthorizeHandler {
                     HttpRequest request =
                             HttpRequest.newBuilder()
                                     .uri(new URI(postUrl))
-                                    .header("Content-Type", "application/json")
+                                    .header("Content-Type", APPLICATION_JSON)
                                     .header("x-api-key", cimitStubApikey)
                                     .POST(
                                             HttpRequest.BodyPublishers.ofString(

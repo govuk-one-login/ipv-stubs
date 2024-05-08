@@ -65,8 +65,8 @@ public class AuthRequest {
     private String biometricVerificationScore;
     private String evidenceJson;
 
-    private List<String> cis;
-    private List<String> mitigatedCis;
+    private List<String> ci;
+    private List<String> mitigatedCi;
     private String cimitStubUrl;
     private String cimitStubApiKey;
 
@@ -98,8 +98,8 @@ public class AuthRequest {
                 .verificationScore(paramsMap.value(VERIFICATION))
                 .biometricVerificationScore(paramsMap.value(BIOMETRIC_VERIFICATION))
                 .evidenceJson(paramsMap.value(EVIDENCE_JSON_PAYLOAD))
-                .cis(splitCommaDelimitedStringValue(paramsMap.value(CI)))
-                .mitigatedCis(splitCommaDelimitedStringValue(paramsMap.value(MITIGATED_CIS)))
+                .ci(splitCommaDelimitedStringValue(paramsMap.value(CI)))
+                .mitigatedCi(splitCommaDelimitedStringValue(paramsMap.value(MITIGATED_CIS)))
                 .cimitStubUrl(paramsMap.value(CIMIT_STUB_URL))
                 .cimitStubApiKey(paramsMap.value(CIMIT_STUB_API_KEY))
                 .sendF2fVcToQueue(CHECKED.equals(paramsMap.value(F2F_SEND_VC_QUEUE)))

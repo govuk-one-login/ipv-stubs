@@ -9,7 +9,6 @@ public class CredentialIssuerConfig {
     public static String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
     public static final String DEV_DOMAIN =
             getConfigValue("DEV_DOMAIN", ".dev.identity.account.gov.uk");
-    public static final String F2F_STUB_QUEUE_URL = getConfigValue("F2F_STUB_QUEUE_URL", null);
     public static final String F2F_STUB_QUEUE_NAME_DEFAULT =
             getConfigValue("F2F_STUB_QUEUE_NAME", null);
 
@@ -38,6 +37,10 @@ public class CredentialIssuerConfig {
 
     public static Long getVerifiableCredentialTtlSeconds() {
         return Long.parseLong(getConfigValue("VC_TTL_SECONDS", VC_DEFAULT_TTL));
+    }
+
+    public static String getConfigValue(String key) {
+        return getConfigValue(key, null);
     }
 
     private static String getConfigValue(String key, String defaultValue) {
