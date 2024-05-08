@@ -1,4 +1,4 @@
-import { DynamoDB, QueryInput, PutItemInput } from "@aws-sdk/client-dynamodb";
+import { DynamoDB, QueryInput, PutItemInput, UpdateItemInput, AttributeValue } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import PostRequest from "../domain/postRequest";
@@ -9,6 +9,7 @@ import EvcsVcItem from "../model/evcsVcItem";
 import { config } from "../common/config";
 import { getSsmParameter } from "../common/ssmParameter";
 import { v4 as uuid } from "uuid";
+import PatchRequest from "../domain/patchRequest";
 
 const dynamoClient = config.isLocalDev
   ? new DynamoDB({
@@ -60,7 +61,7 @@ export async function processGetUserVCsRequest(
       ':stateValue': { S: VcState.CURRENT }
     }
   };
-  console.info(`Query Input - ${JSON.stringify(getItemInput)}`);
+  // console.info(`Query Input - ${JSON.stringify(getItemInput)}`);
   const items = (await dynamoClient.query(getItemInput)).Items ?? [];
   console.info(`Total VCs retrived - ${items?.length}`);
   const vcItems = items
@@ -80,6 +81,30 @@ export async function processGetUserVCsRequest(
   };
 }
 
+export async function processPatchUserVCsRequest(
+  userId: string,
+  postRequest: PatchRequest
+): Promise<ServiceResponse> {
+  console.info(`Patch user record.`);
+  for (const updateVC of postRequest.updateVCs) {
+      const vcItem: EvcsVcItem = {
+          userId: userId,
+          vcSignature: updateVC.signature,
+          state: updateVC.state,
+          metadata: updateVC.metadata!,
+          ttl: await getTtl(),
+        };
+        await updateUserVC(vcItem);
+  }
+
+  return {
+    response: {
+      messageId: uuid()
+    },
+    statusCode: 204
+  };
+}
+
 async function saveUserVC(evcsVcItem: EvcsVcItem) {
   console.info(`Save user vc.`);
   const putItemInput: PutItemInput = {
@@ -92,7 +117,42 @@ async function saveUserVC(evcsVcItem: EvcsVcItem) {
   await dynamoClient.putItem(putItemInput);
 }
 
+async function updateUserVC(evcsVcItem: EvcsVcItem) {
+  console.info(`Update user vc.`);
+  console.info(`evcsVcItem.metadata - ${JSON.stringify(evcsVcItem.metadata)}`);
+  const metadataValue: AttributeValue = evcsVcItem.metadata ? { "M": marshall(evcsVcItem.metadata, {
+          removeUndefinedValues: true
+        }
+      )
+  } : {"M": marshall({}, {
+    removeUndefinedValues: true
+  }
+)};
+
+  console.info(`AttributeValue - ${JSON.stringify(metadataValue)}`);
+  const updateItemInput: UpdateItemInput = {
+    TableName: config.evcsStubUserVCsTableName,
+    Key: {
+      'userId': { S: evcsVcItem.userId },
+      'vcSignature': { S: evcsVcItem.vcSignature }
+    },
+    UpdateExpression:
+        'set #state = :stateValue, #metadata = :metadataValue',
+    ExpressionAttributeNames: {
+        '#state': 'state',
+        '#metadata': 'metadata'
+    },
+    ExpressionAttributeValues: {
+      ':stateValue': { S: evcsVcItem.state },
+      ':metadataValue': metadataValue
+    },
+    ReturnValues: "ALL_NEW"
+  };
+  await dynamoClient.updateItem(updateItemInput);
+}
+
 async function getTtl(): Promise<number> {
   const evcsTtlSeconds: number = parseInt(await getSsmParameter(config.evcsParamBasePath + "evcsStubTtl"))
   return Math.floor(Date.now() / 1000) + evcsTtlSeconds;
 }
+

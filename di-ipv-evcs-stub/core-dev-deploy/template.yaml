@@ -112,6 +112,12 @@ Resources:
             RestApiId: !Ref RestApiGateway
             Path: /vcs/{userId}
             Method: POST
+        PatchUserVCs:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /vcs/{userId}
+            Method: PATCH
         GetUserVCs:
           Type: Api
           Properties:
@@ -181,12 +187,12 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "userId"
           AttributeType: "S"
-        - AttributeName: "vc"
+        - AttributeName: "vcSignature"
           AttributeType: "S"
       KeySchema:
         - AttributeName: "userId"
           KeyType: "HASH"
-        - AttributeName: "vc"
+        - AttributeName: "vcSignature"
           KeyType: "RANGE"
       TimeToLiveSpecification:
         AttributeName: "ttl"

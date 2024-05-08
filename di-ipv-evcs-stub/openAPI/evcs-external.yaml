@@ -66,6 +66,47 @@ paths:
             statusCode: 202
             responseTemplates:
               application/json: '{"result": "success"}'
+    patch:
+      description: Update multiple VCs' state and metadata for a specific user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchUserVCRequestBody"
+      responses:
+        204:
+          description: "Accepted"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+        400:
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsUserVCsFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 204
+            responseTemplates:
+              application/json: '{"result": "success"}'
     get:
       description: "Returns a list of User Verifiable Credentials"
       parameters:
@@ -111,6 +152,16 @@ components:
           items:
             oneOf:
               - $ref: '#/components/schemas/PersistVC'
+    PatchUserVCRequestBody:
+      description: Request body for EVCS patch user VCs request
+      type: object
+      properties:
+        persistVCs:
+          type: array
+          description: The user update VCs data
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/UpdateVC'
     PersistVC:
       type: object
       properties:
@@ -137,6 +188,27 @@ components:
           description: The code for provenience data
           schema:
             $ref: '#/components/schemas/VCProvenience'
+    UpdateVC:
+      type: object
+      properties:
+        signature:
+          type: string
+          description: The code for vc data
+        state:
+          type: object
+          description: The code for state data
+          schema:
+            $ref: '#/components/schemas/Updatetate'
+        metadata:
+          type: object
+          description: The code for metadata data
+          properties:
+            reason:
+              type: string
+            timestampMs:
+              type: string
+            txmaEventId:
+              type: string
     CreateState:
       type: string
       enum:
@@ -144,6 +216,14 @@ components:
         - PENDING
         - PENDING_RETURN
         - VERIFICATION
+    UpdateState:
+      type: string
+      enum:
+        - CURRENT
+        - ABANDONED
+        - PENDING_RETURN
+        - HISTORIC
+        - VERIFICATION_ARCHIVED
     VCProvenience:
       type: string
       enum:
