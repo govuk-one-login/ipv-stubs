@@ -141,13 +141,6 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
-  PostMitigationsFunctionCoreDev01InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref PostMitigationsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
-
   PostMitigationsLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -155,26 +148,12 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
-  PostMitigationsFunctionCoreDev02InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref PostMitigationsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
   PostMitigationsLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunction }]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
-  PostMitigationsFunctionCoreBuildInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref PostMitigationsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
   PostMitigationsLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
@@ -224,13 +203,6 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
-  PutContraIndicatorsFunctionCoreDev01InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref PutContraIndicatorsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
-
   PutContraIndicatorsLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -238,26 +210,12 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
-  PutContraIndicatorsFunctionCoreDev02InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref PutContraIndicatorsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
   PutContraIndicatorsLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Sub ["${function}:live", { function: !Ref PutContraIndicatorsFunction }]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
-  PutContraIndicatorsFunctionCoreBuildInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref PutContraIndicatorsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
   PutContraIndicatorsLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
@@ -306,13 +264,6 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
-  GetContraIndicatorCredentialFunctionCoreDev01InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref GetContraIndicatorCredentialFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
-
   GetContraIndicatorCredentialLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -320,26 +271,12 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
-  GetContraIndicatorCredentialFunctionCoreDev02InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref GetContraIndicatorCredentialFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
   GetContraIndicatorCredentialLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Sub ["${function}:live", { function: !Ref GetContraIndicatorCredentialFunction }]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
-  GetContraIndicatorCredentialFunctionCoreBuildInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref GetContraIndicatorCredentialFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
   GetContraIndicatorCredentialLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
