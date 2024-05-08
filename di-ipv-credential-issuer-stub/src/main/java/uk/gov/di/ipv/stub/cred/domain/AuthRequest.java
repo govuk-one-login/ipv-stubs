@@ -74,7 +74,6 @@ public class AuthRequest {
     private boolean sendF2fErrorToQueue;
     private String f2fQueueName;
 
-    private boolean nbfFlag;
     private Long nbf;
 
     private String errorEndpoint;
@@ -105,7 +104,6 @@ public class AuthRequest {
                 .sendF2fVcToQueue(CHECKED.equals(paramsMap.value(F2F_SEND_VC_QUEUE)))
                 .sendF2fErrorToQueue(CHECKED.equals(paramsMap.value(F2F_SEND_ERROR_QUEUE)))
                 .f2fQueueName(paramsMap.value(F2F_STUB_QUEUE_NAME))
-                .nbfFlag(ON.equals(paramsMap.value(VC_NOT_BEFORE_FLAG)))
                 .nbf(generateNbf(paramsMap))
                 .resourceId(paramsMap.value(RESOURCE_ID))
                 .errorEndpoint(paramsMap.value(REQUESTED_OAUTH_ERROR_ENDPOINT))
@@ -116,20 +114,23 @@ public class AuthRequest {
     }
 
     private static Long generateNbf(QueryParamsMap paramsMap) {
-        try {
-            return LocalDateTime.of(
-                            Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_YEAR)),
-                            Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_MONTH)),
-                            Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_DAY)),
-                            Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_HOURS)),
-                            Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_MINUTES)),
-                            Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_SECONDS)))
-                    .atZone(ZoneId.of(UTC))
-                    .toInstant()
-                    .getEpochSecond();
-        } catch (NumberFormatException e) {
-            return null;
+        if (ON.equals(paramsMap.value(VC_NOT_BEFORE_FLAG))) {
+            try {
+                return LocalDateTime.of(
+                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_YEAR)),
+                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_MONTH)),
+                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_DAY)),
+                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_HOURS)),
+                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_MINUTES)),
+                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_SECONDS)))
+                        .atZone(ZoneId.of(UTC))
+                        .toInstant()
+                        .getEpochSecond();
+            } catch (NumberFormatException e) {
+                return null;
+            }
         }
+        return null;
     }
 
     private static List<String> splitCommaDelimitedStringValue(String toSplit) {
