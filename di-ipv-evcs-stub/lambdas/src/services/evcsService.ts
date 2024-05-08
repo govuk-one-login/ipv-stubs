@@ -1,4 +1,4 @@
-import { DynamoDB, QueryInput, PutItemInput, UpdateItemInput, AttributeValue } from "@aws-sdk/client-dynamodb";
+import { DynamoDB, QueryInput, PutItemInput, UpdateItemInput } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import PostRequest from "../domain/postRequest";
@@ -119,17 +119,9 @@ async function saveUserVC(evcsVcItem: EvcsVcItem) {
 
 async function updateUserVC(evcsVcItem: EvcsVcItem) {
   console.info(`Update user vc.`);
-  console.info(`evcsVcItem.metadata - ${JSON.stringify(evcsVcItem.metadata)}`);
-  const metadataValue: AttributeValue = evcsVcItem.metadata ? { "M": marshall(evcsVcItem.metadata, {
-          removeUndefinedValues: true
-        }
-      )
-  } : {"M": marshall({}, {
-    removeUndefinedValues: true
+  if (! evcsVcItem.metadata) {
+    evcsVcItem.metadata = {};
   }
-)};
-
-  console.info(`AttributeValue - ${JSON.stringify(metadataValue)}`);
   const updateItemInput: UpdateItemInput = {
     TableName: config.evcsStubUserVCsTableName,
     Key: {
@@ -144,7 +136,11 @@ async function updateUserVC(evcsVcItem: EvcsVcItem) {
     },
     ExpressionAttributeValues: {
       ':stateValue': { S: evcsVcItem.state },
-      ':metadataValue': metadataValue
+      ':metadataValue': { "M": marshall(evcsVcItem.metadata, {
+            removeUndefinedValues: true
+          }
+        )
+      }
     },
     ReturnValues: "ALL_NEW"
   };

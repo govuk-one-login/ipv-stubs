@@ -34,7 +34,6 @@ export async function handler(
           console.error(error);
           return buildApiResponse({ errorMessage: error.message }, 400);
         }
-        // eslint-disable-next-line no-case-declarations
         res = await processPostUserVCsRequest(decodeURIComponent(userId), request);
         break;
       case "PATCH":
@@ -45,11 +44,17 @@ export async function handler(
           console.error(error);
           return buildApiResponse({ errorMessage: error.message }, 400);
         }
-        // eslint-disable-next-line no-case-declarations
         res = await processPatchUserVCsRequest(decodeURIComponent(userId), request);
         break;
       case "GET":
-        // eslint-disable-next-line no-case-declarations
+        try {
+          validateAccessToken(event.headers?.Authorisation);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+          console.error(error);
+          return buildApiResponse({ errorMessage: error.message }, 400);
+        }
+
         res = await processGetUserVCsRequest(decodeURIComponent(userId));
         break;
       default:
@@ -118,4 +123,20 @@ function isValidUpdateVcState(updateVCs: UpdateVC[]): boolean {
     }
   }
   return true;
+}
+
+function validateAccessToken(authheader: string | undefined) {
+  if (authheader === undefined) {
+    throw new Error("Request missing access token");
+  }
+  const parts = authheader!.split(" ");
+  if (parts.length != 2) {
+    throw new Error("Invalid access token value");
+  }
+  if (parts[0] != 'Bearer') {
+    throw new Error("Access token type must be Bearer");
+  }
+  if (parts[1] === undefined || parts[1] === "") {
+    throw new Error("The access token value must not be null or empty string");
+  }
 }

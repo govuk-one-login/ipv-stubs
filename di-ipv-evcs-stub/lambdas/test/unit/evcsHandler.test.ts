@@ -4,6 +4,7 @@ import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
 
 import {
     APIGatewayProxyEvent,
+    APIGatewayProxyEventHeaders,
     APIGatewayProxyEventPathParameters,
     APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
@@ -89,8 +90,13 @@ const TEST_POST_INVALID_STATE_EVENT = {
   pathParameters: TEST_PATH_PARAM,
 } as APIGatewayProxyEvent;
 
+const TEST_HEADERS = {
+  Authorisation: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
+} as APIGatewayProxyEventHeaders;
+
 const TEST_GET_EVENT = {
   pathParameters: TEST_PATH_PARAM,
+  headers: TEST_HEADERS
 } as APIGatewayProxyEvent;
 
 const TEST_NO_VC_EVENT = {
@@ -266,8 +272,71 @@ describe("EVCS handler", function () {
     expect(result.statusCode).toEqual(200);
     parseResult = JSON.parse(result.body as string);
     expect(1).toEqual(parseResult.vcs.length);
-    console.info(`evcsVcItem.metadata - ${JSON.stringify(parseResult.vcs[0].metadata)}`);
     expect(parseResult.vcs[0].metadata.reason).toEqual("updated");
+  });
+
+  it("returns a 400 when no or invalid access token passed", async () => {
+    // arrange
+    let TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
+      pathParameters: TEST_PATH_PARAM,
+      httpMethod: "GET"
+    } as APIGatewayProxyEvent;
+
+    jest.mocked(getParameter).mockResolvedValue("1800");
+    // act
+    let result = (await handler(
+      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
+    )) as APIGatewayProxyStructuredResultV2;
+    // assert
+    expect(result.statusCode).toEqual(400);
+
+    // arrange
+    let REQ_HEADERS = {
+      Authorisation: "Bearer",
+    } as APIGatewayProxyEventHeaders;
+    TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
+      pathParameters: TEST_PATH_PARAM,
+      headers: REQ_HEADERS,
+      httpMethod: "GET"
+    } as APIGatewayProxyEvent;
+    // act
+    result = (await handler(
+      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
+    )) as APIGatewayProxyStructuredResultV2;
+    // assert
+    expect(result.statusCode).toEqual(400);
+
+    // arrange
+    REQ_HEADERS = {
+      Authorisation: "Bear eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
+    } as APIGatewayProxyEventHeaders;
+    TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
+      pathParameters: TEST_PATH_PARAM,
+      headers: REQ_HEADERS,
+      httpMethod: "GET"
+    } as APIGatewayProxyEvent;
+    // act
+    result = (await handler(
+      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
+    )) as APIGatewayProxyStructuredResultV2;
+    // assert
+    expect(result.statusCode).toEqual(400);
+
+    // arrange
+    REQ_HEADERS = {
+      Authorisation: "Bearer ",
+    } as APIGatewayProxyEventHeaders;
+    TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
+      pathParameters: TEST_PATH_PARAM,
+      headers: REQ_HEADERS,
+      httpMethod: "GET"
+    } as APIGatewayProxyEvent;
+    // act
+    result = (await handler(
+      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
+    )) as APIGatewayProxyStructuredResultV2;
+    // assert
+    expect(result.statusCode).toEqual(400);
   });
 
   it("returns a 400 when userId path paran not passed", async () => {
