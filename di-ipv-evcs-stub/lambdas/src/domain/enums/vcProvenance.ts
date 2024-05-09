@@ -3,7 +3,7 @@ enum VCProvenance {
   OFFLINE = "OFFLINE",
   EXTERNAL = "EXTERNAL",
   MIGRATED = "MIGRATED",
-  OTHER = "OTHER"
+  OTHER = "OTHER",
 }
 
 export default VCProvenance;

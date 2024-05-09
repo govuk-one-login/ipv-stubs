@@ -5,7 +5,7 @@ import PatchRequest from "../domain/patchRequest";
 import ServiceResponse from "../domain/serviceResponse";
 import PersistVC from "../domain/persistVC";
 import UpdateVC from "../domain/updateVC";
-import { CreateVcStates, UpdateVcStates } from  "../domain/enums/vcState";
+import { CreateVcStates, UpdateVcStates } from "../domain/enums/vcState";
 
 import { processPostUserVCsRequest } from "../services/evcsService";
 import { processGetUserVCsRequest } from "../services/evcsService";
@@ -13,7 +13,7 @@ import { processPatchUserVCsRequest } from "../services/evcsService";
 import { verifyToken } from "../services/jwtService";
 
 export async function handler(
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResultV2> {
   console.info(`---Request received----`);
   const userId = event.pathParameters?.userId;
@@ -24,48 +24,60 @@ export async function handler(
   try {
     let request;
     let res: ServiceResponse = {
-      response: Object
+      response: Object,
     };
-    switch(event.httpMethod) {
+    switch (event.httpMethod) {
       case "POST":
         try {
           request = parsePostRequest(event);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
           console.error(error);
           return buildApiResponse({ errorMessage: error.message }, 400);
         }
-        res = await processPostUserVCsRequest(decodeURIComponent(userId), request);
+        res = await processPostUserVCsRequest(
+          decodeURIComponent(userId),
+          request,
+        );
         break;
       case "PATCH":
         try {
           request = parsePatchRequest(event);
-       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-       } catch (error: any) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
           console.error(error);
           return buildApiResponse({ errorMessage: error.message }, 400);
         }
-        res = await processPatchUserVCsRequest(decodeURIComponent(userId), request);
+        res = await processPatchUserVCsRequest(
+          decodeURIComponent(userId),
+          request,
+        );
         break;
       case "GET": {
         let accessTokenVarified;
         try {
-          accessTokenVarified = await verifyAccessToken(validateAccessToken(event.headers?.Authorisation));
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          accessTokenVarified = await verifyAccessToken(
+            validateAccessToken(event.headers?.Authorisation),
+          );
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
           console.error(error);
           return buildApiResponse({ errorMessage: error.message }, 400);
         }
 
-        if (accessTokenVarified) res = await processGetUserVCsRequest(decodeURIComponent(userId));
+        if (accessTokenVarified)
+          res = await processGetUserVCsRequest(decodeURIComponent(userId));
         break;
       }
       default:
-        return buildApiResponse({ errorMessage: "Not received correct request http method." }, 400);
+        return buildApiResponse(
+          { errorMessage: "Not received correct request http method." },
+          400,
+        );
     }
 
     return buildApiResponse(res.response, res.statusCode);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error);
     return buildApiResponse({ errorMessage: error.message }, 500);
@@ -83,7 +95,7 @@ function parsePostRequest(event: APIGatewayProxyEvent): PostRequest {
     !postRequest ||
     !postRequest.persistVCs ||
     postRequest.persistVCs.length <= 0 ||
-    ! isValidCreateVcState(postRequest.persistVCs)
+    !isValidCreateVcState(postRequest.persistVCs)
   ) {
     throw new Error("Invalid request");
   }
@@ -102,7 +114,7 @@ function parsePatchRequest(event: APIGatewayProxyEvent): PatchRequest {
     !patchRequest ||
     !patchRequest.updateVCs ||
     patchRequest.updateVCs.length <= 0 ||
-    ! isValidUpdateVcState(patchRequest.updateVCs)
+    !isValidUpdateVcState(patchRequest.updateVCs)
   ) {
     throw new Error("Invalid request");
   }
@@ -112,7 +124,7 @@ function parsePatchRequest(event: APIGatewayProxyEvent): PatchRequest {
 
 function isValidCreateVcState(persistVCs: PersistVC[]): boolean {
   for (const persistVC of persistVCs) {
-    if (! (persistVC.state in CreateVcStates)) {
+    if (!(persistVC.state in CreateVcStates)) {
       return false;
     }
   }
@@ -121,14 +133,14 @@ function isValidCreateVcState(persistVCs: PersistVC[]): boolean {
 
 function isValidUpdateVcState(updateVCs: UpdateVC[]): boolean {
   for (const updateVC of updateVCs) {
-    if (! (updateVC.state in UpdateVcStates)) {
+    if (!(updateVC.state in UpdateVcStates)) {
       return false;
     }
   }
   return true;
 }
 
-function validateAccessToken(authheader: string | undefined) : string {
+function validateAccessToken(authheader: string | undefined): string {
   if (authheader === undefined) {
     throw new Error("Request missing access token");
   }
@@ -136,7 +148,7 @@ function validateAccessToken(authheader: string | undefined) : string {
   if (parts.length != 2) {
     throw new Error("Invalid access token value");
   }
-  if (parts[0] != 'Bearer') {
+  if (parts[0] != "Bearer") {
     throw new Error("Access token type must be Bearer");
   }
   if (parts[1] === undefined || parts[1] === "") {
@@ -146,10 +158,10 @@ function validateAccessToken(authheader: string | undefined) : string {
   return parts[1];
 }
 
-async function verifyAccessToken(jwt: string) : Promise<boolean> {
+async function verifyAccessToken(jwt: string): Promise<boolean> {
   try {
     return await verifyToken(jwt);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error);
     throw new Error("The access token varification failed");

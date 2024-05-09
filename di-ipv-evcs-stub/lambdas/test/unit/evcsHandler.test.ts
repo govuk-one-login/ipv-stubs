@@ -2,10 +2,10 @@ import { handler } from "../../src/handlers/evcsHandler";
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
 import {
-    APIGatewayProxyEvent,
-    APIGatewayProxyEventHeaders,
-    APIGatewayProxyEventPathParameters,
-    APIGatewayProxyStructuredResultV2,
+  APIGatewayProxyEvent,
+  APIGatewayProxyEventHeaders,
+  APIGatewayProxyEventPathParameters,
+  APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
 
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
@@ -31,7 +31,8 @@ const getCommand = new GetCommand({
   TableName: "evcs-stub-user-vcs-store",
   Key: {
     userId: decodedTestUserId,
-    vcSignature: 'qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ'
+    vcSignature:
+      "qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
   },
 });
 
@@ -45,37 +46,37 @@ jest.mock("../../src/common/config", () => ({
   },
 }));
 
-const EVCS_VERIFY_KEY = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEE9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIMqVMxm2EdlSRjPkCV5NDyN9/RMmJLerY4H0vkXDjEDTg==";
+const EVCS_VERIFY_KEY =
+  "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEE9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIMqVMxm2EdlSRjPkCV5NDyN9/RMmJLerY4H0vkXDjEDTg==";
 
 const TEST_POST_REQUEST = {
   persistVCs: [
-      {
-          vc: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
-          state: VcState.CURRENT,
-          metadata: {
-            "reason": "test-created",
-            "timestampMs": "1714478033959",
-            "txmaEventId": "txma-event-id"
-          }
+    {
+      vc: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
+      state: VcState.CURRENT,
+      metadata: {
+        reason: "test-created",
+        timestampMs: "1714478033959",
+        txmaEventId: "txma-event-id",
       },
-      {
-        vc: "yyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.tf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
-        state: VcState.VERIFICATION
-      }
-  ]
+    },
+    {
+      vc: "yyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.tf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
+      state: VcState.VERIFICATION,
+    },
+  ],
 };
 const TEST_POST_INVALID_STATE_REQUEST = {
   persistVCs: [
-      {
-          vc: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
-          state: VcState.HISTORIC
-      }
-  ]
+    {
+      vc: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
+      state: VcState.HISTORIC,
+    },
+  ],
 };
 
 const TEST_NO_VC_REQUEST = {
-  persistVCs: [
-  ]
+  persistVCs: [],
 };
 
 const TEST_PATH_PARAM = {
@@ -97,7 +98,7 @@ const TEST_HEADERS = {
 
 const TEST_GET_EVENT = {
   pathParameters: TEST_PATH_PARAM,
-  headers: TEST_HEADERS
+  headers: TEST_HEADERS,
 } as APIGatewayProxyEvent;
 
 const TEST_NO_VC_EVENT = {
@@ -111,28 +112,31 @@ const TEST_WITHOUT_USER_PARAM_EVENT = {
 
 const TEST_PATCH_REQUEST = {
   updateVCs: [
-      {
-          signature: "qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
-          state: VcState.CURRENT,
-          metadata: {
-            "reason": "updated",
-            "timestampMs": "1714478033959",
-            "txmaEventId": "txma-event-id"
-          }
+    {
+      signature:
+        "qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
+      state: VcState.CURRENT,
+      metadata: {
+        reason: "updated",
+        timestampMs: "1714478033959",
+        txmaEventId: "txma-event-id",
       },
-      {
-        signature: "tf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
-        state: VcState.ABANDONED
-      }
-  ]
+    },
+    {
+      signature:
+        "tf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
+      state: VcState.ABANDONED,
+    },
+  ],
 };
 const TEST_PATCH_INVALID_STATE_REQUEST = {
   updateVCs: [
-      {
-          signature: "qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
-          state: VcState.VERIFICATION
-      }
-  ]
+    {
+      signature:
+        "qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
+      state: VcState.VERIFICATION,
+    },
+  ],
 };
 const TEST_PATCH_EVENT = {
   body: JSON.stringify(TEST_PATCH_REQUEST),
@@ -148,13 +152,11 @@ describe("EVCS handler", function () {
     // arrange
     const event = {
       ...TEST_GET_EVENT,
-      httpMethod: "GET"
+      httpMethod: "GET",
     };
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
-    const result = (await handler(
-      event
-    )) as APIGatewayProxyStructuredResultV2;
+    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(200);
@@ -163,33 +165,31 @@ describe("EVCS handler", function () {
   });
 
   it("successfully process post request to persist user VCs", async () => {
-      // arrange
-      const event = {
-        ...TEST_POST_EVENT,
-        httpMethod: "POST"
-      };
-      jest.mocked(getParameter).mockResolvedValue("1800");
-      // act
-      const result = (await handler(
-        event
-      )) as APIGatewayProxyStructuredResultV2;
+    // arrange
+    const event = {
+      ...TEST_POST_EVENT,
+      httpMethod: "POST",
+    };
+    jest.mocked(getParameter).mockResolvedValue("1800");
+    // act
+    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
 
-      // assert
-      expect(result.statusCode).toEqual(202);
-      const response = await dynamoDocClient.send(getCommand);
-      expect(decodedTestUserId).toEqual(response.Item?.userId);
+    // assert
+    expect(result.statusCode).toEqual(202);
+    const response = await dynamoDocClient.send(getCommand);
+    expect(decodedTestUserId).toEqual(response.Item?.userId);
   });
 
   it("successfully persist and then returns user VCs response", async () => {
     // arrange
     const postEvent = {
       ...TEST_POST_EVENT,
-      httpMethod: "POST"
+      httpMethod: "POST",
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
     const postResult = (await handler(
-      postEvent
+      postEvent,
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert
@@ -198,13 +198,11 @@ describe("EVCS handler", function () {
     // arrange
     const event = {
       ...TEST_GET_EVENT,
-      httpMethod: "GET"
+      httpMethod: "GET",
     };
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
-    const result = (await handler(
-      event
-    )) as APIGatewayProxyStructuredResultV2;
+    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(200);
@@ -216,12 +214,12 @@ describe("EVCS handler", function () {
     // arrange
     const postEvent = {
       ...TEST_POST_EVENT,
-      httpMethod: "POST"
+      httpMethod: "POST",
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
     const postResult = (await handler(
-      postEvent
+      postEvent,
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert
@@ -230,13 +228,11 @@ describe("EVCS handler", function () {
     // arrange
     let event = {
       ...TEST_GET_EVENT,
-      httpMethod: "GET"
+      httpMethod: "GET",
     };
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
-    let result = (await handler(
-      event
-    )) as APIGatewayProxyStructuredResultV2;
+    let result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(200);
@@ -247,13 +243,11 @@ describe("EVCS handler", function () {
     // arrange
     event = {
       ...TEST_PATCH_EVENT,
-      httpMethod: "PATCH"
+      httpMethod: "PATCH",
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
-    result = (await handler(
-      event
-    )) as APIGatewayProxyStructuredResultV2;
+    result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(204);
@@ -261,13 +255,11 @@ describe("EVCS handler", function () {
     // arrange
     event = {
       ...TEST_GET_EVENT,
-      httpMethod: "GET"
+      httpMethod: "GET",
     };
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
-    result = (await handler(
-      event
-    )) as APIGatewayProxyStructuredResultV2;
+    result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(200);
@@ -280,13 +272,13 @@ describe("EVCS handler", function () {
     // arrange
     let TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
-      httpMethod: "GET"
+      httpMethod: "GET",
     } as APIGatewayProxyEvent;
 
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
     let result = (await handler(
-      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
+      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
@@ -298,27 +290,28 @@ describe("EVCS handler", function () {
     TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
       headers: REQ_HEADERS,
-      httpMethod: "GET"
+      httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
     result = (await handler(
-      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
+      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
 
     // arrange
     REQ_HEADERS = {
-      Authorisation: "Bear eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
+      Authorisation:
+        "Bear eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
     } as APIGatewayProxyEventHeaders;
     TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
       headers: REQ_HEADERS,
-      httpMethod: "GET"
+      httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
     result = (await handler(
-      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
+      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
@@ -330,42 +323,43 @@ describe("EVCS handler", function () {
     TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
       headers: REQ_HEADERS,
-      httpMethod: "GET"
+      httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
     result = (await handler(
-      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
+      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
 
     // arrange
     REQ_HEADERS = {
-      Authorisation: "Bearer eyJhbGc.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
+      Authorisation:
+        "Bearer eyJhbGc.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
     } as APIGatewayProxyEventHeaders;
     TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
       headers: REQ_HEADERS,
-      httpMethod: "GET"
+      httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
     result = (await handler(
-      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
+      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
   });
 
   it("returns a 400 when userId path paran not passed", async () => {
-      // arrange
+    // arrange
 
-      // act
-      const result = (await handler(
-        TEST_WITHOUT_USER_PARAM_EVENT
-      )) as APIGatewayProxyStructuredResultV2;
+    // act
+    const result = (await handler(
+      TEST_WITHOUT_USER_PARAM_EVENT,
+    )) as APIGatewayProxyStructuredResultV2;
 
-      // assert
-      expect(result.statusCode).toEqual(400);
+    // assert
+    expect(result.statusCode).toEqual(400);
   });
 
   it("returns a 400 for an empty postrequest", async () => {
@@ -373,7 +367,7 @@ describe("EVCS handler", function () {
     const event = {
       ...TEST_POST_EVENT,
       body: null,
-      httpMethod: "POST"
+      httpMethod: "POST",
     };
 
     // act
@@ -388,7 +382,7 @@ describe("EVCS handler", function () {
     const event = {
       ...TEST_PATCH_EVENT,
       body: null,
-      httpMethod: "PATCH"
+      httpMethod: "PATCH",
     };
 
     // act
@@ -402,7 +396,7 @@ describe("EVCS handler", function () {
     // arrange
     const event = {
       ...TEST_NO_VC_EVENT,
-      httpMethod: "POST"
+      httpMethod: "POST",
     };
 
     // act
@@ -416,13 +410,11 @@ describe("EVCS handler", function () {
     // arrange
     const event = {
       ...TEST_POST_INVALID_STATE_EVENT,
-      httpMethod: "POST"
+      httpMethod: "POST",
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
-    const result = (await handler(
-      event
-    )) as APIGatewayProxyStructuredResultV2;
+    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(400);
@@ -432,31 +424,29 @@ describe("EVCS handler", function () {
     // arrange
     const event = {
       ...TEST_PATCH_INVALID_STATE_EVENT,
-      httpMethod: "PATCH"
+      httpMethod: "PATCH",
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
-    const result = (await handler(
-      event
-    )) as APIGatewayProxyStructuredResultV2;
+    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(400);
   });
 
   it("returns a 400 for an invalid request", async () => {
-      // arrange
-      const event = {
-        ...TEST_POST_EVENT,
-        body: "invalid json",
-        httpMethod: "POST"
-      };
+    // arrange
+    const event = {
+      ...TEST_POST_EVENT,
+      body: "invalid json",
+      httpMethod: "POST",
+    };
 
-      // act
-      const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    // act
+    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
 
-      // assert
-      expect(result.statusCode).toEqual(400);
+    // assert
+    expect(result.statusCode).toEqual(400);
   });
 
   it("returns a 500 for missing SSM parameter, failure at service", async () => {
@@ -464,11 +454,11 @@ describe("EVCS handler", function () {
     jest.mocked(getParameter).mockResolvedValueOnce(undefined);
     const event = {
       ...TEST_POST_EVENT,
-      httpMethod: "POST"
+      httpMethod: "POST",
     };
 
     // act
-    const result = (await handler(event,)) as APIGatewayProxyStructuredResultV2;
+    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(500);
@@ -479,7 +469,7 @@ describe("EVCS handler", function () {
     const event = {
       ...TEST_POST_EVENT,
       body: null,
-      httpMethod: "CONNECT"
+      httpMethod: "CONNECT",
     };
 
     // act

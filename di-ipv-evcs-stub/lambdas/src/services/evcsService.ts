@@ -1,4 +1,9 @@
-import { DynamoDB, QueryInput, PutItemInput, UpdateItemInput } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDB,
+  QueryInput,
+  PutItemInput,
+  UpdateItemInput,
+} from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import PostRequest from "../domain/postRequest";
@@ -19,33 +24,33 @@ const dynamoClient = config.isLocalDev
   : new DynamoDB({ region: config.region });
 
 export async function processPostUserVCsRequest(
-    userId: string,
-    postRequest: PostRequest
-  ): Promise<ServiceResponse> {
+  userId: string,
+  postRequest: PostRequest,
+): Promise<ServiceResponse> {
   console.info(`Post user record.`);
   for (const persistVC of postRequest.persistVCs) {
-      const vcItem: EvcsVcItem = {
-          userId: userId,
-          vc: persistVC.vc,
-          vcSignature: persistVC.vc.split('.')[2],
-          state: persistVC.state,
-          metadata: persistVC.metadata!,
-          provenance: persistVC.provenance!,
-          ttl: await getTtl(),
-        };
-        await saveUserVC(vcItem);
+    const vcItem: EvcsVcItem = {
+      userId: userId,
+      vc: persistVC.vc,
+      vcSignature: persistVC.vc.split(".")[2],
+      state: persistVC.state,
+      metadata: persistVC.metadata!,
+      provenance: persistVC.provenance!,
+      ttl: await getTtl(),
+    };
+    await saveUserVC(vcItem);
   }
 
   return {
     response: {
-      messageId: uuid()
+      messageId: uuid(),
     },
-    statusCode: 202
+    statusCode: 202,
   };
 }
 
 export async function processGetUserVCsRequest(
-  userId: string
+  userId: string,
 ): Promise<ServiceResponse> {
   console.info(`Get user record.`);
   const getItemInput: QueryInput = {
@@ -53,55 +58,55 @@ export async function processGetUserVCsRequest(
     KeyConditionExpression: "#userId = :userIdValue",
     FilterExpression: "#state = :stateValue",
     ExpressionAttributeNames: {
-      '#userId': 'userId',
-      '#state': 'state'
+      "#userId": "userId",
+      "#state": "state",
     },
-    ExpressionAttributeValues : {
-      ':userIdValue': { S: userId },
-      ':stateValue': { S: VcState.CURRENT }
-    }
+    ExpressionAttributeValues: {
+      ":userIdValue": { S: userId },
+      ":stateValue": { S: VcState.CURRENT },
+    },
   };
   // console.info(`Query Input - ${JSON.stringify(getItemInput)}`);
   const items = (await dynamoClient.query(getItemInput)).Items ?? [];
   console.info(`Total VCs retrived - ${items?.length}`);
   const vcItems = items
-                  .map((item) => unmarshall(item) as EvcsVcItem)
-                  .map((evcsItem) => ({
-                    vc: evcsItem.vc,
-                    state: evcsItem.state as VcState,
-                    metadata: evcsItem.metadata,
-                  }));
+    .map((item) => unmarshall(item) as EvcsVcItem)
+    .map((evcsItem) => ({
+      vc: evcsItem.vc,
+      state: evcsItem.state as VcState,
+      metadata: evcsItem.metadata,
+    }));
 
   return {
     response: {
       vcs: vcItems,
-      afterKey: "pagination will be implemented later"
+      afterKey: "pagination will be implemented later",
     },
-    statusCode: 200
+    statusCode: 200,
   };
 }
 
 export async function processPatchUserVCsRequest(
   userId: string,
-  postRequest: PatchRequest
+  postRequest: PatchRequest,
 ): Promise<ServiceResponse> {
   console.info(`Patch user record.`);
   for (const updateVC of postRequest.updateVCs) {
-      const vcItem: EvcsVcItem = {
-          userId: userId,
-          vcSignature: updateVC.signature,
-          state: updateVC.state,
-          metadata: updateVC.metadata!,
-          ttl: await getTtl(),
-        };
-        await updateUserVC(vcItem);
+    const vcItem: EvcsVcItem = {
+      userId: userId,
+      vcSignature: updateVC.signature,
+      state: updateVC.state,
+      metadata: updateVC.metadata!,
+      ttl: await getTtl(),
+    };
+    await updateUserVC(vcItem);
   }
 
   return {
     response: {
-      messageId: uuid()
+      messageId: uuid(),
     },
-    statusCode: 204
+    statusCode: 204,
   };
 }
 
@@ -109,46 +114,45 @@ async function saveUserVC(evcsVcItem: EvcsVcItem) {
   console.info(`Save user vc.`);
   const putItemInput: PutItemInput = {
     TableName: config.evcsStubUserVCsTableName,
-    Item: marshall(evcsVcItem,  {
-        removeUndefinedValues: true
-      }
-    ),
+    Item: marshall(evcsVcItem, {
+      removeUndefinedValues: true,
+    }),
   };
   await dynamoClient.putItem(putItemInput);
 }
 
 async function updateUserVC(evcsVcItem: EvcsVcItem) {
   console.info(`Update user vc.`);
-  if (! evcsVcItem.metadata) {
+  if (!evcsVcItem.metadata) {
     evcsVcItem.metadata = {};
   }
   const updateItemInput: UpdateItemInput = {
     TableName: config.evcsStubUserVCsTableName,
     Key: {
-      'userId': { S: evcsVcItem.userId },
-      'vcSignature': { S: evcsVcItem.vcSignature }
+      userId: { S: evcsVcItem.userId },
+      vcSignature: { S: evcsVcItem.vcSignature },
     },
-    UpdateExpression:
-        'set #state = :stateValue, #metadata = :metadataValue',
+    UpdateExpression: "set #state = :stateValue, #metadata = :metadataValue",
     ExpressionAttributeNames: {
-        '#state': 'state',
-        '#metadata': 'metadata'
+      "#state": "state",
+      "#metadata": "metadata",
     },
     ExpressionAttributeValues: {
-      ':stateValue': { S: evcsVcItem.state },
-      ':metadataValue': { "M": marshall(evcsVcItem.metadata, {
-            removeUndefinedValues: true
-          }
-        )
-      }
+      ":stateValue": { S: evcsVcItem.state },
+      ":metadataValue": {
+        M: marshall(evcsVcItem.metadata, {
+          removeUndefinedValues: true,
+        }),
+      },
     },
-    ReturnValues: "ALL_NEW"
+    ReturnValues: "ALL_NEW",
   };
   await dynamoClient.updateItem(updateItemInput);
 }
 
 async function getTtl(): Promise<number> {
-  const evcsTtlSeconds: number = parseInt(await getSsmParameter(config.evcsParamBasePath + "evcsStubTtl"))
+  const evcsTtlSeconds: number = parseInt(
+    await getSsmParameter(config.evcsParamBasePath + "evcsStubTtl"),
+  );
   return Math.floor(Date.now() / 1000) + evcsTtlSeconds;
 }
-

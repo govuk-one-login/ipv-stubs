@@ -1,8 +1,8 @@
-import VcState from  "./enums/vcState";
+import VcState from "./enums/vcState";
 import VCMetadata from "./vcMetadata";
 
 export default interface UpdateVC {
-    signature: string;
-    state: VcState;
-    metadata?: VCMetadata;
+  signature: string;
+  state: VcState;
+  metadata?: VCMetadata;
 }
