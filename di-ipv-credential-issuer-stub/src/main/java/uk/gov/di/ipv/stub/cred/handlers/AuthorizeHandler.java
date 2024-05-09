@@ -73,6 +73,7 @@ import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_URL;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
+import static uk.gov.di.ipv.stub.cred.config.CriType.DOC_CHECK_APP_CRI_TYPE;
 import static uk.gov.di.ipv.stub.cred.config.CriType.USER_ASSERTED_CRI_TYPE;
 
 public class AuthorizeHandler {
@@ -111,6 +112,8 @@ public class AuthorizeHandler {
     private static final String CRI_NAME_PARAM = "cri-name";
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final List<CriType> NO_SHARED_ATTRIBUTES_CRI_TYPES =
+            List.of(USER_ASSERTED_CRI_TYPE, DOC_CHECK_APP_CRI_TYPE);
 
     private final AuthCodeService authCodeService;
     private final CredentialService credentialService;
@@ -230,7 +233,7 @@ public class AuthorizeHandler {
                 frontendParams.put(
                         IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
                 frontendParams.put(
-                        IS_DOC_CHECKING_TYPE_PARAM, criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE));
+                        IS_DOC_CHECKING_TYPE_PARAM, criType.equals(DOC_CHECK_APP_CRI_TYPE));
                 frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
                 frontendParams.put(IS_NINO_TYPE, criType.equals(CriType.NINO_CRI_TYPE));
                 frontendParams.put(
@@ -240,7 +243,7 @@ public class AuthorizeHandler {
                 frontendParams.put(IS_USER_ASSERTED_TYPE, criType.equals(USER_ASSERTED_CRI_TYPE));
                 frontendParams.put(REQUEST_SCOPE, requestScope);
                 frontendParams.put(REQUEST_CONTEXT, requestContext);
-                if (!criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
+                if (!criType.equals(DOC_CHECK_APP_CRI_TYPE)) {
                     frontendParams.put(SHARED_CLAIMS, sharedAttributesJson);
                 }
                 frontendParams.put(EVIDENCE_REQUESTED, evidenceRequestedJson);
@@ -301,8 +304,7 @@ public class AuthorizeHandler {
                             generateJsonPayload(queryParamsMap.value(JSON_PAYLOAD_PARAM));
 
                     Map<String, Object> credentialAttributesMap;
-
-                    if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
+                    if (NO_SHARED_ATTRIBUTES_CRI_TYPES.contains(getCriType())) {
                         credentialAttributesMap = attributesMap;
                     } else {
                         Map<String, Object> combinedAttributeJson =
@@ -909,7 +911,7 @@ public class AuthorizeHandler {
                 SignedJWT signedJWT =
                         getSignedJWT(requestParam, clientConfig.getEncryptionPrivateKey());
                 String publicJwk =
-                        getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)
+                        getCriType().equals(DOC_CHECK_APP_CRI_TYPE)
                                 ? clientConfig.getJwtAuthentication().getSigningPublicJwk()
                                 : clientConfig.getSigningPublicJwk();
                 if (!es256SignatureVerifier.valid(signedJWT, publicJwk)) {

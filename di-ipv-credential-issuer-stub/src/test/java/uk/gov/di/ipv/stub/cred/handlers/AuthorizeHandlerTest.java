@@ -410,6 +410,30 @@ class AuthorizeHandlerTest {
     }
 
     @Test
+    void generateResponseShouldNotIncludeSharedAttributesForUserAssertedCriType() throws Exception {
+        environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "USER_ASSERTED");
+        Map<String, String[]> queryParams = validGenerateResponseQueryParams();
+        queryParams.put("ci", new String[] {""});
+        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+        when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
+
+        authorizeHandler.generateResponse.handle(mockRequest, mockResponse);
+
+        ArgumentCaptor<Credential> persistedCredential = ArgumentCaptor.forClass(Credential.class);
+
+        verify(mockVcGenerator).generate(persistedCredential.capture());
+        Map<String, Object> persistedAttributes = persistedCredential.getValue().getAttributes();
+        assertNull(persistedAttributes.get("addresses"));
+        assertNull(persistedAttributes.get("names"));
+        assertNull(persistedAttributes.get("birthDate"));
+        assertEquals("test-value", persistedAttributes.get("test"));
+
+        verify(mockCredentialService)
+                .persist(eq(mockSignedJwt.serialize()), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
+    }
+
+    @Test
     void generateResponseShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled()
             throws Exception {
         environmentVariables.set("MITIGATION_ENABLED", "True");
