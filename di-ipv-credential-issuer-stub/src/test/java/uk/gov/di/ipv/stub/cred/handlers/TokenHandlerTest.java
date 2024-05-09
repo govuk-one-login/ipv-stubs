@@ -20,7 +20,7 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
-import uk.gov.di.ipv.stub.cred.domain.AuthRequest;
+import uk.gov.di.ipv.stub.cred.domain.FormAuthRequest;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
@@ -302,7 +302,7 @@ public class TokenHandlerTest {
 
         requestedErrorResponseService.persist(
                 "anAuthCode",
-                AuthRequest.builder()
+                FormAuthRequest.builder()
                         .error("access_denied")
                         .errorDescription("an error description")
                         .errorEndpoint("token")

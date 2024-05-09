@@ -18,6 +18,7 @@ import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.util.MapUtils;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,9 @@ import java.util.UUID;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
+import static com.nimbusds.oauth2.sdk.util.CollectionUtils.isEmpty;
+import static com.nimbusds.oauth2.sdk.util.StringUtils.isBlank;
+import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.EVIDENCE_TXN_PARAM;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME_DEFAULT;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getConfigValue;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
@@ -267,13 +271,13 @@ public class AuthorizeHandler {
             (Request request, Response response) -> {
                 response.type(APPLICATION_JSON);
                 return generateResponse(
-                        OBJECT_MAPPER.readValue(request.body(), AuthRequest.class), response);
+                        OBJECT_MAPPER.readValue(request.body(), ApiAuthRequest.class), response);
             };
 
     public final Route formAuthorize =
             (Request request, Response response) -> {
                 response.type(APPLICATION_X_WWW_FORM_URLENCODED);
-                return generateResponse(AuthRequest.fromQueryMap(request.queryMap()), response);
+                return generateResponse(FormAuthRequest.fromQueryMap(request.queryMap()), response);
             };
 
     private String generateResponse(AuthRequest authRequest, Response response)
@@ -285,8 +289,8 @@ public class AuthorizeHandler {
             return null;
         }
 
-        var clientIdValue = authRequest.getClientId();
-        var jar = authRequest.getRequest();
+        var clientIdValue = authRequest.clientId();
+        var jar = authRequest.request();
 
         ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
 
@@ -302,7 +306,7 @@ public class AuthorizeHandler {
         String state = signedJWT.getJWTClaimsSet().getClaim(RequestParamConstants.STATE).toString();
 
         try {
-            var attributesMap = generateEvidenceMap(authRequest.getCredentialSubjectJson());
+            var attributesMap = jsonStringToMap(authRequest.credentialSubjectJson());
 
             Map<String, Object> credentialAttributesMap;
 
@@ -310,47 +314,20 @@ public class AuthorizeHandler {
                 credentialAttributesMap = attributesMap;
             } else {
                 Map<String, Object> combinedAttributeJson =
-                        generateEvidenceMap(getSharedAttributes(signedJWT.getJWTClaimsSet()));
+                        jsonStringToMap(getSharedAttributes(signedJWT.getJWTClaimsSet()));
                 combinedAttributeJson.putAll(attributesMap);
                 credentialAttributesMap = combinedAttributeJson;
             }
 
-            Map<String, Object> evidenceMap;
-            var evidenceJsonPayload = authRequest.getEvidenceJson();
-            if (evidenceJsonPayload == null || evidenceJsonPayload.isEmpty()) {
-                evidenceMap =
-                        generateGpg45Score(
-                                getCriType(),
-                                authRequest.getEvidenceScore(),
-                                authRequest.getValidityScore(),
-                                authRequest.getActivityScore(),
-                                authRequest.getFraudScore(),
-                                authRequest.getVerificationScore(),
-                                authRequest.getBiometricVerificationScore());
-            } else {
-                evidenceMap = generateEvidenceMap(evidenceJsonPayload);
-                if (evidenceMap.get(CredentialIssuerConfig.EVIDENCE_TXN_PARAM) == null) {
-                    evidenceMap.put(
-                            CredentialIssuerConfig.EVIDENCE_TXN_PARAM,
-                            UUID.randomUUID().toString());
-                }
-            }
-
-            if (authRequest.getCi() != null && !authRequest.getCi().isEmpty()) {
-                evidenceMap.put(CI, authRequest.getCi());
-            }
-
             Long nbf =
-                    authRequest.getNbf() != null
-                            ? authRequest.getNbf()
-                            : Instant.now().getEpochSecond();
+                    authRequest.nbf() != null ? authRequest.nbf() : Instant.now().getEpochSecond();
 
             String signedVcJwt =
                     verifiableCredentialGenerator
                             .generate(
                                     new Credential(
                                             credentialAttributesMap,
-                                            evidenceMap,
+                                            generateEvidenceMap(authRequest),
                                             userId,
                                             clientIdValue,
                                             nbf))
@@ -361,10 +338,10 @@ public class AuthorizeHandler {
                 processMitigatedCIs(userId, authRequest, signedVcJwt);
             }
 
-            if (authRequest.isSendF2fVcToQueue() && !authRequest.isSendF2fErrorToQueue()) {
+            if (authRequest.sendF2fVcToQueue() && !authRequest.sendF2fErrorToQueue()) {
                 F2FEnqueueLambdaRequest enqueueLambdaRequest =
                         new F2FEnqueueLambdaRequest(
-                                authRequest.getF2fQueueName(),
+                                authRequest.f2fQueueName(),
                                 new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
                                 10);
 
@@ -380,10 +357,10 @@ public class AuthorizeHandler {
                 httpClient.send(request, null);
             }
 
-            if (authRequest.isSendF2fErrorToQueue()) {
+            if (authRequest.sendF2fErrorToQueue()) {
                 F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
                         new F2FErrorEnqueueLambdaRequest(
-                                authRequest.getF2fQueueName(),
+                                authRequest.f2fQueueName(),
                                 new F2FQueueErrorEvent(
                                         userId, state, "access_denied", "Something went wrong"),
                                 10);
@@ -420,13 +397,41 @@ public class AuthorizeHandler {
         return null;
     }
 
+    private Map<String, Object> generateEvidenceMap(AuthRequest authRequest)
+            throws CriStubException {
+        Map<String, Object> evidenceMap = jsonStringToMap(authRequest.evidenceJson());
+
+        if (authRequest instanceof FormAuthRequest formAuthRequest) {
+            if (MapUtils.isEmpty(evidenceMap)) {
+                evidenceMap =
+                        generateGpg45Score(
+                                getCriType(),
+                                formAuthRequest.evidenceScore(),
+                                formAuthRequest.validityScore(),
+                                formAuthRequest.activityScore(),
+                                formAuthRequest.fraudScore(),
+                                formAuthRequest.verificationScore(),
+                                formAuthRequest.biometricVerificationScore());
+            }
+
+            if (!isEmpty(formAuthRequest.ci())) {
+                evidenceMap.put(CI, formAuthRequest.ci());
+            }
+        }
+        if (evidenceMap.get(EVIDENCE_TXN_PARAM) == null) {
+            evidenceMap.put(EVIDENCE_TXN_PARAM, UUID.randomUUID().toString());
+        }
+
+        return evidenceMap;
+    }
+
     private void processMitigatedCIs(String userId, AuthRequest authRequest, String signedVcJwt)
             throws CriStubException {
-        var mitigatedCis = authRequest.getMitigatedCi();
+        var mitigatedCis = authRequest.mitigatedCi();
         if (mitigatedCis != null && !mitigatedCis.isEmpty()) {
             LOGGER.info("Processing mitigated CI's");
-            String cimitStubUrl = authRequest.getCimitStubUrl();
-            String cimitStubApikey = authRequest.getCimitStubApiKey();
+            String cimitStubUrl = authRequest.cimitStubUrl();
+            String cimitStubApikey = authRequest.cimitStubApiKey();
             String postUrlTemplate = "/user/%s/mitigations/%s";
             for (String ciCode : mitigatedCis) {
                 String jwtId;
@@ -506,14 +511,14 @@ public class AuthorizeHandler {
             AuthorizationCode authorizationCode,
             String signedVcJwt,
             String redirectUri) {
-        String resourceId = authRequest.getResourceId();
+        String resourceId = authRequest.resourceId();
         this.authCodeService.persist(authorizationCode, resourceId, redirectUri);
         this.credentialService.persist(signedVcJwt, resourceId);
         this.requestedErrorResponseService.persist(authorizationCode.getValue(), authRequest);
     }
 
-    private Map<String, Object> generateEvidenceMap(String payload) throws CriStubException {
-        if (StringUtils.isBlank(payload)) payload = "{}";
+    private Map<String, Object> jsonStringToMap(String payload) throws CriStubException {
+        if (isBlank(payload)) payload = "{}";
         try {
             return OBJECT_MAPPER.readValue(payload, Map.class);
         } catch (JsonProcessingException e) {
@@ -554,7 +559,7 @@ public class AuthorizeHandler {
         gpg45Score.put(
                 CredentialIssuerConfig.EVIDENCE_TYPE_PARAM,
                 CredentialIssuerConfig.EVIDENCE_TYPE_IDENTITY_CHECK);
-        gpg45Score.put(CredentialIssuerConfig.EVIDENCE_TXN_PARAM, UUID.randomUUID().toString());
+        gpg45Score.put(EVIDENCE_TXN_PARAM, UUID.randomUUID().toString());
         switch (criType) {
             case EVIDENCE_CRI_TYPE -> {
                 gpg45Score.put(STRENGTH, Integer.parseInt(strengthValue));

@@ -40,26 +40,25 @@ public class RequestedErrorResponseService {
 
     public void persist(String authCode, AuthRequest authRequest) {
         Map<String, String> parmsValuesMap = new HashMap<>();
-        parmsValuesMap.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, authRequest.getError());
+        parmsValuesMap.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, authRequest.error());
         parmsValuesMap.put(
-                RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT,
-                authRequest.getErrorEndpoint());
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, authRequest.errorEndpoint());
         parmsValuesMap.put(
                 RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
-                authRequest.getErrorDescription());
+                authRequest.errorDescription());
         parmsValuesMap.put(
-                RequestParamConstants.REQUESTED_USERINFO_ERROR, authRequest.getUserInfoError());
+                RequestParamConstants.REQUESTED_USERINFO_ERROR, authRequest.userInfoError());
 
         errorResponsesRequested.put(authCode, parmsValuesMap);
     }
 
     public AuthorizationErrorResponse getRequestedAuthErrorResponse(AuthRequest authRequest)
             throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
-        if (AUTH.equals(authRequest.getErrorEndpoint()) && !NONE.equals(authRequest.getError())) {
-            ClientConfig clientConfig = ConfigService.getClientConfig(authRequest.getClientId());
+        if (AUTH.equals(authRequest.errorEndpoint()) && !NONE.equals(authRequest.error())) {
+            ClientConfig clientConfig = ConfigService.getClientConfig(authRequest.clientId());
 
             JWTClaimsSet jwtClaimsSet =
-                    getSignedJWT(authRequest.getRequest(), clientConfig.getEncryptionPrivateKey())
+                    getSignedJWT(authRequest.request(), clientConfig.getEncryptionPrivateKey())
                             .getJWTClaimsSet();
 
             String redirectUri =
@@ -68,7 +67,7 @@ public class RequestedErrorResponseService {
 
             return new AuthorizationErrorResponse(
                     URI.create(redirectUri),
-                    new ErrorObject(authRequest.getError(), authRequest.getErrorDescription()),
+                    new ErrorObject(authRequest.error(), authRequest.errorDescription()),
                     (state == null || state.isEmpty()) ? null : new State(state),
                     new Issuer(CredentialIssuerConfig.NAME),
                     ResponseMode.QUERY);

@@ -659,39 +659,6 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void apiAuthorizeShouldAllowCisToBePassedIn() throws Exception {
-            when(mockRequest.body())
-                    .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\","
-                                    + "  \"ci\": [\"X1\", \"X2\"]"
-                                    + "}");
-            when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
-
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
-
-            verify(mockResponse).type(APPLICATION_JSON);
-            verify(mockAuthCodeService)
-                    .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockResponse).redirect(stringArgumentCaptor.capture());
-            assertTrue(
-                    stringArgumentCaptor
-                            .getValue()
-                            .contains(authCoreArgumentCaptor.getValue().getValue()));
-
-            verify(mockVcGenerator).generate(credentialArgumentCaptor.capture());
-            assertEquals(
-                    List.of("X1", "X2"),
-                    credentialArgumentCaptor.getValue().getEvidence().get("ci"));
-        }
-
-        @Test
         void apiAuthorizeShouldAllowNbfToBeSet() throws Exception {
             when(mockRequest.body())
                     .thenReturn(
