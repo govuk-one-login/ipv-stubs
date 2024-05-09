@@ -1,7 +1,6 @@
 import { handler } from "../../src/handlers/evcsHandler";
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
-
 import {
     APIGatewayProxyEvent,
     APIGatewayProxyEventHeaders,
@@ -91,7 +90,7 @@ const TEST_POST_INVALID_STATE_EVENT = {
 } as APIGatewayProxyEvent;
 
 const TEST_HEADERS = {
-  Authorisation: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
+  Authorisation: `Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2V2Y3MuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJhdWQiOiJodHRwczovL2V2Y3MuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJqdGkiOiJ1cm46dXVpZDpiNmRkMjNkMy1mZjM3LTQzYzYtOTI3My01NTRkNjQzMjFiODMiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.1-nRkV6ny9ThBGDbQ1sDCrJpYSe0tbOXEMJJNEoomVWjKsRL1RK6qdATkk-54p_c68Gzu1mN4FDM-buk1gXIPQ`,
 } as APIGatewayProxyEventHeaders;
 
 const TEST_GET_EVENT = {
@@ -337,6 +336,22 @@ describe("EVCS handler", function () {
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
+
+    // arrange
+    REQ_HEADERS = {
+      Authorisation: "Bearer eyJhbGc.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
+    } as APIGatewayProxyEventHeaders;
+    TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
+      pathParameters: TEST_PATH_PARAM,
+      headers: REQ_HEADERS,
+      httpMethod: "GET"
+    } as APIGatewayProxyEvent;
+    // act
+    result = (await handler(
+      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
+    )) as APIGatewayProxyStructuredResultV2;
+    // assert
+    expect(result.statusCode).toEqual(400);
   });
 
   it("returns a 400 when userId path paran not passed", async () => {
@@ -455,5 +470,20 @@ describe("EVCS handler", function () {
 
     // assert
     expect(result.statusCode).toEqual(500);
+  });
+
+  it("returns a 400 for an invalid http method", async () => {
+    // arrange
+    const event = {
+      ...TEST_POST_EVENT,
+      body: null,
+      httpMethod: "CONNECT"
+    };
+
+    // act
+    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(400);
   });
 });

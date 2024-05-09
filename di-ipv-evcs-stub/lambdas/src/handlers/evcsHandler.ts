@@ -10,6 +10,7 @@ import { CreateVcStates, UpdateVcStates } from  "../domain/enums/vcState";
 import { processPostUserVCsRequest } from "../services/evcsService";
 import { processGetUserVCsRequest } from "../services/evcsService";
 import { processPatchUserVCsRequest } from "../services/evcsService";
+import { verifyToken } from "../services/jwtService";
 
 export async function handler(
   event: APIGatewayProxyEvent
@@ -29,7 +30,7 @@ export async function handler(
       case "POST":
         try {
           request = parsePostRequest(event);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
           console.error(error);
           return buildApiResponse({ errorMessage: error.message }, 400);
@@ -39,30 +40,32 @@ export async function handler(
       case "PATCH":
         try {
           request = parsePatchRequest(event);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
+       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       } catch (error: any) {
           console.error(error);
           return buildApiResponse({ errorMessage: error.message }, 400);
         }
         res = await processPatchUserVCsRequest(decodeURIComponent(userId), request);
         break;
-      case "GET":
+      case "GET": {
+        let accessTokenVarified;
         try {
-          validateAccessToken(event.headers?.Authorisation);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          accessTokenVarified = await verifyAccessToken(validateAccessToken(event.headers?.Authorisation));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
           console.error(error);
           return buildApiResponse({ errorMessage: error.message }, 400);
         }
 
-        res = await processGetUserVCsRequest(decodeURIComponent(userId));
+        if (accessTokenVarified) res = await processGetUserVCsRequest(decodeURIComponent(userId));
         break;
+      }
       default:
-        console.info(`Not received correct request http method.`);
+        return buildApiResponse({ errorMessage: "Not received correct request http method." }, 400);
     }
 
     return buildApiResponse(res.response, res.statusCode);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     console.error(error);
     return buildApiResponse({ errorMessage: error.message }, 500);
@@ -125,7 +128,7 @@ function isValidUpdateVcState(updateVCs: UpdateVC[]): boolean {
   return true;
 }
 
-function validateAccessToken(authheader: string | undefined) {
+function validateAccessToken(authheader: string | undefined) : string {
   if (authheader === undefined) {
     throw new Error("Request missing access token");
   }
@@ -138,5 +141,17 @@ function validateAccessToken(authheader: string | undefined) {
   }
   if (parts[1] === undefined || parts[1] === "") {
     throw new Error("The access token value must not be null or empty string");
+  }
+
+  return parts[1];
+}
+
+async function verifyAccessToken(jwt: string) : Promise<boolean> {
+  try {
+    return await verifyToken(jwt);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error(error);
+    throw new Error("The access token varification failed");
   }
 }
