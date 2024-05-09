@@ -701,8 +701,10 @@ class AuthorizeHandlerTest {
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
                                     + "  \"resourceId\": \"something\","
-                                    + "  \"sendF2fVcToQueue\": true,"
-                                    + "  \"f2fQueueName\": \"stubQueue_F2FQueue_build\""
+                                    + "  \"f2f\": {"
+                                    + "    \"sendVcToQueue\": true,"
+                                    + "    \"queueName\": \"stubQueue_F2FQueue_build\""
+                                    + "  }"
                                     + "}");
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
@@ -727,8 +729,10 @@ class AuthorizeHandlerTest {
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
                                     + "  \"resourceId\": \"something\","
-                                    + "  \"sendF2fErrorToQueue\": true,"
-                                    + "  \"f2fQueueName\": \"stubQueue_F2FQueue_build\""
+                                    + "  \"f2f\": {"
+                                    + "    \"sendErrorToQueue\": true,"
+                                    + "    \"queueName\": \"stubQueue_F2FQueue_build\""
+                                    + "  }"
                                     + "}");
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);

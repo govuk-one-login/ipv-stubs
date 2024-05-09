@@ -13,9 +13,6 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.BIOMETRIC_V
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CI;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CLIENT_ID;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.EVIDENCE_JSON_PAYLOAD;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.F2F_SEND_ERROR_QUEUE;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.F2F_SEND_VC_QUEUE;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.F2F_STUB_QUEUE_NAME;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.FRAUD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUEST;
@@ -52,9 +49,7 @@ public record FormAuthRequest(
         String evidenceJson,
         List<String> ci,
         Mitigations mitigations,
-        boolean sendF2fVcToQueue,
-        boolean sendF2fErrorToQueue,
-        String f2fQueueName,
+        F2fDetails f2f,
         Long nbf,
         String errorEndpoint,
         String error,
@@ -79,9 +74,7 @@ public record FormAuthRequest(
                 .evidenceJson(paramsMap.value(EVIDENCE_JSON_PAYLOAD))
                 .ci(splitCommaDelimitedStringValue(paramsMap.value(CI)))
                 .mitigations(Mitigations.fromQueryMap(paramsMap))
-                .sendF2fVcToQueue(CHECKED.equals(paramsMap.value(F2F_SEND_VC_QUEUE)))
-                .sendF2fErrorToQueue(CHECKED.equals(paramsMap.value(F2F_SEND_ERROR_QUEUE)))
-                .f2fQueueName(paramsMap.value(F2F_STUB_QUEUE_NAME))
+                .f2f(F2fDetails.fromQueryMap(paramsMap))
                 .nbf(generateNbf(paramsMap))
                 .resourceId(paramsMap.value(RESOURCE_ID))
                 .errorEndpoint(paramsMap.value(REQUESTED_OAUTH_ERROR_ENDPOINT))

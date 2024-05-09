@@ -23,9 +23,5 @@ public interface AuthRequest {
 
     Mitigations mitigations();
 
-    boolean sendF2fVcToQueue();
-
-    boolean sendF2fErrorToQueue();
-
-    String f2fQueueName();
+    F2fDetails f2f();
 }

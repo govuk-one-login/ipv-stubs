@@ -338,44 +338,7 @@ public class AuthorizeHandler {
                 processMitigatedCIs(userId, authRequest, signedVcJwt);
             }
 
-            if (authRequest.sendF2fVcToQueue() && !authRequest.sendF2fErrorToQueue()) {
-                F2FEnqueueLambdaRequest enqueueLambdaRequest =
-                        new F2FEnqueueLambdaRequest(
-                                authRequest.f2fQueueName(),
-                                new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
-                                10);
-
-                HttpRequest request =
-                        HttpRequest.newBuilder()
-                                .uri(URI.create(getConfigValue(F2F_STUB_QUEUE_URL)))
-                                .POST(
-                                        HttpRequest.BodyPublishers.ofString(
-                                                OBJECT_MAPPER.writeValueAsString(
-                                                        enqueueLambdaRequest)))
-                                .build();
-
-                httpClient.send(request, null);
-            }
-
-            if (authRequest.sendF2fErrorToQueue()) {
-                F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
-                        new F2FErrorEnqueueLambdaRequest(
-                                authRequest.f2fQueueName(),
-                                new F2FQueueErrorEvent(
-                                        userId, state, "access_denied", "Something went wrong"),
-                                10);
-
-                HttpRequest request =
-                        HttpRequest.newBuilder()
-                                .uri(URI.create(getConfigValue(F2F_STUB_QUEUE_URL)))
-                                .POST(
-                                        HttpRequest.BodyPublishers.ofString(
-                                                OBJECT_MAPPER.writeValueAsString(
-                                                        enqueueLambdaRequest)))
-                                .build();
-
-                httpClient.send(request, null);
-            }
+            handleF2fRequests(authRequest.f2f(), userId, state, signedVcJwt);
 
             AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
             persistData(
@@ -887,5 +850,49 @@ public class AuthorizeHandler {
     private AuthorizationErrorResponse handleRequestedError(AuthRequest authRequest)
             throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
         return requestedErrorResponseService.getRequestedAuthErrorResponse(authRequest);
+    }
+
+    private void handleF2fRequests(
+            F2fDetails f2fDetails, String userId, String state, String signedVcJwt)
+            throws IOException, InterruptedException {
+        if (f2fDetails == null) {
+            return;
+        }
+        if (f2fDetails.sendVcToQueue() && !f2fDetails.sendErrorToQueue()) {
+            F2FEnqueueLambdaRequest enqueueLambdaRequest =
+                    new F2FEnqueueLambdaRequest(
+                            f2fDetails.queueName(),
+                            new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
+                            10);
+
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(getConfigValue(F2F_STUB_QUEUE_URL)))
+                            .POST(
+                                    HttpRequest.BodyPublishers.ofString(
+                                            OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest)))
+                            .build();
+
+            httpClient.send(request, null);
+        }
+
+        if (f2fDetails.sendErrorToQueue()) {
+            F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
+                    new F2FErrorEnqueueLambdaRequest(
+                            f2fDetails.queueName(),
+                            new F2FQueueErrorEvent(
+                                    userId, state, "access_denied", "Something went wrong"),
+                            10);
+
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(getConfigValue(F2F_STUB_QUEUE_URL)))
+                            .POST(
+                                    HttpRequest.BodyPublishers.ofString(
+                                            OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest)))
+                            .build();
+
+            httpClient.send(request, null);
+        }
     }
 }
