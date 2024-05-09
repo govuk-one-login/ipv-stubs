@@ -42,7 +42,7 @@ public class RequestParamConstants {
     public static final String VC_NOT_BEFORE_SECONDS = "vcNotBeforeSeconds";
 
     public static final String CI = "ci";
-    public static final String MITIGATED_CIS = "ciMitigated";
+    public static final String MITIGATED_CI = "ciMitigated";
     public static final String CIMIT_STUB_URL = "ciMitiBaseUrl";
     public static final String CIMIT_STUB_API_KEY = "ciMitiApiKey";
 }

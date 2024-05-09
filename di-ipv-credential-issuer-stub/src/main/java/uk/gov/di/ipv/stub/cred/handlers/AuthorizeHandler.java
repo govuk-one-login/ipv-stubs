@@ -427,13 +427,13 @@ public class AuthorizeHandler {
 
     private void processMitigatedCIs(String userId, AuthRequest authRequest, String signedVcJwt)
             throws CriStubException {
-        var mitigatedCis = authRequest.mitigatedCi();
-        if (mitigatedCis != null && !mitigatedCis.isEmpty()) {
+        var mitigations = authRequest.mitigations();
+        if (!isEmpty(mitigations.mitigatedCi())) {
             LOGGER.info("Processing mitigated CI's");
-            String cimitStubUrl = authRequest.cimitStubUrl();
-            String cimitStubApikey = authRequest.cimitStubApiKey();
+            String cimitStubUrl = mitigations.cimitStubUrl();
+            String cimitStubApikey = mitigations.cimitStubApiKey();
             String postUrlTemplate = "/user/%s/mitigations/%s";
-            for (String ciCode : mitigatedCis) {
+            for (String ciCode : mitigations.mitigatedCi()) {
                 String jwtId;
                 try {
                     jwtId = SignedJWT.parse(signedVcJwt).getJWTClaimsSet().getJWTID();

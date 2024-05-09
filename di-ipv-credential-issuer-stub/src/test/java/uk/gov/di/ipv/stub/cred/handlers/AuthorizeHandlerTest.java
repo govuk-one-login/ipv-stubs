@@ -93,7 +93,7 @@ import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CRI_MITIGATION_E
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_API_KEY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_URL;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.MITIGATED_CIS;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.MITIGATED_CI;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.STRENGTH;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VALIDITY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_DAY;
@@ -509,7 +509,7 @@ class AuthorizeHandlerTest {
                 throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
             Map<String, String[]> queryParams = validGenerateResponseQueryParams();
-            queryParams.put(MITIGATED_CIS, new String[] {"V03"});
+            queryParams.put(MITIGATED_CI, new String[] {"V03"});
             queryParams.put(CIMIT_STUB_URL, new String[] {"http://test.com"});
             queryParams.put(CIMIT_STUB_API_KEY, new String[] {"api:key"});
             QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
@@ -552,7 +552,7 @@ class AuthorizeHandlerTest {
                         throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
             Map<String, String[]> queryParams = validGenerateResponseQueryParams();
-            queryParams.put(MITIGATED_CIS, new String[] {"V03"});
+            queryParams.put(MITIGATED_CI, new String[] {"V03"});
             queryParams.put(CIMIT_STUB_URL, new String[] {"http://test.com"});
             queryParams.put(CIMIT_STUB_API_KEY, new String[] {"api:key"});
             QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
@@ -801,8 +801,7 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void apiAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled()
-                throws Exception {
+        void apiAuthorizeShouldAllowMitigationsWhenEnabled() throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
             when(mockRequest.body())
                     .thenReturn(
@@ -814,9 +813,11 @@ class AuthorizeHandlerTest {
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
                                     + "  \"resourceId\": \"something\","
-                                    + "  \"mitigatedCi\": [\"XX\"],"
-                                    + "  \"cimitStubUrl\": \"https://cimit.stubs.account.gov.uk\","
-                                    + "  \"cimitStubApiKey\": \"anAPIKey\""
+                                    + "  \"mitigations\": {"
+                                    + "    \"mitigatedCi\": [\"XX\"],"
+                                    + "    \"cimitStubUrl\": \"https://cimit.stubs.account.gov.uk\","
+                                    + "    \"cimitStubApiKey\": \"anAPIKey\""
+                                    + "  }"
                                     + "}");
 
             var httpResponse = mock(HttpResponse.class);

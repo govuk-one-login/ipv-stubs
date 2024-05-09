@@ -6,15 +6,11 @@ import spark.QueryParamsMap;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.ACTIVITY_HISTORY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.BIOMETRIC_VERIFICATION;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CI;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_API_KEY;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_URL;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CLIENT_ID;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.EVIDENCE_JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.F2F_SEND_ERROR_QUEUE;
@@ -22,7 +18,6 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.F2F_SEND_VC
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.F2F_STUB_QUEUE_NAME;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.FRAUD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.JSON_PAYLOAD;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.MITIGATED_CIS;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUEST;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUESTED_OAUTH_ERROR;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION;
@@ -39,6 +34,7 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFO
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_SECONDS;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_YEAR;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VERIFICATION;
+import static uk.gov.di.ipv.stub.cred.utils.StringHelper.splitCommaDelimitedStringValue;
 
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -55,9 +51,7 @@ public record FormAuthRequest(
         String biometricVerificationScore,
         String evidenceJson,
         List<String> ci,
-        List<String> mitigatedCi,
-        String cimitStubUrl,
-        String cimitStubApiKey,
+        Mitigations mitigations,
         boolean sendF2fVcToQueue,
         boolean sendF2fErrorToQueue,
         String f2fQueueName,
@@ -84,9 +78,7 @@ public record FormAuthRequest(
                 .biometricVerificationScore(paramsMap.value(BIOMETRIC_VERIFICATION))
                 .evidenceJson(paramsMap.value(EVIDENCE_JSON_PAYLOAD))
                 .ci(splitCommaDelimitedStringValue(paramsMap.value(CI)))
-                .mitigatedCi(splitCommaDelimitedStringValue(paramsMap.value(MITIGATED_CIS)))
-                .cimitStubUrl(paramsMap.value(CIMIT_STUB_URL))
-                .cimitStubApiKey(paramsMap.value(CIMIT_STUB_API_KEY))
+                .mitigations(Mitigations.fromQueryMap(paramsMap))
                 .sendF2fVcToQueue(CHECKED.equals(paramsMap.value(F2F_SEND_VC_QUEUE)))
                 .sendF2fErrorToQueue(CHECKED.equals(paramsMap.value(F2F_SEND_ERROR_QUEUE)))
                 .f2fQueueName(paramsMap.value(F2F_STUB_QUEUE_NAME))
@@ -117,13 +109,5 @@ public record FormAuthRequest(
             }
         }
         return null;
-    }
-
-    private static List<String> splitCommaDelimitedStringValue(String toSplit) {
-        return Stream.ofNullable(toSplit)
-                .flatMap(cisString -> Arrays.stream(cisString.split(",", -1)))
-                .map(String::strip)
-                .filter(s -> !s.isBlank())
-                .toList();
     }
 }
