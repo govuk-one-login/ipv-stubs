@@ -45,6 +45,8 @@ jest.mock("../../src/common/config", () => ({
   },
 }));
 
+const EVCS_VERIFY_KEY = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEE9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIMqVMxm2EdlSRjPkCV5NDyN9/RMmJLerY4H0vkXDjEDTg==";
+
 const TEST_POST_REQUEST = {
   persistVCs: [
       {
@@ -148,7 +150,7 @@ describe("EVCS handler", function () {
       ...TEST_GET_EVENT,
       httpMethod: "GET"
     };
-    jest.mocked(getParameter).mockResolvedValue("1800");
+    jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
     const result = (await handler(
       event
@@ -198,7 +200,7 @@ describe("EVCS handler", function () {
       ...TEST_GET_EVENT,
       httpMethod: "GET"
     };
-    jest.mocked(getParameter).mockResolvedValue("1800");
+    jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
     const result = (await handler(
       event
@@ -230,7 +232,7 @@ describe("EVCS handler", function () {
       ...TEST_GET_EVENT,
       httpMethod: "GET"
     };
-    jest.mocked(getParameter).mockResolvedValue("1800");
+    jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
     let result = (await handler(
       event
@@ -261,7 +263,7 @@ describe("EVCS handler", function () {
       ...TEST_GET_EVENT,
       httpMethod: "GET"
     };
-    jest.mocked(getParameter).mockResolvedValue("1800");
+    jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
     result = (await handler(
       event
@@ -281,7 +283,7 @@ describe("EVCS handler", function () {
       httpMethod: "GET"
     } as APIGatewayProxyEvent;
 
-    jest.mocked(getParameter).mockResolvedValue("1800");
+    jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
     let result = (await handler(
       TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN
