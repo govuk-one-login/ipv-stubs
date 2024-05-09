@@ -6,11 +6,10 @@ public class CredentialIssuerConfig {
             getConfigValue("CREDENTIAL_ISSUER_NAME", "Credential Issuer Stub");
     public static final String VC_DEFAULT_TTL = "300";
 
-    public static String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
+    public static final String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE");
     public static final String DEV_DOMAIN =
             getConfigValue("DEV_DOMAIN", ".dev.identity.account.gov.uk");
-    public static final String F2F_STUB_QUEUE_NAME_DEFAULT =
-            getConfigValue("F2F_STUB_QUEUE_NAME", null);
+    public static final String F2F_STUB_QUEUE_NAME_DEFAULT = getConfigValue("F2F_STUB_QUEUE_NAME");
 
     public static final String EVIDENCE_TYPE_PARAM = "type";
     public static final String EVIDENCE_TYPE_IDENTITY_CHECK = "IdentityCheck";

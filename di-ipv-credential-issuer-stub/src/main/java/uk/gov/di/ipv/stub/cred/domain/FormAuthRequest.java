@@ -8,17 +8,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.ACTIVITY_HISTORY;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.BIOMETRIC_VERIFICATION;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CI;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CLIENT_ID;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.EVIDENCE_JSON_PAYLOAD;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.FRAUD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUEST;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.RESOURCE_ID;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.STRENGTH;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VALIDITY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_DAY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_FLAG;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_HOURS;
@@ -26,7 +21,6 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFO
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_MONTH;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_SECONDS;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_YEAR;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VERIFICATION;
 import static uk.gov.di.ipv.stub.cred.utils.StringHelper.splitCommaDelimitedStringValue;
 
 @Builder
@@ -36,13 +30,8 @@ public record FormAuthRequest(
         String request,
         String resourceId,
         String credentialSubjectJson,
-        String evidenceScore,
-        String validityScore,
-        String activityScore,
-        String fraudScore,
-        String verificationScore,
-        String biometricVerificationScore,
         String evidenceJson,
+        Gpg45Scores gpg45Scores,
         List<String> ci,
         Mitigations mitigations,
         F2fDetails f2f,
@@ -58,13 +47,8 @@ public record FormAuthRequest(
                 .clientId(paramsMap.value(CLIENT_ID))
                 .request(paramsMap.value(REQUEST))
                 .credentialSubjectJson(paramsMap.value(JSON_PAYLOAD))
-                .evidenceScore(paramsMap.value(STRENGTH))
-                .validityScore(paramsMap.value(VALIDITY))
-                .activityScore(paramsMap.value(ACTIVITY_HISTORY))
-                .fraudScore(paramsMap.value(FRAUD))
-                .verificationScore(paramsMap.value(VERIFICATION))
-                .biometricVerificationScore(paramsMap.value(BIOMETRIC_VERIFICATION))
                 .evidenceJson(paramsMap.value(EVIDENCE_JSON_PAYLOAD))
+                .gpg45Scores(Gpg45Scores.fromQueryMap(paramsMap))
                 .ci(splitCommaDelimitedStringValue(paramsMap.value(CI)))
                 .mitigations(Mitigations.fromQueryMap(paramsMap))
                 .f2f(F2fDetails.fromQueryMap(paramsMap))

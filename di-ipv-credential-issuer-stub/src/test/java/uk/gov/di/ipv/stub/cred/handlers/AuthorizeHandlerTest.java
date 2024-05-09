@@ -274,6 +274,7 @@ class AuthorizeHandlerTest {
         void
                 doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithEncryptedRequestJWT()
                         throws Exception {
+            environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE");
             QueryParamsMap queryParamsMap =
                     toQueryParamsMap(validEncryptedDoAuthorizeQueryParams());
             when(mockRequest.queryMap()).thenReturn(queryParamsMap);
@@ -303,6 +304,7 @@ class AuthorizeHandlerTest {
         void doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithMitigationEnabled()
                 throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
+            environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE");
             QueryParamsMap queryParamsMap =
                     toQueryParamsMap(validEncryptedDoAuthorizeQueryParams());
             when(mockRequest.queryMap()).thenReturn(queryParamsMap);
@@ -328,6 +330,7 @@ class AuthorizeHandlerTest {
         void
                 doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWhenSignatureVerificationFails()
                         throws Exception {
+            environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE_DRIVING_LICENCE");
             Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
             String signedJWT = signedRequestJwt(DefaultClaimSetBuilder().build()).serialize();
             String invalidSignatureJwt = signedJWT.substring(0, signedJWT.length() - 4) + "Nope";
@@ -599,7 +602,8 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void formAuthorizeShouldNotIncludeSharedAttributesForUserAssertedCriType() throws Exception {
+        void formAuthorizeShouldNotIncludeSharedAttributesForUserAssertedCriType()
+                throws Exception {
             environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "USER_ASSERTED");
             Map<String, String[]> queryParams = validGenerateResponseQueryParams();
             queryParams.put("ci", new String[] {""});
@@ -609,17 +613,21 @@ class AuthorizeHandlerTest {
 
             authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
 
-            ArgumentCaptor<Credential> persistedCredential = ArgumentCaptor.forClass(Credential.class);
+            ArgumentCaptor<Credential> persistedCredential =
+                    ArgumentCaptor.forClass(Credential.class);
 
             verify(mockVcGenerator).generate(persistedCredential.capture());
-            Map<String, Object> persistedAttributes = persistedCredential.getValue().getAttributes();
+            Map<String, Object> persistedAttributes =
+                    persistedCredential.getValue().getAttributes();
             assertNull(persistedAttributes.get("addresses"));
             assertNull(persistedAttributes.get("names"));
             assertNull(persistedAttributes.get("birthDate"));
             assertEquals("test-value", persistedAttributes.get("test"));
 
             verify(mockCredentialService)
-                    .persist(eq(mockSignedJwt.serialize()), eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
+                    .persist(
+                            eq(mockSignedJwt.serialize()),
+                            eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
         }
     }
 
@@ -708,6 +716,10 @@ class AuthorizeHandlerTest {
                                     + "}");
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
+            var httpResponse = mock(HttpResponse.class);
+            when(httpResponse.statusCode()).thenReturn(200);
+            when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                    .thenReturn(httpResponse);
 
             authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
 
@@ -736,6 +748,10 @@ class AuthorizeHandlerTest {
                                     + "}");
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
+            var httpResponse = mock(HttpResponse.class);
+            when(httpResponse.statusCode()).thenReturn(200);
+            when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                    .thenReturn(httpResponse);
 
             authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
 
@@ -850,6 +866,34 @@ class AuthorizeHandlerTest {
 
             verify(mockVcGenerator).generate(persistedCredential.capture());
             verify(mockCredentialService).persist(mockSignedJwt.serialize(), "something");
+        }
+
+        @Test
+        void apiAuthorizeShouldHandleNoMitigationsWhenMitigationsEnabled() throws Exception {
+            environmentVariables.set("MITIGATION_ENABLED", "True");
+            when(mockRequest.body())
+                    .thenReturn(
+                            "{"
+                                    + "  \"clientId\": \"clientIdValid\","
+                                    + "  \"request\": \""
+                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
+                                    + "\","
+                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
+                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
+                                    + "  \"resourceId\": \"something\""
+                                    + "}");
+            when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
+
+            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+
+            verify(mockResponse).type(APPLICATION_JSON);
+            verify(mockAuthCodeService)
+                    .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
+            verify(mockResponse).redirect(stringArgumentCaptor.capture());
+            assertTrue(
+                    stringArgumentCaptor
+                            .getValue()
+                            .contains(authCoreArgumentCaptor.getValue().getValue()));
         }
 
         @Test

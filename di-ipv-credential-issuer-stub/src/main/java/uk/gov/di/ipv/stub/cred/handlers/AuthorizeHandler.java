@@ -366,15 +366,7 @@ public class AuthorizeHandler {
 
         if (authRequest instanceof FormAuthRequest formAuthRequest) {
             if (MapUtils.isEmpty(evidenceMap)) {
-                evidenceMap =
-                        generateGpg45Score(
-                                getCriType(),
-                                formAuthRequest.evidenceScore(),
-                                formAuthRequest.validityScore(),
-                                formAuthRequest.activityScore(),
-                                formAuthRequest.fraudScore(),
-                                formAuthRequest.verificationScore(),
-                                formAuthRequest.biometricVerificationScore());
+                evidenceMap.putAll(generateGpg45Score(getCriType(), formAuthRequest.gpg45Scores()));
             }
 
             if (!isEmpty(formAuthRequest.ci())) {
@@ -391,6 +383,9 @@ public class AuthorizeHandler {
     private void processMitigatedCIs(String userId, AuthRequest authRequest, String signedVcJwt)
             throws CriStubException {
         var mitigations = authRequest.mitigations();
+        if (mitigations == null) {
+            return;
+        }
         if (!isEmpty(mitigations.mitigatedCi())) {
             LOGGER.info("Processing mitigated CI's");
             String cimitStubUrl = mitigations.cimitStubUrl();
@@ -490,29 +485,22 @@ public class AuthorizeHandler {
         }
     }
 
-    private Map<String, Object> generateGpg45Score(
-            CriType criType,
-            String strengthValue,
-            String validityValue,
-            String activityValue,
-            String fraudValue,
-            String verificationValue,
-            String biometricVerificationValue)
+    private Map<String, Object> generateGpg45Score(CriType criType, Gpg45Scores gpg45Scores)
             throws CriStubException {
 
         if (criType.equals(USER_ASSERTED_CRI_TYPE)) {
             // VCs from user asserted CRIs, like address, do not have GPG45 scores
-            return null;
+            return Map.of();
         }
 
         ValidationResult validationResult =
                 Validator.verifyGpg45(
                         criType,
-                        strengthValue,
-                        validityValue,
-                        activityValue,
-                        fraudValue,
-                        verificationValue);
+                        gpg45Scores.strength(),
+                        gpg45Scores.validity(),
+                        gpg45Scores.activityHistory(),
+                        gpg45Scores.fraud(),
+                        gpg45Scores.verification());
 
         if (!validationResult.isValid()) {
             throw new CriStubException(
@@ -526,36 +514,42 @@ public class AuthorizeHandler {
         gpg45Score.put(EVIDENCE_TXN_PARAM, UUID.randomUUID().toString());
         switch (criType) {
             case EVIDENCE_CRI_TYPE -> {
-                gpg45Score.put(STRENGTH, Integer.parseInt(strengthValue));
-                gpg45Score.put(VALIDITY, Integer.parseInt(validityValue));
+                gpg45Score.put(STRENGTH, Integer.parseInt(gpg45Scores.strength()));
+                gpg45Score.put(VALIDITY, Integer.parseInt(gpg45Scores.validity()));
             }
             case ACTIVITY_CRI_TYPE -> gpg45Score.put(
-                    ACTIVITY_HISTORY, Integer.parseInt(activityValue));
+                    ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
             case FRAUD_CRI_TYPE -> {
-                gpg45Score.put(FRAUD, Integer.parseInt(fraudValue));
-                if (StringUtils.isNotBlank(activityValue)) {
-                    gpg45Score.put(ACTIVITY_HISTORY, Integer.parseInt(activityValue));
+                gpg45Score.put(FRAUD, Integer.parseInt(gpg45Scores.fraud()));
+                if (StringUtils.isNotBlank(gpg45Scores.activityHistory())) {
+                    gpg45Score.put(
+                            ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
                 }
             }
             case VERIFICATION_CRI_TYPE -> gpg45Score.put(
-                    VERIFICATION, Integer.parseInt(verificationValue));
+                    VERIFICATION, Integer.parseInt(gpg45Scores.verification()));
             case DOC_CHECK_APP_CRI_TYPE -> {
                 int strengthNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(strengthValue) : 3;
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.strength())
+                                : 3;
                 gpg45Score.put(STRENGTH, strengthNum);
                 int validityNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.validity())
+                                : 2;
                 gpg45Score.put(VALIDITY, validityNum);
 
-                if (StringUtils.isNotBlank(activityValue)) {
-                    gpg45Score.put(ACTIVITY_HISTORY, Integer.parseInt(activityValue));
+                if (StringUtils.isNotBlank(gpg45Scores.activityHistory())) {
+                    gpg45Score.put(
+                            ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
                 }
 
                 List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
                 checkDetailsValue.add(Map.of("checkMethod", "vri"));
                 int biometricVerificationNum =
-                        StringUtils.isNotBlank(biometricVerificationValue)
-                                ? Integer.parseInt(biometricVerificationValue)
+                        StringUtils.isNotBlank(gpg45Scores.biometricVerification())
+                                ? Integer.parseInt(gpg45Scores.biometricVerification())
                                 : 2;
                 checkDetailsValue.add(
                         Map.of(
@@ -573,14 +567,19 @@ public class AuthorizeHandler {
             }
             case EVIDENCE_DRIVING_LICENCE_CRI_TYPE -> {
                 int strengthNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(strengthValue) : 3;
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.strength())
+                                : 3;
                 gpg45Score.put(STRENGTH, strengthNum);
                 int validityNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.validity())
+                                : 2;
                 gpg45Score.put(VALIDITY, validityNum);
 
-                if (StringUtils.isNotBlank(activityValue)) {
-                    gpg45Score.put(ACTIVITY_HISTORY, Integer.parseInt(activityValue));
+                if (StringUtils.isNotBlank(gpg45Scores.activityHistory())) {
+                    gpg45Score.put(
+                            ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
                 }
 
                 List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
@@ -602,14 +601,18 @@ public class AuthorizeHandler {
             }
             case F2F_CRI_TYPE -> {
                 int strengthNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(strengthValue) : 3;
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.strength())
+                                : 3;
                 gpg45Score.put(STRENGTH, strengthNum);
                 int validityNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.validity())
+                                : 2;
                 gpg45Score.put(VALIDITY, validityNum);
 
-                if (StringUtils.isNotBlank(verificationValue)) {
-                    gpg45Score.put(VERIFICATION, Integer.parseInt(verificationValue));
+                if (StringUtils.isNotBlank(gpg45Scores.verification())) {
+                    gpg45Score.put(VERIFICATION, Integer.parseInt(gpg45Scores.verification()));
                 }
 
                 List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
@@ -874,7 +877,14 @@ public class AuthorizeHandler {
                                             OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest)))
                             .build();
 
-            httpClient.send(request, null);
+            var responseStatusCode =
+                    httpClient.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+            if (responseStatusCode < 200 || responseStatusCode > 299) {
+                LOGGER.warn(
+                        String.format(
+                                "failed to send VC to F2F queue - status code: %d",
+                                responseStatusCode));
+            }
         }
 
         if (f2fDetails.sendErrorToQueue()) {
@@ -893,7 +903,14 @@ public class AuthorizeHandler {
                                             OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest)))
                             .build();
 
-            httpClient.send(request, null);
+            var responseStatusCode =
+                    httpClient.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+            if (responseStatusCode < 200 || responseStatusCode > 299) {
+                LOGGER.warn(
+                        String.format(
+                                "failed to send error to F2F queue - status code: %d",
+                                responseStatusCode));
+            }
         }
     }
 }

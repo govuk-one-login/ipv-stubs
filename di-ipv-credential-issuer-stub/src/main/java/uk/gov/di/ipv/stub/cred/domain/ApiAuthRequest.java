@@ -6,8 +6,8 @@ public record ApiAuthRequest(
         String resourceId,
         String credentialSubjectJson,
         String evidenceJson,
+        Long nbf,
         Mitigations mitigations,
         F2fDetails f2f,
-        Long nbf,
         RequestedError requestedError)
         implements AuthRequest {}
