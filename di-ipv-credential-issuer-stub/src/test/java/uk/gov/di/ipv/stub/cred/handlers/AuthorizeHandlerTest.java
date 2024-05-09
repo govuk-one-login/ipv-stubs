@@ -861,9 +861,11 @@ class AuthorizeHandlerTest {
                                     + "  \"request\": \""
                                     + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
                                     + "\","
-                                    + "  \"errorEndpoint\": \"auth\","
-                                    + "  \"error\": \"invalid_request\","
-                                    + "  \"errorDescription\": \"a bad thing happened\""
+                                    + "  \"requestedError\": {"
+                                    + "    \"endpoint\": \"auth\","
+                                    + "    \"error\": \"invalid_request\","
+                                    + "    \"description\": \"a bad thing happened\""
+                                    + "  }"
                                     + "}");
 
             authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
@@ -887,9 +889,11 @@ class AuthorizeHandlerTest {
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
                                     + "  \"resourceId\": \"something\","
-                                    + "  \"errorEndpoint\": \"token\","
-                                    + "  \"error\": \"invalid_request\","
-                                    + "  \"errorDescription\": \"a bad thing happened at the token endpoint\""
+                                    + "  \"requestedError\": {"
+                                    + "    \"endpoint\": \"token\","
+                                    + "    \"error\": \"invalid_request\","
+                                    + "    \"description\": \"a bad thing happened at the token endpoint\""
+                                    + "  }"
                                     + "}");
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
@@ -919,7 +923,9 @@ class AuthorizeHandlerTest {
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
                                     + "  \"resourceId\": \"something\","
-                                    + "  \"userInfoError\": \"404\""
+                                    + "  \"requestedError\": {"
+                                    + "    \"userInfoError\": \"404\""
+                                    + "  }"
                                     + "}");
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 

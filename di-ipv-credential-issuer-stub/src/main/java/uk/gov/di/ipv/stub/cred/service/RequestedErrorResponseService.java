@@ -16,6 +16,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.domain.AuthRequest;
+import uk.gov.di.ipv.stub.cred.domain.RequestedError;
 import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
 
 import java.net.URI;
@@ -38,23 +39,30 @@ public class RequestedErrorResponseService {
         this.errorResponsesRequested = new ConcurrentHashMap<>();
     }
 
-    public void persist(String authCode, AuthRequest authRequest) {
+    public void persist(String authCode, RequestedError requestedError) {
+        if (requestedError == null) {
+            return;
+        }
         Map<String, String> parmsValuesMap = new HashMap<>();
-        parmsValuesMap.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, authRequest.error());
+        parmsValuesMap.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, requestedError.error());
         parmsValuesMap.put(
-                RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, authRequest.errorEndpoint());
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, requestedError.endpoint());
         parmsValuesMap.put(
                 RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
-                authRequest.errorDescription());
+                requestedError.description());
         parmsValuesMap.put(
-                RequestParamConstants.REQUESTED_USERINFO_ERROR, authRequest.userInfoError());
+                RequestParamConstants.REQUESTED_USERINFO_ERROR, requestedError.userInfoError());
 
         errorResponsesRequested.put(authCode, parmsValuesMap);
     }
 
     public AuthorizationErrorResponse getRequestedAuthErrorResponse(AuthRequest authRequest)
             throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
-        if (AUTH.equals(authRequest.errorEndpoint()) && !NONE.equals(authRequest.error())) {
+        var requestedError = authRequest.requestedError();
+        if (requestedError == null) {
+            return null;
+        }
+        if (AUTH.equals(requestedError.endpoint()) && !NONE.equals(requestedError.error())) {
             ClientConfig clientConfig = ConfigService.getClientConfig(authRequest.clientId());
 
             JWTClaimsSet jwtClaimsSet =
@@ -67,7 +75,7 @@ public class RequestedErrorResponseService {
 
             return new AuthorizationErrorResponse(
                     URI.create(redirectUri),
-                    new ErrorObject(authRequest.error(), authRequest.errorDescription()),
+                    new ErrorObject(requestedError.error(), requestedError.description()),
                     (state == null || state.isEmpty()) ? null : new State(state),
                     new Issuer(CredentialIssuerConfig.NAME),
                     ResponseMode.QUERY);

@@ -16,10 +16,6 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.EVIDENCE_JS
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.FRAUD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUEST;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUESTED_OAUTH_ERROR;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUESTED_USERINFO_ERROR;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.RESOURCE_ID;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.STRENGTH;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VALIDITY;
@@ -50,11 +46,8 @@ public record FormAuthRequest(
         List<String> ci,
         Mitigations mitigations,
         F2fDetails f2f,
-        Long nbf,
-        String errorEndpoint,
-        String error,
-        String errorDescription,
-        String userInfoError)
+        RequestedError requestedError,
+        Long nbf)
         implements AuthRequest {
     private static final String CHECKED = "checked";
     private static final String ON = "on";
@@ -75,12 +68,9 @@ public record FormAuthRequest(
                 .ci(splitCommaDelimitedStringValue(paramsMap.value(CI)))
                 .mitigations(Mitigations.fromQueryMap(paramsMap))
                 .f2f(F2fDetails.fromQueryMap(paramsMap))
+                .requestedError(RequestedError.fromQueryMap(paramsMap))
                 .nbf(generateNbf(paramsMap))
                 .resourceId(paramsMap.value(RESOURCE_ID))
-                .errorEndpoint(paramsMap.value(REQUESTED_OAUTH_ERROR_ENDPOINT))
-                .error(paramsMap.value(REQUESTED_OAUTH_ERROR))
-                .errorDescription(paramsMap.value(REQUESTED_OAUTH_ERROR_DESCRIPTION))
-                .userInfoError(paramsMap.value(REQUESTED_USERINFO_ERROR))
                 .build();
     }
 

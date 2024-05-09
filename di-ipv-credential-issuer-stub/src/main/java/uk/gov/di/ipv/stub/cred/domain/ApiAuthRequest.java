@@ -9,8 +9,5 @@ public record ApiAuthRequest(
         Mitigations mitigations,
         F2fDetails f2f,
         Long nbf,
-        String errorEndpoint,
-        String error,
-        String errorDescription,
-        String userInfoError)
+        RequestedError requestedError)
         implements AuthRequest {}

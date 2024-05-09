@@ -477,7 +477,8 @@ public class AuthorizeHandler {
         String resourceId = authRequest.resourceId();
         this.authCodeService.persist(authorizationCode, resourceId, redirectUri);
         this.credentialService.persist(signedVcJwt, resourceId);
-        this.requestedErrorResponseService.persist(authorizationCode.getValue(), authRequest);
+        this.requestedErrorResponseService.persist(
+                authorizationCode.getValue(), authRequest.requestedError());
     }
 
     private Map<String, Object> jsonStringToMap(String payload) throws CriStubException {

@@ -11,13 +11,7 @@ public interface AuthRequest {
 
     String evidenceJson();
 
-    String error();
-
-    String errorDescription();
-
-    String errorEndpoint();
-
-    String userInfoError();
+    RequestedError requestedError();
 
     Long nbf();
 
