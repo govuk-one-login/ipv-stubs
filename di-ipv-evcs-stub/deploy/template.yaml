@@ -32,9 +32,12 @@ Globals:
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
     Layers:
-      - !Sub
-        - '{{resolve:secretsmanager:${SecretArn}:SecretString:JAVA_LAYER}}' # or NODEJS_LAYER or PYTHON_LAYER  #pragma: allowlist secret
-        - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
+      - !If
+        - IsDevelopment
+        - !Ref AWS::NoValue
+        - !Sub
+          - '{{resolve:secretsmanager:${SecretArn}:SecretString:JAVA_LAYER}}' # or NODEJS_LAYER or PYTHON_LAYER  #pragma: allowlist secret
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
 
 Description: >-
   This creates the infrastructure for EVCS stub .
@@ -60,6 +63,9 @@ Parameters:
     Default: "none"
 
 Conditions:
+  IsDevelopment: !Or
+    - !Equals [ !Ref AWS::AccountId, "130355686670"]
+    - !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsProduction: !Equals [ !Ref Environment, "production" ]
   IsNonProd: !Not [!Condition IsProduction ]
   UsePermissionsBoundary:
@@ -79,13 +85,6 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
-  CoreAccounts:
-    dev01:
-      accountId: "130355686670"
-    dev02:
-      accountId: "175872367215"
-    build:
-      accountId: "457601271792"
 
 Resources:
   # lambda to stub EVCS - postEvcsUserVCs
@@ -161,27 +160,6 @@ Resources:
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/evcsHandler.ts
-
-  EvcsUserVCsFunctionCoreDev01InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref EvcsUserVCsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
-
-  EvcsUserVCsFunctionCoreDev02InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref EvcsUserVCsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
-  EvcsUserVCsFunctionCoreBuildInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref EvcsUserVCsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
   EvcsUserVCsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -335,7 +313,6 @@ Resources:
       Stage: !Ref RestApiGateway.Stage
     DependsOn:
       - EvcsStubRestApiDomain
-      - RestApiGateway
 
   # dns record
   EvcsStubDNSRecord:
@@ -356,7 +333,6 @@ Resources:
 
   RestApiGateway:
     Type: AWS::Serverless::Api
-    DependsOn: EvcsUserVCsFunction
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
       Name: !Sub EVCS API Gateway ${Environment}
