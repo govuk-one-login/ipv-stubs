@@ -54,9 +54,9 @@ export async function handler(
         );
         break;
       case "GET": {
-        let accessTokenVarified;
+        let accessTokenVerified;
         try {
-          accessTokenVarified = await verifyAccessToken(
+          accessTokenVerified = await verifyAccessToken(
             validateAccessToken(event.headers?.Authorisation),
           );
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,7 +65,7 @@ export async function handler(
           return buildApiResponse({ errorMessage: error.message }, 400);
         }
 
-        if (accessTokenVarified)
+        if (accessTokenVerified)
           res = await processGetUserVCsRequest(decodeURIComponent(userId));
         break;
       }

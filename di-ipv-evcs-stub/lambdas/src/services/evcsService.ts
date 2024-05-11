@@ -66,7 +66,6 @@ export async function processGetUserVCsRequest(
       ":stateValue": { S: VcState.CURRENT },
     },
   };
-  // console.info(`Query Input - ${JSON.stringify(getItemInput)}`);
   const items = (await dynamoClient.query(getItemInput)).Items ?? [];
   console.info(`Total VCs retrived - ${items?.length}`);
   const vcItems = items
