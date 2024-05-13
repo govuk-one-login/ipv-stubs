@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - di-ipv-evcs-stub/**
-      - .github/workflows/cri-evcs-stub.yml
+      - .github/workflows/evcs-stub.yml
 
 jobs:
   buildAndPush:
@@ -44,12 +44,6 @@ jobs:
       - name: SAM Validate
         working-directory: ./di-ipv-evcs-stub/deploy
         run: sam validate --region ${{ env.AWS_REGION }}
-
-      #- name: SAM Package
-      #  working-directory: ./update-ecs-env-vars/deploy
-      #  env:
-      #    ARTIFACT_BUCKET: ${{ secrets.UPDATE_ECS_ARTIFACT_BUCKET_NAME }}
-      #  run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
       - name: Generate code signing config
         id: signing
