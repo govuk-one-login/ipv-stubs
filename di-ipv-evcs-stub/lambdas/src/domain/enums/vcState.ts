@@ -1,4 +1,4 @@
-enum VcState {
+export enum VcState {
   CURRENT = "CURRENT",
   PENDING = "PENDING",
   VERIFICATION = "VERIFICATION",
@@ -22,5 +22,3 @@ export const UpdateVcStates = {
   [VcState.HISTORIC]: VcState.HISTORIC,
   [VcState.VERIFICATION_ARCHIVED]: VcState.VERIFICATION_ARCHIVED,
 } as const;
-
-export default VcState;

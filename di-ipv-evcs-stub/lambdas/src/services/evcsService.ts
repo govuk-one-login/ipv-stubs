@@ -8,7 +8,7 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import PostRequest from "../domain/postRequest";
 import ServiceResponse from "../domain/serviceResponse";
-import VcState from "../domain/enums/vcState";
+import { VcState } from "../domain/enums/vcState";
 import EvcsVcItem from "../model/evcsVcItem";
 
 import { config } from "../common/config";
@@ -103,7 +103,7 @@ export async function processPatchUserVCsRequest(
 
   return {
     response: {
-      messageId: uuid(),
+      // messageId: uuid(),
     },
     statusCode: 204,
   };

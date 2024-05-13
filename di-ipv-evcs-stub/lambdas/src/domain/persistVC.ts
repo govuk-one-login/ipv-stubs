@@ -1,4 +1,4 @@
-import VcState from "./enums/vcState";
+import { VcState } from "./enums/vcState";
 import VCMetadata from "./vcMetadata";
 import VCProvenance from "./enums/vcProvenance";
 

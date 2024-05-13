@@ -13,7 +13,7 @@ import {
   updateHandler,
 } from "../../src/handlers/evcsHandler";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
-import VcState from "../../src/domain/enums/vcState";
+import { VcState } from "../../src/domain/enums/vcState";
 
 jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
   getParameter: jest.fn(),
