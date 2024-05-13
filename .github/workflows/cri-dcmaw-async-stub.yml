@@ -61,7 +61,7 @@ jobs:
         run: sam build
 
       - name: Deploy SAM app
-        uses: alphagov/di-devplatform-upload-action@v3
+        uses: govuk-one-login/di-devplatform-upload-action@v3.8.1
         with:
           artifact-bucket-name: ${{ secrets.DCMAW_ASYNC_STUB_BUILD_S3_BUCKET }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
