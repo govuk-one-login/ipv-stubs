@@ -117,9 +117,7 @@ function parsePostRequest(event: APIGatewayProxyEvent): PostRequest {
 
   const postRequest = JSON.parse(event.body);
   if (
-    !postRequest ||
-    !postRequest.persistVCs ||
-    postRequest.persistVCs.length <= 0 ||
+    postRequest?.persistVCs?.length <= 0 ||
     !isValidCreateVcState(postRequest.persistVCs)
   ) {
     throw new Error("Invalid request");
@@ -136,9 +134,7 @@ function parsePatchRequest(event: APIGatewayProxyEvent): PatchRequest {
 
   const patchRequest = JSON.parse(event.body);
   if (
-    !patchRequest ||
-    !patchRequest.updateVCs ||
-    patchRequest.updateVCs.length <= 0 ||
+    patchRequest?.updateVCs?.length <= 0 ||
     !isValidUpdateVcState(patchRequest.updateVCs)
   ) {
     throw new Error("Invalid request");
