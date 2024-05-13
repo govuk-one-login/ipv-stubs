@@ -36,7 +36,7 @@ Globals:
         - IsDevelopment
         - !Ref AWS::NoValue
         - !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:JAVA_LAYER}}' # or NODEJS_LAYER or PYTHON_LAYER  #pragma: allowlist secret
+          - '{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}' # or JAVA_LAYER or PYTHON_LAYER  #pragma: allowlist secret
           - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
 
 Description: >-
