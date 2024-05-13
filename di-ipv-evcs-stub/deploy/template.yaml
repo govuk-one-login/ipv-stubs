@@ -117,6 +117,7 @@ Resources:
           EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -179,6 +180,7 @@ Resources:
           EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -241,6 +243,7 @@ Resources:
           EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
