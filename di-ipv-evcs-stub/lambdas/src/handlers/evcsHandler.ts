@@ -177,7 +177,7 @@ function validateAccessToken(authheader: string | undefined): string {
     throw new Error("Access token type must be Bearer");
   }
   if (parts[1] === undefined || parts[1] === "") {
-    throw new Error("The access token value must not be null or empty string");
+    throw new Error("The access token value must contain some value");
   }
 
   return parts[1];
