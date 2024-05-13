@@ -59,7 +59,7 @@ paths:
         type: "aws_proxy"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsUserVCsFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsCreateUserVCsFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
           default:
@@ -100,7 +100,7 @@ paths:
         type: "aws_proxy"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsUserVCsFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsUpdateUserVCsFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
           default:
@@ -132,7 +132,7 @@ paths:
         type: "aws_proxy"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsUserVCsFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsGetUserVCsFunction.Arn}:live/invocations
         passthroughBehavior: "when_no_match"
         responses:
           default:

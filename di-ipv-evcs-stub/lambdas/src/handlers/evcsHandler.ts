@@ -12,7 +12,38 @@ import { processGetUserVCsRequest } from "../services/evcsService";
 import { processPatchUserVCsRequest } from "../services/evcsService";
 import { verifyToken } from "../services/jwtService";
 
-export async function handler(
+export async function createHandler(
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResultV2> {
+  console.info(`---Create Request received----`);
+  const userId = event.pathParameters?.userId;
+  if (!userId) {
+    return buildApiResponse({ errorMessage: "Missing userId." }, 400);
+  }
+
+  try {
+    let request;
+    try {
+      request = parsePostRequest(event);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error(error);
+      return buildApiResponse({ errorMessage: error.message }, 400);
+    }
+    const res = await processPostUserVCsRequest(
+      decodeURIComponent(userId),
+      request,
+    );
+
+    return buildApiResponse(res.response, res.statusCode);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error(error);
+    return buildApiResponse({ errorMessage: error.message }, 500);
+  }
+}
+
+export async function updateHandler(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResultV2> {
   console.info(`---Request received----`);
@@ -23,58 +54,52 @@ export async function handler(
 
   try {
     let request;
+    try {
+      request = parsePatchRequest(event);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error(error);
+      return buildApiResponse({ errorMessage: error.message }, 400);
+    }
+    const res = await processPatchUserVCsRequest(
+      decodeURIComponent(userId),
+      request,
+    );
+
+    return buildApiResponse(res.response, res.statusCode);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    console.error(error);
+    return buildApiResponse({ errorMessage: error.message }, 500);
+  }
+}
+
+export async function getHandler(
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResultV2> {
+  console.info(`---Request received----`);
+  const userId = event.pathParameters?.userId;
+  if (!userId) {
+    return buildApiResponse({ errorMessage: "Missing userId." }, 400);
+  }
+
+  try {
+    let accessTokenVerified;
     let res: ServiceResponse = {
       response: Object,
     };
-    switch (event.httpMethod) {
-      case "POST":
-        try {
-          request = parsePostRequest(event);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-          console.error(error);
-          return buildApiResponse({ errorMessage: error.message }, 400);
-        }
-        res = await processPostUserVCsRequest(
-          decodeURIComponent(userId),
-          request,
-        );
-        break;
-      case "PATCH":
-        try {
-          request = parsePatchRequest(event);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-          console.error(error);
-          return buildApiResponse({ errorMessage: error.message }, 400);
-        }
-        res = await processPatchUserVCsRequest(
-          decodeURIComponent(userId),
-          request,
-        );
-        break;
-      case "GET": {
-        let accessTokenVerified;
-        try {
-          accessTokenVerified = await verifyAccessToken(
-            validateAccessToken(event.headers?.Authorisation),
-          );
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (error: any) {
-          console.error(error);
-          return buildApiResponse({ errorMessage: error.message }, 400);
-        }
-
-        if (accessTokenVerified)
-          res = await processGetUserVCsRequest(decodeURIComponent(userId));
-        break;
-      }
-      default:
-        return buildApiResponse(
-          { errorMessage: "Not received correct request http method." },
-          400,
-        );
+    try {
+      accessTokenVerified = await verifyAccessToken(
+        validateAccessToken(event.headers?.Authorisation),
+      );
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error(error);
+      return buildApiResponse({ errorMessage: error.message }, 400);
     }
+
+    if (accessTokenVerified)
+      res = await processGetUserVCsRequest(decodeURIComponent(userId));
 
     return buildApiResponse(res.response, res.statusCode);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,4 +1,3 @@
-import { handler } from "../../src/handlers/evcsHandler";
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
 import {
@@ -8,6 +7,11 @@ import {
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
 
+import {
+  createHandler,
+  getHandler,
+  updateHandler,
+} from "../../src/handlers/evcsHandler";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import VcState from "../../src/domain/enums/vcState";
 
@@ -156,7 +160,9 @@ describe("EVCS handler", function () {
     };
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await getHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(200);
@@ -172,7 +178,9 @@ describe("EVCS handler", function () {
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await createHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(202);
@@ -188,7 +196,7 @@ describe("EVCS handler", function () {
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
-    const postResult = (await handler(
+    const postResult = (await createHandler(
       postEvent,
     )) as APIGatewayProxyStructuredResultV2;
 
@@ -202,7 +210,9 @@ describe("EVCS handler", function () {
     };
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await getHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(200);
@@ -218,7 +228,7 @@ describe("EVCS handler", function () {
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
-    const postResult = (await handler(
+    const postResult = (await createHandler(
       postEvent,
     )) as APIGatewayProxyStructuredResultV2;
 
@@ -232,7 +242,7 @@ describe("EVCS handler", function () {
     };
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
-    let result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    let result = (await getHandler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(200);
@@ -247,7 +257,7 @@ describe("EVCS handler", function () {
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
-    result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    result = (await updateHandler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(204);
@@ -259,7 +269,7 @@ describe("EVCS handler", function () {
     };
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
-    result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    result = (await getHandler(event)) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(200);
@@ -277,7 +287,7 @@ describe("EVCS handler", function () {
 
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
-    let result = (await handler(
+    let result = (await getHandler(
       TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
@@ -293,7 +303,7 @@ describe("EVCS handler", function () {
       httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
-    result = (await handler(
+    result = (await getHandler(
       TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
@@ -310,7 +320,7 @@ describe("EVCS handler", function () {
       httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
-    result = (await handler(
+    result = (await getHandler(
       TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
@@ -326,7 +336,7 @@ describe("EVCS handler", function () {
       httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
-    result = (await handler(
+    result = (await getHandler(
       TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
@@ -343,7 +353,7 @@ describe("EVCS handler", function () {
       httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
-    result = (await handler(
+    result = (await getHandler(
       TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
@@ -354,7 +364,7 @@ describe("EVCS handler", function () {
     // arrange
 
     // act
-    const result = (await handler(
+    const result = (await createHandler(
       TEST_WITHOUT_USER_PARAM_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
@@ -371,7 +381,9 @@ describe("EVCS handler", function () {
     };
 
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await createHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(400);
@@ -386,7 +398,9 @@ describe("EVCS handler", function () {
     };
 
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await updateHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(400);
@@ -400,7 +414,9 @@ describe("EVCS handler", function () {
     };
 
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await createHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(400);
@@ -414,7 +430,9 @@ describe("EVCS handler", function () {
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await createHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(400);
@@ -428,7 +446,9 @@ describe("EVCS handler", function () {
     };
     jest.mocked(getParameter).mockResolvedValue("1800");
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await updateHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(400);
@@ -443,7 +463,9 @@ describe("EVCS handler", function () {
     };
 
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await createHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(400);
@@ -458,7 +480,9 @@ describe("EVCS handler", function () {
     };
 
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await createHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(500);
@@ -473,7 +497,9 @@ describe("EVCS handler", function () {
     };
 
     // act
-    const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
+    const result = (await createHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(400);
