@@ -66,7 +66,7 @@ jobs:
         run: sam build
 
       - name: Deploy SAM app
-        uses: govuk-one-login/di-devplatform-upload-action@v3.8.1
+        uses: govuk-one-login/devplatform-upload-action@v3.8.1
         with:
           artifact-bucket-name: ${{ secrets.UPDATE_ECS_ARTIFACT_BUCKET_NAME }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
