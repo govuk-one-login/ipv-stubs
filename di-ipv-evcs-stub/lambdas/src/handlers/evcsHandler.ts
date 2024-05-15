@@ -20,24 +20,19 @@ export async function createHandler(
     return buildApiResponse({ errorMessage: "Missing userId." }, 400);
   }
 
+  let request;
   try {
-    let request;
-    try {
-      request = parsePostRequest(event);
-    } catch (error) {
-      console.error(error);
-      return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
-    }
-    const res = await processPostUserVCsRequest(
-      decodeURIComponent(userId),
-      request,
-    );
-
-    return buildApiResponse(res.response, res.statusCode);
+    request = parsePostRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 500);
+    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
   }
+  const res = await processPostUserVCsRequest(
+    decodeURIComponent(userId),
+    request,
+  );
+
+  return buildApiResponse(res.response, res.statusCode);
 }
 
 export async function updateHandler(
@@ -49,25 +44,19 @@ export async function updateHandler(
     return buildApiResponse({ errorMessage: "Missing userId." }, 400);
   }
 
+  let request;
   try {
-    let request;
-    try {
-      request = parsePatchRequest(event);
-    } catch (error) {
-      console.error(error);
-      return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
-    }
-    const res = await processPatchUserVCsRequest(
-      decodeURIComponent(userId),
-      request,
-    );
-
-    return buildApiResponse(res.response, res.statusCode);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+    request = parsePatchRequest(event);
+  } catch (error) {
     console.error(error);
-    return buildApiResponse({ errorMessage: error.message }, 500);
+    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
   }
+  const res = await processPatchUserVCsRequest(
+    decodeURIComponent(userId),
+    request,
+  );
+
+  return buildApiResponse(res.response, res.statusCode);
 }
 
 export async function getHandler(

@@ -61,6 +61,7 @@ const TEST_POST_REQUEST = [
       reason: "test-created",
       timestampMs: "1714478033959",
       txmaEventId: "txma-event-id",
+      testProperty: "testProperty",
     },
   },
   {
@@ -239,6 +240,8 @@ describe("EVCS handler", function () {
     let parseResult = JSON.parse(result.body as string);
     expect(1).toEqual(parseResult.vcs.length);
     expect(VcState.CURRENT).toEqual(parseResult.vcs[0].state);
+    expect(parseResult.vcs[0].metadata.reason).toEqual("test-created");
+    expect(parseResult.vcs[0].metadata).toHaveProperty("testProperty");
 
     // arrange
     event = {
@@ -266,6 +269,7 @@ describe("EVCS handler", function () {
     parseResult = JSON.parse(result.body as string);
     expect(1).toEqual(parseResult.vcs.length);
     expect(parseResult.vcs[0].metadata.reason).toEqual("updated");
+    expect(parseResult.vcs[0].metadata).not.toHaveProperty("testProperty");
   });
 
   it("returns a 400 when no or invalid access token passed", async () => {
@@ -350,11 +354,35 @@ describe("EVCS handler", function () {
     expect(result.statusCode).toEqual(400);
   });
 
-  it("returns a 400 when userId path paran not passed", async () => {
+  it("returns a 400 when userId path paran not passed for create request", async () => {
     // arrange
 
     // act
     const result = (await createHandler(
+      TEST_WITHOUT_USER_PARAM_EVENT,
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(400);
+  });
+
+  it("returns a 400 when userId path paran not passed for update request", async () => {
+    // arrange
+
+    // act
+    const result = (await updateHandler(
+      TEST_WITHOUT_USER_PARAM_EVENT,
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(400);
+  });
+
+  it("returns a 400 when userId path paran not passed for get request", async () => {
+    // arrange
+
+    // act
+    const result = (await getHandler(
       TEST_WITHOUT_USER_PARAM_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
@@ -461,7 +489,7 @@ describe("EVCS handler", function () {
     expect(result.statusCode).toEqual(400);
   });
 
-  it("returns a 500 for missing SSM parameter, failure at service", async () => {
+  it("returns a 500 for missing SSM parameter, failure at service for create request", async () => {
     // arrange
     jest.mocked(getParameter).mockResolvedValueOnce(undefined);
     const event = {
@@ -471,6 +499,23 @@ describe("EVCS handler", function () {
 
     // act
     const result = (await createHandler(
+      event,
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(500);
+  });
+
+  it("returns a 500 for missing SSM parameter, failure at service for update request", async () => {
+    // arrange
+    jest.mocked(getParameter).mockResolvedValueOnce(undefined);
+    const event = {
+      ...TEST_PATCH_EVENT,
+      httpMethod: "PATCH",
+    };
+
+    // act
+    const result = (await updateHandler(
       event,
     )) as APIGatewayProxyStructuredResultV2;
 

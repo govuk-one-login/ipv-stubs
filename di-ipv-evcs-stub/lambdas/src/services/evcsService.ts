@@ -183,6 +183,7 @@ async function updateUserVC(evcsVcItem: EvcsVcItem) {
     },
     ReturnValues: "ALL_NEW",
   };
+  console.info(`update item - ${JSON.stringify(updateItemInput)}`);
   return dynamoClient.updateItem(updateItemInput);
 }
 
