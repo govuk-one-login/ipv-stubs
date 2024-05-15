@@ -3,6 +3,8 @@ import {
   QueryInput,
   PutItemInput,
   UpdateItemInput,
+  PutItemCommandOutput,
+  UpdateItemCommandOutput,
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
@@ -27,26 +29,44 @@ export async function processPostUserVCsRequest(
   userId: string,
   postRequest: PostRequest,
 ): Promise<ServiceResponse> {
-  console.info(`Post user record.`);
-  for (const persistVC of postRequest.persistVCs) {
-    const vcItem: EvcsVcItem = {
-      userId: userId,
-      vc: persistVC.vc,
-      vcSignature: persistVC.vc.split(".")[2],
-      state: persistVC.state,
-      metadata: persistVC.metadata!,
-      provenance: persistVC.provenance!,
-      ttl: await getTtl(),
-    };
-    await saveUserVC(vcItem);
-  }
-
-  return {
-    response: {
-      messageId: uuid(),
-    },
-    statusCode: 202,
+  let response: ServiceResponse = {
+    response: {},
   };
+  try {
+    console.info(`Post user record.`);
+    const allPromises: Promise<PutItemCommandOutput>[] = [];
+    const ttl = await getTtl();
+    for (const persistVC of postRequest.persistVCs) {
+      const vcItem: EvcsVcItem = {
+        userId,
+        vc: persistVC.vc,
+        vcSignature: persistVC.vc.split(".")[2],
+        state: persistVC.state,
+        metadata: persistVC.metadata!,
+        provenance: persistVC.provenance!,
+        ttl,
+      };
+      allPromises.push(saveUserVC(vcItem));
+    }
+
+    console.info(`Saving all user VC's.`);
+    await Promise.all(allPromises);
+    response = {
+      response: {
+        messageId: uuid(),
+      },
+      statusCode: 202,
+    };
+  } catch (error) {
+    console.error(error);
+    response = {
+      response: {
+        messageId: "",
+      },
+      statusCode: 500,
+    };
+  }
+  return response;
 }
 
 export async function processGetUserVCsRequest(
@@ -89,39 +109,55 @@ export async function processPatchUserVCsRequest(
   userId: string,
   postRequest: PatchRequest,
 ): Promise<ServiceResponse> {
-  console.info(`Patch user record.`);
-  for (const updateVC of postRequest.updateVCs) {
-    const vcItem: EvcsVcItem = {
-      userId: userId,
-      vcSignature: updateVC.signature,
-      state: updateVC.state,
-      metadata: updateVC.metadata!,
-      ttl: await getTtl(),
+  let response: ServiceResponse = {
+    response: {},
+  };
+  try {
+    console.info(`Patch user record.`);
+    const allPromises: Promise<UpdateItemCommandOutput>[] = [];
+    const ttl = await getTtl();
+    for (const updateVC of postRequest.updateVCs) {
+      const vcItem: EvcsVcItem = {
+        userId: userId,
+        vcSignature: updateVC.signature,
+        state: updateVC.state,
+        metadata: updateVC.metadata!,
+        ttl,
+      };
+      allPromises.push(updateUserVC(vcItem));
+    }
+
+    console.info(`Updating user VC's.`);
+    await Promise.all(allPromises);
+    response = {
+      response: {
+        // messageId: uuid(),
+      },
+      statusCode: 204,
     };
-    await updateUserVC(vcItem);
+  } catch (error) {
+    response = {
+      response: {
+        // messageId: uuid(),
+      },
+      statusCode: 500,
+    };
   }
 
-  return {
-    response: {
-      // messageId: uuid(),
-    },
-    statusCode: 204,
-  };
+  return response;
 }
 
 async function saveUserVC(evcsVcItem: EvcsVcItem) {
-  console.info(`Save user vc.`);
   const putItemInput: PutItemInput = {
     TableName: config.evcsStubUserVCsTableName,
     Item: marshall(evcsVcItem, {
       removeUndefinedValues: true,
     }),
   };
-  await dynamoClient.putItem(putItemInput);
+  return dynamoClient.putItem(putItemInput);
 }
 
 async function updateUserVC(evcsVcItem: EvcsVcItem) {
-  console.info(`Update user vc.`);
   if (!evcsVcItem.metadata) {
     evcsVcItem.metadata = {};
   }
@@ -146,7 +182,7 @@ async function updateUserVC(evcsVcItem: EvcsVcItem) {
     },
     ReturnValues: "ALL_NEW",
   };
-  await dynamoClient.updateItem(updateItemInput);
+  return dynamoClient.updateItem(updateItemInput);
 }
 
 async function getTtl(): Promise<number> {

@@ -46,7 +46,7 @@ export async function createHandler(
 export async function updateHandler(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResultV2> {
-  console.info(`---Request received----`);
+  console.info(`---Update request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
     return buildApiResponse({ errorMessage: "Missing userId." }, 400);
@@ -77,7 +77,7 @@ export async function updateHandler(
 export async function getHandler(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResultV2> {
-  console.info(`---Request received----`);
+  console.info(`---Get request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
     return buildApiResponse({ errorMessage: "Missing userId." }, 400);
