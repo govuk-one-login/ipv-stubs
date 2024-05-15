@@ -1,6 +1,7 @@
 import { JWTPayload, importSPKI, jwtVerify } from "jose";
 import { config } from "../common/config";
 import { getSsmParameter } from "../common/ssmParameter";
+import { getErrorMessage } from "../common/utils";
 
 export const verifyToken = async (jwt: string): Promise<boolean> => {
   const EVCS_VERIFY_KEY = await getSsmParameter(
@@ -14,9 +15,8 @@ export const verifyToken = async (jwt: string): Promise<boolean> => {
       "ES256",
     );
     payload = (await jwtVerify(jwt, key)).payload as JWTPayload;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
-    throw Error(error);
+  } catch (error) {
+    throw Error(getErrorMessage(error));
   }
   return payload !== null;
 };

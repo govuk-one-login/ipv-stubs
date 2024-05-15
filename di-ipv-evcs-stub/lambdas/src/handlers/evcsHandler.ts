@@ -11,6 +11,7 @@ import { processPostUserVCsRequest } from "../services/evcsService";
 import { processGetUserVCsRequest } from "../services/evcsService";
 import { processPatchUserVCsRequest } from "../services/evcsService";
 import { verifyToken } from "../services/jwtService";
+import { getErrorMessage } from "../common/utils";
 
 export async function createHandler(
   event: APIGatewayProxyEvent,
@@ -25,10 +26,9 @@ export async function createHandler(
     let request;
     try {
       request = parsePostRequest(event);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      return buildApiResponse({ errorMessage: error.message }, 400);
+      return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
     }
     const res = await processPostUserVCsRequest(
       decodeURIComponent(userId),
@@ -36,10 +36,9 @@ export async function createHandler(
     );
 
     return buildApiResponse(res.response, res.statusCode);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
-    return buildApiResponse({ errorMessage: error.message }, 500);
+    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 500);
   }
 }
 
@@ -56,10 +55,9 @@ export async function updateHandler(
     let request;
     try {
       request = parsePatchRequest(event);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      return buildApiResponse({ errorMessage: error.message }, 400);
+      return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
     }
     const res = await processPatchUserVCsRequest(
       decodeURIComponent(userId),
@@ -92,20 +90,18 @@ export async function getHandler(
       accessTokenVerified = await verifyAccessToken(
         validateAccessToken(event.headers?.Authorisation),
       );
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      return buildApiResponse({ errorMessage: error.message }, 400);
+      return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
     }
 
     if (accessTokenVerified)
       res = await processGetUserVCsRequest(decodeURIComponent(userId));
 
     return buildApiResponse(res.response, res.statusCode);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
-    return buildApiResponse({ errorMessage: error.message }, 500);
+    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 500);
   }
 }
 
@@ -182,8 +178,7 @@ function validateAccessToken(authheader: string | undefined): string {
 async function verifyAccessToken(jwt: string): Promise<boolean> {
   try {
     return await verifyToken(jwt);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error) {
     console.error(error);
     throw new Error("The access token varification failed");
   }
