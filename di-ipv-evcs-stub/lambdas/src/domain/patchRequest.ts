@@ -1,5 +1,9 @@
-import UpdateVC from "./updateVC";
+import { VcState } from "./enums/vcState";
+import VCMetadata from "./vcMetadata";
 
 export default interface PatchRequest {
-  updateVCs: UpdateVC[];
+  signature: string;
+  state: VcState;
+  metadata?: VCMetadata;
 }
+[];

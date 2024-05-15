@@ -1,5 +1,11 @@
-import PersistVC from "./persistVC";
+import { VcState } from "./enums/vcState";
+import VCMetadata from "./vcMetadata";
+import VCProvenance from "./enums/vcProvenance";
 
 export default interface PostRequest {
-  persistVCs: PersistVC[];
+  vc: string;
+  state: VcState;
+  metadata?: VCMetadata;
+  provenance?: VCProvenance;
 }
+[];

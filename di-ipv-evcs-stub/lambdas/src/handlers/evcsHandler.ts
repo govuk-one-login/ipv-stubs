@@ -3,8 +3,6 @@ import { buildApiResponse } from "../common/apiResponses";
 import PostRequest from "../domain/postRequest";
 import PatchRequest from "../domain/patchRequest";
 import ServiceResponse from "../domain/serviceResponse";
-import PersistVC from "../domain/persistVC";
-import UpdateVC from "../domain/updateVC";
 import { CreateVcStates, UpdateVcStates } from "../domain/enums/vcState";
 
 import { processPostUserVCsRequest } from "../services/evcsService";
@@ -105,24 +103,21 @@ export async function getHandler(
   }
 }
 
-function parsePostRequest(event: APIGatewayProxyEvent): PostRequest {
+function parsePostRequest(event: APIGatewayProxyEvent): PostRequest[] {
   console.info(`---Request parsing----`);
   if (!event.body) {
     throw new Error("Missing request body");
   }
 
   const postRequest = JSON.parse(event.body);
-  if (
-    postRequest?.persistVCs?.length <= 0 ||
-    !isValidCreateVcState(postRequest.persistVCs)
-  ) {
+  if (postRequest?.length <= 0 || !isValidCreateVcState(postRequest)) {
     throw new Error("Invalid request");
   }
 
   return postRequest;
 }
 
-function parsePatchRequest(event: APIGatewayProxyEvent): PatchRequest {
+function parsePatchRequest(event: APIGatewayProxyEvent): PatchRequest[] {
   console.info(`---Request parsing----`);
   if (!event.body) {
     throw new Error("Missing request body");
@@ -131,7 +126,7 @@ function parsePatchRequest(event: APIGatewayProxyEvent): PatchRequest {
   const patchRequest = JSON.parse(event.body);
   if (
     patchRequest?.updateVCs?.length <= 0 ||
-    !isValidUpdateVcState(patchRequest.updateVCs)
+    !isValidUpdateVcState(patchRequest)
   ) {
     throw new Error("Invalid request");
   }
@@ -139,18 +134,18 @@ function parsePatchRequest(event: APIGatewayProxyEvent): PatchRequest {
   return patchRequest;
 }
 
-function isValidCreateVcState(persistVCs: PersistVC[]): boolean {
-  for (const persistVC of persistVCs) {
-    if (!(persistVC.state in CreateVcStates)) {
+function isValidCreateVcState(postRequest: PostRequest[]): boolean {
+  for (const postRequestItem of postRequest) {
+    if (!(postRequestItem.state in CreateVcStates)) {
       return false;
     }
   }
   return true;
 }
 
-function isValidUpdateVcState(updateVCs: UpdateVC[]): boolean {
-  for (const updateVC of updateVCs) {
-    if (!(updateVC.state in UpdateVcStates)) {
+function isValidUpdateVcState(patchRequest: PatchRequest[]): boolean {
+  for (const patchRequestItem of patchRequest) {
+    if (!(patchRequestItem.state in UpdateVcStates)) {
       return false;
     }
   }

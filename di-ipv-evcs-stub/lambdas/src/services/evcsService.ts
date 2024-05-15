@@ -17,6 +17,7 @@ import { config } from "../common/config";
 import { getSsmParameter } from "../common/ssmParameter";
 import { v4 as uuid } from "uuid";
 import PatchRequest from "../domain/patchRequest";
+import VCProvenance from "../domain/enums/vcProvenance";
 
 const dynamoClient = config.isLocalDev
   ? new DynamoDB({
@@ -27,7 +28,7 @@ const dynamoClient = config.isLocalDev
 
 export async function processPostUserVCsRequest(
   userId: string,
-  postRequest: PostRequest,
+  postRequest: PostRequest[],
 ): Promise<ServiceResponse> {
   let response: ServiceResponse = {
     response: {},
@@ -36,14 +37,14 @@ export async function processPostUserVCsRequest(
     console.info(`Post user record.`);
     const allPromises: Promise<PutItemCommandOutput>[] = [];
     const ttl = await getTtl();
-    for (const persistVC of postRequest.persistVCs) {
+    for (const postRequestItem of postRequest) {
       const vcItem: EvcsVcItem = {
         userId,
-        vc: persistVC.vc,
-        vcSignature: persistVC.vc.split(".")[2],
-        state: persistVC.state,
-        metadata: persistVC.metadata!,
-        provenance: persistVC.provenance!,
+        vc: postRequestItem.vc,
+        vcSignature: postRequestItem.vc.split(".")[2],
+        state: postRequestItem.state,
+        metadata: postRequestItem.metadata!,
+        provenance: (postRequestItem.provenance! = VCProvenance.ONLINE),
         ttl,
       };
       allPromises.push(saveUserVC(vcItem));
@@ -107,7 +108,7 @@ export async function processGetUserVCsRequest(
 
 export async function processPatchUserVCsRequest(
   userId: string,
-  postRequest: PatchRequest,
+  patchRequest: PatchRequest[],
 ): Promise<ServiceResponse> {
   let response: ServiceResponse = {
     response: {},
@@ -116,12 +117,12 @@ export async function processPatchUserVCsRequest(
     console.info(`Patch user record.`);
     const allPromises: Promise<UpdateItemCommandOutput>[] = [];
     const ttl = await getTtl();
-    for (const updateVC of postRequest.updateVCs) {
+    for (const patchRequestItem of patchRequest) {
       const vcItem: EvcsVcItem = {
-        userId: userId,
-        vcSignature: updateVC.signature,
-        state: updateVC.state,
-        metadata: updateVC.metadata!,
+        userId,
+        vcSignature: patchRequestItem.signature,
+        state: patchRequestItem.state,
+        metadata: patchRequestItem.metadata!,
         ttl,
       };
       allPromises.push(updateUserVC(vcItem));
