@@ -2,8 +2,6 @@ package uk.gov.di.ipv.stub.cred.handlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.crypto.RSADecrypter;
@@ -18,9 +16,9 @@ import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.ResponseMode;
 import com.nimbusds.oauth2.sdk.ResponseType;
-import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.util.MapUtils;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,23 +57,35 @@ import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Stream;
 
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
-import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME;
-import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_URL;
+import static com.nimbusds.oauth2.sdk.util.CollectionUtils.isEmpty;
+import static com.nimbusds.oauth2.sdk.util.StringUtils.isBlank;
+import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.EVIDENCE_TXN_PARAM;
+import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME_DEFAULT;
+import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getConfigValue;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
+import static uk.gov.di.ipv.stub.cred.config.CriType.DOC_CHECK_APP_CRI_TYPE;
 import static uk.gov.di.ipv.stub.cred.config.CriType.USER_ASSERTED_CRI_TYPE;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.ACTIVITY_HISTORY;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CI;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.F2F_STUB_QUEUE_NAME;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.FRAUD;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.RESOURCE_ID;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.STRENGTH;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VALIDITY;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VERIFICATION;
 
 public class AuthorizeHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().enable(INDENT_OUTPUT);
 
     public static final String REQUEST_SCOPE = "scope";
     public static final String REQUEST_CONTEXT = "context";
@@ -84,17 +94,12 @@ public class AuthorizeHandler {
 
     public static final String CRI_STUB_DATA = "cri_stub_data";
     public static final String CRI_STUB_EVIDENCE_PAYLOADS = "cri_stub_evidence_payloads";
-    public static final String F2F_STUB_QUEUE_NAME_FIELD = "f2f_stub_queue_name";
     public static final String CRI_MITIGATION_ENABLED_PARAM = "isCriMitigationEnabled";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizeHandler.class);
-
-    private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
+    private static final String APPLICATION_X_WWW_FORM_URLENCODED =
+            "application/x-www-form-urlencoded";
     private static final String ERROR_CODE_INVALID_REQUEST_JWT = "invalid_request_jwt";
 
-    private static final String RESOURCE_ID_PARAM = "resourceId";
-    private static final String JSON_PAYLOAD_PARAM = "jsonPayload";
-    private static final String EVIDENCE_JSON_PAYLOAD_PARAM = "evidenceJsonPayload";
     private static final String IS_EVIDENCE_TYPE_PARAM = "isEvidenceType";
     private static final String IS_EVIDENCE_DRIVING_LICENCE_TYPE_PARAM =
             "isEvidenceDrivingLicenceType";
@@ -104,21 +109,23 @@ public class AuthorizeHandler {
     private static final String IS_DOC_CHECKING_TYPE_PARAM = "isDocCheckingType";
     private static final String IS_USER_ASSERTED_TYPE = "isUserAssertedType";
     private static final String IS_F2F_TYPE = "isF2FType";
-
     private static final String IS_NINO_TYPE = "isNINOType";
     private static final String HAS_ERROR_PARAM = "hasError";
     private static final String ERROR_PARAM = "error";
     private static final String CRI_NAME_PARAM = "cri-name";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String F2F_STUB_QUEUE_URL = "F2F_STUB_QUEUE_URL";
 
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private static final List<CriType> NO_SHARED_ATTRIBUTES_CRI_TYPES =
+            List.of(USER_ASSERTED_CRI_TYPE, DOC_CHECK_APP_CRI_TYPE);
 
     private final AuthCodeService authCodeService;
     private final CredentialService credentialService;
     private final RequestedErrorResponseService requestedErrorResponseService;
     private final ES256SignatureVerifier es256SignatureVerifier = new ES256SignatureVerifier();
     private ViewHelper viewHelper;
-    private VerifiableCredentialGenerator verifiableCredentialGenerator;
-    private HttpClient httpClient;
+    private final VerifiableCredentialGenerator verifiableCredentialGenerator;
+    private final HttpClient httpClient;
 
     public AuthorizeHandler(
             ViewHelper viewHelper,
@@ -136,7 +143,7 @@ public class AuthorizeHandler {
         this.httpClient = httpClient;
     }
 
-    public Route doAuthorize =
+    public final Route doAuthorize =
             (Request request, Response response) -> {
                 QueryParamsMap queryParamsMap = request.queryMap();
 
@@ -180,7 +187,7 @@ public class AuthorizeHandler {
                                                     .toString()),
                                     ResponseMode.QUERY);
 
-                    response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
+                    response.type(APPLICATION_X_WWW_FORM_URLENCODED);
                     response.redirect(errorResponse.toURI().toString());
                     // No content required in response
                     return null;
@@ -216,7 +223,7 @@ public class AuthorizeHandler {
                 LOGGER.info("criType: {}", criType.value);
 
                 Map<String, Object> frontendParams = new HashMap<>();
-                frontendParams.put(RESOURCE_ID_PARAM, UUID.randomUUID().toString());
+                frontendParams.put(RESOURCE_ID, UUID.randomUUID().toString());
                 frontendParams.put(
                         IS_EVIDENCE_TYPE_PARAM,
                         criType.equals(CriType.EVIDENCE_CRI_TYPE)
@@ -230,7 +237,7 @@ public class AuthorizeHandler {
                 frontendParams.put(
                         IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
                 frontendParams.put(
-                        IS_DOC_CHECKING_TYPE_PARAM, criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE));
+                        IS_DOC_CHECKING_TYPE_PARAM, criType.equals(DOC_CHECK_APP_CRI_TYPE));
                 frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
                 frontendParams.put(IS_NINO_TYPE, criType.equals(CriType.NINO_CRI_TYPE));
                 frontendParams.put(
@@ -240,13 +247,13 @@ public class AuthorizeHandler {
                 frontendParams.put(IS_USER_ASSERTED_TYPE, criType.equals(USER_ASSERTED_CRI_TYPE));
                 frontendParams.put(REQUEST_SCOPE, requestScope);
                 frontendParams.put(REQUEST_CONTEXT, requestContext);
-                if (!criType.equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
+                if (!criType.equals(DOC_CHECK_APP_CRI_TYPE)) {
                     frontendParams.put(SHARED_CLAIMS, sharedAttributesJson);
                 }
                 frontendParams.put(EVIDENCE_REQUESTED, evidenceRequestedJson);
                 frontendParams.put(CRI_STUB_DATA, criStubData);
                 frontendParams.put(CRI_STUB_EVIDENCE_PAYLOADS, criStubEvidencePayloads);
-                frontendParams.put(F2F_STUB_QUEUE_NAME_FIELD, F2F_STUB_QUEUE_NAME);
+                frontendParams.put(F2F_STUB_QUEUE_NAME, F2F_STUB_QUEUE_NAME_DEFAULT);
 
                 String error = request.attribute(ERROR_PARAM);
                 boolean hasError = error != null;
@@ -260,255 +267,131 @@ public class AuthorizeHandler {
                 return viewHelper.render(frontendParams, "authorize.mustache");
             };
 
-    public Route generateResponse =
+    public final Route apiAuthorize =
             (Request request, Response response) -> {
-                QueryParamsMap queryParamsMap = request.queryMap();
-
-                AuthorizationErrorResponse requestedAuthErrorResponse =
-                        handleRequestedError(queryParamsMap);
-                if (requestedAuthErrorResponse != null) {
-                    response.redirect(requestedAuthErrorResponse.toURI().toString());
-                    return null;
-                }
-
-                String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
-                String requestValue = queryParamsMap.value(RequestParamConstants.REQUEST);
-
-                ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
-
-                if (clientConfig == null) {
-                    response.status(HttpServletResponse.SC_BAD_REQUEST);
-                    return "Error: Could not find client configuration details for: "
-                            + clientIdValue;
-                }
-
-                SignedJWT signedJWT =
-                        getSignedJWT(requestValue, clientConfig.getEncryptionPrivateKey());
-                String redirectUri =
-                        signedJWT
-                                .getJWTClaimsSet()
-                                .getClaim(RequestParamConstants.REDIRECT_URI)
-                                .toString();
-                String userId = signedJWT.getJWTClaimsSet().getSubject();
-                String state =
-                        signedJWT
-                                .getJWTClaimsSet()
-                                .getClaim(RequestParamConstants.STATE)
-                                .toString();
-
-                try {
-                    Map<String, Object> attributesMap =
-                            generateJsonPayload(queryParamsMap.value(JSON_PAYLOAD_PARAM));
-
-                    Map<String, Object> credentialAttributesMap;
-
-                    if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
-                        credentialAttributesMap = attributesMap;
-                    } else {
-                        Map<String, Object> combinedAttributeJson =
-                                generateJsonPayload(
-                                        getSharedAttributes(signedJWT.getJWTClaimsSet()));
-                        combinedAttributeJson.putAll(attributesMap);
-                        credentialAttributesMap = combinedAttributeJson;
-                    }
-
-                    Map<String, Object> gpgMap;
-                    String evidenceJsonPayload = queryParamsMap.value(EVIDENCE_JSON_PAYLOAD_PARAM);
-                    if (evidenceJsonPayload == null || evidenceJsonPayload.isEmpty()) {
-                        gpgMap =
-                                generateGpg45Score(
-                                        getCriType(),
-                                        queryParamsMap.value(
-                                                CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM),
-                                        queryParamsMap.value(
-                                                CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM),
-                                        queryParamsMap.value(CredentialIssuerConfig.ACTIVITY_PARAM),
-                                        queryParamsMap.value(CredentialIssuerConfig.FRAUD_PARAM),
-                                        queryParamsMap.value(
-                                                CredentialIssuerConfig.VERIFICATION_PARAM),
-                                        queryParamsMap.value(
-                                                CredentialIssuerConfig
-                                                        .BIOMETRICK_VERIFICATION_PARAM));
-                    } else {
-                        gpgMap = generateJsonPayload(evidenceJsonPayload);
-                        if (gpgMap.get(CredentialIssuerConfig.EVIDENCE_TXN_PARAM) == null) {
-                            gpgMap.put(
-                                    CredentialIssuerConfig.EVIDENCE_TXN_PARAM,
-                                    UUID.randomUUID().toString());
-                        }
-                    }
-
-                    String ciString =
-                            queryParamsMap
-                                    .value(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM)
-                                    .replaceAll("\\s", "");
-                    if (!ciString.isEmpty()) {
-                        String[] ciList = ciString.split(",");
-                        gpgMap.put(CredentialIssuerConfig.EVIDENCE_CONTRAINDICATOR_PARAM, ciList);
-                    }
-
-                    String expFlag = queryParamsMap.value(CredentialIssuerConfig.EXPIRY_FLAG);
-                    int expHours =
-                            Integer.parseInt(
-                                    queryParamsMap.value(CredentialIssuerConfig.EXPIRY_HOURS));
-                    int expMinutes =
-                            Integer.parseInt(
-                                    queryParamsMap.value(CredentialIssuerConfig.EXPIRY_MINUTES));
-                    int expSeconds =
-                            Integer.parseInt(
-                                    queryParamsMap.value(CredentialIssuerConfig.EXPIRY_SECONDS));
-
-                    Long exp = null;
-                    if (expFlag != null
-                            && expFlag.equals(CredentialIssuerConfig.EXPIRY_FLAG_CHK_BOX_VALUE)) {
-                        if (expHours == 0 && expMinutes == 0 && expSeconds == 0) {
-                            exp =
-                                    Instant.now()
-                                            .plusSeconds(
-                                                    CredentialIssuerConfig
-                                                            .getVerifiableCredentialTtlSeconds())
-                                            .getEpochSecond();
-                        } else {
-                            exp =
-                                    Instant.now()
-                                            .plusSeconds(expSeconds)
-                                            .plusSeconds(60L * expMinutes)
-                                            .plusSeconds(3600L * expHours)
-                                            .getEpochSecond();
-                        }
-                    }
-
-                    String notBeforeFlag =
-                            queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_FLAG);
-
-                    Instant now = Instant.now();
-                    Long nbf = now.getEpochSecond();
-                    if (notBeforeFlag != null
-                            && notBeforeFlag.equals(
-                                    CredentialIssuerConfig.VC_NOT_BEFORE_FLAG_CHK_BOX_VALUE)) {
-                        nbf = getNbf(queryParamsMap);
-                    }
-
-                    String signedVcJwt =
-                            verifiableCredentialGenerator
-                                    .generate(
-                                            new Credential(
-                                                    credentialAttributesMap,
-                                                    gpgMap,
-                                                    userId,
-                                                    clientIdValue,
-                                                    exp,
-                                                    nbf))
-                                    .serialize();
-
-                    if (CredentialIssuerConfig.isEnabled(
-                            CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
-                        processMitigatedCIs(userId, queryParamsMap, signedVcJwt);
-                    }
-
-                    boolean F2F_SEND_VC_QUEUE =
-                            Objects.equals(
-                                    queryParamsMap.value(RequestParamConstants.F2F_SEND_VC_QUEUE),
-                                    "checked");
-                    boolean F2F_SEND_ERROR_QUEUE =
-                            Objects.equals(
-                                    queryParamsMap.value(
-                                            RequestParamConstants.F2F_SEND_ERROR_QUEUE),
-                                    "checked");
-                    if (F2F_SEND_VC_QUEUE && !F2F_SEND_ERROR_QUEUE) {
-                        String queueName = queryParamsMap.value(F2F_STUB_QUEUE_NAME_FIELD);
-                        HTTPRequest httpRequest =
-                                new HTTPRequest(
-                                        HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        F2FEnqueueLambdaRequest enqueueLambdaRequest =
-                                new F2FEnqueueLambdaRequest(
-                                        queueName,
-                                        new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
-                                        10);
-                        String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
-                        httpRequest.setQuery(body);
-                        httpRequest.send();
-                    }
-
-                    if (F2F_SEND_ERROR_QUEUE) {
-                        String queueName = queryParamsMap.value(F2F_STUB_QUEUE_NAME_FIELD);
-                        HTTPRequest httpRequest =
-                                new HTTPRequest(
-                                        HTTPRequest.Method.POST, URI.create(F2F_STUB_QUEUE_URL));
-                        ObjectMapper objectMapper = new ObjectMapper();
-                        F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
-                                new F2FErrorEnqueueLambdaRequest(
-                                        queueName,
-                                        new F2FQueueErrorEvent(
-                                                userId,
-                                                state,
-                                                "access_denied",
-                                                "Something went wrong"),
-                                        10);
-                        String body = objectMapper.writeValueAsString(enqueueLambdaRequest);
-                        httpRequest.setQuery(body);
-                        httpRequest.send();
-                    }
-
-                    AuthorizationSuccessResponse successResponse =
-                            generateAuthCode(state, redirectUri);
-                    persistData(
-                            queryParamsMap,
-                            successResponse.getAuthorizationCode(),
-                            signedVcJwt,
-                            redirectUri);
-
-                    response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
-                    response.redirect(successResponse.toURI().toString());
-                } catch (CriStubException e) {
-                    AuthorizationErrorResponse errorResponse =
-                            generateErrorResponse(e, redirectUri);
-                    response.redirect(errorResponse.toURI().toString());
-                }
-                return null;
+                response.type(APPLICATION_JSON);
+                return generateResponse(
+                        OBJECT_MAPPER.readValue(request.body(), ApiAuthRequest.class), response);
             };
 
-    private static Long getNbf(QueryParamsMap queryParamsMap) {
-        Long nbf;
-        int nbfDay =
-                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_DAY));
-        int nbfMonth =
-                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_MONTH));
-        int nbfYear =
-                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_YEAR));
-        int nbfHours =
-                Integer.parseInt(queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_HOURS));
-        int nbfMinutes =
-                Integer.parseInt(
-                        queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_MINUTES));
-        int nbfSeconds =
-                Integer.parseInt(
-                        queryParamsMap.value(CredentialIssuerConfig.VC_NOT_BEFORE_SECONDS));
-        LocalDateTime localDateTime =
-                LocalDateTime.of(nbfYear, nbfMonth, nbfDay, nbfHours, nbfMinutes, nbfSeconds);
-        Instant nbfInstant = localDateTime.atZone(ZoneId.of("Europe/London")).toInstant();
-        nbf = nbfInstant.getEpochSecond();
-        return nbf;
+    public final Route formAuthorize =
+            (Request request, Response response) -> {
+                response.type(APPLICATION_X_WWW_FORM_URLENCODED);
+                return generateResponse(FormAuthRequest.fromQueryMap(request.queryMap()), response);
+            };
+
+    private String generateResponse(AuthRequest authRequest, Response response)
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
+                    ParseException {
+        AuthorizationErrorResponse requestedAuthErrorResponse = handleRequestedError(authRequest);
+        if (requestedAuthErrorResponse != null) {
+            response.redirect(requestedAuthErrorResponse.toURI().toString());
+            return null;
+        }
+
+        var clientIdValue = authRequest.clientId();
+        var jar = authRequest.request();
+
+        ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
+
+        if (clientConfig == null) {
+            response.status(HttpServletResponse.SC_BAD_REQUEST);
+            return "Error: Could not find client configuration details for: " + clientIdValue;
+        }
+
+        SignedJWT signedJWT = getSignedJWT(jar, clientConfig.getEncryptionPrivateKey());
+        String redirectUri =
+                signedJWT.getJWTClaimsSet().getClaim(RequestParamConstants.REDIRECT_URI).toString();
+        String userId = signedJWT.getJWTClaimsSet().getSubject();
+        String state = signedJWT.getJWTClaimsSet().getClaim(RequestParamConstants.STATE).toString();
+
+        try {
+            var attributesMap = jsonStringToMap(authRequest.credentialSubjectJson());
+
+            Map<String, Object> credentialAttributesMap;
+
+            if (NO_SHARED_ATTRIBUTES_CRI_TYPES.contains(getCriType())) {
+                credentialAttributesMap = attributesMap;
+            } else {
+                Map<String, Object> combinedAttributeJson =
+                        jsonStringToMap(getSharedAttributes(signedJWT.getJWTClaimsSet()));
+                combinedAttributeJson.putAll(attributesMap);
+                credentialAttributesMap = combinedAttributeJson;
+            }
+
+            Long nbf =
+                    authRequest.nbf() != null ? authRequest.nbf() : Instant.now().getEpochSecond();
+
+            String signedVcJwt =
+                    verifiableCredentialGenerator
+                            .generate(
+                                    new Credential(
+                                            credentialAttributesMap,
+                                            generateEvidenceMap(authRequest),
+                                            userId,
+                                            clientIdValue,
+                                            nbf))
+                            .serialize();
+
+            if (CredentialIssuerConfig.isEnabled(
+                    CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
+                processMitigatedCIs(userId, authRequest, signedVcJwt);
+            }
+
+            handleF2fRequests(authRequest.f2f(), userId, state, signedVcJwt);
+
+            AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
+            persistData(
+                    authRequest, successResponse.getAuthorizationCode(), signedVcJwt, redirectUri);
+
+            response.redirect(successResponse.toURI().toString());
+        } catch (CriStubException e) {
+            AuthorizationErrorResponse errorResponse = generateErrorResponse(e, redirectUri);
+            response.redirect(errorResponse.toURI().toString());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            AuthorizationErrorResponse errorResponse =
+                    generateErrorResponse(
+                            new CriStubException(
+                                    "f2f_queue_exception", "Failed to send VC to F2F queue", e),
+                            redirectUri);
+            response.redirect(errorResponse.toURI().toString());
+        }
+        return null;
     }
 
-    private void processMitigatedCIs(
-            String userId, QueryParamsMap queryParamsMap, String signedVcJwt)
+    private Map<String, Object> generateEvidenceMap(AuthRequest authRequest)
             throws CriStubException {
-        String mitigatedCIsString =
-                queryParamsMap
-                        .value(CredentialIssuerConfig.MITIGATED_CONTRAINDICATORS_PARAM)
-                        .replaceAll("\\s", "");
+        Map<String, Object> evidenceMap = jsonStringToMap(authRequest.evidenceJson());
 
-        if (!mitigatedCIsString.isEmpty()) {
+        if (authRequest instanceof FormAuthRequest formAuthRequest) {
+            if (MapUtils.isEmpty(evidenceMap)) {
+                evidenceMap.putAll(generateGpg45Score(getCriType(), formAuthRequest.gpg45Scores()));
+            }
+
+            if (!isEmpty(formAuthRequest.ci())) {
+                evidenceMap.put(CI, formAuthRequest.ci());
+            }
+        }
+        if (evidenceMap.get(EVIDENCE_TXN_PARAM) == null) {
+            evidenceMap.put(EVIDENCE_TXN_PARAM, UUID.randomUUID().toString());
+        }
+
+        return evidenceMap;
+    }
+
+    private void processMitigatedCIs(String userId, AuthRequest authRequest, String signedVcJwt)
+            throws CriStubException {
+        var mitigations = authRequest.mitigations();
+        if (mitigations == null) {
+            return;
+        }
+        if (!isEmpty(mitigations.mitigatedCi())) {
             LOGGER.info("Processing mitigated CI's");
-            String baseStubManagedPostUrl =
-                    queryParamsMap.value(CredentialIssuerConfig.BASE_STUB_MANAGED_POST_URL_PARAM);
-            String stubManagementApiKey =
-                    queryParamsMap.value(CredentialIssuerConfig.STUB_MANAGEMENT_API_KEY_PARAM);
-            List<String> mitigatedCiList = Stream.of(mitigatedCIsString.split(",", -1)).toList();
+            String cimitStubUrl = mitigations.cimitStubUrl();
+            String cimitStubApikey = mitigations.cimitStubApiKey();
             String postUrlTemplate = "/user/%s/mitigations/%s";
-            for (String ciCode : mitigatedCiList) {
+            for (String ciCode : mitigations.mitigatedCi()) {
                 String jwtId;
                 try {
                     jwtId = SignedJWT.parse(signedVcJwt).getJWTClaimsSet().getJWTID();
@@ -516,22 +399,16 @@ public class AuthorizeHandler {
                     throw new CriStubException("Unable to parse signed JWT", e);
                 }
 
-                String encodedUserId;
-                try {
-                    encodedUserId = URLEncoder.encode(userId, StandardCharsets.UTF_8.toString());
-                } catch (UnsupportedEncodingException e) {
-                    throw new CriStubException("Unable to URL encode userId", e);
-                }
+                var encodedUserId = URLEncoder.encode(userId, StandardCharsets.UTF_8);
                 String postUrl =
-                        baseStubManagedPostUrl
-                                + String.format(postUrlTemplate, encodedUserId, ciCode);
+                        cimitStubUrl + String.format(postUrlTemplate, encodedUserId, ciCode);
                 LOGGER.info("Managed cimit stub postUrl:{}", postUrl);
                 try {
                     HttpRequest request =
                             HttpRequest.newBuilder()
                                     .uri(new URI(postUrl))
-                                    .header("Content-Type", "application/json")
-                                    .header("x-api-key", stubManagementApiKey)
+                                    .header("Content-Type", APPLICATION_JSON)
+                                    .header("x-api-key", cimitStubApikey)
                                     .POST(
                                             HttpRequest.BodyPublishers.ofString(
                                                     String.format(
@@ -588,49 +465,42 @@ public class AuthorizeHandler {
     }
 
     private void persistData(
-            QueryParamsMap queryParamsMap,
+            AuthRequest authRequest,
             AuthorizationCode authorizationCode,
             String signedVcJwt,
             String redirectUri) {
-        String resourceId = queryParamsMap.value(RequestParamConstants.RESOURCE_ID);
+        String resourceId = authRequest.resourceId();
         this.authCodeService.persist(authorizationCode, resourceId, redirectUri);
         this.credentialService.persist(signedVcJwt, resourceId);
-        this.requestedErrorResponseService.persist(authorizationCode.getValue(), queryParamsMap);
+        this.requestedErrorResponseService.persist(
+                authorizationCode.getValue(), authRequest.requestedError());
     }
 
-    private Map<String, Object> generateJsonPayload(String payload) throws CriStubException {
-        if (StringUtils.isBlank(payload)) payload = "{}";
+    private Map<String, Object> jsonStringToMap(String payload) throws CriStubException {
+        if (isBlank(payload)) payload = "{}";
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(payload, Map.class);
+            return OBJECT_MAPPER.readValue(payload, Map.class);
         } catch (JsonProcessingException e) {
             throw new CriStubException("invalid_json", "Unable to generate valid JSON Payload", e);
         }
     }
 
-    private Map<String, Object> generateGpg45Score(
-            CriType criType,
-            String strengthValue,
-            String validityValue,
-            String activityValue,
-            String fraudValue,
-            String verificationValue,
-            String biometricVerificationValue)
+    private Map<String, Object> generateGpg45Score(CriType criType, Gpg45Scores gpg45Scores)
             throws CriStubException {
 
         if (criType.equals(USER_ASSERTED_CRI_TYPE)) {
             // VCs from user asserted CRIs, like address, do not have GPG45 scores
-            return null;
+            return Map.of();
         }
 
         ValidationResult validationResult =
                 Validator.verifyGpg45(
                         criType,
-                        strengthValue,
-                        validityValue,
-                        activityValue,
-                        fraudValue,
-                        verificationValue);
+                        gpg45Scores.strength(),
+                        gpg45Scores.validity(),
+                        gpg45Scores.activityHistory(),
+                        gpg45Scores.fraud(),
+                        gpg45Scores.verification());
 
         if (!validationResult.isValid()) {
             throw new CriStubException(
@@ -641,45 +511,45 @@ public class AuthorizeHandler {
         gpg45Score.put(
                 CredentialIssuerConfig.EVIDENCE_TYPE_PARAM,
                 CredentialIssuerConfig.EVIDENCE_TYPE_IDENTITY_CHECK);
-        gpg45Score.put(CredentialIssuerConfig.EVIDENCE_TXN_PARAM, UUID.randomUUID().toString());
+        gpg45Score.put(EVIDENCE_TXN_PARAM, UUID.randomUUID().toString());
         switch (criType) {
             case EVIDENCE_CRI_TYPE -> {
-                gpg45Score.put(
-                        CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM,
-                        Integer.parseInt(strengthValue));
-                gpg45Score.put(
-                        CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM,
-                        Integer.parseInt(validityValue));
+                gpg45Score.put(STRENGTH, Integer.parseInt(gpg45Scores.strength()));
+                gpg45Score.put(VALIDITY, Integer.parseInt(gpg45Scores.validity()));
             }
             case ACTIVITY_CRI_TYPE -> gpg45Score.put(
-                    CredentialIssuerConfig.ACTIVITY_PARAM, Integer.parseInt(activityValue));
+                    ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
             case FRAUD_CRI_TYPE -> {
-                gpg45Score.put(CredentialIssuerConfig.FRAUD_PARAM, Integer.parseInt(fraudValue));
-                if (StringUtils.isNotBlank(activityValue)) {
+                gpg45Score.put(FRAUD, Integer.parseInt(gpg45Scores.fraud()));
+                if (StringUtils.isNotBlank(gpg45Scores.activityHistory())) {
                     gpg45Score.put(
-                            CredentialIssuerConfig.ACTIVITY_PARAM, Integer.parseInt(activityValue));
+                            ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
                 }
             }
             case VERIFICATION_CRI_TYPE -> gpg45Score.put(
-                    CredentialIssuerConfig.VERIFICATION_PARAM, Integer.parseInt(verificationValue));
+                    VERIFICATION, Integer.parseInt(gpg45Scores.verification()));
             case DOC_CHECK_APP_CRI_TYPE -> {
                 int strengthNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(strengthValue) : 3;
-                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, strengthNum);
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.strength())
+                                : 3;
+                gpg45Score.put(STRENGTH, strengthNum);
                 int validityNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
-                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, validityNum);
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.validity())
+                                : 2;
+                gpg45Score.put(VALIDITY, validityNum);
 
-                if (StringUtils.isNotBlank(activityValue)) {
+                if (StringUtils.isNotBlank(gpg45Scores.activityHistory())) {
                     gpg45Score.put(
-                            CredentialIssuerConfig.ACTIVITY_PARAM, Integer.parseInt(activityValue));
+                            ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
                 }
 
                 List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
                 checkDetailsValue.add(Map.of("checkMethod", "vri"));
                 int biometricVerificationNum =
-                        StringUtils.isNotBlank(biometricVerificationValue)
-                                ? Integer.parseInt(biometricVerificationValue)
+                        StringUtils.isNotBlank(gpg45Scores.biometricVerification())
+                                ? Integer.parseInt(gpg45Scores.biometricVerification())
                                 : 2;
                 checkDetailsValue.add(
                         Map.of(
@@ -697,15 +567,19 @@ public class AuthorizeHandler {
             }
             case EVIDENCE_DRIVING_LICENCE_CRI_TYPE -> {
                 int strengthNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(strengthValue) : 3;
-                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, strengthNum);
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.strength())
+                                : 3;
+                gpg45Score.put(STRENGTH, strengthNum);
                 int validityNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
-                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, validityNum);
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.validity())
+                                : 2;
+                gpg45Score.put(VALIDITY, validityNum);
 
-                if (StringUtils.isNotBlank(activityValue)) {
+                if (StringUtils.isNotBlank(gpg45Scores.activityHistory())) {
                     gpg45Score.put(
-                            CredentialIssuerConfig.ACTIVITY_PARAM, Integer.parseInt(activityValue));
+                            ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
                 }
 
                 List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
@@ -727,16 +601,18 @@ public class AuthorizeHandler {
             }
             case F2F_CRI_TYPE -> {
                 int strengthNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(strengthValue) : 3;
-                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_STRENGTH_PARAM, strengthNum);
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.strength())
+                                : 3;
+                gpg45Score.put(STRENGTH, strengthNum);
                 int validityNum =
-                        StringUtils.isNotBlank(validityValue) ? Integer.parseInt(validityValue) : 2;
-                gpg45Score.put(CredentialIssuerConfig.EVIDENCE_VALIDITY_PARAM, validityNum);
+                        StringUtils.isNotBlank(gpg45Scores.validity())
+                                ? Integer.parseInt(gpg45Scores.validity())
+                                : 2;
+                gpg45Score.put(VALIDITY, validityNum);
 
-                if (StringUtils.isNotBlank(verificationValue)) {
-                    gpg45Score.put(
-                            CredentialIssuerConfig.VERIFICATION_PARAM,
-                            Integer.parseInt(verificationValue));
+                if (StringUtils.isNotBlank(gpg45Scores.verification())) {
+                    gpg45Score.put(VERIFICATION, Integer.parseInt(gpg45Scores.verification()));
                 }
 
                 List<Map<String, Object>> checkDetailsValue = new ArrayList<>();
@@ -859,10 +735,7 @@ public class AuthorizeHandler {
         try {
             JWEObject jweObject = getJweObject(request, encryptionPrivateKey);
             return jweObject.getPayload().toSignedJWT();
-        } catch (ParseException
-                | NoSuchAlgorithmException
-                | InvalidKeySpecException
-                | JOSEException e) {
+        } catch (ParseException | JOSEException e) {
             return SignedJWT.parse(request);
         }
     }
@@ -909,7 +782,7 @@ public class AuthorizeHandler {
                 SignedJWT signedJWT =
                         getSignedJWT(requestParam, clientConfig.getEncryptionPrivateKey());
                 String publicJwk =
-                        getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)
+                        getCriType().equals(DOC_CHECK_APP_CRI_TYPE)
                                 ? clientConfig.getJwtAuthentication().getSigningPublicJwk()
                                 : clientConfig.getSigningPublicJwk();
                 if (!es256SignatureVerifier.valid(signedJWT, publicJwk)) {
@@ -942,23 +815,20 @@ public class AuthorizeHandler {
     }
 
     private String getSharedAttributes(JWTClaimsSet claimsSet) {
-        String sharedAttributesJson;
         try {
             Map<String, Object> sharedAttributes = claimsSet.getJSONObjectClaim(SHARED_CLAIMS);
             if (sharedAttributes == null) {
                 LOGGER.error("shared_claims not found in JWT");
                 return "shared_claims not found in JWT";
             }
-            sharedAttributesJson = gson.toJson(sharedAttributes);
-            return sharedAttributesJson;
-        } catch (ParseException e) {
+            return OBJECT_MAPPER.writeValueAsString(sharedAttributes);
+        } catch (ParseException | JsonProcessingException e) {
             LOGGER.error("Failed to parse something: {}", e.getMessage());
             return String.format("Error: failed to parse something: %s", e.getMessage());
         }
     }
 
     private String getEvidenceRequested(JWTClaimsSet claimsSet) {
-        String evidenceRequestedJson;
         try {
             Map<String, Object> evidenceRequested =
                     claimsSet.getJSONObjectClaim(EVIDENCE_REQUESTED);
@@ -966,25 +836,81 @@ public class AuthorizeHandler {
                 LOGGER.error("evidence_requested not found in JWT");
                 return "evidence_requested not found in JWT";
             }
-            evidenceRequestedJson = gson.toJson(evidenceRequested);
-            return evidenceRequestedJson;
-        } catch (ParseException e) {
+            return OBJECT_MAPPER.writeValueAsString(evidenceRequested);
+        } catch (ParseException | JsonProcessingException e) {
             LOGGER.error("Failed to parse something: {}", e.getMessage());
             return String.format("Error: failed to parse something: %s", e.getMessage());
         }
     }
 
     private JWEObject getJweObject(String requestParam, PrivateKey encryptionPrivateKey)
-            throws ParseException, NoSuchAlgorithmException, InvalidKeySpecException,
-                    JOSEException {
+            throws ParseException, JOSEException {
         JWEObject encryptedJweObject = JWEObject.parse(requestParam);
         RSADecrypter rsaDecrypter = new RSADecrypter(encryptionPrivateKey);
         encryptedJweObject.decrypt(rsaDecrypter);
         return encryptedJweObject;
     }
 
-    private AuthorizationErrorResponse handleRequestedError(QueryParamsMap queryParamsMap)
+    private AuthorizationErrorResponse handleRequestedError(AuthRequest authRequest)
             throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
-        return requestedErrorResponseService.getRequestedAuthErrorResponse(queryParamsMap);
+        return requestedErrorResponseService.getRequestedAuthErrorResponse(authRequest);
+    }
+
+    private void handleF2fRequests(
+            F2fDetails f2fDetails, String userId, String state, String signedVcJwt)
+            throws IOException, InterruptedException {
+        if (f2fDetails == null) {
+            return;
+        }
+        if (f2fDetails.sendVcToQueue() && !f2fDetails.sendErrorToQueue()) {
+            F2FEnqueueLambdaRequest enqueueLambdaRequest =
+                    new F2FEnqueueLambdaRequest(
+                            f2fDetails.queueName(),
+                            new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
+                            10);
+
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(getConfigValue(F2F_STUB_QUEUE_URL)))
+                            .POST(
+                                    HttpRequest.BodyPublishers.ofString(
+                                            OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest)))
+                            .build();
+
+            var responseStatusCode =
+                    httpClient.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+            if (responseStatusCode < 200 || responseStatusCode > 299) {
+                LOGGER.warn(
+                        String.format(
+                                "failed to send VC to F2F queue - status code: %d",
+                                responseStatusCode));
+            }
+        }
+
+        if (f2fDetails.sendErrorToQueue()) {
+            F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
+                    new F2FErrorEnqueueLambdaRequest(
+                            f2fDetails.queueName(),
+                            new F2FQueueErrorEvent(
+                                    userId, state, "access_denied", "Something went wrong"),
+                            10);
+
+            HttpRequest request =
+                    HttpRequest.newBuilder()
+                            .uri(URI.create(getConfigValue(F2F_STUB_QUEUE_URL)))
+                            .POST(
+                                    HttpRequest.BodyPublishers.ofString(
+                                            OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest)))
+                            .build();
+
+            var responseStatusCode =
+                    httpClient.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
+            if (responseStatusCode < 200 || responseStatusCode > 299) {
+                LOGGER.warn(
+                        String.format(
+                                "failed to send error to F2F queue - status code: %d",
+                                responseStatusCode));
+            }
+        }
     }
 }

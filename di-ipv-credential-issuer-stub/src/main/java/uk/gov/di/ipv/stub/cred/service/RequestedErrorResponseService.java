@@ -13,9 +13,10 @@ import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
 import org.eclipse.jetty.http.HttpStatus;
-import spark.QueryParamsMap;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
+import uk.gov.di.ipv.stub.cred.domain.AuthRequest;
+import uk.gov.di.ipv.stub.cred.domain.RequestedError;
 import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
 
 import java.net.URI;
@@ -38,40 +39,34 @@ public class RequestedErrorResponseService {
         this.errorResponsesRequested = new ConcurrentHashMap<>();
     }
 
-    public void persist(String authCode, QueryParamsMap queryParamsMap) {
+    public void persist(String authCode, RequestedError requestedError) {
+        if (requestedError == null) {
+            return;
+        }
         Map<String, String> parmsValuesMap = new HashMap<>();
+        parmsValuesMap.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, requestedError.error());
         parmsValuesMap.put(
-                RequestParamConstants.REQUESTED_OAUTH_ERROR,
-                queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR));
-        parmsValuesMap.put(
-                RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT,
-                queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT));
+                RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, requestedError.endpoint());
         parmsValuesMap.put(
                 RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
-                queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION));
+                requestedError.description());
         parmsValuesMap.put(
-                RequestParamConstants.REQUESTED_USERINFO_ERROR,
-                queryParamsMap.value(RequestParamConstants.REQUESTED_USERINFO_ERROR));
+                RequestParamConstants.REQUESTED_USERINFO_ERROR, requestedError.userInfoError());
 
         errorResponsesRequested.put(authCode, parmsValuesMap);
     }
 
-    public AuthorizationErrorResponse getRequestedAuthErrorResponse(QueryParamsMap queryParamsMap)
+    public AuthorizationErrorResponse getRequestedAuthErrorResponse(AuthRequest authRequest)
             throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
-        String endpoint =
-                queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT);
-        String error = queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR);
-        String description =
-                queryParamsMap.value(RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION);
-
-        if (AUTH.equals(endpoint) && !NONE.equals(error)) {
-            String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
-            ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
+        var requestedError = authRequest.requestedError();
+        if (requestedError == null) {
+            return null;
+        }
+        if (AUTH.equals(requestedError.endpoint()) && !NONE.equals(requestedError.error())) {
+            ClientConfig clientConfig = ConfigService.getClientConfig(authRequest.clientId());
 
             JWTClaimsSet jwtClaimsSet =
-                    getSignedJWT(
-                                    queryParamsMap.value(RequestParamConstants.REQUEST),
-                                    clientConfig.getEncryptionPrivateKey())
+                    getSignedJWT(authRequest.request(), clientConfig.getEncryptionPrivateKey())
                             .getJWTClaimsSet();
 
             String redirectUri =
@@ -80,7 +75,7 @@ public class RequestedErrorResponseService {
 
             return new AuthorizationErrorResponse(
                     URI.create(redirectUri),
-                    new ErrorObject(error, description),
+                    new ErrorObject(requestedError.error(), requestedError.description()),
                     (state == null || state.isEmpty()) ? null : new State(state),
                     new Issuer(CredentialIssuerConfig.NAME),
                     ResponseMode.QUERY);
@@ -141,17 +136,13 @@ public class RequestedErrorResponseService {
         try {
             JWEObject jweObject = getJweObject(request, encryptionPrivateKey);
             return jweObject.getPayload().toSignedJWT();
-        } catch (ParseException
-                | NoSuchAlgorithmException
-                | InvalidKeySpecException
-                | JOSEException e) {
+        } catch (ParseException | JOSEException e) {
             return SignedJWT.parse(request);
         }
     }
 
     private JWEObject getJweObject(String requestParam, PrivateKey encryptionPrivateKey)
-            throws ParseException, NoSuchAlgorithmException, InvalidKeySpecException,
-                    JOSEException {
+            throws ParseException, JOSEException {
         JWEObject encryptedJweObject = JWEObject.parse(requestParam);
         RSADecrypter rsaDecrypter = new RSADecrypter(encryptionPrivateKey);
         encryptedJweObject.decrypt(rsaDecrypter);
