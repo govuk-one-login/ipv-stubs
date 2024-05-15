@@ -6,42 +6,17 @@ public class CredentialIssuerConfig {
             getConfigValue("CREDENTIAL_ISSUER_NAME", "Credential Issuer Stub");
     public static final String VC_DEFAULT_TTL = "300";
 
-    public static String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE", null);
+    public static final String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE");
     public static final String DEV_DOMAIN =
             getConfigValue("DEV_DOMAIN", ".dev.identity.account.gov.uk");
-    public static final String F2F_STUB_QUEUE_URL = getConfigValue("F2F_STUB_QUEUE_URL", null);
-    public static final String F2F_STUB_QUEUE_NAME = getConfigValue("F2F_STUB_QUEUE_NAME", null);
+    public static final String F2F_STUB_QUEUE_NAME_DEFAULT = getConfigValue("F2F_STUB_QUEUE_NAME");
 
     public static final String EVIDENCE_TYPE_PARAM = "type";
     public static final String EVIDENCE_TYPE_IDENTITY_CHECK = "IdentityCheck";
     public static final String EVIDENCE_TXN_PARAM = "txn";
-    public static final String EVIDENCE_STRENGTH_PARAM = "strengthScore";
-    public static final String EVIDENCE_VALIDITY_PARAM = "validityScore";
-    public static final String ACTIVITY_PARAM = "activityHistoryScore";
-    public static final String FRAUD_PARAM = "identityFraudScore";
-    public static final String VERIFICATION_PARAM = "verificationScore";
     public static final String CHECK_DETAILS_PARAM = "checkDetails";
     public static final String FAILED_CHECK_DETAILS_PARAM = "failedCheckDetails";
-    public static final String BIOMETRICK_VERIFICATION_PARAM = "biometricVerificationScore";
-    public static final String EVIDENCE_CONTRAINDICATOR_PARAM = "ci";
-    public static final String MITIGATED_CONTRAINDICATORS_PARAM = "ciMitigated";
-    public static final String BASE_STUB_MANAGED_POST_URL_PARAM = "ciMitiBaseUrl";
-    public static final String STUB_MANAGEMENT_API_KEY_PARAM = "ciMitiApiKey";
     public static final String CRI_MITIGATION_ENABLED = "MITIGATION_ENABLED";
-    public static final String EXPIRY_FLAG_CHK_BOX_VALUE = "on";
-    public static final String EXPIRY_FLAG = "vcExpiryFlg";
-    public static final String EXPIRY_HOURS = "expHours";
-    public static final String EXPIRY_MINUTES = "expMinutes";
-    public static final String EXPIRY_SECONDS = "expSeconds";
-    public static final String VC_NOT_BEFORE_FLAG_CHK_BOX_VALUE = "on";
-    public static final String VC_NOT_BEFORE_FLAG = "vcNotBeforeFlg";
-    public static final String VC_NOT_BEFORE_DAY = "vcNotBeforeDay";
-    public static final String VC_NOT_BEFORE_MONTH = "vcNotBeforeMonth";
-    public static final String VC_NOT_BEFORE_YEAR = "vcNotBeforeYear";
-    public static final String VC_NOT_BEFORE_HOURS = "vcNotBeforeHours";
-    public static final String VC_NOT_BEFORE_MINUTES = "vcNotBeforeMinutes";
-    public static final String VC_NOT_BEFORE_SECONDS = "vcNotBeforeSeconds";
-
     private static final String CREDENTIAL_ISSUER_TYPE_VAR = "CREDENTIAL_ISSUER_TYPE";
 
     private CredentialIssuerConfig() {}
@@ -61,6 +36,10 @@ public class CredentialIssuerConfig {
 
     public static Long getVerifiableCredentialTtlSeconds() {
         return Long.parseLong(getConfigValue("VC_TTL_SECONDS", VC_DEFAULT_TTL));
+    }
+
+    public static String getConfigValue(String key) {
+        return getConfigValue(key, null);
     }
 
     private static String getConfigValue(String key, String defaultValue) {

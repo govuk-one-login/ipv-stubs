@@ -21,7 +21,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.*;
 
 import static com.nimbusds.jwt.JWTClaimNames.AUDIENCE;
-import static com.nimbusds.jwt.JWTClaimNames.EXPIRATION_TIME;
 import static com.nimbusds.jwt.JWTClaimNames.ISSUER;
 import static com.nimbusds.jwt.JWTClaimNames.JWT_ID;
 import static com.nimbusds.jwt.JWTClaimNames.NOT_BEFORE;
@@ -106,12 +105,8 @@ public class VerifiableCredentialGenerator {
                         .claim(
                                 JWT_ID,
                                 String.format(
-                                        "%s:%s",
-                                        JTI_SCHEME_AND_PATH_PREFIX, UUID.randomUUID().toString()))
+                                        "%s:%s", JTI_SCHEME_AND_PATH_PREFIX, UUID.randomUUID()))
                         .claim(VC_CLAIM, vc);
-        if (!Objects.isNull(credential.getExp())) {
-            claim = claim.claim(EXPIRATION_TIME, credential.getExp());
-        }
 
         JWTClaimsSet claimsSet = claim.build();
 
