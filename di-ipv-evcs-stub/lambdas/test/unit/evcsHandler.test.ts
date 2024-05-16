@@ -14,6 +14,7 @@ import {
 } from "../../src/handlers/evcsHandler";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { VcState } from "../../src/domain/enums/vcState";
+import VCProvenance from "../../src/domain/enums/vcProvenance";
 
 jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
   getParameter: jest.fn(),
@@ -63,6 +64,11 @@ const TEST_POST_REQUEST = [
       txmaEventId: "txma-event-id",
       testProperty: "testProperty",
     },
+  },
+  {
+    vc: "zzJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.zf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
+    state: VcState.CURRENT,
+    provenance: VCProvenance.MIGRATED,
   },
   {
     vc: "yyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.tf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
@@ -177,6 +183,7 @@ describe("EVCS handler", function () {
     expect(result.statusCode).toEqual(202);
     const response = await dynamoDocClient.send(getCommand);
     expect(decodedTestUserId).toEqual(response.Item?.userId);
+    expect(VCProvenance.ONLINE).toEqual(response.Item?.provenance);
   });
 
   it("successfully persist and then returns user VCs response", async () => {
@@ -208,7 +215,7 @@ describe("EVCS handler", function () {
     // assert
     expect(result.statusCode).toEqual(200);
     const parseResult = JSON.parse(result.body as string);
-    expect(1).toEqual(parseResult.vcs.length);
+    expect(2).toEqual(parseResult.vcs.length);
   });
 
   it("successfully persist and then update user VCs and then returns user VCs response", async () => {
@@ -234,15 +241,13 @@ describe("EVCS handler", function () {
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
     let result = (await getHandler(event)) as APIGatewayProxyStructuredResultV2;
-
     // assert
     expect(result.statusCode).toEqual(200);
     let parseResult = JSON.parse(result.body as string);
-    expect(1).toEqual(parseResult.vcs.length);
+    expect(2).toEqual(parseResult.vcs.length);
     expect(VcState.CURRENT).toEqual(parseResult.vcs[0].state);
-    expect(parseResult.vcs[0].metadata.reason).toEqual("test-created");
+    expect("test-created").toEqual(parseResult.vcs[0].metadata.reason);
     expect(parseResult.vcs[0].metadata).toHaveProperty("testProperty");
-
     // arrange
     event = {
       ...TEST_PATCH_EVENT,
@@ -267,7 +272,7 @@ describe("EVCS handler", function () {
     // assert
     expect(result.statusCode).toEqual(200);
     parseResult = JSON.parse(result.body as string);
-    expect(1).toEqual(parseResult.vcs.length);
+    expect(2).toEqual(parseResult.vcs.length);
     expect(parseResult.vcs[0].metadata.reason).toEqual("updated");
     expect(parseResult.vcs[0].metadata).not.toHaveProperty("testProperty");
   });

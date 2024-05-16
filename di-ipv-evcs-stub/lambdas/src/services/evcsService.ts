@@ -43,8 +43,12 @@ export async function processPostUserVCsRequest(
         vc: postRequestItem.vc,
         vcSignature: postRequestItem.vc.split(".")[2],
         state: postRequestItem.state,
-        metadata: postRequestItem.metadata!,
-        provenance: (postRequestItem.provenance! = VCProvenance.ONLINE),
+        metadata:
+          postRequestItem.metadata != undefined ? postRequestItem.metadata : {},
+        provenance:
+          postRequestItem.provenance != undefined
+            ? postRequestItem.provenance
+            : VCProvenance.ONLINE,
         ttl,
       };
       allPromises.push(saveUserVC(vcItem));
