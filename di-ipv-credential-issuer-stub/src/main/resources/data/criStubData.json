@@ -826,7 +826,7 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "Ali"
+                "value": "Alice"
               },
               {
                 "type": "GivenName",
@@ -1885,11 +1885,11 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "Ken"
+                "value": "Kenneth"
               },
               {
                 "type": "FamilyName",
-                "value": "Decerqueira"
+                "value": "Dec"
               }
             ]
           }
