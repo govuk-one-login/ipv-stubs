@@ -1,0 +1,24 @@
+export enum VcState {
+  CURRENT = "CURRENT",
+  PENDING = "PENDING",
+  VERIFICATION = "VERIFICATION",
+  ABANDONED = "ABANDONED",
+  PENDING_RETURN = "PENDING_RETURN",
+  HISTORIC = "HISTORIC",
+  VERIFICATION_ARCHIVED = "VERIFICATION_ARCHIVED",
+}
+
+export const CreateVcStates = {
+  [VcState.CURRENT]: VcState.CURRENT,
+  [VcState.PENDING]: VcState.PENDING,
+  [VcState.PENDING_RETURN]: VcState.PENDING_RETURN,
+  [VcState.VERIFICATION]: VcState.VERIFICATION,
+} as const;
+
+export const UpdateVcStates = {
+  [VcState.CURRENT]: VcState.CURRENT,
+  [VcState.ABANDONED]: VcState.ABANDONED,
+  [VcState.PENDING_RETURN]: VcState.PENDING_RETURN,
+  [VcState.HISTORIC]: VcState.HISTORIC,
+  [VcState.VERIFICATION_ARCHIVED]: VcState.VERIFICATION_ARCHIVED,
+} as const;

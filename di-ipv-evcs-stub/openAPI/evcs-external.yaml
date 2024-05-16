@@ -1,0 +1,236 @@
+openapi: 3.0.3
+info:
+  title: "EVCS Stub External"
+  description: "The external api presented by EVCS Stub for use by services"
+  version: "1.0.0"
+paths:
+  /healthcheck:
+    get:
+      description: "returns a 200 for Route53 health checks to use"
+      responses:
+        200:
+          description: "A healthcheck response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "MOCK"
+        requestTemplates:
+          application/json: "{\"statusCode\":200}"
+        responses:
+          200:
+            statusCode: 200
+            responseTemplates:
+              application/json: "{\"healthcheck\": \"ok\"}"
+
+  /vcs/{userId}:
+    post:
+      description: Save multiple VCs for a specific user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostUserVCRequestBody"
+      responses:
+        202:
+          description: "Accepted"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+        400:
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsCreateUserVCsFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 202
+            responseTemplates:
+              application/json: '{"result": "success"}'
+    patch:
+      description: Update multiple VCs' state and metadata for a specific user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchUserVCRequestBody"
+      responses:
+        204:
+          description: "Accepted"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+        400:
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsUpdateUserVCsFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 204
+            responseTemplates:
+              application/json: '{"result": "success"}'
+    get:
+      description: "Returns a list of User Verifiable Credentials"
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "The list of Verifiable Credentials"
+          content:
+            application/json:
+              schema:
+                type: "object"
+        400:
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsGetUserVCsFunction.Arn}:live/invocations
+        passthroughBehavior: "when_no_match"
+        responses:
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: '{"result": "success"}'
+
+components:
+  schemas:
+    PostUserVCRequestBody:
+      description: Request body for EVCS post user VCs request
+      type: object
+      properties:
+        persistVCs:
+          type: array
+          description: The user VCs data
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/PersistVC'
+    PatchUserVCRequestBody:
+      description: Request body for EVCS patch user VCs request
+      type: object
+      properties:
+        persistVCs:
+          type: array
+          description: The user update VCs data
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/UpdateVC'
+    PersistVC:
+      type: object
+      properties:
+        vc:
+          type: string
+          description: The code for vc data
+        state:
+          type: object
+          description: The code for state data
+          schema:
+            $ref: '#/components/schemas/CreateState'
+        metadata:
+          type: object
+          description: The code for metadata data
+          properties:
+            reason:
+              type: string
+            timestampMs:
+              type: string
+            txmaEventId:
+              type: string
+        provenience:
+          type: object
+          description: The code for provenience data
+          schema:
+            $ref: '#/components/schemas/VCProvenience'
+    UpdateVC:
+      type: object
+      properties:
+        signature:
+          type: string
+          description: The code for vc data
+        state:
+          type: object
+          description: The code for state data
+          schema:
+            $ref: '#/components/schemas/Updatetate'
+        metadata:
+          type: object
+          description: The code for metadata data
+          properties:
+            reason:
+              type: string
+            timestampMs:
+              type: string
+            txmaEventId:
+              type: string
+    CreateState:
+      type: string
+      enum:
+        - CURRENT
+        - PENDING
+        - PENDING_RETURN
+        - VERIFICATION
+    UpdateState:
+      type: string
+      enum:
+        - CURRENT
+        - ABANDONED
+        - PENDING_RETURN
+        - HISTORIC
+        - VERIFICATION_ARCHIVED
+    VCProvenience:
+      type: string
+      enum:
+        - ONLINE
+        - OFFLINE
+        - EXTERNAL
+        - MIGRATED
+        - OTHER
+
+
