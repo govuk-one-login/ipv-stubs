@@ -32,6 +32,64 @@
     },
     {
       "criType": "Address (Stub)",
+      "label": "Ali Jane Parker Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          },
+          {
+            "buildingName": "27",
+            "streetName": "FOREST WAY",
+            "postalCode": "SM2 5TH",
+            "addressLocality": "SUTTON",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "buildingName": "52",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8NE",
+            "addressLocality": "KINGSTON",
+            "validFrom": "2020-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Alice Jane Park Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          },
+          {
+            "buildingName": "27",
+            "streetName": "FOREST WAY",
+            "postalCode": "SM2 5TH",
+            "addressLocality": "SUTTON",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "buildingName": "52",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8NE",
+            "addressLocality": "KINGSTON",
+            "validFrom": "2020-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
       "label": "Bob Parker Valid Address",
       "payload": {
         "address": [
@@ -88,6 +146,76 @@
             "buildingNumber": "8",
             "addressLocality": "BATH",
             "validFrom": "2000-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Ken Decerqueira (Valid Experian) Address",
+      "payload": {
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8ND",
+            "buildingNumber": "18",
+            "addressLocality": "LONDON",
+            "validFrom": "2010-10-01"
+          },
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HILL SIDE",
+            "postalCode": "HA1 2GP",
+            "buildingNumber": "28",
+            "addressLocality": "LONDON",
+            "validFrom": "2020-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Kenneth Dec (Valid Experian) Address",
+      "payload": {
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8ND",
+            "buildingNumber": "18",
+            "addressLocality": "LONDON",
+            "validFrom": "2010-10-01"
+          },
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HILL SIDE",
+            "postalCode": "HA1 2GP",
+            "buildingNumber": "28",
+            "addressLocality": "LONDON",
+            "validFrom": "2020-01-01"
           }
         ]
       }
@@ -654,6 +782,80 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
+      "label": "Ali Jane Parker (Valid) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Ali"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Parker"
+              }
+            ]
+          }
+        ],
+        "drivingPermit": [
+          {
+            "expiryDate": "2032-02-02",
+            "issuedBy": "DVLA",
+            "personalNumber": "PARKE710112PBFGA",
+            "issueDate": "2005-02-02"
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Alice Jane Park (Valid) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Alice"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Park"
+              }
+            ]
+          }
+        ],
+        "drivingPermit": [
+          {
+            "expiryDate": "2032-02-02",
+            "issuedBy": "DVLA",
+            "personalNumber": "PARKE710112PBFGA",
+            "issueDate": "2005-02-02"
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
       "label": "Joe Shmoe (Valid) Driving Licence",
       "payload": {
         "name": [
@@ -720,6 +922,70 @@
             "documentNumber": "321654987",
             "expiryDate": "2030-01-01",
             "icaoIssuerCode": "GBR"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Ken Decerqueira (Valid Experian) Passport",
+      "payload": {
+        "passport": [
+          {
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR",
+            "documentNumber": "321654987"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Ken"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Decerqueira"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Kenneth Dec (Valid Experian) Passport",
+      "payload": {
+        "passport": [
+          {
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR",
+            "documentNumber": "321654987"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Kenneth"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Dec"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
           }
         ]
       }
@@ -1287,6 +1553,110 @@
     },
     {
       "criType": "Fraud Check (Stub)",
+      "label": "Ali Jane Parker (Valid) Fraud",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          },
+          {
+            "buildingName": "27",
+            "streetName": "FOREST WAY",
+            "postalCode": "SM2 5TH",
+            "addressLocality": "SUTTON",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "buildingName": "52",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8NE",
+            "addressLocality": "KINGSTON",
+            "validFrom": "2020-01-01"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Ali"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Parker"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Alice Jane Park (Valid) Fraud",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          },
+          {
+            "buildingName": "27",
+            "streetName": "FOREST WAY",
+            "postalCode": "SM2 5TH",
+            "addressLocality": "SUTTON",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "buildingName": "52",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8NE",
+            "addressLocality": "KINGSTON",
+            "validFrom": "2020-01-01"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Alice"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Park"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
       "label": "Bob Parker (Valid) Fraud",
       "payload": {
         "name": [
@@ -1419,6 +1789,114 @@
             "buildingNumber": "8",
             "addressLocality": "BATH",
             "validFrom": "2000-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Ken Decerqueira (Valid Experian) Fraud",
+      "payload": {
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8ND",
+            "buildingNumber": "18",
+            "addressLocality": "LONDON",
+            "validFrom": "2010-10-01"
+          },
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HILL SIDE",
+            "postalCode": "HA1 2GP",
+            "buildingNumber": "28",
+            "addressLocality": "LONDON",
+            "validFrom": "2020-01-01"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Ken"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Decerqueira"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Kenneth Dec (Valid Experian) Fraud",
+      "payload": {
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8ND",
+            "buildingNumber": "18",
+            "addressLocality": "LONDON",
+            "validFrom": "2010-10-01"
+          },
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HILL SIDE",
+            "postalCode": "HA1 2GP",
+            "buildingNumber": "28",
+            "addressLocality": "LONDON",
+            "validFrom": "2020-01-01"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Kenneth"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Dec"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
           }
         ]
       }
