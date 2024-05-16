@@ -32,6 +32,64 @@
     },
     {
       "criType": "Address (Stub)",
+      "label": "Ali Jane Parker Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          },
+          {
+            "buildingName": "27",
+            "streetName": "FOREST WAY",
+            "postalCode": "SM2 5TH",
+            "addressLocality": "SUTTON",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "buildingName": "52",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8NE",
+            "addressLocality": "KINGSTON",
+            "validFrom": "2020-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Alice Jane Park Valid Address",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          },
+          {
+            "buildingName": "27",
+            "streetName": "FOREST WAY",
+            "postalCode": "SM2 5TH",
+            "addressLocality": "SUTTON",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "buildingName": "52",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8NE",
+            "addressLocality": "KINGSTON",
+            "validFrom": "2020-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
       "label": "Bob Parker Valid Address",
       "payload": {
         "address": [
@@ -88,36 +146,6 @@
             "buildingNumber": "8",
             "addressLocality": "BATH",
             "validFrom": "2000-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Address (Stub)",
-      "label": "Mary Watson Valid Address",
-      "payload": {
-        "address": [
-          {
-            "buildingName": "221B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 6XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Address (Stub)",
-      "label": "Saul Goodman Valid Address",
-      "payload": {
-        "address": [
-          {
-            "buildingName": "29",
-            "streetName": "CHURCH LANE",
-            "postalCode": "TN61 8PQ",
-            "addressLocality": "TUNBRIDGE WELLS",
-            "validFrom": "1996-01-01"
           }
         ]
       }
@@ -194,58 +222,30 @@
     },
     {
       "criType": "Address (Stub)",
-      "label": "Ali Jane Parker Valid Address",
+      "label": "Mary Watson Valid Address",
       "payload": {
         "address": [
           {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
-          },
-          {
-            "buildingName": "27",
-            "streetName": "FOREST WAY",
-            "postalCode": "SM2 5TH",
-            "addressLocality": "SUTTON",
-            "validFrom": "2000-01-01"
-          },
-          {
-            "buildingName": "52",
-            "streetName": "FOREST ROAD",
-            "postalCode": "KT4 8NE",
-            "addressLocality": "KINGSTON",
-            "validFrom": "2020-01-01"
+            "buildingName": "221B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
           }
         ]
       }
     },
     {
       "criType": "Address (Stub)",
-      "label": "Alice Jane Park Valid Address",
+      "label": "Saul Goodman Valid Address",
       "payload": {
         "address": [
           {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
-          },
-          {
-            "buildingName": "27",
-            "streetName": "FOREST WAY",
-            "postalCode": "SM2 5TH",
-            "addressLocality": "SUTTON",
-            "validFrom": "2000-01-01"
-          },
-          {
-            "buildingName": "52",
-            "streetName": "FOREST ROAD",
-            "postalCode": "KT4 8NE",
-            "addressLocality": "KINGSTON",
-            "validFrom": "2020-01-01"
+            "buildingName": "29",
+            "streetName": "CHURCH LANE",
+            "postalCode": "TN61 8PQ",
+            "addressLocality": "TUNBRIDGE WELLS",
+            "validFrom": "1996-01-01"
           }
         ]
       }
@@ -928,39 +928,6 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
-      "label": "Saul Goodman (Valid) BRC",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "type": "GivenName",
-                "value": "SAUL"
-              },
-              {
-                "type": "FamilyName",
-                "value": "GOODMAN"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1995-08-16"
-          }
-        ],
-        "residencePermit": [
-          {
-            "documentNumber": "AX66K69P2",
-            "expiryDate": "2030-07-13",
-            "icaoIssuerCode": "UTO",
-            "documentType": "CR"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "DOC Checking App (Stub)",
       "label": "Ken Decerqueira (Valid Experian) Passport",
       "payload": {
         "passport": [
@@ -1019,6 +986,39 @@
         "birthDate": [
           {
             "value": "1965-07-08"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Saul Goodman (Valid) BRC",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "SAUL"
+              },
+              {
+                "type": "FamilyName",
+                "value": "GOODMAN"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1995-08-16"
+          }
+        ],
+        "residencePermit": [
+          {
+            "documentNumber": "AX66K69P2",
+            "expiryDate": "2030-07-13",
+            "icaoIssuerCode": "UTO",
+            "documentType": "CR"
           }
         ]
       }
@@ -1553,6 +1553,110 @@
     },
     {
       "criType": "Fraud Check (Stub)",
+      "label": "Ali Jane Parker (Valid) Fraud",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          },
+          {
+            "buildingName": "27",
+            "streetName": "FOREST WAY",
+            "postalCode": "SM2 5TH",
+            "addressLocality": "SUTTON",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "buildingName": "52",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8NE",
+            "addressLocality": "KINGSTON",
+            "validFrom": "2020-01-01"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Ali"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Parker"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Alice Jane Park (Valid) Fraud",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          },
+          {
+            "buildingName": "27",
+            "streetName": "FOREST WAY",
+            "postalCode": "SM2 5TH",
+            "addressLocality": "SUTTON",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "buildingName": "52",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8NE",
+            "addressLocality": "KINGSTON",
+            "validFrom": "2020-01-01"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Alice"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Park"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
       "label": "Bob Parker (Valid) Fraud",
       "payload": {
         "name": [
@@ -1691,74 +1795,6 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Mary Watson (Valid) Fraud",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "Mary",
-                "type": "GivenName"
-              },
-              {
-                "value": "Watson",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1932-02-25"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "221B",
-            "streetName": "BAKER STREET",
-            "postalCode": "NW1 6XE",
-            "addressLocality": "LONDON",
-            "validFrom": "1887-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Fraud Check (Stub)",
-      "label": "Saul Goodman (Valid) Fraud",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "type": "GivenName",
-                "value": "SAUL"
-              },
-              {
-                "type": "FamilyName",
-                "value": "GOODMAN"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1995-08-16"
-          }
-        ],
-        "address": [
-          {
-            "buildingName": "29",
-            "streetName": "CHURCH LANE",
-            "postalCode": "TN61 8PQ",
-            "addressLocality": "TUNBRIDGE WELLS",
-            "validFrom": "1996-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Fraud Check (Stub)",
       "label": "Ken Decerqueira (Valid Experian) Fraud",
       "payload": {
         "address": [
@@ -1867,104 +1903,68 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Ali Jane Parker (Valid) Fraud",
+      "label": "Mary Watson (Valid) Fraud",
       "payload": {
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
-          },
-          {
-            "buildingName": "27",
-            "streetName": "FOREST WAY",
-            "postalCode": "SM2 5TH",
-            "addressLocality": "SUTTON",
-            "validFrom": "2000-01-01"
-          },
-          {
-            "buildingName": "52",
-            "streetName": "FOREST ROAD",
-            "postalCode": "KT4 8NE",
-            "addressLocality": "KINGSTON",
-            "validFrom": "2020-01-01"
-          }
-        ],
         "name": [
           {
             "nameParts": [
               {
-                "type": "GivenName",
-                "value": "Ali"
+                "value": "Mary",
+                "type": "GivenName"
               },
               {
-                "type": "GivenName",
-                "value": "Jane"
-              },
-              {
-                "type": "FamilyName",
-                "value": "Parker"
+                "value": "Watson",
+                "type": "FamilyName"
               }
             ]
           }
         ],
         "birthDate": [
           {
-            "value": "1970-01-01"
+            "value": "1932-02-25"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "221B",
+            "streetName": "BAKER STREET",
+            "postalCode": "NW1 6XE",
+            "addressLocality": "LONDON",
+            "validFrom": "1887-01-01"
           }
         ]
       }
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Alice Jane Park (Valid) Fraud",
+      "label": "Saul Goodman (Valid) Fraud",
       "payload": {
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
-          },
-          {
-            "buildingName": "27",
-            "streetName": "FOREST WAY",
-            "postalCode": "SM2 5TH",
-            "addressLocality": "SUTTON",
-            "validFrom": "2000-01-01"
-          },
-          {
-            "buildingName": "52",
-            "streetName": "FOREST ROAD",
-            "postalCode": "KT4 8NE",
-            "addressLocality": "KINGSTON",
-            "validFrom": "2020-01-01"
-          }
-        ],
         "name": [
           {
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "Alice"
-              },
-              {
-                "type": "GivenName",
-                "value": "Jane"
+                "value": "SAUL"
               },
               {
                 "type": "FamilyName",
-                "value": "Park"
+                "value": "GOODMAN"
               }
             ]
           }
         ],
         "birthDate": [
           {
-            "value": "1970-01-01"
+            "value": "1995-08-16"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "29",
+            "streetName": "CHURCH LANE",
+            "postalCode": "TN61 8PQ",
+            "addressLocality": "TUNBRIDGE WELLS",
+            "validFrom": "1996-01-01"
           }
         ]
       }
