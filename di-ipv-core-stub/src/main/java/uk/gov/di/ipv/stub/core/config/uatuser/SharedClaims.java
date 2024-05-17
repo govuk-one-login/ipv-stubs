@@ -8,5 +8,4 @@ public record SharedClaims(
         @JsonProperty("@context") List<String> context,
         @JsonProperty("name") List<Name> name,
         @JsonProperty("birthDate") List<DateOfBirth> birthDate,
-        @JsonProperty("address") List<CanonicalAddress> addresses,
-        @JsonProperty("socialSecurityRecord") List<SocialSecurityRecord> socialSecurityRecord) {}
+        @JsonProperty("address") List<CanonicalAddress> addresses) {}
