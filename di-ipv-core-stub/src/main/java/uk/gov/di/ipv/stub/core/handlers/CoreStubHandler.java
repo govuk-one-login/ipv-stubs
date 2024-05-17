@@ -324,7 +324,6 @@ public class CoreStubHandler {
             (Request request, Response response) -> {
                 var credentialIssuerId =
                         Objects.requireNonNull(request.queryParams("cri"), "cri required");
-                boolean isHmrcKbvCri = credentialIssuerId.contains("hmrc-kbv-cri");
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 String rowNumber = request.queryParams("rowNumber");
                 Identity identity = fetchOrCreateIdentity(rowNumber);
@@ -344,9 +343,7 @@ public class CoreStubHandler {
                                 "addressMap",
                                 addressMap,
                                 "rowNumber",
-                                Optional.ofNullable(rowNumber).orElse("0"),
-                                "isHmrcKbvCri",
-                                isHmrcKbvCri),
+                                Optional.ofNullable(rowNumber).orElse("0")),
                         "edit-user.mustache");
             };
 
@@ -355,10 +352,8 @@ public class CoreStubHandler {
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
                 var rowNumber =
                         Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
-                // NINO has been added here temporarily for testing implementation of HMRC KBV CRI
-                var nino = request.queryParams("nino");
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
-                var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
+                var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
                 var claimIdentity =
                         new IdentityMapper()
                                 .mapToSharedClaim(
@@ -510,7 +505,6 @@ public class CoreStubHandler {
                         List.of(ukAddress),
                         new FindDateOfBirth(dob, dob),
                         fullName,
-                        null,
                         null);
         return identity;
     }
