@@ -1541,7 +1541,7 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Alice Parker (Changed First Name) Fraud",
+      "label": "Alice Parker (Changed First Name + Address) Fraud",
       "payload": {
         "address": [
           {
@@ -1593,7 +1593,45 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Alice Parker (Changed Last Name) Fraud",
+      "label": "Alice Parker (Changed First Name) Fraud",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Alison"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Parker"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Alice Parker (Changed Last Name + Address) Fraud",
       "payload": {
         "address": [
           {
@@ -1616,6 +1654,44 @@
             "postalCode": "KT4 8NE",
             "addressLocality": "KINGSTON",
             "validFrom": "2020-01-01"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Alice"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Smith"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Alice Parker (Changed Last Name) Fraud",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
           }
         ],
         "name": [
@@ -1837,7 +1913,7 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Kenneth Decerqueira (Changed First Name) Fraud",
+      "label": "Kenneth Decerqueira (Changed First Name + Address) Fraud",
       "payload": {
         "address": [
           {
@@ -1891,7 +1967,43 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Kenneth Decerqueira (Changed Last Name) Fraud",
+      "label": "Kenneth Decerqueira (Changed First Name) Fraud",
+      "payload": {
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Michael"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Decerqueira"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Kenneth Decerqueira (Changed Last Name + Address) Fraud",
       "payload": {
         "address": [
           {
@@ -1920,6 +2032,42 @@
             "buildingNumber": "28",
             "addressLocality": "LONDON",
             "validFrom": "2020-01-01"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Kenneth"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Jones"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Kenneth Decerqueira (Changed Last Name) Fraud",
+      "payload": {
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
           }
         ],
         "name": [
