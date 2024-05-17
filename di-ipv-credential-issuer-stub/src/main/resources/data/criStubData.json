@@ -32,36 +32,7 @@
     },
     {
       "criType": "Address (Stub)",
-      "label": "Ali Jane Parker Valid Address",
-      "payload": {
-        "address": [
-          {
-            "buildingName": "80T",
-            "streetName": "YEOMAN WAY",
-            "postalCode": "BA14 0QP",
-            "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
-          },
-          {
-            "buildingName": "27",
-            "streetName": "FOREST WAY",
-            "postalCode": "SM2 5TH",
-            "addressLocality": "SUTTON",
-            "validFrom": "2000-01-01"
-          },
-          {
-            "buildingName": "52",
-            "streetName": "FOREST ROAD",
-            "postalCode": "KT4 8NE",
-            "addressLocality": "KINGSTON",
-            "validFrom": "2020-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Address (Stub)",
-      "label": "Alice Jane Park Valid Address",
+      "label": "Alice Parker (Changed Address) Valid Address",
       "payload": {
         "address": [
           {
@@ -152,42 +123,7 @@
     },
     {
       "criType": "Address (Stub)",
-      "label": "Ken Decerqueira (Valid Experian) Address",
-      "payload": {
-        "address": [
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HADLEY ROAD",
-            "postalCode": "BA2 5AA",
-            "buildingNumber": "8",
-            "addressLocality": "BATH",
-            "validFrom": "2000-01-01"
-          },
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "FOREST ROAD",
-            "postalCode": "KT4 8ND",
-            "buildingNumber": "18",
-            "addressLocality": "LONDON",
-            "validFrom": "2010-10-01"
-          },
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HILL SIDE",
-            "postalCode": "HA1 2GP",
-            "buildingNumber": "28",
-            "addressLocality": "LONDON",
-            "validFrom": "2020-01-01"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "Address (Stub)",
-      "label": "Kenneth Dec (Valid Experian) Address",
+      "label": "Kenneth Decerqueira (Changed Address) Address",
       "payload": {
         "address": [
           {
@@ -782,14 +718,14 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
-      "label": "Ali Jane Parker (Valid) DVLA Licence",
+      "label": "Alice Parker (Changed First Name) DVLA Licence",
       "payload": {
         "name": [
           {
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "Ali"
+                "value": "Alison"
               },
               {
                 "type": "GivenName",
@@ -819,7 +755,7 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
-      "label": "Alice Jane Park (Valid) DVLA Licence",
+      "label": "Alice Parker (Changed Last Name) DVLA Licence",
       "payload": {
         "name": [
           {
@@ -834,7 +770,7 @@
               },
               {
                 "type": "FamilyName",
-                "value": "Park"
+                "value": "Smith"
               }
             ]
           }
@@ -928,7 +864,7 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
-      "label": "Ken Decerqueira (Valid Experian) Passport",
+      "label": "Kenneth Decerqueira (Changed First Name) Passport",
       "payload": {
         "passport": [
           {
@@ -942,7 +878,7 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "Ken"
+                "value": "Michael"
               },
               {
                 "type": "FamilyName",
@@ -960,7 +896,7 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
-      "label": "Kenneth Dec (Valid Experian) Passport",
+      "label": "Kenneth Decerqueira (Changed Last Name) Passport",
       "payload": {
         "passport": [
           {
@@ -978,7 +914,7 @@
               },
               {
                 "type": "FamilyName",
-                "value": "Dec"
+                "value": "Jones"
               }
             ]
           }
@@ -1553,7 +1489,59 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Ali Jane Parker (Valid) Fraud",
+      "label": "Alice Parker (Changed Address) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Alice",
+                "type": "GivenName"
+              },
+              {
+                "value": "Jane",
+                "type": "GivenName"
+              },
+              {
+                "value": "Par-ker",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "80T",
+            "streetName": "YEOMAN WAY",
+            "postalCode": "BA14 0QP",
+            "addressLocality": "TROWBRIDGE",
+            "validFrom": "1952-01-01"
+          },
+          {
+            "buildingName": "27",
+            "streetName": "FOREST WAY",
+            "postalCode": "SM2 5TH",
+            "addressLocality": "SUTTON",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "buildingName": "52",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8NE",
+            "addressLocality": "KINGSTON",
+            "validFrom": "2020-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Alice Parker (Changed First Name) Fraud",
       "payload": {
         "address": [
           {
@@ -1583,7 +1571,7 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "Ali"
+                "value": "Alison"
               },
               {
                 "type": "GivenName",
@@ -1605,7 +1593,7 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Alice Jane Park (Valid) Fraud",
+      "label": "Alice Parker (Changed Last Name) Fraud",
       "payload": {
         "address": [
           {
@@ -1643,7 +1631,7 @@
               },
               {
                 "type": "FamilyName",
-                "value": "Park"
+                "value": "Smith"
               }
             ]
           }
@@ -1795,7 +1783,61 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Ken Decerqueira (Valid Experian) Fraud",
+      "label": "Kenneth Decerqueira (Changed Address) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HADLEY ROAD",
+            "postalCode": "BA2 5AA",
+            "buildingNumber": "8",
+            "addressLocality": "BATH",
+            "validFrom": "2000-01-01"
+          },
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "FOREST ROAD",
+            "postalCode": "KT4 8ND",
+            "buildingNumber": "18",
+            "addressLocality": "LONDON",
+            "validFrom": "2010-10-01"
+          },
+          {
+            "addressCountry": "GB",
+            "buildingName": "",
+            "streetName": "HILL SIDE",
+            "postalCode": "HA1 2GP",
+            "buildingNumber": "28",
+            "addressLocality": "LONDON",
+            "validFrom": "2020-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Kenneth Decerqueira (Changed First Name) Fraud",
       "payload": {
         "address": [
           {
@@ -1831,7 +1873,7 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "Ken"
+                "value": "Michael"
               },
               {
                 "type": "FamilyName",
@@ -1849,7 +1891,7 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Kenneth Dec (Valid Experian) Fraud",
+      "label": "Kenneth Decerqueira (Changed Last Name) Fraud",
       "payload": {
         "address": [
           {
@@ -1889,7 +1931,7 @@
               },
               {
                 "type": "FamilyName",
-                "value": "Dec"
+                "value": "Jones"
               }
             ]
           }
