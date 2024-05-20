@@ -139,84 +139,63 @@ paths:
             statusCode: 200
             responseTemplates:
               application/json: '{"result": "success"}'
-
 components:
   schemas:
     PostUserVCRequestBody:
       description: Request body for EVCS post user VCs request
-      type: object
-      properties:
-        persistVCs:
-          type: array
-          description: The user VCs data
-          items:
-            oneOf:
-              - $ref: '#/components/schemas/PersistVC'
+      type: array
+      minItems: 1
+      items:
+        type: "object"
+        additionalProperties: false
+        properties:
+          vc:
+            $ref: "#/components/schemas/VC"
+          state:
+            $ref: "#/components/schemas/CreateStates"
+          metadata:
+            $ref: "#/components/schemas/VCMetadata"
+          provenance:
+            $ref: "#/components/schemas/VCProvenance"
+        required:
+          - vc
+          - state
     PatchUserVCRequestBody:
-      description: Request body for EVCS patch user VCs request
-      type: object
-      properties:
-        persistVCs:
-          type: array
-          description: The user update VCs data
-          items:
-            oneOf:
-              - $ref: '#/components/schemas/UpdateVC'
-    PersistVC:
-      type: object
-      properties:
-        vc:
-          type: string
-          description: The code for vc data
-        state:
-          type: object
-          description: The code for state data
-          schema:
-            $ref: '#/components/schemas/CreateState'
-        metadata:
-          type: object
-          description: The code for metadata data
-          properties:
-            reason:
-              type: string
-            timestampMs:
-              type: string
-            txmaEventId:
-              type: string
-        provenience:
-          type: object
-          description: The code for provenience data
-          schema:
-            $ref: '#/components/schemas/VCProvenience'
-    UpdateVC:
-      type: object
-      properties:
-        signature:
-          type: string
-          description: The code for vc data
-        state:
-          type: object
-          description: The code for state data
-          schema:
-            $ref: '#/components/schemas/Updatetate'
-        metadata:
-          type: object
-          description: The code for metadata data
-          properties:
-            reason:
-              type: string
-            timestampMs:
-              type: string
-            txmaEventId:
-              type: string
-    CreateState:
+      description: State and Metadata Array Schema to update Verifiable Credentials
+      type: array
+      minItems: 1
+      maxItems: 100
+      uniqueItems: true
+      items:
+        type: "object"
+        additionalProperties: false
+        properties:
+          signature:
+            $ref: "#/components/schemas/VCSignature"
+          state:
+            $ref: "#/components/schemas/UpdateStates"
+          metadata:
+            $ref: "#/components/schemas/VCMetadata"
+        required:
+          - signature
+          - state
+    VC:
+      type: "string"
+      pattern: ^(?:[a-zA-Z0-9_\-\+\/=]*\.){2}[a-zA-Z0-9_\-\+\/=]*$
+    VCMetadata:
+      type: "object"
+      additionalProperties: true
+    VCSignature:
+      type: "string"
+      pattern: ^[a-zA-Z0-9_\-\+\/=]*$
+    CreateStates:
       type: string
       enum:
         - CURRENT
         - PENDING
         - PENDING_RETURN
         - VERIFICATION
-    UpdateState:
+    UpdateStates:
       type: string
       enum:
         - CURRENT
@@ -224,13 +203,12 @@ components:
         - PENDING_RETURN
         - HISTORIC
         - VERIFICATION_ARCHIVED
-    VCProvenience:
+    VCProvenance:
       type: string
+      description: Indicate the origin context when the VC is stored. If a value is not provided, a VC's Provenance will be assumed to be `ONLINE`.
       enum:
         - ONLINE
         - OFFLINE
         - EXTERNAL
         - MIGRATED
         - OTHER
-
-
