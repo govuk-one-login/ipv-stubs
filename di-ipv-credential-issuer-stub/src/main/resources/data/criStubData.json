@@ -40,21 +40,14 @@
             "streetName": "YEOMAN WAY",
             "postalCode": "BA14 0QP",
             "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
+            "validUntil": "2024-01-01"
           },
           {
             "buildingName": "27",
             "streetName": "FOREST WAY",
             "postalCode": "SM2 5TH",
             "addressLocality": "SUTTON",
-            "validFrom": "2000-01-01"
-          },
-          {
-            "buildingName": "52",
-            "streetName": "FOREST ROAD",
-            "postalCode": "KT4 8NE",
-            "addressLocality": "KINGSTON",
-            "validFrom": "2020-01-01"
+            "validFrom": "2024-01-01"
           }
         ]
       }
@@ -133,7 +126,7 @@
             "postalCode": "BA2 5AA",
             "buildingNumber": "8",
             "addressLocality": "BATH",
-            "validFrom": "2000-01-01"
+            "validUntil": "2024-01-01"
           },
           {
             "addressCountry": "GB",
@@ -142,16 +135,7 @@
             "postalCode": "KT4 8ND",
             "buildingNumber": "18",
             "addressLocality": "LONDON",
-            "validFrom": "2010-10-01"
-          },
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HILL SIDE",
-            "postalCode": "HA1 2GP",
-            "buildingNumber": "28",
-            "addressLocality": "LONDON",
-            "validFrom": "2020-01-01"
+            "validFrom": "2024-01-01"
           }
         ]
       }
@@ -1520,21 +1504,14 @@
             "streetName": "YEOMAN WAY",
             "postalCode": "BA14 0QP",
             "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
+            "validUntil": "2024-01-01"
           },
           {
             "buildingName": "27",
             "streetName": "FOREST WAY",
             "postalCode": "SM2 5TH",
             "addressLocality": "SUTTON",
-            "validFrom": "2000-01-01"
-          },
-          {
-            "buildingName": "52",
-            "streetName": "FOREST ROAD",
-            "postalCode": "KT4 8NE",
-            "addressLocality": "KINGSTON",
-            "validFrom": "2020-01-01"
+            "validFrom": "2024-01-01"
           }
         ]
       }
@@ -1549,21 +1526,14 @@
             "streetName": "YEOMAN WAY",
             "postalCode": "BA14 0QP",
             "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
+            "validUntil": "2024-01-01"
           },
           {
             "buildingName": "27",
             "streetName": "FOREST WAY",
             "postalCode": "SM2 5TH",
             "addressLocality": "SUTTON",
-            "validFrom": "2000-01-01"
-          },
-          {
-            "buildingName": "52",
-            "streetName": "FOREST ROAD",
-            "postalCode": "KT4 8NE",
-            "addressLocality": "KINGSTON",
-            "validFrom": "2020-01-01"
+            "validFrom": "2024-01-01"
           }
         ],
         "name": [
@@ -1639,21 +1609,14 @@
             "streetName": "YEOMAN WAY",
             "postalCode": "BA14 0QP",
             "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
+            "validUntil": "2024-01-01"
           },
           {
             "buildingName": "27",
             "streetName": "FOREST WAY",
             "postalCode": "SM2 5TH",
             "addressLocality": "SUTTON",
-            "validFrom": "2000-01-01"
-          },
-          {
-            "buildingName": "52",
-            "streetName": "FOREST ROAD",
-            "postalCode": "KT4 8NE",
-            "addressLocality": "KINGSTON",
-            "validFrom": "2020-01-01"
+            "validFrom": "2024-01-01"
           }
         ],
         "name": [
@@ -1888,7 +1851,7 @@
             "postalCode": "BA2 5AA",
             "buildingNumber": "8",
             "addressLocality": "BATH",
-            "validFrom": "2000-01-01"
+            "validUntil": "2024-01-01"
           },
           {
             "addressCountry": "GB",
@@ -1897,16 +1860,7 @@
             "postalCode": "KT4 8ND",
             "buildingNumber": "18",
             "addressLocality": "LONDON",
-            "validFrom": "2010-10-01"
-          },
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HILL SIDE",
-            "postalCode": "HA1 2GP",
-            "buildingNumber": "28",
-            "addressLocality": "LONDON",
-            "validFrom": "2020-01-01"
+            "validFrom": "2024-01-01"
           }
         ]
       }
@@ -1923,7 +1877,7 @@
             "postalCode": "BA2 5AA",
             "buildingNumber": "8",
             "addressLocality": "BATH",
-            "validFrom": "2000-01-01"
+            "validUntil": "2024-01-01"
           },
           {
             "addressCountry": "GB",
@@ -1932,16 +1886,7 @@
             "postalCode": "KT4 8ND",
             "buildingNumber": "18",
             "addressLocality": "LONDON",
-            "validFrom": "2010-10-01"
-          },
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HILL SIDE",
-            "postalCode": "HA1 2GP",
-            "buildingNumber": "28",
-            "addressLocality": "LONDON",
-            "validFrom": "2020-01-01"
+            "validFrom": "2024-01-01"
           }
         ],
         "name": [
@@ -2013,7 +1958,7 @@
             "postalCode": "BA2 5AA",
             "buildingNumber": "8",
             "addressLocality": "BATH",
-            "validFrom": "2000-01-01"
+            "validUntil": "2024-01-01"
           },
           {
             "addressCountry": "GB",
@@ -2022,16 +1967,7 @@
             "postalCode": "KT4 8ND",
             "buildingNumber": "18",
             "addressLocality": "LONDON",
-            "validFrom": "2010-10-01"
-          },
-          {
-            "addressCountry": "GB",
-            "buildingName": "",
-            "streetName": "HILL SIDE",
-            "postalCode": "HA1 2GP",
-            "buildingNumber": "28",
-            "addressLocality": "LONDON",
-            "validFrom": "2020-01-01"
+            "validFrom": "2024-01-01"
           }
         ],
         "name": [
