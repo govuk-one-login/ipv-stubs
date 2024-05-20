@@ -75,7 +75,13 @@ export async function getHandler(
     };
     try {
       accessTokenVerified = await verifyAccessToken(
-        validateAccessToken(event.headers?.Authorisation),
+        validateAccessToken(
+          event.headers[
+            Object.keys(event.headers).find(
+              (header) => header.toLowerCase() === "authorisation",
+            ) || ""
+          ],
+        ),
       );
     } catch (error) {
       console.error(error);
@@ -164,6 +170,6 @@ async function verifyAccessToken(jwt: string): Promise<boolean> {
     return await verifyToken(jwt);
   } catch (error) {
     console.error(error);
-    throw new Error("The access token varification failed");
+    throw new Error("Access token verification failed");
   }
 }
