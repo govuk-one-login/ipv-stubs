@@ -70,6 +70,7 @@ public class IdentityMapper {
         FindDateOfBirth dateOfBirth = new FindDateOfBirth(dob, dob);
 
         FullName name = new FullName(map.get("name"), map.get("surname"));
+        String nino = null;
 
         return new Identity(
                 rowNumber,
@@ -78,7 +79,8 @@ public class IdentityMapper {
                 List.of(address),
                 dateOfBirth,
                 name,
-                questions);
+                questions,
+                nino);
     }
 
     public DisplayIdentity mapToDisplayable(Identity identity) {
@@ -127,7 +129,10 @@ public class IdentityMapper {
                                         new NameParts(GIVEN_NAME, identity.name().firstName()),
                                         new NameParts(FAMILY_NAME, identity.name().surname())))),
                 List.of(new DateOfBirth(agedDOB ? dateOfBirth.getAgedDOB() : dateOfBirth.getDOB())),
-                canonicalAddresses);
+                canonicalAddresses,
+                identity.nino() == null
+                        ? null
+                        : List.of(new SocialSecurityRecord(identity.nino())));
     }
 
     public PostcodeSharedClaims mapToAddressSharedClaims(String postcode) {
@@ -222,6 +227,7 @@ public class IdentityMapper {
                 new FindDateOfBirth(
                         instant, LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
         FullName fullName = new FullName(formData.value("firstName"), formData.value("surname"));
+        String nino = formData.value("nationalInsuranceNumber");
         return new Identity(
                 identityOnRecord.rowNumber(),
                 identityOnRecord.accountNumber(),
@@ -229,7 +235,8 @@ public class IdentityMapper {
                 addresses,
                 findDateOfBirth,
                 fullName,
-                identityOnRecord.questions());
+                identityOnRecord.questions(),
+                nino);
     }
 
     private LocalDate getLocalDate(QueryParamsMap userData, String year, String month, String day) {
