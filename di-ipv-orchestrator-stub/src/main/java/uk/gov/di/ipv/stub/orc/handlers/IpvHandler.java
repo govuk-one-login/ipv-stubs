@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.stub.orc.handlers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -61,6 +62,7 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_T
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_USER_IDENTITY_PATH;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.AUTH_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
 import static uk.gov.di.ipv.stub.orc.utils.JwtBuilder.URN_UUID;
 import static uk.gov.di.ipv.stub.orc.utils.JwtBuilder.buildClientAuthenticationClaims;
@@ -76,6 +78,7 @@ public class IpvHandler {
     private static final String ENVIRONMENT_PARAM = "targetEnvironment";
     private static final String REPROVE_IDENTITY_PARAM = "reproveIdentity";
     private static final String EMAIL_ADDRESS_PARAM = "emailAddress";
+    private static final String MFA_RESET_PARAM = "mfaReset";
     private static final String INHERITED_ID_INCLUDED_PARAM = "duringMigration";
     private static final String INHERITED_ID_VOT_PARAM = "votText";
     private static final String INHERITED_ID_SUBJECT_PARAM = "jsonPayload";
@@ -105,17 +108,33 @@ public class IpvHandler {
                 return null;
             };
 
-    private String getAuthorizeRedirect(QueryParamsMap queryMap, String errorType)
-            throws Exception {
-        var environment = queryMap.get(ENVIRONMENT_PARAM).value();
+    private JWTClaimsSet getJWTClaimsSet(QueryParamsMap queryMap, String errorType, String environment, boolean isMfaReset)
+        throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         var userIdTextValue = queryMap.get(USER_ID_PARAM).value();
         var signInJourneyIdText = queryMap.get(JOURNEY_ID_PARAM).value();
-        var vtr =
-                Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
-                        .map(String::trim)
-                        .filter(value -> !value.isEmpty())
-                        .toList();
         var userEmailAddress = queryMap.get(EMAIL_ADDRESS_PARAM).value();
+        var userId = getUserIdValue(userIdTextValue);
+        if (isMfaReset) {
+            return JwtBuilder.buildAuthorizationRequestClaims(
+                        userId,
+                        signInJourneyIdText,
+                        ORCHESTRATOR_STUB_STATE.getValue(),
+                        null,
+                        errorType,
+                        userEmailAddress,
+                        JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT,
+                        environment,
+                        false,
+                        null,
+                        null,
+                        null);
+        }
+
+        var vtr =
+        Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .toList();
         var reproveIdentityString = queryMap.get(REPROVE_IDENTITY_PARAM).value();
         var reproveIdentityClaimValue =
                 StringUtils.isNotBlank(reproveIdentityString)
@@ -128,10 +147,7 @@ public class IpvHandler {
         var inheritedIdSubject = queryMap.value(INHERITED_ID_SUBJECT_PARAM);
         var inheritedIdEvidence = queryMap.value(INHERITED_ID_EVIDENCE_PARAM);
 
-        var userId = getUserIdValue(userIdTextValue);
-
-        JWTClaimsSet claims =
-                JwtBuilder.buildAuthorizationRequestClaims(
+        return JwtBuilder.buildAuthorizationRequestClaims(
                         userId,
                         signInJourneyIdText,
                         ORCHESTRATOR_STUB_STATE.getValue(),
@@ -144,15 +160,23 @@ public class IpvHandler {
                         inheritedIdSubject,
                         inheritedIdEvidence,
                         inheritedIdVot);
+    }
+
+    private String getAuthorizeRedirect(QueryParamsMap queryMap, String errorType)
+            throws Exception {
+        var environment = queryMap.get(ENVIRONMENT_PARAM).value();
+        var isMfaReset = Objects.equals(queryMap.value(MFA_RESET_PARAM), "checked");
+
+        JWTClaimsSet claims = getJWTClaimsSet(queryMap, errorType, environment, isMfaReset);
 
         SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
         EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);
         var authRequest =
                 new AuthorizationRequest.Builder(
                                 new ResponseType(ResponseType.Value.CODE),
-                                new ClientID(ORCHESTRATOR_CLIENT_ID))
+                                new ClientID(isMfaReset ? AUTH_CLIENT_ID : ORCHESTRATOR_CLIENT_ID))
                         .state(ORCHESTRATOR_STUB_STATE)
-                        .scope(new Scope("openid"))
+                        .scope(new Scope(isMfaReset ? "reverification" : "openid" ))
                         .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
                         .endpointURI(getIpvEndpoint(environment).resolve("/oauth2/authorize"))
                         .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
@@ -160,6 +184,8 @@ public class IpvHandler {
 
         return authRequest.toURI().toString();
     }
+
+
 
     private URI getIpvEndpoint(String environment) throws URISyntaxException {
         String url =
