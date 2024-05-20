@@ -3,7 +3,11 @@ import { buildApiResponse } from "../common/apiResponses";
 import PostRequest from "../domain/postRequest";
 import PatchRequest from "../domain/patchRequest";
 import ServiceResponse from "../domain/serviceResponse";
-import { CreateVcStates, UpdateVcStates } from "../domain/enums/vcState";
+import {
+  CreateVcStates,
+  UpdateVcStates,
+  VcState,
+} from "../domain/enums/vcState";
 
 import { processPostUserVCsRequest } from "../services/evcsService";
 import { processGetUserVCsRequest } from "../services/evcsService";
@@ -69,11 +73,11 @@ export async function getHandler(
   }
 
   try {
+    let requestedStates: string[];
     let accessTokenVerified;
-    let res: ServiceResponse = {
-      response: Object,
-    };
     try {
+      requestedStates = getRequestedStates(event);
+
       accessTokenVerified = await verifyAccessToken(
         validateAccessToken(
           event.headers[
@@ -88,8 +92,14 @@ export async function getHandler(
       return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
     }
 
+    let res: ServiceResponse = {
+      response: Object,
+    };
     if (accessTokenVerified)
-      res = await processGetUserVCsRequest(decodeURIComponent(userId));
+      res = await processGetUserVCsRequest(
+        decodeURIComponent(userId),
+        requestedStates,
+      );
 
     return buildApiResponse(res.response, res.statusCode);
   } catch (error) {
@@ -145,6 +155,24 @@ function isValidUpdateVcState(patchRequest: PatchRequest[]): boolean {
     }
   }
   return true;
+}
+
+function getRequestedStates(event: APIGatewayProxyEvent): string[] {
+  const STATE_ALL = "ALL";
+  const stateInQuery = event.queryStringParameters?.state;
+  let requestStates = Array.from((stateInQuery || VcState.CURRENT).split(","));
+  if (requestStates.length >= 1) {
+    requestStates.forEach(function (state) {
+      if (state != STATE_ALL && !(state in VcState)) {
+        throw new Error("Invalid state in query param.");
+      }
+    });
+  }
+  if (requestStates.length == 1 && requestStates.includes(STATE_ALL)) {
+    // all states requested
+    requestStates = Object.values(VcState).map((value) => value);
+  }
+  return requestStates;
 }
 
 function validateAccessToken(authheader: string | undefined): string {

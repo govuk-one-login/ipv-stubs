@@ -4,6 +4,7 @@ import {
   APIGatewayProxyEvent,
   APIGatewayProxyEventHeaders,
   APIGatewayProxyEventPathParameters,
+  APIGatewayProxyEventQueryStringParameters,
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
 
@@ -74,6 +75,10 @@ const TEST_POST_REQUEST = [
     vc: "yyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.tf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
     state: VcState.VERIFICATION,
   },
+  {
+    vc: "ddJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.df0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ",
+    state: VcState.PENDING_RETURN,
+  },
 ];
 const TEST_POST_INVALID_STATE_REQUEST = [
   {
@@ -87,6 +92,18 @@ const TEST_NO_VC_REQUEST: never[] = [];
 const TEST_PATH_PARAM = {
   userId: testUserId,
 } as APIGatewayProxyEventPathParameters;
+
+const TEST_QUERY_SPECIFIC_STATE_PARAM = {
+  state: VcState.CURRENT.concat(",").concat(VcState.VERIFICATION),
+} as unknown as APIGatewayProxyEventQueryStringParameters;
+
+const TEST_QUERY_ALL_STATE_PARAM = {
+  state: "ALL",
+} as unknown as APIGatewayProxyEventQueryStringParameters;
+
+const TEST_QUERY_INVALID_STATE_PARAM = {
+  state: "ALL, APPROVED",
+} as unknown as APIGatewayProxyEventQueryStringParameters;
 
 const TEST_POST_EVENT = {
   body: JSON.stringify(TEST_POST_REQUEST),
@@ -103,6 +120,24 @@ const TEST_HEADERS = {
 
 const TEST_GET_EVENT = {
   pathParameters: TEST_PATH_PARAM,
+  headers: TEST_HEADERS,
+} as APIGatewayProxyEvent;
+
+const TEST_GET_EVENT_WITH_SPECIFIC_STATE_IN_QUERY = {
+  pathParameters: TEST_PATH_PARAM,
+  queryStringParameters: TEST_QUERY_SPECIFIC_STATE_PARAM,
+  headers: TEST_HEADERS,
+} as APIGatewayProxyEvent;
+
+const TEST_GET_EVENT_WITH_ALL_STATE_IN_QUERY = {
+  pathParameters: TEST_PATH_PARAM,
+  queryStringParameters: TEST_QUERY_ALL_STATE_PARAM,
+  headers: TEST_HEADERS,
+} as APIGatewayProxyEvent;
+
+const TEST_GET_EVENT_WITH_INVALID_STATE_IN_QUERY = {
+  pathParameters: TEST_PATH_PARAM,
+  queryStringParameters: TEST_QUERY_INVALID_STATE_PARAM,
   headers: TEST_HEADERS,
 } as APIGatewayProxyEvent;
 
@@ -164,7 +199,7 @@ describe("EVCS handler", function () {
     // assert
     expect(result.statusCode).toEqual(200);
     const parseResult = JSON.parse(result.body as string);
-    expect(0).toEqual(parseResult.vcs.length);
+    expect(parseResult.vcs.length).toEqual(0);
   });
 
   it("successfully process post request to persist user VCs", async () => {
@@ -182,11 +217,11 @@ describe("EVCS handler", function () {
     // assert
     expect(result.statusCode).toEqual(202);
     const response = await dynamoDocClient.send(getCommand);
-    expect(decodedTestUserId).toEqual(response.Item?.userId);
-    expect(VCProvenance.ONLINE).toEqual(response.Item?.provenance);
+    expect(response.Item?.userId).toEqual(decodedTestUserId);
+    expect(response.Item?.provenance).toEqual(VCProvenance.ONLINE);
   });
 
-  it("successfully persist and then returns user VCs response", async () => {
+  it("successfully persist and then returns user VCs response with different value for query param state", async () => {
     // arrange
     const postEvent = {
       ...TEST_POST_EVENT,
@@ -202,20 +237,48 @@ describe("EVCS handler", function () {
     expect(postResult.statusCode).toEqual(202);
 
     // arrange
-    const event = {
+    let getEvent = {
       ...TEST_GET_EVENT,
       httpMethod: "GET",
     };
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
-    const result = (await getHandler(
-      event,
+    let result = (await getHandler(
+      getEvent,
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(200);
-    const parseResult = JSON.parse(result.body as string);
-    expect(2).toEqual(parseResult.vcs.length);
+    let parseResult = JSON.parse(result.body as string);
+    expect(parseResult.vcs.length).toEqual(2);
+
+    // arrange  - testing specific states as query param
+    getEvent = {
+      ...TEST_GET_EVENT_WITH_SPECIFIC_STATE_IN_QUERY,
+      httpMethod: "GET",
+    };
+    jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
+    // act
+    result = (await getHandler(getEvent)) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(200);
+    parseResult = JSON.parse(result.body as string);
+    expect(parseResult.vcs.length).toEqual(3);
+
+    // arrange  - testing state as ALL value in query param
+    getEvent = {
+      ...TEST_GET_EVENT_WITH_ALL_STATE_IN_QUERY,
+      httpMethod: "GET",
+    };
+    jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
+    // act
+    result = (await getHandler(getEvent)) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(200);
+    parseResult = JSON.parse(result.body as string);
+    expect(parseResult.vcs.length).toEqual(4);
   });
 
   it("successfully persist and then update user VCs and then returns user VCs response", async () => {
@@ -244,9 +307,9 @@ describe("EVCS handler", function () {
     // assert
     expect(result.statusCode).toEqual(200);
     let parseResult = JSON.parse(result.body as string);
-    expect(2).toEqual(parseResult.vcs.length);
-    expect(VcState.CURRENT).toEqual(parseResult.vcs[0].state);
-    expect("test-created").toEqual(parseResult.vcs[0].metadata.reason);
+    expect(parseResult.vcs.length).toEqual(2);
+    expect(parseResult.vcs[0].state).toEqual(VcState.CURRENT);
+    expect(parseResult.vcs[0].metadata.reason).toEqual("test-created");
     expect(parseResult.vcs[0].metadata).toHaveProperty("testProperty");
     // arrange
     event = {
@@ -272,14 +335,14 @@ describe("EVCS handler", function () {
     // assert
     expect(result.statusCode).toEqual(200);
     parseResult = JSON.parse(result.body as string);
-    expect(2).toEqual(parseResult.vcs.length);
+    expect(parseResult.vcs.length).toEqual(2);
     expect(parseResult.vcs[0].metadata.reason).toEqual("updated");
     expect(parseResult.vcs[0].metadata).not.toHaveProperty("testProperty");
   });
 
   it("returns a 400 when no or invalid access token passed", async () => {
     // arrange
-    let TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
+    let TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
       httpMethod: "GET",
     } as APIGatewayProxyEvent;
@@ -287,7 +350,7 @@ describe("EVCS handler", function () {
     jest.mocked(getParameter).mockResolvedValue(EVCS_VERIFY_KEY);
     // act
     let result = (await getHandler(
-      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
+      TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
@@ -296,14 +359,14 @@ describe("EVCS handler", function () {
     let REQ_HEADERS = {
       Authorisation: "Bearer",
     } as APIGatewayProxyEventHeaders;
-    TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
+    TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
       headers: REQ_HEADERS,
       httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
     result = (await getHandler(
-      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
+      TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
@@ -313,14 +376,14 @@ describe("EVCS handler", function () {
       Authorisation:
         "Bear eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
     } as APIGatewayProxyEventHeaders;
-    TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
+    TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
       headers: REQ_HEADERS,
       httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
     result = (await getHandler(
-      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
+      TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
@@ -329,14 +392,14 @@ describe("EVCS handler", function () {
     REQ_HEADERS = {
       Authorisation: "Bearer ",
     } as APIGatewayProxyEventHeaders;
-    TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
+    TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
       headers: REQ_HEADERS,
       httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
     result = (await getHandler(
-      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
+      TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
@@ -346,14 +409,14 @@ describe("EVCS handler", function () {
       Authorisation:
         "Bearer eyJhbGc.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
     } as APIGatewayProxyEventHeaders;
-    TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN = {
+    TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
       headers: REQ_HEADERS,
       httpMethod: "GET",
     } as APIGatewayProxyEvent;
     // act
     result = (await getHandler(
-      TEST_GET_EVENT_WITH_INVALID_AACCESS_TOKEN,
+      TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN,
     )) as APIGatewayProxyStructuredResultV2;
     // assert
     expect(result.statusCode).toEqual(400);
@@ -383,12 +446,27 @@ describe("EVCS handler", function () {
     expect(result.statusCode).toEqual(400);
   });
 
-  it("returns a 400 when userId path paran not passed for get request", async () => {
+  it("returns a 400 when userId path param not passed for get request", async () => {
     // arrange
 
     // act
     const result = (await getHandler(
       TEST_WITHOUT_USER_PARAM_EVENT,
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(400);
+  });
+
+  it("returns a 400 when invalid state param passed for get request", async () => {
+    // arrange
+    const getEvent = {
+      ...TEST_GET_EVENT_WITH_INVALID_STATE_IN_QUERY,
+      httpMethod: "GET",
+    };
+    // act
+    const result = (await getHandler(
+      getEvent,
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert

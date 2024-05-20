@@ -115,6 +115,16 @@ paths:
           required: true
           schema:
             type: string
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: afterKey
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         200:
           description: "The list of Verifiable Credentials"
