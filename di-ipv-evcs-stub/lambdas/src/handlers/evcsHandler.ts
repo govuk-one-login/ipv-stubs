@@ -80,11 +80,13 @@ export async function getHandler(
 
       accessTokenVerified = await verifyAccessToken(
         validateAccessToken(
-          event.headers[
-            Object.keys(event.headers).find(
-              (header) => header.toLowerCase() === "authorisation",
-            ) || ""
-          ],
+          event.headers
+            ? event.headers[
+                Object.keys(event.headers).find(
+                  (header) => header.toLowerCase() === "authorisation",
+                ) || ""
+              ]
+            : undefined,
         ),
       );
     } catch (error) {
