@@ -108,7 +108,7 @@ public class IpvHandler {
                 return null;
             };
 
-    private JWTClaimsSet getJWTClaimsSet(QueryParamsMap queryMap, String errorType, String environment, boolean isMfaReset)
+    private JWTClaimsSet buildJWTClaimsSet(QueryParamsMap queryMap, String errorType, String environment, boolean isMfaReset)
         throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         var userIdTextValue = queryMap.get(USER_ID_PARAM).value();
         var signInJourneyIdText = queryMap.get(JOURNEY_ID_PARAM).value();
@@ -127,7 +127,8 @@ public class IpvHandler {
                         false,
                         null,
                         null,
-                        null);
+                        null,
+                        AUTH_CLIENT_ID);
         }
 
         var vtr =
@@ -159,7 +160,8 @@ public class IpvHandler {
                         includeInheritedId,
                         inheritedIdSubject,
                         inheritedIdEvidence,
-                        inheritedIdVot);
+                        inheritedIdVot,
+                        ORCHESTRATOR_CLIENT_ID);
     }
 
     private String getAuthorizeRedirect(QueryParamsMap queryMap, String errorType)
@@ -167,9 +169,9 @@ public class IpvHandler {
         var environment = queryMap.get(ENVIRONMENT_PARAM).value();
         var isMfaReset = Objects.equals(queryMap.value(MFA_RESET_PARAM), "checked");
 
-        JWTClaimsSet claims = getJWTClaimsSet(queryMap, errorType, environment, isMfaReset);
+        SignedJWT signedJwt = JwtBuilder.createSignedJwt(
+            buildJWTClaimsSet(queryMap, errorType, environment, isMfaReset));
 
-        SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
         EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);
         var authRequest =
                 new AuthorizationRequest.Builder(
