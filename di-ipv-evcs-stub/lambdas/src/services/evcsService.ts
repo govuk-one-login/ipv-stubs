@@ -115,7 +115,6 @@ export async function processGetUserVCsRequest(
   return {
     response: {
       vcs: vcItems,
-      afterKey: "pagination will be implemented later",
     },
     statusCode: 200,
   };

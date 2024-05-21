@@ -21,8 +21,9 @@ jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
   getParameter: jest.fn(),
 }));
 
-const testUserId: string = "urn%3Auuid%3Atest-user-id";
+const testUserId: string = "urn%3Auuid%3Ad1823066-2137-4380-b0ba-4b61947e08e6";
 const decodedTestUserId: string = decodeURIComponent(testUserId);
+const invalidTestUserId: string = "urn%3Auuid%3Atest-user-id";
 
 const dbConfig = {
   convertEmptyValues: true,
@@ -93,6 +94,10 @@ const TEST_PATH_PARAM = {
   userId: testUserId,
 } as APIGatewayProxyEventPathParameters;
 
+const TEST_PATH_PARAM_INVALID_USERID = {
+  userId: invalidTestUserId,
+} as APIGatewayProxyEventPathParameters;
+
 const TEST_QUERY_SPECIFIC_STATE_PARAM = {
   state: VcState.CURRENT.concat(",").concat(VcState.VERIFICATION),
 } as unknown as APIGatewayProxyEventQueryStringParameters;
@@ -120,6 +125,11 @@ const TEST_HEADERS = {
 
 const TEST_GET_EVENT = {
   pathParameters: TEST_PATH_PARAM,
+  headers: TEST_HEADERS,
+} as APIGatewayProxyEvent;
+
+const TEST_GET_EVENT_WITH_INVALID_USERID = {
+  pathParameters: TEST_PATH_PARAM_INVALID_USERID,
   headers: TEST_HEADERS,
 } as APIGatewayProxyEvent;
 
@@ -473,6 +483,21 @@ describe("EVCS handler", function () {
     expect(result.statusCode).toEqual(400);
   });
 
+  it("returns a 400 when access token userId not matched with userId param for get request", async () => {
+    // arrange
+    const getEvent = {
+      ...TEST_GET_EVENT_WITH_INVALID_USERID,
+      httpMethod: "GET",
+    };
+    // act
+    const result = (await getHandler(
+      getEvent,
+    )) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(400);
+  });
+
   it("returns a 400 for an empty postrequest", async () => {
     // arrange
     const event = {
@@ -619,6 +644,7 @@ describe("EVCS handler", function () {
       event,
     )) as APIGatewayProxyStructuredResultV2;
 
+    console.info(`result - ${JSON.stringify(result)}`);
     // assert
     expect(result.statusCode).toEqual(400);
   });

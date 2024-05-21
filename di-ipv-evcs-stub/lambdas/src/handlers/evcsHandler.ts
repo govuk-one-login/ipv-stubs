@@ -1,4 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
+import { JWTPayload } from "jose";
 import { buildApiResponse } from "../common/apiResponses";
 import PostRequest from "../domain/postRequest";
 import PatchRequest from "../domain/patchRequest";
@@ -8,11 +9,10 @@ import {
   UpdateVcStates,
   VcState,
 } from "../domain/enums/vcState";
-
 import { processPostUserVCsRequest } from "../services/evcsService";
 import { processGetUserVCsRequest } from "../services/evcsService";
 import { processPatchUserVCsRequest } from "../services/evcsService";
-import { verifyToken } from "../services/jwtService";
+import { verifyTokenAndReturnPayload } from "../services/jwtService";
 import { getErrorMessage } from "../common/utils";
 
 export async function createHandler(
@@ -21,7 +21,7 @@ export async function createHandler(
   console.info(`---Create Request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse({ errorMessage: "Missing userId." }, 400);
+    return buildApiResponse({ message: "Missing userId." }, 400);
   }
 
   let request;
@@ -29,7 +29,7 @@ export async function createHandler(
     request = parsePostRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
+    return buildApiResponse({ message: getErrorMessage(error) }, 400);
   }
   const res = await processPostUserVCsRequest(
     decodeURIComponent(userId),
@@ -45,7 +45,7 @@ export async function updateHandler(
   console.info(`---Update request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse({ errorMessage: "Missing userId." }, 400);
+    return buildApiResponse({ message: "Missing userId." }, 400);
   }
 
   let request;
@@ -53,7 +53,7 @@ export async function updateHandler(
     request = parsePatchRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
+    return buildApiResponse({ message: getErrorMessage(error) }, 400);
   }
   const res = await processPatchUserVCsRequest(
     decodeURIComponent(userId),
@@ -69,8 +69,9 @@ export async function getHandler(
   console.info(`---Get request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse({ errorMessage: "Missing userId." }, 400);
+    return buildApiResponse({ message: "Missing userId." }, 400);
   }
+  const decodedUserId = decodeURIComponent(userId);
 
   try {
     let requestedStates: string[];
@@ -88,25 +89,23 @@ export async function getHandler(
               ]
             : undefined,
         ),
+        decodedUserId,
       );
     } catch (error) {
       console.error(error);
-      return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
+      return buildApiResponse({ message: getErrorMessage(error) }, 400);
     }
 
     let res: ServiceResponse = {
       response: Object,
     };
     if (accessTokenVerified)
-      res = await processGetUserVCsRequest(
-        decodeURIComponent(userId),
-        requestedStates,
-      );
+      res = await processGetUserVCsRequest(decodedUserId, requestedStates);
 
     return buildApiResponse(res.response, res.statusCode);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 500);
+    return buildApiResponse({ message: getErrorMessage(error) }, 500);
   }
 }
 
@@ -195,9 +194,18 @@ function validateAccessToken(authheader: string | undefined): string {
   return parts[1];
 }
 
-async function verifyAccessToken(jwt: string): Promise<boolean> {
+async function verifyAccessToken(
+  jwt: string,
+  userId: string,
+): Promise<boolean> {
   try {
-    return await verifyToken(jwt);
+    const payload: JWTPayload = await verifyTokenAndReturnPayload(jwt);
+    if (payload && payload.sub && userId !== payload.sub) {
+      throw new Error(
+        "User id doesn't match with `sub` claim value provided in the bearer token",
+      );
+    }
+    return true;
   } catch (error) {
     console.error(error);
     throw new Error("Access token verification failed");
