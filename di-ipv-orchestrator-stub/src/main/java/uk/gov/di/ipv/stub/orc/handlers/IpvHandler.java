@@ -87,6 +87,7 @@ public class IpvHandler {
     private static final String ENVIRONMENT_COOKIE = "targetEnvironment";
 
     private static final State ORCHESTRATOR_STUB_STATE = new State("orchestrator-stub-state");
+    private static final State AUTH_STUB_STATE = new State("auth-stub-state");
 
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
 
@@ -120,13 +121,20 @@ public class IpvHandler {
         JWTClaimsSet claims;
         if (isMfaReset) {
             claims =
-                    JwtBuilder.buildMFAResetAuthenticationClaims(
+                    JwtBuilder.buildAuthorizationRequestClaims(
                             userId,
                             signInJourneyIdText,
-                            ORCHESTRATOR_STUB_STATE.getValue(),
+                            AUTH_STUB_STATE.getValue(),
+                            null,
                             errorType,
                             userEmailAddress,
-                            environment);
+                            JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT,
+                            environment,
+                            false,
+                            null,
+                            null,
+                            null,
+                            AUTH_CLIENT_ID);
         } else {
             var vtr =
                     Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
@@ -159,7 +167,8 @@ public class IpvHandler {
                             includeInheritedId,
                             inheritedIdSubject,
                             inheritedIdEvidence,
-                            inheritedIdVot);
+                            inheritedIdVot,
+                            ORCHESTRATOR_CLIENT_ID);
         }
 
         SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
