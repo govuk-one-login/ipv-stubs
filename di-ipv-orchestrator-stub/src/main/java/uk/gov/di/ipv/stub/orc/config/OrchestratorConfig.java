@@ -11,7 +11,7 @@ public class OrchestratorConfig {
             getConfigValue("IPV_BACKCHANNEL_TOKEN_PATH", "/dev/token");
     public static final String IPV_BACKCHANNEL_USER_IDENTITY_PATH =
             getConfigValue("IPV_BACKCHANNEL_USER_IDENTITY_PATH", "/dev/user-identity");
-    public static final String AUTH_CLIENT_ID = getConfigValue("AUTH_CLIENT_ID", "auth");
+    public static final String AUTH_CLIENT_ID = getConfigValue("AUTH_CLIENT_ID", "stubAuth");
     public static final String ORCHESTRATOR_CLIENT_ID =
             getConfigValue("ORCHESTRATOR_CLIENT_ID", "orchestrator");
     public static final String ORCHESTRATOR_REDIRECT_URL =
