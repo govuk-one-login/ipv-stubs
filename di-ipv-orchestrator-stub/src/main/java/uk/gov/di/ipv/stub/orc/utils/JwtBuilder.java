@@ -108,7 +108,7 @@ public class JwtBuilder {
                         .subject(userId)
                         .audience(audience)
                         .issueTime(Date.from(now))
-                        .issuer(ORCHESTRATOR_CLIENT_ID)
+                        .issuer(clientId)
                         .notBeforeTime(Date.from(now))
                         .expirationTime(generateExpirationTime(now))
                         .claim("claims", jarClaimsMap)
