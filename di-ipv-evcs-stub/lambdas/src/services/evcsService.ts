@@ -5,6 +5,7 @@ import {
   UpdateItemInput,
   PutItemCommandOutput,
   UpdateItemCommandOutput,
+  AttributeValue,
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
@@ -76,23 +77,31 @@ export async function processPostUserVCsRequest(
 
 export async function processGetUserVCsRequest(
   userId: string,
+  requestedStates: string[],
 ): Promise<ServiceResponse> {
   console.info(`Get user record.`);
+
+  const filterExpressions: string[] = [];
+  const ExpressionAttributeValues: Record<string, AttributeValue> = {};
+  ExpressionAttributeValues[`:userIdValue`] = { S: userId };
+  requestedStates.forEach((data, index) => {
+    filterExpressions.push(`:state${index}`);
+    ExpressionAttributeValues[`:state${index}`] = { S: data };
+  });
+  const FilterExpression = `#state IN (${filterExpressions})`;
+
   const getItemInput: QueryInput = {
     TableName: config.evcsStubUserVCsTableName,
     KeyConditionExpression: "#userId = :userIdValue",
-    FilterExpression: "#state = :stateValue",
+    FilterExpression: FilterExpression,
     ExpressionAttributeNames: {
       "#userId": "userId",
       "#state": "state",
     },
-    ExpressionAttributeValues: {
-      ":userIdValue": { S: userId },
-      ":stateValue": { S: VcState.CURRENT },
-    },
+    ExpressionAttributeValues: ExpressionAttributeValues,
   };
   const items = (await dynamoClient.query(getItemInput)).Items ?? [];
-  console.info(`Total VCs retrived - ${items?.length}`);
+  console.info(`Total user VCs retrieved - ${items?.length}`);
   const vcItems = items
     .map((item) => unmarshall(item) as EvcsVcItem)
     .map((evcsItem) => ({
@@ -104,7 +113,6 @@ export async function processGetUserVCsRequest(
   return {
     response: {
       vcs: vcItems,
-      afterKey: "pagination will be implemented later",
     },
     statusCode: 200,
   };

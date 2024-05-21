@@ -1,14 +1,18 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
+import { JWTPayload } from "jose";
 import { buildApiResponse } from "../common/apiResponses";
 import PostRequest from "../domain/postRequest";
 import PatchRequest from "../domain/patchRequest";
 import ServiceResponse from "../domain/serviceResponse";
-import { CreateVcStates, UpdateVcStates } from "../domain/enums/vcState";
-
+import {
+  CreateVcStates,
+  UpdateVcStates,
+  VcState,
+} from "../domain/enums/vcState";
 import { processPostUserVCsRequest } from "../services/evcsService";
 import { processGetUserVCsRequest } from "../services/evcsService";
 import { processPatchUserVCsRequest } from "../services/evcsService";
-import { verifyToken } from "../services/jwtService";
+import { verifyTokenAndReturnPayload } from "../services/jwtService";
 import { getErrorMessage } from "../common/utils";
 
 export async function createHandler(
@@ -17,7 +21,7 @@ export async function createHandler(
   console.info(`---Create Request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse({ errorMessage: "Missing userId." }, 400);
+    return buildApiResponse({ message: "Missing userId." }, 400);
   }
 
   let request;
@@ -25,7 +29,7 @@ export async function createHandler(
     request = parsePostRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
+    return buildApiResponse({ message: getErrorMessage(error) }, 400);
   }
   const res = await processPostUserVCsRequest(
     decodeURIComponent(userId),
@@ -41,7 +45,7 @@ export async function updateHandler(
   console.info(`---Update request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse({ errorMessage: "Missing userId." }, 400);
+    return buildApiResponse({ message: "Missing userId." }, 400);
   }
 
   let request;
@@ -49,7 +53,7 @@ export async function updateHandler(
     request = parsePatchRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
+    return buildApiResponse({ message: getErrorMessage(error) }, 400);
   }
   const res = await processPatchUserVCsRequest(
     decodeURIComponent(userId),
@@ -65,36 +69,43 @@ export async function getHandler(
   console.info(`---Get request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse({ errorMessage: "Missing userId." }, 400);
+    return buildApiResponse({ message: "Missing userId." }, 400);
   }
+  const decodedUserId = decodeURIComponent(userId);
 
   try {
+    let requestedStates: string[];
     let accessTokenVerified;
-    let res: ServiceResponse = {
-      response: Object,
-    };
     try {
+      requestedStates = getRequestedStates(event);
+
       accessTokenVerified = await verifyAccessToken(
         validateAccessToken(
-          event.headers[
-            Object.keys(event.headers).find(
-              (header) => header.toLowerCase() === "authorisation",
-            ) || ""
-          ],
+          event.headers
+            ? event.headers[
+                Object.keys(event.headers).find(
+                  (header) => header.toLowerCase() === "authorisation",
+                ) || ""
+              ]
+            : undefined,
         ),
+        decodedUserId,
       );
     } catch (error) {
       console.error(error);
-      return buildApiResponse({ errorMessage: getErrorMessage(error) }, 400);
+      return buildApiResponse({ message: getErrorMessage(error) }, 400);
     }
 
+    let res: ServiceResponse = {
+      response: Object,
+    };
     if (accessTokenVerified)
-      res = await processGetUserVCsRequest(decodeURIComponent(userId));
+      res = await processGetUserVCsRequest(decodedUserId, requestedStates);
 
     return buildApiResponse(res.response, res.statusCode);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ errorMessage: getErrorMessage(error) }, 500);
+    return buildApiResponse({ message: getErrorMessage(error) }, 500);
   }
 }
 
@@ -147,6 +158,22 @@ function isValidUpdateVcState(patchRequest: PatchRequest[]): boolean {
   return true;
 }
 
+function getRequestedStates(event: APIGatewayProxyEvent): string[] {
+  const STATE_ALL = "ALL";
+  const stateInQuery = event.queryStringParameters?.state;
+  let requestStates = Array.from((stateInQuery || VcState.CURRENT).split(","));
+  requestStates.forEach(function (state) {
+    if (state != STATE_ALL && !(state in VcState)) {
+      throw new Error("Invalid state in query param.");
+    }
+  });
+  if (requestStates.length == 1 && requestStates.includes(STATE_ALL)) {
+    // all states requested
+    requestStates = Object.values(VcState).map((value) => value);
+  }
+  return requestStates;
+}
+
 function validateAccessToken(authheader: string | undefined): string {
   if (authheader === undefined) {
     throw new Error("Request missing access token");
@@ -165,11 +192,21 @@ function validateAccessToken(authheader: string | undefined): string {
   return parts[1];
 }
 
-async function verifyAccessToken(jwt: string): Promise<boolean> {
+async function verifyAccessToken(
+  jwt: string,
+  userId: string,
+): Promise<boolean> {
+  let payload: JWTPayload;
   try {
-    return await verifyToken(jwt);
+    payload = await verifyTokenAndReturnPayload(jwt);
   } catch (error) {
     console.error(error);
     throw new Error("Access token verification failed");
   }
+  if (userId !== payload.sub) {
+    throw new Error(
+      "User id doesn't match with `sub` claim value provided in the bearer token",
+    );
+  }
+  return true;
 }

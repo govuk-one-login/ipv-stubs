@@ -33,6 +33,9 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
+            example: urn:uuid:d1823066-2137-4380-b0ba-4b61947e08e6
+          description: A valid uuid as user Id.
       requestBody:
         required: true
         content:
@@ -47,14 +50,14 @@ paths:
               schema:
                 type: object
                 properties:
-                  result:
+                  messageId:
                     type: string
+                    description: The SQS message ID.
+                    example: "bd8359d9-d559-47dd-9467-2a31e88a9e2d"
         400:
-          description: "Bad request"
-          content:
-            application/json:
-              schema:
-                type: "object"
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/ServerError'
       x-amazon-apigateway-integration:
         type: "aws_proxy"
         httpMethod: "POST"
@@ -74,6 +77,9 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
+            example: urn:uuid:d1823066-2137-4380-b0ba-4b61947e08e6
+          description: A valid uuid as user Id.
       requestBody:
         required: true
         content:
@@ -82,20 +88,11 @@ paths:
               $ref: "#/components/schemas/PatchUserVCRequestBody"
       responses:
         204:
-          description: "Accepted"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
+          description: "Success"
         400:
-          description: "Bad request"
-          content:
-            application/json:
-              schema:
-                type: "object"
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/ServerError'
       x-amazon-apigateway-integration:
         type: "aws_proxy"
         httpMethod: "POST"
@@ -115,19 +112,42 @@ paths:
           required: true
           schema:
             type: string
+            format: uuid
+            example: urn:uuid:d1823066-2137-4380-b0ba-4b61947e08e6
+          description: A valid uuid as user Id.
+        - name: state
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/VCStates"
+            example: CURRENT, PENDING_RETURN or ALL
+          description: A valid comma separated state value or ALL to retrive VCs in all available states.
+        - name: afterKey
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/VCSignature"
+            example: qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ
+          description: A VC signature to retrive next set of VCs, its used for pagination.
       responses:
         200:
           description: "The list of Verifiable Credentials"
           content:
             application/json:
               schema:
-                type: "object"
+                type: object
+                properties:
+                  vcs:
+                    type: array
+                    description: List of user VCs.
+                  afterKey:
+                    type: string
+                    description: Indicates that the user has more VCs than the ones returned in the response. If full set of VCS is required subsequent calls should be made with this value as a query string parameter, until this value is not returned in the response.
+                    example: qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ
         400:
-          description: "Bad request"
-          content:
-            application/json:
-              schema:
-                type: "object"
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/ServerError'
       x-amazon-apigateway-integration:
         type: "aws_proxy"
         httpMethod: "POST"
@@ -140,6 +160,19 @@ paths:
             responseTemplates:
               application/json: '{"result": "success"}'
 components:
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerError:
+      description: Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
     PostUserVCRequestBody:
       description: Request body for EVCS post user VCs request
@@ -203,6 +236,16 @@ components:
         - PENDING_RETURN
         - HISTORIC
         - VERIFICATION_ARCHIVED
+    VCStates:
+      type: string
+      enum:
+        - CURRENT
+        - PENDING
+        - ABANDONED
+        - PENDING_RETURN
+        - VERIFICATION
+        - HISTORIC
+        - VERIFICATION_ARCHIVED
     VCProvenance:
       type: string
       description: Indicate the origin context when the VC is stored. If a value is not provided, a VC's Provenance will be assumed to be `ONLINE`.
@@ -212,3 +255,10 @@ components:
         - EXTERNAL
         - MIGRATED
         - OTHER
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

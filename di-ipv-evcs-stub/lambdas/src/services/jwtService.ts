@@ -3,7 +3,9 @@ import { config } from "../common/config";
 import { getSsmParameter } from "../common/ssmParameter";
 import { getErrorMessage } from "../common/utils";
 
-export const verifyToken = async (jwt: string): Promise<boolean> => {
+export const verifyTokenAndReturnPayload = async (
+  jwt: string,
+): Promise<JWTPayload> => {
   const EVCS_VERIFY_KEY = await getSsmParameter(
     config.evcsParamBasePath + "verifyKey",
   );
@@ -18,5 +20,5 @@ export const verifyToken = async (jwt: string): Promise<boolean> => {
   } catch (error) {
     throw Error(getErrorMessage(error));
   }
-  return payload !== null;
+  return payload;
 };
