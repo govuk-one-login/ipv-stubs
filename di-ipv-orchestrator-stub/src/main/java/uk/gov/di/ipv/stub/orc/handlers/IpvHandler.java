@@ -150,7 +150,8 @@ public class IpvHandler {
                             : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
 
             var includeInheritedId =
-                    Objects.equals(queryMap.value(INHERITED_ID_INCLUDED_PARAM), CHECKBOX_CHECKED_VALUE);
+                    Objects.equals(
+                            queryMap.value(INHERITED_ID_INCLUDED_PARAM), CHECKBOX_CHECKED_VALUE);
             var inheritedIdVot = queryMap.get(INHERITED_ID_VOT_PARAM).value();
             var inheritedIdSubject = queryMap.value(INHERITED_ID_SUBJECT_PARAM);
             var inheritedIdEvidence = queryMap.value(INHERITED_ID_EVIDENCE_PARAM);
