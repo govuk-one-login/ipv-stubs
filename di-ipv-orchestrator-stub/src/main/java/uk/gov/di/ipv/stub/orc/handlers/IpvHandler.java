@@ -83,6 +83,7 @@ public class IpvHandler {
     private static final String INHERITED_ID_EVIDENCE_PARAM = "evidenceJsonPayload";
     private static final String MFA_RESET_PARAM = "mfaReset";
     private static final String ERROR_TYPE_PARAM = "error";
+    private static final String CHECKBOX_CHECKED_VALUE = "checked";
 
     private static final String ENVIRONMENT_COOKIE = "targetEnvironment";
 
@@ -116,7 +117,7 @@ public class IpvHandler {
         var signInJourneyIdText = queryMap.get(JOURNEY_ID_PARAM).value();
         var userEmailAddress = queryMap.get(EMAIL_ADDRESS_PARAM).value();
         var userId = getUserIdValue(userIdTextValue);
-        var isMfaReset = Objects.equals(queryMap.value(MFA_RESET_PARAM), "checked");
+        var isMfaReset = Objects.equals(queryMap.value(MFA_RESET_PARAM), CHECKBOX_CHECKED_VALUE);
 
         JWTClaimsSet claims;
         if (isMfaReset) {
@@ -149,7 +150,7 @@ public class IpvHandler {
                             : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
 
             var includeInheritedId =
-                    Objects.equals(queryMap.value(INHERITED_ID_INCLUDED_PARAM), "checked");
+                    Objects.equals(queryMap.value(INHERITED_ID_INCLUDED_PARAM), CHECKBOX_CHECKED_VALUE);
             var inheritedIdVot = queryMap.get(INHERITED_ID_VOT_PARAM).value();
             var inheritedIdSubject = queryMap.value(INHERITED_ID_SUBJECT_PARAM);
             var inheritedIdEvidence = queryMap.value(INHERITED_ID_EVIDENCE_PARAM);
