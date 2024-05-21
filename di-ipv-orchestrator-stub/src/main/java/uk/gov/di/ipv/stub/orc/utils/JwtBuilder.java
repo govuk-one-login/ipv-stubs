@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.AUTH_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
@@ -73,8 +74,7 @@ public class JwtBuilder {
             boolean includeInheritedId,
             String inheritedIdSubject,
             String inheritedIdEvidence,
-            String inheritedIdVot,
-            String clientId)
+            String inheritedIdVot)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
                     JsonProcessingException {
         String audience = getIpvCoreAudience(environment);
@@ -108,7 +108,7 @@ public class JwtBuilder {
                         .subject(userId)
                         .audience(audience)
                         .issueTime(Date.from(now))
-                        .issuer(clientId)
+                        .issuer(ORCHESTRATOR_CLIENT_ID)
                         .notBeforeTime(Date.from(now))
                         .expirationTime(generateExpirationTime(now))
                         .claim("claims", jarClaimsMap)
@@ -124,6 +124,49 @@ public class JwtBuilder {
             claimSetBuilder.claim(
                     "reprove_identity", reproveIdentityValue == ReproveIdentityClaimValue.TRUE);
         }
+        return claimSetBuilder.build();
+    }
+
+    public static JWTClaimsSet buildMFAResetAuthenticationClaims(
+            String userId,
+            String signInJourneyId,
+            String state,
+            String errorType,
+            String userEmailAddress,
+            String environment)
+            throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
+                    JsonProcessingException {
+
+        String audience = getIpvCoreAudience(environment);
+        String redirectUri = ORCHESTRATOR_REDIRECT_URL;
+
+        if (errorType != null) {
+            switch (errorType) {
+                case "recoverable" -> audience = INVALID_AUDIENCE;
+                case "non-recoverable" -> redirectUri = INVALID_REDIRECT_URI;
+            }
+        }
+
+        var jarClaimsMap = new TypeReference<Map<String, Object>>() {};
+
+        Instant now = Instant.now();
+        var claimSetBuilder =
+                new JWTClaimsSet.Builder()
+                        .subject(userId)
+                        .audience(audience)
+                        .issueTime(Date.from(now))
+                        .issuer(AUTH_CLIENT_ID)
+                        .notBeforeTime(Date.from(now))
+                        .expirationTime(generateExpirationTime(now))
+                        .claim("claims", jarClaimsMap)
+                        .claim("client_id", AUTH_CLIENT_ID)
+                        .claim("response_type", ResponseType.Value.CODE.toString())
+                        .claim("redirect_uri", redirectUri)
+                        .claim("state", state)
+                        .claim("govuk_signin_journey_id", signInJourneyId)
+                        .claim("persistent_session_id", UUID.randomUUID().toString())
+                        .claim("email_address", userEmailAddress);
+
         return claimSetBuilder.build();
     }
 
