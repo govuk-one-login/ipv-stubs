@@ -73,7 +73,8 @@ public class JwtBuilder {
             boolean includeInheritedId,
             String inheritedIdSubject,
             String inheritedIdEvidence,
-            String inheritedIdVot)
+            String inheritedIdVot,
+            String clientId)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
                     JsonProcessingException {
         String audience = getIpvCoreAudience(environment);
@@ -107,11 +108,11 @@ public class JwtBuilder {
                         .subject(userId)
                         .audience(audience)
                         .issueTime(Date.from(now))
-                        .issuer(ORCHESTRATOR_CLIENT_ID)
+                        .issuer(clientId)
                         .notBeforeTime(Date.from(now))
                         .expirationTime(generateExpirationTime(now))
                         .claim("claims", jarClaimsMap)
-                        .claim("client_id", ORCHESTRATOR_CLIENT_ID)
+                        .claim("client_id", clientId)
                         .claim("response_type", ResponseType.Value.CODE.toString())
                         .claim("redirect_uri", redirectUri)
                         .claim("state", state)

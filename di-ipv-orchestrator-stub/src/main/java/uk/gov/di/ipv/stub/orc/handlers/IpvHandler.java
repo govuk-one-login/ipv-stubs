@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.AUTH_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_USER_IDENTITY_PATH;
@@ -80,11 +81,14 @@ public class IpvHandler {
     private static final String INHERITED_ID_VOT_PARAM = "votText";
     private static final String INHERITED_ID_SUBJECT_PARAM = "jsonPayload";
     private static final String INHERITED_ID_EVIDENCE_PARAM = "evidenceJsonPayload";
+    private static final String MFA_RESET_PARAM = "mfaReset";
     private static final String ERROR_TYPE_PARAM = "error";
+    private static final String CHECKBOX_CHECKED_VALUE = "checked";
 
     private static final String ENVIRONMENT_COOKIE = "targetEnvironment";
 
     private static final State ORCHESTRATOR_STUB_STATE = new State("orchestrator-stub-state");
+    private static final State AUTH_STUB_STATE = new State("auth-stub-state");
 
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
 
@@ -107,52 +111,76 @@ public class IpvHandler {
 
     private String getAuthorizeRedirect(QueryParamsMap queryMap, String errorType)
             throws Exception {
+
         var environment = queryMap.get(ENVIRONMENT_PARAM).value();
         var userIdTextValue = queryMap.get(USER_ID_PARAM).value();
         var signInJourneyIdText = queryMap.get(JOURNEY_ID_PARAM).value();
-        var vtr =
-                Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
-                        .map(String::trim)
-                        .filter(value -> !value.isEmpty())
-                        .toList();
         var userEmailAddress = queryMap.get(EMAIL_ADDRESS_PARAM).value();
-        var reproveIdentityString = queryMap.get(REPROVE_IDENTITY_PARAM).value();
-        var reproveIdentityClaimValue =
-                StringUtils.isNotBlank(reproveIdentityString)
-                        ? JwtBuilder.ReproveIdentityClaimValue.valueOf(reproveIdentityString)
-                        : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
-
-        var includeInheritedId =
-                Objects.equals(queryMap.value(INHERITED_ID_INCLUDED_PARAM), "checked");
-        var inheritedIdVot = queryMap.get(INHERITED_ID_VOT_PARAM).value();
-        var inheritedIdSubject = queryMap.value(INHERITED_ID_SUBJECT_PARAM);
-        var inheritedIdEvidence = queryMap.value(INHERITED_ID_EVIDENCE_PARAM);
-
         var userId = getUserIdValue(userIdTextValue);
+        var isMfaReset = Objects.equals(queryMap.value(MFA_RESET_PARAM), CHECKBOX_CHECKED_VALUE);
 
-        JWTClaimsSet claims =
-                JwtBuilder.buildAuthorizationRequestClaims(
-                        userId,
-                        signInJourneyIdText,
-                        ORCHESTRATOR_STUB_STATE.getValue(),
-                        vtr,
-                        errorType,
-                        userEmailAddress,
-                        reproveIdentityClaimValue,
-                        environment,
-                        includeInheritedId,
-                        inheritedIdSubject,
-                        inheritedIdEvidence,
-                        inheritedIdVot);
+        JWTClaimsSet claims;
+        if (isMfaReset) {
+            claims =
+                    JwtBuilder.buildAuthorizationRequestClaims(
+                            userId,
+                            signInJourneyIdText,
+                            AUTH_STUB_STATE.getValue(),
+                            null,
+                            errorType,
+                            userEmailAddress,
+                            JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT,
+                            environment,
+                            false,
+                            null,
+                            null,
+                            null,
+                            AUTH_CLIENT_ID);
+        } else {
+            var vtr =
+                    Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
+                            .map(String::trim)
+                            .filter(value -> !value.isEmpty())
+                            .toList();
+
+            var reproveIdentityString = queryMap.get(REPROVE_IDENTITY_PARAM).value();
+            var reproveIdentityClaimValue =
+                    StringUtils.isNotBlank(reproveIdentityString)
+                            ? JwtBuilder.ReproveIdentityClaimValue.valueOf(reproveIdentityString)
+                            : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
+
+            var includeInheritedId =
+                    Objects.equals(
+                            queryMap.value(INHERITED_ID_INCLUDED_PARAM), CHECKBOX_CHECKED_VALUE);
+            var inheritedIdVot = queryMap.get(INHERITED_ID_VOT_PARAM).value();
+            var inheritedIdSubject = queryMap.value(INHERITED_ID_SUBJECT_PARAM);
+            var inheritedIdEvidence = queryMap.value(INHERITED_ID_EVIDENCE_PARAM);
+
+            claims =
+                    JwtBuilder.buildAuthorizationRequestClaims(
+                            userId,
+                            signInJourneyIdText,
+                            ORCHESTRATOR_STUB_STATE.getValue(),
+                            vtr,
+                            errorType,
+                            userEmailAddress,
+                            reproveIdentityClaimValue,
+                            environment,
+                            includeInheritedId,
+                            inheritedIdSubject,
+                            inheritedIdEvidence,
+                            inheritedIdVot,
+                            ORCHESTRATOR_CLIENT_ID);
+        }
 
         SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
         EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);
         var authRequest =
                 new AuthorizationRequest.Builder(
                                 new ResponseType(ResponseType.Value.CODE),
-                                new ClientID(ORCHESTRATOR_CLIENT_ID))
+                                new ClientID(isMfaReset ? AUTH_CLIENT_ID : ORCHESTRATOR_CLIENT_ID))
                         .state(ORCHESTRATOR_STUB_STATE)
-                        .scope(new Scope("openid"))
+                        .scope(new Scope(isMfaReset ? "reverification" : "openid"))
                         .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
                         .endpointURI(getIpvEndpoint(environment).resolve("/oauth2/authorize"))
                         .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
