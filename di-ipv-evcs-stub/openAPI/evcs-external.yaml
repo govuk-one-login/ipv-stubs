@@ -138,9 +138,8 @@ paths:
                 type: object
                 properties:
                   vcs:
-                    type: string
-                    description: The SQS message ID.
-                    example: "bd8359d9-d559-47dd-9467-2a31e88a9e2d"
+                    type: array
+                    description: List of user VCs.
                   afterKey:
                     type: string
                     description: Indicates that the user has more VCs than the ones returned in the response. If full set of VCS is required subsequent calls should be made with this value as a query string parameter, until this value is not returned in the response.

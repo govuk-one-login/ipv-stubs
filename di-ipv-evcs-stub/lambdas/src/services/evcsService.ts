@@ -88,9 +88,7 @@ export async function processGetUserVCsRequest(
     filterExpressions.push(`:state${index}`);
     ExpressionAttributeValues[`:state${index}`] = { S: data };
   });
-  const FilterExpression = `#state IN (${filterExpressions.map(
-    (data) => data,
-  )})`;
+  const FilterExpression = `#state IN (${filterExpressions})`;
 
   const getItemInput: QueryInput = {
     TableName: config.evcsStubUserVCsTableName,

@@ -162,13 +162,11 @@ function getRequestedStates(event: APIGatewayProxyEvent): string[] {
   const STATE_ALL = "ALL";
   const stateInQuery = event.queryStringParameters?.state;
   let requestStates = Array.from((stateInQuery || VcState.CURRENT).split(","));
-  if (requestStates.length >= 1) {
-    requestStates.forEach(function (state) {
-      if (state != STATE_ALL && !(state in VcState)) {
-        throw new Error("Invalid state in query param.");
-      }
-    });
-  }
+  requestStates.forEach(function (state) {
+    if (state != STATE_ALL && !(state in VcState)) {
+      throw new Error("Invalid state in query param.");
+    }
+  });
   if (requestStates.length == 1 && requestStates.includes(STATE_ALL)) {
     // all states requested
     requestStates = Object.values(VcState).map((value) => value);
@@ -198,16 +196,17 @@ async function verifyAccessToken(
   jwt: string,
   userId: string,
 ): Promise<boolean> {
+  let payload: JWTPayload;
   try {
-    const payload: JWTPayload = await verifyTokenAndReturnPayload(jwt);
-    if (payload && payload.sub && userId !== payload.sub) {
-      throw new Error(
-        "User id doesn't match with `sub` claim value provided in the bearer token",
-      );
-    }
-    return true;
+    payload = await verifyTokenAndReturnPayload(jwt);
   } catch (error) {
     console.error(error);
     throw new Error("Access token verification failed");
   }
+  if (userId !== payload.sub) {
+    throw new Error(
+      "User id doesn't match with `sub` claim value provided in the bearer token",
+    );
+  }
+  return true;
 }
