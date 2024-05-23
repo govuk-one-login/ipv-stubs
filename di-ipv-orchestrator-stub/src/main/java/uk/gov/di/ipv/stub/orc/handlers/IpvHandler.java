@@ -120,7 +120,10 @@ public class IpvHandler {
         var isMfaReset = Objects.equals(queryMap.value(MFA_RESET_PARAM), CHECKBOX_CHECKED_VALUE);
 
         JWTClaimsSet claims;
+        String scope, clientId;
         if (isMfaReset) {
+            scope = "reverification";
+            clientId = AUTH_CLIENT_ID;
             claims =
                     JwtBuilder.buildAuthorizationRequestClaims(
                             userId,
@@ -135,8 +138,11 @@ public class IpvHandler {
                             null,
                             null,
                             null,
-                            AUTH_CLIENT_ID);
+                            scope,
+                            clientId);
         } else {
+            scope = "openid";
+            clientId = ORCHESTRATOR_CLIENT_ID;
             var vtr =
                     Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
                             .map(String::trim)
@@ -170,17 +176,17 @@ public class IpvHandler {
                             inheritedIdSubject,
                             inheritedIdEvidence,
                             inheritedIdVot,
-                            ORCHESTRATOR_CLIENT_ID);
+                            scope,
+                            clientId);
         }
 
         SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
         EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);
         var authRequest =
                 new AuthorizationRequest.Builder(
-                                new ResponseType(ResponseType.Value.CODE),
-                                new ClientID(isMfaReset ? AUTH_CLIENT_ID : ORCHESTRATOR_CLIENT_ID))
+                                new ResponseType(ResponseType.Value.CODE), new ClientID(clientId))
                         .state(ORCHESTRATOR_STUB_STATE)
-                        .scope(new Scope(isMfaReset ? "reverification" : "openid"))
+                        .scope(new Scope(scope))
                         .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
                         .endpointURI(getIpvEndpoint(environment).resolve("/oauth2/authorize"))
                         .requestObject(EncryptedJWT.parse(encryptedJwt.serialize()))
