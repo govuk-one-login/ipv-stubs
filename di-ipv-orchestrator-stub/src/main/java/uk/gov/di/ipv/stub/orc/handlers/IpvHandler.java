@@ -121,14 +121,16 @@ public class IpvHandler {
 
         JWTClaimsSet claims;
         String scope, clientId;
+        State state;
         if (isMfaReset) {
             scope = "reverification";
             clientId = AUTH_CLIENT_ID;
+            state = AUTH_STUB_STATE;
             claims =
                     JwtBuilder.buildAuthorizationRequestClaims(
                             userId,
                             signInJourneyIdText,
-                            AUTH_STUB_STATE.getValue(),
+                            state.getValue(),
                             null,
                             errorType,
                             userEmailAddress,
@@ -143,6 +145,7 @@ public class IpvHandler {
         } else {
             scope = "openid";
             clientId = ORCHESTRATOR_CLIENT_ID;
+            state = ORCHESTRATOR_STUB_STATE;
             var vtr =
                     Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
                             .map(String::trim)
@@ -166,7 +169,7 @@ public class IpvHandler {
                     JwtBuilder.buildAuthorizationRequestClaims(
                             userId,
                             signInJourneyIdText,
-                            ORCHESTRATOR_STUB_STATE.getValue(),
+                            state.getValue(),
                             vtr,
                             errorType,
                             userEmailAddress,
@@ -185,7 +188,7 @@ public class IpvHandler {
         var authRequest =
                 new AuthorizationRequest.Builder(
                                 new ResponseType(ResponseType.Value.CODE), new ClientID(clientId))
-                        .state(ORCHESTRATOR_STUB_STATE)
+                        .state(state)
                         .scope(new Scope(scope))
                         .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
                         .endpointURI(getIpvEndpoint(environment).resolve("/oauth2/authorize"))

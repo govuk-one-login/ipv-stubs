@@ -51,57 +51,13 @@
 
 <div class="govuk-width-container ">
     <main class="govuk-main-wrapper govuk-main-wrapper--auto-spacing" id="main-content" role="main">
-        <div class="govuk-!-margin-bottom-9">
-            <h1 class="govuk-heading-l">
-                User information
-            </h1>
-        </div>
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-full">
-                {{#rawUserInfo}}
-                    <details class="govuk-details" data-module="govuk-details">
-                        <summary class="govuk-details__summary">
-                            <span class="govuk-details__summary-text">Raw User Info Object</span>
-                        </summary>
-                        <div class="govuk-details__text">
-                            <pre><code>{{rawUserInfo}}</code></pre>
-                        </div>
-                    </details>
-                {{/rawUserInfo}}
+        {{#error}}
+            <h3 class="govuk-heading-l">Something went wrong: </h3>
+            <div class="govuk-details__text">
+                <pre><code>error: {{error}}</code></pre>
+                <pre><code>error_description: {{error_description}}</code></pre>
             </div>
-        </div>
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-full">
-                <dl class="govuk-summary-list">
-                    {{#data}}
-                        <div class="govuk-summary-list__row">
-                            <dt class="govuk-summary-list__key">
-                                <span class="govuk-heading-s">Cri Type: {{criType}}</span>
-                            </dt>
-                            <dd class="govuk-summary-list__value">
-                                <details class="govuk-details" data-module="govuk-details">
-                                    <summary class="govuk-details__summary">
-                                        <span class="govuk-details__summary-text">Verifiable Credential</span>
-                                    </summary>
-                                    <div class="govuk-details__text">
-                                        <pre><code>{{VC}}</code></pre>
-                                    </div>
-                                </details>
-                            </dd>
-                        </div>
-                    {{/data}}
-                    {{^data}}
-                        <h3 class="govuk-heading-s">Something went wrong: </h3>
-                        {{#error}}
-                            <div class="govuk-details__text">
-                                <pre><code>error: {{error}}</code></pre>
-                                <pre><code>error_description: {{error_description}}</code></pre>
-                            </div>
-                        {{/error}}
-                    {{/data}}
-                </dl>
-            </div>
-        </div>
+        {{/error}}
     </main>
 </div>
 
