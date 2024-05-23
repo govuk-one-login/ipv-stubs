@@ -74,6 +74,7 @@ public class JwtBuilder {
             String inheritedIdSubject,
             String inheritedIdEvidence,
             String inheritedIdVot,
+            String scope,
             String clientId)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
                     JsonProcessingException {
@@ -119,7 +120,8 @@ public class JwtBuilder {
                         .claim("govuk_signin_journey_id", signInJourneyId)
                         .claim("persistent_session_id", UUID.randomUUID().toString())
                         .claim("email_address", userEmailAddress)
-                        .claim("vtr", vtr);
+                        .claim("vtr", vtr)
+                        .claim("scope", scope);
         if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
             claimSetBuilder.claim(
                     "reprove_identity", reproveIdentityValue == ReproveIdentityClaimValue.TRUE);
