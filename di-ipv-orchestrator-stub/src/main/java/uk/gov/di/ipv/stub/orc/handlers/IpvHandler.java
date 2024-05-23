@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.stub.orc.handlers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -56,6 +57,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.AUTH_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
@@ -224,7 +226,7 @@ public class IpvHandler {
 
     public Route doCallback =
             (Request request, Response response) -> {
-                var gson = new GsonBuilder().setPrettyPrinting().create();
+                var objectMapper = new ObjectMapper().enable(INDENT_OUTPUT);
                 String targetBackend = request.cookie(ENVIRONMENT_COOKIE);
 
                 try {
@@ -236,15 +238,22 @@ public class IpvHandler {
                     var state = request.queryMap().get("state").value();
 
                     if (ORCHESTRATOR_STUB_STATE.toString().equals(state)) {
-                        var userInfoJson = gson.toJson(userInfo);
+                        var userInfoJson = objectMapper.writeValueAsString(userInfo);
                         var mustacheData = buildUserInfoMustacheData(userInfo);
 
                         return ViewHelper.render(
                                 Map.of("rawUserInfo", userInfoJson, "data", mustacheData),
                                 "user-info.mustache");
                     } else if (AUTH_STUB_STATE.toString().equals(state)) {
+                        var userInfoJson = objectMapper.writeValueAsString(userInfo);
+
                         return ViewHelper.render(
-                                Map.of("data", userInfo), "mfa-reset-result.mustache");
+                                Map.of(
+                                        "rawUserInfo",
+                                        userInfoJson,
+                                        "success",
+                                        userInfo.get("success")),
+                                "mfa-reset-result.mustache");
                     } else {
                         throw new OrchestratorStubException(
                                 "Unexpected callback result state for stub: " + state);
