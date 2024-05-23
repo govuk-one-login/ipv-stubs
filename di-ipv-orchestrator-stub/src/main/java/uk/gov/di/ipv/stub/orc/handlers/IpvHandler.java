@@ -233,7 +233,7 @@ public class IpvHandler {
                     var accessToken = exchangeCodeForToken(authorizationCode, targetBackend);
 
                     var userInfo = getUserInfo(accessToken, targetBackend);
-                    var state = userInfo.getAsString("state");
+                    var state = request.queryMap().get("state").value();
 
                     if (ORCHESTRATOR_STUB_STATE.toString().equals(state)) {
                         var userInfoJson = gson.toJson(userInfo);
@@ -253,7 +253,7 @@ public class IpvHandler {
                     var errorObject =
                             List.of(
                                     Map.of(
-                                            "error",
+                                            "error_code",
                                             e.getErrorObject().getCode(),
                                             "error_description",
                                             e.getErrorObject().getDescription()));
