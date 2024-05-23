@@ -41,12 +41,12 @@ public class OrchestratorConfig {
     public static final boolean BASIC_AUTH_ENABLE =
             Boolean.parseBoolean(getConfigValue("ORCHESTRATOR_BASIC_AUTH_ENABLE", "false"));
     public static final String BASIC_AUTH_USERNAME =
-            getConfigValue("ORCHESTRATOR_BASIC_AUTH_USERNAME", null);
+            getConfigValue("ORCHESTRATOR_BASIC_AUTH_USERNAME");
     public static final String BASIC_AUTH_PASSWORD =
-            getConfigValue("ORCHESTRATOR_BASIC_AUTH_PASSWORD", null);
+            getConfigValue("ORCHESTRATOR_BASIC_AUTH_PASSWORD");
 
     public static final String INHERITED_IDENTITY_JWT_SIGNING_KEY =
-            getConfigValue("INHERITED_IDENTITY_JWT_SIGNING_KEY", null);
+            getConfigValue("INHERITED_IDENTITY_JWT_SIGNING_KEY");
     public static final String INHERITED_IDENTITY_JWT_ISSUER =
             getConfigValue(
                     "INHERITED_IDENTITY_JWT_ISSUER",
@@ -55,6 +55,15 @@ public class OrchestratorConfig {
             getConfigValue("INHERITED_IDENTITY_JWT_VTM", "https://hmrc.gov.uk/trustmark");
     public static final String INHERITED_IDENTITY_JWT_TTL =
             getConfigValue("INHERITED_IDENTITY_JWT_TTL", "900");
+    public static final String EVCS_ACCESS_TOKEN_ENDPOINT =
+            getConfigValue("EVCS_ACCESS_TOKEN_ENDPOINT");
+    public static final String EVCS_ACCESS_TOKEN_TTL = getConfigValue("EVCS_ACCESS_TOKEN_TTL");
+    public static final String EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK =
+            getConfigValue("EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK");
+
+    private static String getConfigValue(String key) {
+        return getConfigValue(key, null);
+    }
 
     private static String getConfigValue(String key, String defaultValue) {
         var envValue = System.getenv(key);

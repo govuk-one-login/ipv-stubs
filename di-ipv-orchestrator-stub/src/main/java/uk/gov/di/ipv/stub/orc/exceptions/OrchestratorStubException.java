@@ -4,4 +4,8 @@ public class OrchestratorStubException extends Exception {
     public OrchestratorStubException(String errorMessage) {
         super(errorMessage);
     }
+
+    public OrchestratorStubException(Exception exception) {
+        super(exception);
+    }
 }

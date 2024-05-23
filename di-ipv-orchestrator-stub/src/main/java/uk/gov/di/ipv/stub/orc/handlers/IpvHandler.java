@@ -41,6 +41,7 @@ import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.orc.exceptions.OauthException;
 import uk.gov.di.ipv.stub.orc.exceptions.OrchestratorStubException;
+import uk.gov.di.ipv.stub.orc.utils.EvcsAccessTokenGenerator;
 import uk.gov.di.ipv.stub.orc.utils.JwtBuilder;
 import uk.gov.di.ipv.stub.orc.utils.ViewHelper;
 
@@ -69,10 +70,11 @@ import static uk.gov.di.ipv.stub.orc.utils.JwtBuilder.URN_UUID;
 import static uk.gov.di.ipv.stub.orc.utils.JwtBuilder.buildClientAuthenticationClaims;
 
 public class IpvHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(IpvHandler.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().enable(INDENT_OUTPUT);
 
     private static final String CREDENTIALS_URL_PROPERTY =
             "https://vocab.account.gov.uk/v1/credentialJWT";
-
     private static final String USER_ID_PARAM = "userIdText";
     private static final String JOURNEY_ID_PARAM = "signInJourneyIdText";
     private static final String VTR_PARAM = "vtrText";
@@ -91,9 +93,8 @@ public class IpvHandler {
 
     private static final State ORCHESTRATOR_STUB_STATE = new State("orchestrator-stub-state");
     private static final State AUTH_STUB_STATE = new State("auth-stub-state");
-
-    private final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT);
-    private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
+    private static final Scope REVERIFICATION_SCOPE = new Scope("reverification");
+    private static final Scope OPENID_SCOPE = new Scope("openid");
 
     public Route doAuthorize =
             (Request request, Response response) -> {
@@ -112,6 +113,12 @@ public class IpvHandler {
                 return null;
             };
 
+    private final EvcsAccessTokenGenerator evcsAccessTokenGenerator;
+
+    public IpvHandler(EvcsAccessTokenGenerator evcsAccessTokenGenerator) {
+        this.evcsAccessTokenGenerator = evcsAccessTokenGenerator;
+    }
+
     private String getAuthorizeRedirect(QueryParamsMap queryMap, String errorType)
             throws Exception {
 
@@ -123,10 +130,11 @@ public class IpvHandler {
         var isMfaReset = Objects.equals(queryMap.value(MFA_RESET_PARAM), CHECKBOX_CHECKED_VALUE);
 
         JWTClaimsSet claims;
-        String scope, clientId;
+        Scope scope;
+        String clientId;
         State state;
         if (isMfaReset) {
-            scope = "reverification";
+            scope = REVERIFICATION_SCOPE;
             clientId = AUTH_CLIENT_ID;
             state = AUTH_STUB_STATE;
             claims =
@@ -144,9 +152,10 @@ public class IpvHandler {
                             null,
                             null,
                             scope,
-                            clientId);
+                            clientId,
+                            null);
         } else {
-            scope = "openid";
+            scope = OPENID_SCOPE;
             clientId = ORCHESTRATOR_CLIENT_ID;
             state = ORCHESTRATOR_STUB_STATE;
             var vtr =
@@ -183,7 +192,8 @@ public class IpvHandler {
                             inheritedIdEvidence,
                             inheritedIdVot,
                             scope,
-                            clientId);
+                            clientId,
+                            evcsAccessTokenGenerator.getAccessToken(environment, userId));
         }
 
         SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
@@ -238,14 +248,14 @@ public class IpvHandler {
                     var state = request.queryMap().get("state").value();
 
                     if (ORCHESTRATOR_STUB_STATE.toString().equals(state)) {
-                        var userInfoJson = objectMapper.writeValueAsString(userInfo);
+                        var userInfoJson = OBJECT_MAPPER.writeValueAsString(userInfo);
                         var mustacheData = buildUserInfoMustacheData(userInfo);
 
                         return ViewHelper.render(
                                 Map.of("rawUserInfo", userInfoJson, "data", mustacheData),
                                 "user-info.mustache");
                     } else if (AUTH_STUB_STATE.toString().equals(state)) {
-                        var userInfoJson = objectMapper.writeValueAsString(userInfo);
+                        var userInfoJson = OBJECT_MAPPER.writeValueAsString(userInfo);
 
                         return ViewHelper.render(
                                 Map.of(
@@ -282,7 +292,7 @@ public class IpvHandler {
 
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
-            logger.error("Failed authorization code request: {}", error);
+            LOGGER.error("Failed authorization code request: {}", error);
             throw new OauthException(error);
         }
 
@@ -300,7 +310,7 @@ public class IpvHandler {
             throws OrchestratorStubException, URISyntaxException {
         URI resolve =
                 getIpvBackchannelEndpoint(targetEnvironment).resolve(IPV_BACKCHANNEL_TOKEN_PATH);
-        logger.debug("token url is " + resolve);
+        LOGGER.debug("token url is " + resolve);
 
         SignedJWT signedClientJwt;
 
@@ -308,7 +318,7 @@ public class IpvHandler {
             JWTClaimsSet claims = buildClientAuthenticationClaims(targetEnvironment);
             signedClientJwt = JwtBuilder.createSignedJwt(claims);
         } catch (JOSEException | InvalidKeySpecException | NoSuchAlgorithmException e) {
-            logger.error("Failed to generate orch client JWT", e);
+            LOGGER.error("Failed to generate orch client JWT", e);
             throw new OrchestratorStubException("Failed to generate orch client JWT");
         }
 
@@ -326,7 +336,7 @@ public class IpvHandler {
 
         if (tokenResponse instanceof TokenErrorResponse) {
             TokenErrorResponse errorResponse = tokenResponse.toErrorResponse();
-            logger.error("Failed to get token: " + errorResponse.getErrorObject());
+            LOGGER.error("Failed to get token: " + errorResponse.getErrorObject());
             throw new OrchestratorStubException(errorResponse.getErrorObject().getDescription());
         }
 
@@ -350,7 +360,7 @@ public class IpvHandler {
                             + statusCode
                             + ": "
                             + userInfoHttpResponse.getContent();
-            logger.error(errorMessage);
+            LOGGER.error(errorMessage);
             throw new RuntimeException(errorMessage);
         }
 
@@ -389,7 +399,7 @@ public class IpvHandler {
         try {
             return httpRequest.send();
         } catch (IOException | SerializeException exception) {
-            logger.error("Failed to send a http request", exception);
+            LOGGER.error("Failed to send a http request", exception);
             throw new RuntimeException("Failed to send a http request", exception);
         }
     }
@@ -398,7 +408,7 @@ public class IpvHandler {
         try {
             return OIDCTokenResponseParser.parse(httpResponse);
         } catch (ParseException parseException) {
-            logger.error("Failed to parse token response");
+            LOGGER.error("Failed to parse token response");
             throw new RuntimeException("Failed to parse token response", parseException);
         }
     }
@@ -407,7 +417,7 @@ public class IpvHandler {
         try {
             return UserInfoResponse.parse(httpResponse);
         } catch (ParseException parseException) {
-            logger.error("Failed to parse user info response");
+            LOGGER.error("Failed to parse user info response");
             throw new RuntimeException("Failed to parse user info response", parseException);
         }
     }

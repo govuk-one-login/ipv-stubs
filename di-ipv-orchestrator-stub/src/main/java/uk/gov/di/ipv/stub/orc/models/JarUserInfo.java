@@ -12,4 +12,6 @@ public record JarUserInfo(
                 Essential ninoClaim,
         @JsonInclude(JsonInclude.Include.NON_NULL)
                 @JsonProperty(value = "https://vocab.account.gov.uk/v1/inheritedIdentityJWT")
-                InheritedIdentityJwtClaim inheritedIdentityClaim) {}
+                ListOfStringValues inheritedIdentityClaim,
+        @JsonProperty(value = "https://vocab.account.gov.uk/v1/storageAccessToken")
+                ListOfStringValues evcsAccessToken) {}
