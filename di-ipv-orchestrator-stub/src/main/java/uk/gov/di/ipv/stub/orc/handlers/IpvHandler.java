@@ -92,6 +92,7 @@ public class IpvHandler {
     private static final State ORCHESTRATOR_STUB_STATE = new State("orchestrator-stub-state");
     private static final State AUTH_STUB_STATE = new State("auth-stub-state");
 
+    private final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT);
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
 
     public Route doAuthorize =
@@ -226,7 +227,6 @@ public class IpvHandler {
 
     public Route doCallback =
             (Request request, Response response) -> {
-                var objectMapper = new ObjectMapper().enable(INDENT_OUTPUT);
                 String targetBackend = request.cookie(ENVIRONMENT_COOKIE);
 
                 try {
