@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-	implementation "com.amazonaws:aws-java-sdk-dynamodb:1.12.718",
+	implementation "com.amazonaws:aws-java-sdk-dynamodb:1.12.729",
 			"software.amazon.awssdk:dynamodb-enhanced:2.25.43",
 			"software.amazon.lambda:powertools-parameters:1.16.1",
 			"software.amazon.awssdk:kms:2.25.22",
