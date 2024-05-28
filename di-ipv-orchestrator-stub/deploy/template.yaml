@@ -135,10 +135,18 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_VTM" #pragma: allowlist secret
-    # PassportPrivateApiKey:
-    #    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    #    Type: AWS::SSM::Parameter::Value<String>
-    #    Default: "/stubs/core/passport/env/PASSPORT_PRIVATE_API_KEY" #pragma: allowlist secret
+  EvcsAccessTokenEndpoint:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/EVCS_ACCESS_TOKEN_ENDPOINT" #pragma: allowlist secret
+  EvcsAccessTokenTtl:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/EVCS_ACCESS_TOKEN_TTL" #pragma: allowlist secret
+  EvcsAccessTokenSigningKeyJwk:
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: "/stubs/build/orch/env/EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -630,6 +638,12 @@ Resources:
               Value: !Ref InheritedIdentityJwtIssuer
             - Name: INHERITED_IDENTITY_JWT_VTM
               Value: !Ref InheritedIdentityJwtVtm
+            - Name: EVCS_ACCESS_TOKEN_ENDPOINT
+              Value: !Ref EvcsAccessTokenEndpoint
+            - Name: EVCS_ACCESS_TOKEN_TTL
+              Value: !Ref EvcsAccessTokenTtl
+            - Name: EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK
+              Value: !Ref EvcsAccessTokenSigningKeyJwk
           Secrets:
             - Name: DT_TENANT
               ValueFrom: !Join

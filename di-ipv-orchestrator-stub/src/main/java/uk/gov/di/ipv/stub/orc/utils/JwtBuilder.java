@@ -20,6 +20,7 @@ import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.ResponseType;
+import com.nimbusds.oauth2.sdk.Scope;
 import uk.gov.di.ipv.stub.orc.models.JarClaims;
 
 import java.security.KeyFactory;
@@ -74,8 +75,9 @@ public class JwtBuilder {
             String inheritedIdSubject,
             String inheritedIdEvidence,
             String inheritedIdVot,
-            String scope,
-            String clientId)
+            Scope scope,
+            String clientId,
+            String evcsAccessToken)
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
                     JsonProcessingException {
         String audience = getIpvCoreAudience(environment);
@@ -99,7 +101,7 @@ public class JwtBuilder {
             }
         }
 
-        var jarClaims = new JarClaims(inheritedIdJwt);
+        var jarClaims = new JarClaims(inheritedIdJwt, evcsAccessToken);
         var jarClaimsMap =
                 objectMapper.convertValue(jarClaims, new TypeReference<Map<String, Object>>() {});
 
@@ -121,7 +123,7 @@ public class JwtBuilder {
                         .claim("persistent_session_id", UUID.randomUUID().toString())
                         .claim("email_address", userEmailAddress)
                         .claim("vtr", vtr)
-                        .claim("scope", scope);
+                        .claim("scope", scope.toString());
         if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
             claimSetBuilder.claim(
                     "reprove_identity", reproveIdentityValue == ReproveIdentityClaimValue.TRUE);
