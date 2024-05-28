@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.stub.orc.handlers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -56,6 +57,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.AUTH_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
@@ -90,6 +92,7 @@ public class IpvHandler {
     private static final State ORCHESTRATOR_STUB_STATE = new State("orchestrator-stub-state");
     private static final State AUTH_STUB_STATE = new State("auth-stub-state");
 
+    private final ObjectMapper objectMapper = new ObjectMapper().enable(INDENT_OUTPUT);
     private final Logger logger = LoggerFactory.getLogger(IpvHandler.class);
 
     public Route doAuthorize =
@@ -121,14 +124,16 @@ public class IpvHandler {
 
         JWTClaimsSet claims;
         String scope, clientId;
+        State state;
         if (isMfaReset) {
             scope = "reverification";
             clientId = AUTH_CLIENT_ID;
+            state = AUTH_STUB_STATE;
             claims =
                     JwtBuilder.buildAuthorizationRequestClaims(
                             userId,
                             signInJourneyIdText,
-                            AUTH_STUB_STATE.getValue(),
+                            state.getValue(),
                             null,
                             errorType,
                             userEmailAddress,
@@ -143,6 +148,7 @@ public class IpvHandler {
         } else {
             scope = "openid";
             clientId = ORCHESTRATOR_CLIENT_ID;
+            state = ORCHESTRATOR_STUB_STATE;
             var vtr =
                     Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
                             .map(String::trim)
@@ -166,7 +172,7 @@ public class IpvHandler {
                     JwtBuilder.buildAuthorizationRequestClaims(
                             userId,
                             signInJourneyIdText,
-                            ORCHESTRATOR_STUB_STATE.getValue(),
+                            state.getValue(),
                             vtr,
                             errorType,
                             userEmailAddress,
@@ -185,7 +191,7 @@ public class IpvHandler {
         var authRequest =
                 new AuthorizationRequest.Builder(
                                 new ResponseType(ResponseType.Value.CODE), new ClientID(clientId))
-                        .state(ORCHESTRATOR_STUB_STATE)
+                        .state(state)
                         .scope(new Scope(scope))
                         .redirectionURI(new URI(ORCHESTRATOR_REDIRECT_URL))
                         .endpointURI(getIpvEndpoint(environment).resolve("/oauth2/authorize"))
@@ -221,8 +227,6 @@ public class IpvHandler {
 
     public Route doCallback =
             (Request request, Response response) -> {
-                List<Map<String, Object>> mustacheData;
-                Map<String, Object> moustacheDataModel = new HashMap<>();
                 String targetBackend = request.cookie(ENVIRONMENT_COOKIE);
 
                 try {
@@ -231,29 +235,44 @@ public class IpvHandler {
                     var accessToken = exchangeCodeForToken(authorizationCode, targetBackend);
 
                     var userInfo = getUserInfo(accessToken, targetBackend);
+                    var state = request.queryMap().get("state").value();
 
-                    Gson gson = new GsonBuilder().setPrettyPrinting().create();
-                    String userInfoJson = gson.toJson(userInfo);
-                    moustacheDataModel.put("rawUserInfo", userInfoJson);
+                    if (ORCHESTRATOR_STUB_STATE.toString().equals(state)) {
+                        var userInfoJson = objectMapper.writeValueAsString(userInfo);
+                        var mustacheData = buildUserInfoMustacheData(userInfo);
 
-                    mustacheData = buildMustacheData(userInfo);
-                    moustacheDataModel.put("data", mustacheData);
-                } catch (OrchestratorStubException | ParseException | JsonSyntaxException e) {
-                    List<Map<String, Object>> errorObject =
-                            List.of(Map.of("error_message", e.getMessage()));
-                    moustacheDataModel.put("error", errorObject);
+                        return ViewHelper.render(
+                                Map.of("rawUserInfo", userInfoJson, "data", mustacheData),
+                                "user-info.mustache");
+                    } else if (AUTH_STUB_STATE.toString().equals(state)) {
+                        var userInfoJson = objectMapper.writeValueAsString(userInfo);
+
+                        return ViewHelper.render(
+                                Map.of(
+                                        "rawUserInfo",
+                                        userInfoJson,
+                                        "success",
+                                        userInfo.get("success")),
+                                "mfa-reset-result.mustache");
+                    } else {
+                        throw new OrchestratorStubException(
+                                "Unexpected callback result state for stub: " + state);
+                    }
                 } catch (OauthException e) {
-                    List<Map<String, Object>> errorObject =
+                    var errorObject =
                             List.of(
                                     Map.of(
-                                            "error",
+                                            "error_code",
                                             e.getErrorObject().getCode(),
                                             "error_description",
                                             e.getErrorObject().getDescription()));
-                    moustacheDataModel.put("error", errorObject);
-                }
 
-                return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
+                    return ViewHelper.render(Map.of("error", errorObject), "error.mustache");
+                } catch (Exception e) {
+                    var errorObject = List.of(Map.of("error_description", e.getMessage()));
+
+                    return ViewHelper.render(Map.of("error", errorObject), "error.mustache");
+                }
             };
 
     private AuthorizationCode getAuthorizationCode(Request request)
@@ -342,7 +361,7 @@ public class IpvHandler {
         }
     }
 
-    private List<Map<String, Object>> buildMustacheData(JSONObject credentials)
+    private List<Map<String, Object>> buildUserInfoMustacheData(JSONObject credentials)
             throws ParseException, JsonSyntaxException, java.text.ParseException {
         List<Map<String, Object>> moustacheDataModel = new ArrayList<>();
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
