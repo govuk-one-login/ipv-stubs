@@ -61,7 +61,6 @@ import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.AUTH_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_USER_IDENTITY_PATH;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
@@ -72,6 +71,8 @@ public class IpvHandler {
 
     private static final String CREDENTIALS_URL_PROPERTY =
             "https://vocab.account.gov.uk/v1/credentialJWT";
+    private static final String USER_IDENTITY_PATH = "user-identity";
+    private static final String REVERIFICATION_PATH = "reverification";
 
     private static final String USER_ID_PARAM = "userIdText";
     private static final String JOURNEY_ID_PARAM = "signInJourneyIdText";
@@ -234,10 +235,10 @@ public class IpvHandler {
 
                     var accessToken = exchangeCodeForToken(authorizationCode, targetBackend);
 
-                    var userInfo = getUserInfo(accessToken, targetBackend);
                     var state = request.queryMap().get("state").value();
 
                     if (ORCHESTRATOR_STUB_STATE.toString().equals(state)) {
+                        var userInfo = getUserInfo(accessToken, targetBackend, USER_IDENTITY_PATH);
                         var userInfoJson = objectMapper.writeValueAsString(userInfo);
                         var mustacheData = buildUserInfoMustacheData(userInfo);
 
@@ -245,14 +246,17 @@ public class IpvHandler {
                                 Map.of("rawUserInfo", userInfoJson, "data", mustacheData),
                                 "user-info.mustache");
                     } else if (AUTH_STUB_STATE.toString().equals(state)) {
-                        var userInfoJson = objectMapper.writeValueAsString(userInfo);
+                        var reverificationResult =
+                                getUserInfo(accessToken, targetBackend, REVERIFICATION_PATH);
+                        var reverificationResultJson =
+                                objectMapper.writeValueAsString(reverificationResult);
 
                         return ViewHelper.render(
                                 Map.of(
                                         "rawUserInfo",
-                                        userInfoJson,
+                                        reverificationResultJson,
                                         "success",
-                                        userInfo.get("success")),
+                                        reverificationResult.get("success")),
                                 "mfa-reset-result.mustache");
                     } else {
                         throw new OrchestratorStubException(
@@ -333,12 +337,13 @@ public class IpvHandler {
         return tokenResponse.toSuccessResponse().getTokens().getAccessToken();
     }
 
-    public JSONObject getUserInfo(AccessToken accessToken, String targetBackend)
+    public JSONObject getUserInfo(
+            AccessToken accessToken, String targetBackend, String ipvBackchannelEndpointPath)
             throws URISyntaxException {
         var userInfoRequest =
                 new UserInfoRequest(
                         getIpvBackchannelEndpoint(targetBackend)
-                                .resolve(IPV_BACKCHANNEL_USER_IDENTITY_PATH),
+                                .resolve(ipvBackchannelEndpointPath),
                         (BearerAccessToken) accessToken);
 
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest.toHTTPRequest());
