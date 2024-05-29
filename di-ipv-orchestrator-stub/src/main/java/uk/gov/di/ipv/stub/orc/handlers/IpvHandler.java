@@ -95,8 +95,8 @@ public class IpvHandler {
 
     private static final State ORCHESTRATOR_STUB_STATE = new State("orchestrator-stub-state");
     private static final State AUTH_STUB_STATE = new State("auth-stub-state");
-    private static final Scope REVERIFICATION_SCOPE = new Scope("reverification");
-    private static final Scope OPENID_SCOPE = new Scope("openid");
+    private static final Scope AUTH_STUB_SCOPE = new Scope("reverification");
+    private static final Scope ORCHESTRATOR_STUB_SCOPE = new Scope("openid", "phone", "email");
 
     public Route doAuthorize =
             (Request request, Response response) -> {
@@ -136,7 +136,7 @@ public class IpvHandler {
         String clientId;
         State state;
         if (isMfaReset) {
-            scope = REVERIFICATION_SCOPE;
+            scope = AUTH_STUB_SCOPE;
             clientId = AUTH_CLIENT_ID;
             state = AUTH_STUB_STATE;
             claims =
@@ -157,7 +157,7 @@ public class IpvHandler {
                             clientId,
                             null);
         } else {
-            scope = OPENID_SCOPE;
+            scope = ORCHESTRATOR_STUB_SCOPE;
             clientId = ORCHESTRATOR_CLIENT_ID;
             state = ORCHESTRATOR_STUB_STATE;
             var vtr =
