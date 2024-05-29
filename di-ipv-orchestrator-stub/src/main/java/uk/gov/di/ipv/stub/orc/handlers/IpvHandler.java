@@ -61,7 +61,6 @@ import java.util.UUID;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.AUTH_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_TOKEN_PATH;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
@@ -74,6 +73,7 @@ public class IpvHandler {
 
     private static final String CREDENTIALS_URL_PROPERTY =
             "https://vocab.account.gov.uk/v1/credentialJWT";
+    private static final String TOKEN_PATH = "token";
     private static final String USER_IDENTITY_PATH = "user-identity";
     private static final String REVERIFICATION_PATH = "reverification";
 
@@ -314,7 +314,7 @@ public class IpvHandler {
             AuthorizationCode authorizationCode, String targetEnvironment)
             throws OrchestratorStubException, URISyntaxException {
         URI resolve =
-                getIpvBackchannelEndpoint(targetEnvironment).resolve(IPV_BACKCHANNEL_TOKEN_PATH);
+                getIpvBackchannelEndpoint(targetEnvironment).resolve(TOKEN_PATH);
         LOGGER.debug("token url is " + resolve);
 
         SignedJWT signedClientJwt;
