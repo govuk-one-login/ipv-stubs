@@ -5,6 +5,7 @@ import uk.gov.di.ipv.stub.orc.config.OrchestratorConfig;
 import uk.gov.di.ipv.stub.orc.handlers.BasicAuthHandler;
 import uk.gov.di.ipv.stub.orc.handlers.HomeHandler;
 import uk.gov.di.ipv.stub.orc.handlers.IpvHandler;
+import uk.gov.di.ipv.stub.orc.utils.EvcsAccessTokenGenerator;
 
 public class Orchestrator {
 
@@ -14,7 +15,7 @@ public class Orchestrator {
         Spark.staticFileLocation("/public");
         Spark.port(Integer.parseInt(OrchestratorConfig.PORT));
 
-        ipvHandler = new IpvHandler();
+        ipvHandler = new IpvHandler(new EvcsAccessTokenGenerator());
 
         initRoutes();
     }
