@@ -313,8 +313,7 @@ public class IpvHandler {
     private AccessToken exchangeCodeForToken(
             AuthorizationCode authorizationCode, String targetEnvironment)
             throws OrchestratorStubException, URISyntaxException {
-        URI resolve =
-                getIpvBackchannelEndpoint(targetEnvironment).resolve(TOKEN_PATH);
+        URI resolve = getIpvBackchannelEndpoint(targetEnvironment).resolve(TOKEN_PATH);
         LOGGER.debug("token url is " + resolve);
 
         SignedJWT signedClientJwt;
