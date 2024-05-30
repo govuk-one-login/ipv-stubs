@@ -84,7 +84,7 @@ export async function getHandler(
           event.headers
             ? event.headers[
                 Object.keys(event.headers).find(
-                  (header) => header.toLowerCase() === "authorisation",
+                  (header) => header.toLowerCase() === "authorization",
                 ) || ""
               ]
             : undefined,
