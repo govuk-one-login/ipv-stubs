@@ -157,7 +157,7 @@ public class IpvHandler {
                             clientId,
                             null);
         } else {
-            scope = ORCHESTRATOR_STUB_SCOPE;
+            scope = AUTH_STUB_SCOPE;
             clientId = ORCHESTRATOR_CLIENT_ID;
             state = ORCHESTRATOR_STUB_STATE;
             var vtr =
@@ -248,7 +248,7 @@ public class IpvHandler {
 
                     var state = request.queryMap().get("state").value();
 
-                    if (ORCHESTRATOR_STUB_STATE.toString().equals(state)) {
+                    if (AUTH_STUB_STATE.toString().equals(state)) {
                         var userInfo = getUserInfo(accessToken, targetBackend, USER_IDENTITY_PATH);
                         var userInfoJson = OBJECT_MAPPER.writeValueAsString(userInfo);
                         var mustacheData = buildUserInfoMustacheData(userInfo);
@@ -256,7 +256,7 @@ public class IpvHandler {
                         return ViewHelper.render(
                                 Map.of("rawUserInfo", userInfoJson, "data", mustacheData),
                                 "user-info.mustache");
-                    } else if (AUTH_STUB_STATE.toString().equals(state)) {
+                    } else if (ORCHESTRATOR_STUB_STATE.toString().equals(state)) {
                         var reverificationResult =
                                 getUserInfo(accessToken, targetBackend, REVERIFICATION_PATH);
                         var reverificationResultJson =
@@ -351,9 +351,7 @@ public class IpvHandler {
             AccessToken accessToken, String targetBackend, String ipvBackchannelEndpointPath)
             throws URISyntaxException {
         var userInfoRequest =
-                new UserInfoRequest(
-                        getIpvBackchannelEndpoint(targetBackend)
-                                .resolve(ipvBackchannelEndpointPath),
+                new UserInfoRequest(URI.create("http://host.docker.internal:3002/reverification"),
                         (BearerAccessToken) accessToken);
 
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest.toHTTPRequest());
