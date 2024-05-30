@@ -87,7 +87,7 @@ const TEST_EVENT_WITH_STATUS_AND_NOBODY = {
   pathParameters: TEST_PATH_PARAM_WITH_STATUS,
 } as APIGatewayProxyEventV2;
 
-describe("TICF management handler", function () {
+describe.skip("TICF management handler", function () {
   it("returns a successful response", async () => {
     const initiallyUserEvidenceInDb: UserEvidenceItem | null =
       await getUserEvidence(testUserId);

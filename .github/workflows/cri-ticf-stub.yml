@@ -62,6 +62,10 @@ jobs:
         working-directory: ./di-ipv-ticf-stub/lambdas
         run: npm ci
 
+      - name: npm test
+        working-directory: ./di-ipv-ticf-stub/lambdas
+        run: npm run test
+
       - name: SAM build and test
         working-directory: ./di-ipv-ticf-stub/deploy
         run: sam build
