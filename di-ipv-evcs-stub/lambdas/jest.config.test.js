@@ -7,5 +7,5 @@ module.exports = {
   preset: "@shelf/jest-dynamodb",
 
   testEnvironment: "node",
-  testMatch: ["**/unit/**/*.test.ts"],
+  testMatch: ["**/test/**/*.test.ts"],
 };
