@@ -120,7 +120,7 @@ const TEST_POST_INVALID_STATE_EVENT = {
 } as APIGatewayProxyEvent;
 
 const TEST_HEADERS = {
-  Authorisation: `Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2V2Y3MuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJhdWQiOiJodHRwczovL2V2Y3MuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJqdGkiOiJ1cm46dXVpZDpiNmRkMjNkMy1mZjM3LTQzYzYtOTI3My01NTRkNjQzMjFiODMiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.1-nRkV6ny9ThBGDbQ1sDCrJpYSe0tbOXEMJJNEoomVWjKsRL1RK6qdATkk-54p_c68Gzu1mN4FDM-buk1gXIPQ`,
+  Authorization: `Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2V2Y3MuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJhdWQiOiJodHRwczovL2V2Y3MuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJqdGkiOiJ1cm46dXVpZDpiNmRkMjNkMy1mZjM3LTQzYzYtOTI3My01NTRkNjQzMjFiODMiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.1-nRkV6ny9ThBGDbQ1sDCrJpYSe0tbOXEMJJNEoomVWjKsRL1RK6qdATkk-54p_c68Gzu1mN4FDM-buk1gXIPQ`,
 } as APIGatewayProxyEventHeaders;
 
 const TEST_GET_EVENT = {
@@ -367,7 +367,7 @@ describe("EVCS handler", function () {
 
     // arrange
     let REQ_HEADERS = {
-      Authorisation: "Bearer",
+      Authorization: "Bearer",
     } as APIGatewayProxyEventHeaders;
     TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
@@ -383,7 +383,7 @@ describe("EVCS handler", function () {
 
     // arrange
     REQ_HEADERS = {
-      Authorisation:
+      Authorization:
         "Bear eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
     } as APIGatewayProxyEventHeaders;
     TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN = {
@@ -400,7 +400,7 @@ describe("EVCS handler", function () {
 
     // arrange
     REQ_HEADERS = {
-      Authorisation: "Bearer ",
+      Authorization: "Bearer ",
     } as APIGatewayProxyEventHeaders;
     TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN = {
       pathParameters: TEST_PATH_PARAM,
@@ -416,7 +416,7 @@ describe("EVCS handler", function () {
 
     // arrange
     REQ_HEADERS = {
-      Authorisation:
+      Authorization:
         "Bearer eyJhbGc.eyJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJpc3MiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL3RpY2YuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.BU6_2LreE5XUaIuz7FC4xZB9cUXLFQ6GcB_TdB43e34",
     } as APIGatewayProxyEventHeaders;
     TEST_GET_EVENT_WITH_INVALID_ACCESS_TOKEN = {
