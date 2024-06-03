@@ -294,6 +294,7 @@ public class IpvHandler {
             throws ParseException, OauthException {
         var authorizationResponse =
                 AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
+        var state = authorizationResponse.getState();
 
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
@@ -301,7 +302,7 @@ public class IpvHandler {
             throw new OauthException(error);
         }
 
-        if (!ORCHESTRATOR_STUB_STATE.equals(authorizationResponse.getState())) {
+        if (!ORCHESTRATOR_STUB_STATE.equals(state) && !AUTH_STUB_STATE.equals(state)) {
             throw new OauthException(
                     OAuth2Error.INVALID_REQUEST.appendDescription(
                             " - missing or invalid state value"));
