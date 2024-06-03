@@ -382,9 +382,8 @@ Resources:
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/dcmaw-async-external.yaml"
-      ApiKeySourceType: HEADER #pragma: allowlist secret
       Auth:
-        ApiKeyRequired: true #pragma: allowlist secret
+        ApiKeyRequired: false #pragma: allowlist secret
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "DCMAW Async Usage Plan"
