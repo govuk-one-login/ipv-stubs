@@ -3,6 +3,7 @@ import { buildApiResponse } from "../common/apiResponse";
 import getConfig from "../common/config";
 import getErrorMessage from "../common/errorReporting";
 import CredentialRequest from "../domain/credentialRequest";
+import { persistState } from "../services/userStateService";
 
 export async function handler(
   event: APIGatewayProxyEventV2,
@@ -29,6 +30,9 @@ export async function handler(
       return buildApiResponse({ errorMessage: requestBody }, 400);
     }
 
+    // We need to store the state value so we can provide it in the async VC response
+    await persistState(requestBody.sub, requestBody.state);
+
     return buildApiResponse(
       {
         sub: requestBody.sub,
@@ -45,7 +49,8 @@ export async function handler(
 }
 
 function getAccessToken(event: APIGatewayProxyEventV2): string | undefined {
-  const authorization = event?.headers?.Authorization || event?.headers?.authorization;
+  const authorization =
+    event?.headers?.Authorization || event?.headers?.authorization;
   const authHeaderValue = authorization?.trim();
 
   if (authHeaderValue === undefined) {
@@ -63,7 +68,7 @@ function getAccessToken(event: APIGatewayProxyEventV2): string | undefined {
 function parseRequest(
   event: APIGatewayProxyEventV2,
 ): string | CredentialRequest {
-  if (!event?.body || event?.body === '') {
+  if (!event?.body || event?.body === "") {
     return "No request body";
   }
 

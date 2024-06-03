@@ -23,6 +23,9 @@ jest.mock(
       tokenLifetimeSeconds: TOKEN_LIFETIME,
     }),
 );
+jest.mock("../../src/services/userStateService", () => ({
+  persistState: jest.fn(),
+}));
 
 describe("DCMAW Async credential handler", function () {
   it("returns a successful pending VC response", async () => {
