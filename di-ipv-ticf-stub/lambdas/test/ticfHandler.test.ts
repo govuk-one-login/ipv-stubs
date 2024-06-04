@@ -3,24 +3,24 @@ import {
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
-import { handler } from "../../src/handlers/ticfHandler";
-import TicfResponse from "../../src/domain/ticfResponse";
+import { handler } from "../src/handlers/ticfHandler";
+import TicfResponse from "../src/domain/ticfResponse";
 import { importSPKI, jwtVerify } from "jose";
-import TicfVc from "../../src/domain/ticfVc";
-import { getUserEvidence } from "../../src/management/services/userEvidenceService";
-import UserEvidenceItem from "../../src/management/model/userEvidenceItem";
+import TicfVc from "../src/domain/ticfVc";
+import { getUserEvidence } from "../src/management/services/userEvidenceService";
+import UserEvidenceItem from "../src/management/model/userEvidenceItem";
 
 jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
   getParameter: jest.fn(),
 }));
 
-jest.mock("../../src/common/config", () => ({
+jest.mock("../src/common/config", () => ({
   config: {
     ticfParamBasePath: "/test/path/",
   },
 }));
 
-jest.mock("../../src/management/services/userEvidenceService", () => ({
+jest.mock("../src/management/services/userEvidenceService", () => ({
   getUserEvidence: jest.fn(),
 }));
 

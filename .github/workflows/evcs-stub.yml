@@ -56,7 +56,11 @@ jobs:
         working-directory: ./di-ipv-evcs-stub/lambdas
         run: npm ci
 
-      - name: SAM build and test
+      - name: npm test
+        working-directory: ./di-ipv-evcs-stub/lambdas
+        run: npm run test
+
+      - name: SAM build
         working-directory: ./di-ipv-evcs-stub/deploy
         run: sam build
 

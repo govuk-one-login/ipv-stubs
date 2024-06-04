@@ -1,5 +1,5 @@
 
-name: gradle test and build
+name: test and build
 
 on:
   push:
@@ -24,3 +24,35 @@ jobs:
           cache: gradle
       - name: Build
         run: ./gradlew clean build
+  build-evcs-stub:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install
+        working-directory: ./di-ipv-evcs-stub/lambdas
+        run: npm ci
+      - name: Build
+        working-directory: ./di-ipv-evcs-stub/lambdas
+        run: npm run build
+      - name: Test
+        working-directory: ./di-ipv-evcs-stub/lambdas
+        run: npm run test
+  build-ticf-stub:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install
+        working-directory: ./di-ipv-ticf-stub/lambdas
+        run: npm ci
+      - name: Build
+        working-directory: ./di-ipv-ticf-stub/lambdas
+        run: npm run build
+      - name: Test
+        working-directory: ./di-ipv-ticf-stub/lambdas
+        run: npm run test
