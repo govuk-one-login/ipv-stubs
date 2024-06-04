@@ -45,7 +45,8 @@ export async function handler(
 }
 
 function getAccessToken(event: APIGatewayProxyEventV2): string | undefined {
-  const authHeaderValue = event?.headers?.authorization?.trim();
+  const authorization = event?.headers?.Authorization || event?.headers?.authorization;
+  const authHeaderValue = authorization?.trim();
 
   if (authHeaderValue === undefined) {
     return undefined;
@@ -62,7 +63,7 @@ function getAccessToken(event: APIGatewayProxyEventV2): string | undefined {
 function parseRequest(
   event: APIGatewayProxyEventV2,
 ): string | CredentialRequest {
-  if (event.body === undefined) {
+  if (!event?.body || event?.body === '') {
     return "No request body";
   }
 
