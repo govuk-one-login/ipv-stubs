@@ -30,5 +30,7 @@ build
 .gradle
 *.iml
 
+config
+
 # Ignore dev-deploy generated file
 deploy/**/core-stub-*.yaml
