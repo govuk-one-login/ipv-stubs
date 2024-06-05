@@ -350,7 +350,7 @@ Resources:
           Parameters:
             Location: "../openAPI/dcmaw-async-external.yaml"
       Auth:
-        ApiKeyRequired: false #pragma: allowlist secret
+        ApiKeyRequired: false
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "DCMAW Async Usage Plan"
