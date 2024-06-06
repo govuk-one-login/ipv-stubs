@@ -2,13 +2,13 @@ package uk.gov.di.ipv.stub.orc.models;
 
 import java.util.List;
 
-public record JarClaims(JarUserInfo userInfo) {
+public record JarClaims(JarUserInfo userinfo) {
     public JarClaims(String inheritedIdentityJwt, String evcsAccessToken) {
         this(
                 new JarUserInfo(
                         new Essential(true),
-                        null,
-                        null,
+                        new Essential(true),
+                        new Essential(true),
                         null,
                         inheritedIdentityJwt == null
                                 ? null
