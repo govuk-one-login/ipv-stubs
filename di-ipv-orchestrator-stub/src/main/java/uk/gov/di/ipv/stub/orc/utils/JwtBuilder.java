@@ -114,13 +114,13 @@ public class JwtBuilder {
                         .issuer(clientId)
                         .notBeforeTime(Date.from(now))
                         .expirationTime(generateExpirationTime(now))
+                        .jwtID(UUID.randomUUID().toString())
                         .claim("claims", jarClaimsMap)
                         .claim("client_id", clientId)
                         .claim("response_type", ResponseType.Value.CODE.toString())
                         .claim("redirect_uri", redirectUri)
                         .claim("state", state)
                         .claim("govuk_signin_journey_id", signInJourneyId)
-                        .claim("persistent_session_id", UUID.randomUUID().toString())
                         .claim("email_address", userEmailAddress)
                         .claim("vtr", vtr)
                         .claim("scope", scope.toString());
@@ -138,7 +138,6 @@ public class JwtBuilder {
                 .audience(getIpvCoreAudience(targetEnvironment))
                 .issuer(ORCHESTRATOR_CLIENT_ID)
                 .expirationTime(generateExpirationTime(now))
-                .jwtID(UUID.randomUUID().toString())
                 .build();
     }
 
