@@ -245,7 +245,7 @@ describe("evcs handlers", () => {
       const response = (await getHandler({
         ...TEST_GET_EVENT,
         queryStringParameters: {
-          state: "CURRENT",
+          state: "CURRENT%2CPENDING_RETURN",
         },
       })) as APIGatewayProxyStructuredResultV2;
 
@@ -254,6 +254,7 @@ describe("evcs handlers", () => {
       expect(response.body).toBe(JSON.stringify(testResult));
       expect(processGetUserVCsRequest).toHaveBeenCalledWith(TEST_USER_ID, [
         "CURRENT",
+        "PENDING_RETURN",
       ]);
     });
 
