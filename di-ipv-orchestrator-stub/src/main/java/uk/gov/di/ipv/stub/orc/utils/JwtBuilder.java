@@ -138,6 +138,7 @@ public class JwtBuilder {
                 .audience(getIpvCoreAudience(targetEnvironment))
                 .issuer(ORCHESTRATOR_CLIENT_ID)
                 .expirationTime(generateExpirationTime(now))
+                .jwtID(UUID.randomUUID().toString())
                 .build();
     }
 
