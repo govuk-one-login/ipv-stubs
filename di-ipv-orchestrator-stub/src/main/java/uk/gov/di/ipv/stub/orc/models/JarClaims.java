@@ -16,7 +16,7 @@ public record JarClaims(JarUserInfo userinfo) {
                         evcsAccessToken == null
                                 ? null
                                 : new ListOfStringValues(List.of(evcsAccessToken)),
-                        null,
-                        null));
+                        new Essential(true),
+                        new Essential(true)));
     }
 }
