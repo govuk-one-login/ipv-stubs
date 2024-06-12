@@ -17,7 +17,6 @@ public record JarClaims(JarUserInfo userinfo) {
                                 : new ListOfStringValues(List.of(inheritedIdentityJwt)),
                         evcsAccessToken == null
                                 ? null
-                                : new ListOfStringValues(List.of(evcsAccessToken))
-                        ));
+                                : new ListOfStringValues(List.of(evcsAccessToken))));
     }
 }
