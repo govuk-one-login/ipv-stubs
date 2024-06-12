@@ -409,6 +409,58 @@
       }
     },
     {
+      "criType": "DWP KBV (Stub)",
+      "label": "Passed DWP KBV (Stub)",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "8KJTLGN7QX",
+        "verificationScore": 2,
+        "checkDetails": [
+          {
+            "kbvResponseMode": "free_text",
+            "kbvQuality": 3,
+            "checkMethod": "kbv"
+          },
+          {
+            "kbvResponseMode": "multiple_choice",
+            "kbvQuality": 3,
+            "checkMethod": "kbv"
+          },
+          {
+            "kbvResponseMode": "multiple_choice",
+            "kbvQuality": 2,
+            "checkMethod": "kbv"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DWP KBV (Stub)",
+      "label": "Failed DWP KBV (Stub)",
+      "payload": {
+        "type": "IdentityCheck",
+        "txn": "8KJTLGN7QX",
+        "verificationScore": 0,
+        "ci": ["V03"],
+        "failedCheckDetails": [{
+					"kbvResponseMode": "free_text",
+					"kbvQuality": 3,
+					"checkMethod": "kbv"
+				},
+				{
+					"kbvResponseMode": "multiple_choice",
+					"kbvQuality": 2,
+					"checkMethod": "kbv"
+				}
+        ],
+        "checkDetails": [{
+          "kbvResponseMode": "free_text",
+          "kbvQuality": 3,
+          "checkMethod": "kbv"
+        }]
+      }
+    },
+    {
       "criType": "National Insurance Number (Stub)",
       "label": "Passed National Insurance Number - 'identityCheck' scope",
       "payload": {
