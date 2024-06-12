@@ -10,13 +10,14 @@ public record JarClaims(JarUserInfo userinfo) {
                         new Essential(true),
                         new Essential(true),
                         null,
+                        new Essential(true),
+                        new Essential(true),
                         inheritedIdentityJwt == null
                                 ? null
                                 : new ListOfStringValues(List.of(inheritedIdentityJwt)),
                         evcsAccessToken == null
                                 ? null
-                                : new ListOfStringValues(List.of(evcsAccessToken)),
-                        new Essential(true),
-                        new Essential(true)));
+                                : new ListOfStringValues(List.of(evcsAccessToken))
+                        ));
     }
 }
