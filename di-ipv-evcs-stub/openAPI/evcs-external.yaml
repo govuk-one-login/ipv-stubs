@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: "EVCS Stub External"
+  title: "Encrypted VC Storage (EVCS) Stub API"
   description: "The external api presented by EVCS Stub for use by services"
   version: "1.0.0"
 paths:
@@ -58,6 +58,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         500:
           $ref: '#/components/responses/ServerError'
+      x-amazon-apigateway-request-validator: ALL
       x-amazon-apigateway-integration:
         type: "aws_proxy"
         httpMethod: "POST"
@@ -93,6 +94,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         500:
           $ref: '#/components/responses/ServerError'
+      x-amazon-apigateway-request-validator: ALL
       x-amazon-apigateway-integration:
         type: "aws_proxy"
         httpMethod: "POST"
@@ -148,6 +150,7 @@ paths:
           $ref: '#/components/responses/BadRequest'
         500:
           $ref: '#/components/responses/ServerError'
+      x-amazon-apigateway-request-validator: ALL
       x-amazon-apigateway-integration:
         type: "aws_proxy"
         httpMethod: "POST"
@@ -213,12 +216,21 @@ components:
           - signature
           - state
     VC:
+      title: Verifiable Credential (Signed JWT)
+      description: A JWT formatted Verifiable Credential.
       type: "string"
       pattern: ^(?:[a-zA-Z0-9_\-\+\/=]*\.){2}[a-zA-Z0-9_\-\+\/=]*$
     VCMetadata:
+      title: VC Metadata
+      description: An schemaless object used for storing arbitrary information adjacent to an actual VC.
       type: "object"
+      example:
+        reason: abandoned due inactivity
+        timestampMs: 1711721297123
+        txmaEventId: 1a116fe7-2ff9-4f7c-940d-d55fa7d03d66
       additionalProperties: true
     VCSignature:
+      title: Signature part of Verifiable Credential (Signed JWT)
       type: "string"
       pattern: ^[a-zA-Z0-9_\-\+\/=]*$
     CreateStates:
@@ -262,3 +274,9 @@ components:
           type: string
       required:
         - message
+
+x-amazon-apigateway-request-validators:
+  ALL:
+    validateRequestBody: true
+    validateRequestParameters: true
+    validateRequestHeaders: true
