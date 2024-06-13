@@ -8,10 +8,14 @@ public record JarUserInfo(
                 Essential coreIdentityJwtClaim,
         @JsonProperty(value = "https://vocab.account.gov.uk/v1/address") Essential addressClaim,
         @JsonProperty(value = "https://vocab.account.gov.uk/v1/passport") Essential passportClaim,
-        @JsonProperty(value = "https://vocab.account.gov.uk/v1/socialSecurityNumber")
+        @JsonProperty(value = "https://vocab.account.gov.uk/v1/socialSecurityRecord")
                 Essential ninoClaim,
         @JsonInclude(JsonInclude.Include.NON_NULL)
-                @JsonProperty(value = "https://vocab.account.gov.uk/v1/inheritedIdentityJWT")
+                @JsonProperty(value = "https://vocab.account.gov.uk/v1/drivingPermit")
+                Essential drivingPermitClaim,
+        @JsonProperty(value = "https://vocab.account.gov.uk/v1/returnCode")
+                Essential returnCodeClaim,
+        @JsonProperty(value = "https://vocab.account.gov.uk/v1/inheritedIdentityJWT")
                 ListOfStringValues inheritedIdentityClaim,
         @JsonProperty(value = "https://vocab.account.gov.uk/v1/storageAccessToken")
                 ListOfStringValues evcsAccessToken) {}
