@@ -13,11 +13,9 @@ public record JarUserInfo(
         @JsonInclude(JsonInclude.Include.NON_NULL)
                 @JsonProperty(value = "https://vocab.account.gov.uk/v1/drivingPermit")
                 Essential drivingPermitClaim,
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-                @JsonProperty(value = "https://vocab.account.gov.uk/v1/returnCode")
+        @JsonProperty(value = "https://vocab.account.gov.uk/v1/returnCode")
                 Essential returnCodeClaim,
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-                @JsonProperty(value = "https://vocab.account.gov.uk/v1/inheritedIdentityJWT")
+        @JsonProperty(value = "https://vocab.account.gov.uk/v1/inheritedIdentityJWT")
                 ListOfStringValues inheritedIdentityClaim,
         @JsonProperty(value = "https://vocab.account.gov.uk/v1/storageAccessToken")
                 ListOfStringValues evcsAccessToken) {}
