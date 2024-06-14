@@ -186,10 +186,12 @@ public class CoreStubHandler {
                 var postcode = request.queryParams("postcode");
                 var strengthScore = request.queryParams("score");
                 var scoringPolicy = request.queryParams("evidence_request");
+                var verificationScore = request.queryParams("verification_score");
 
                 if (credentialIssuer.sendIdentityClaims()
                         && Objects.isNull(request.queryParams("postcode"))) {
-                    saveEvidenceRequestToSessionIfPresent(request, strengthScore, scoringPolicy);
+                    saveEvidenceRequestToSessionIfPresent(
+                            request, strengthScore, scoringPolicy, verificationScore);
                     return ViewHelper.render(
                             Map.of(
                                     "cri",
@@ -522,10 +524,15 @@ public class CoreStubHandler {
     }
 
     private static void saveEvidenceRequestToSessionIfPresent(
-            Request request, String strengthScore, String scoringPolicy) {
-        if (Objects.nonNull(strengthScore) && Objects.nonNull(scoringPolicy)) {
+            Request request, String strengthScore, String scoringPolicy, String verificationScore) {
+        if (Objects.nonNull(strengthScore)
+                && Objects.nonNull(scoringPolicy)
+                && Objects.nonNull(verificationScore)) {
             EvidenceRequestClaims evidenceRequest =
-                    new EvidenceRequestClaims(scoringPolicy, Integer.valueOf(strengthScore));
+                    new EvidenceRequestClaims(
+                            scoringPolicy,
+                            Integer.parseInt(strengthScore),
+                            Integer.parseInt(verificationScore));
             LOGGER.info("✅  Saving evidence request to session to {}", evidenceRequest);
             request.session().attribute("evidence_request", evidenceRequest);
         }
