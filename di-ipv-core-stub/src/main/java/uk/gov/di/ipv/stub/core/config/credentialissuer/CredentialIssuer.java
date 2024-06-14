@@ -14,6 +14,11 @@ public record CredentialIssuer(
         String publicEncryptionJwkBase64,
         String publicVCSigningVerificationJwkBase64,
         String apiKeyEnvVar) {
+
+    public boolean isKbvCri() {
+        return this.id.contains("kbv") && !this.id.contains("hmrc");
+    }
+
     public boolean isAddressCri() {
         return this.id.contains("address");
     }
