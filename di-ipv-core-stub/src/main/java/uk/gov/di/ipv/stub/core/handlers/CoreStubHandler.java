@@ -30,6 +30,7 @@ import uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper;
 import uk.gov.di.ipv.stub.core.config.uatuser.PostcodeSharedClaims;
 import uk.gov.di.ipv.stub.core.config.uatuser.SharedClaims;
 import uk.gov.di.ipv.stub.core.config.uatuser.UKAddress;
+import uk.gov.di.ipv.stub.core.config.uatuser.VerificationScore;
 import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
 import uk.gov.di.ipv.stub.core.utils.ViewHelper;
 
@@ -63,6 +64,23 @@ public class CoreStubHandler {
         this.handlerHelper = handlerHelper;
 
         setQuestions();
+    }
+
+    public Route verificationScoreRequest =
+            (Request request, Response response) -> {
+                LOGGER.info("verificationScoreRequest Start");
+                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                return ViewHelper.render(
+                        Map.of("cri", credentialIssuerId), "verification-score.mustache");
+            };
+
+    private static void saveVerificationScoreToSessionIfPresent(
+            Request request, String verificationScore) {
+        if (Objects.nonNull(verificationScore)) {
+            VerificationScore vs = new VerificationScore(Integer.parseInt(verificationScore));
+            LOGGER.info("✅  Saving verification_score to session to {}", vs);
+            request.session().attribute("verification_score", vs);
+        }
     }
 
     private void setQuestions() {
@@ -186,6 +204,9 @@ public class CoreStubHandler {
                 var postcode = request.queryParams("postcode");
                 var strengthScore = request.queryParams("score");
                 var scoringPolicy = request.queryParams("evidence_request");
+                var verificationScore = request.queryParams("verification_score");
+
+                saveVerificationScoreToSessionIfPresent(request, verificationScore);
 
                 if (credentialIssuer.sendIdentityClaims()
                         && Objects.isNull(request.queryParams("postcode"))) {
@@ -198,6 +219,7 @@ public class CoreStubHandler {
                                     credentialIssuer.name()),
                             "user-search.mustache");
                 } else if (postcode != null && !postcode.isBlank()) {
+
                     var claimIdentity =
                             new IdentityMapper()
                                     .mapToAddressSharedClaims(request.queryParams("postcode"));
@@ -269,10 +291,16 @@ public class CoreStubHandler {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
         EvidenceRequestClaims evidenceRequest = request.session().attribute("evidence_request");
+        VerificationScore verificationScore = request.session().attribute("verification_score");
 
         if (!Objects.isNull(evidenceRequest)) {
             LOGGER.info("✅  Retrieved evidence request from session to {}", evidenceRequest);
             request.session().removeAttribute("evidence_request");
+        }
+
+        if (!Objects.isNull(verificationScore)) {
+            LOGGER.info("✅  Retrieved verification_score from session to {}", verificationScore);
+            request.session().removeAttribute("verification_score");
         }
 
         AuthorizationRequest authRequest;
@@ -280,7 +308,11 @@ public class CoreStubHandler {
         try {
             authRequest =
                     handlerHelper.createAuthorizationJAR(
-                            state, credentialIssuer, sharedClaims, evidenceRequest);
+                            state,
+                            credentialIssuer,
+                            sharedClaims,
+                            evidenceRequest,
+                            verificationScore);
         } catch (JOSEException joseException) {
             LOGGER.error("JOSEException occurred," + joseException.getMessage());
             throw joseException;
@@ -328,6 +360,9 @@ public class CoreStubHandler {
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 String rowNumber = request.queryParams("rowNumber");
                 Identity identity = fetchOrCreateIdentity(rowNumber);
+                var verificationScore = request.queryParams("verification_score");
+
+                saveVerificationScoreToSessionIfPresent(request, verificationScore);
 
                 Map<String, UKAddress> addressMap = new HashMap<>();
                 for (int i = 0; i < identity.addresses().size(); i++) {

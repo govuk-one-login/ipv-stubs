@@ -44,6 +44,7 @@ public class CoreStub {
         Spark.post("/edit-user", coreStubHandler.updateUser);
         Spark.get("/callback", coreStubHandler.doCallback);
         Spark.get("/answers", coreStubHandler.answers);
+        Spark.get("/select-verification-score", coreStubHandler.verificationScoreRequest);
         setupBackendRoutes(coreStubHandler);
         Spark.exception(Exception.class, exceptionHandler());
     }

@@ -47,40 +47,41 @@
         </div>
     </div>
 </header>
-
 <div class="govuk-width-container ">
     <main class="govuk-main-wrapper>" id="main-content" role="main">
+
         <a href="/" class="govuk-back-link">Back</a>
         <div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
             <h2 class="govuk-heading-xl">
-                Visit Credential Issuers
+                KBV - Verification Score
             </h2>
         </div>
+        <legend class="govuk-fieldset__legend govuk-label"></legend>
+        <form action="/credential-issuer?cri={{cri}}">
+        <input type="hidden" name="cri" value="{{cri}}">
+        <div class="govuk-form-group">
+            <fieldset class="govuk-fieldset" aria-describedby="waste-hint">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                    <h1 class="govuk-fieldset__heading">
+                        Select Confidence Level
+                    </h1>
+                </legend>
+                <div id="waste-hint" class="govuk-hint"></div>
+                <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                    <div class="govuk-form-group">
+                        <select class="govuk-select" id="verification_score" name="verification_score">
+                            <option value="1">Low Confidence (1)</option>
+                            <option value="2">Medium Confidence (2)</option>
+                        </select>
+                    </div>
+                </div>
 
-        {{#cris}}
-            {{#isCheckHmrcCri}}
-                <a href="{{#isCheckHmrcCri}}/evidence-request{{/isCheckHmrcCri}}?cri={{id}}" >
-                    <input class="govuk-button" data-module="govuk-button" type="button"
-                           value="{{name}}{{#isCheckHmrcCri}} - Evidence Requested{{/isCheckHmrcCri}}">
-                </a>
-            {{/isCheckHmrcCri}}
-            {{#isKbvCri}}
-                <a href="{{#isKbvCri}}/select-verification-score{{/isKbvCri}}?cri={{id}}" >
-                <input class="govuk-button" data-module="govuk-button" type="button"
-                       value="{{name}}{{#isKbvCri}} - Verification Score{{/isKbvCri}}">
-                </a>
-            {{/isKbvCri}}
-			{{#isAddressCri}}
-                <a href="{{#isAddressCri}}/edit-postcode{{/isAddressCri}}?cri={{id}}" >
-                <input class="govuk-button" data-module="govuk-button" type="button"
-                       value="{{name}}{{#isAddressCri}} - PostCode{{/isAddressCri}}">
-                </a>
-			{{/isAddressCri}}
-            <div class="govuk-button-group">
-                <a href="/credential-issuer?cri={{id}}">
-                <input class="govuk-button" data-module="govuk-button" type="button" value="{{name}}"></a>
-            </div>
-        {{/cris}}
+                <div class="govuk-button-group govuk-!-margin-top-9">
+                    <button class="govuk-button" data-module="govuk-button">Continue</button>
+                </div>
+            </fieldset>
+        </div>
+        </form>
     </main>
 </div>
 
