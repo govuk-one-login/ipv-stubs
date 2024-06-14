@@ -1,5 +1,7 @@
 package uk.gov.di.ipv.stub.cred.config;
 
+import uk.gov.di.ipv.stub.cred.vc.EncryptionAlgorithm;
+
 public class CredentialIssuerConfig {
     public static final String PORT = getConfigValue("CREDENTIAL_ISSUER_PORT", "8084");
     public static final String NAME =
@@ -32,6 +34,15 @@ public class CredentialIssuerConfig {
 
     public static String getVerifiableCredentialSigningKey() {
         return getConfigValue("VC_SIGNING_KEY", null);
+    }
+
+    public static EncryptionAlgorithm getVerifiableCredentialSigningAlgorithm() {
+        var signingAlgorithm = getConfigValue("VC_SIGNING_ALGORITHM", null);
+        if (signingAlgorithm == null) {
+            return EncryptionAlgorithm.EC;
+        }
+
+        return EncryptionAlgorithm.valueOf(signingAlgorithm);
     }
 
     public static Long getVerifiableCredentialTtlSeconds() {

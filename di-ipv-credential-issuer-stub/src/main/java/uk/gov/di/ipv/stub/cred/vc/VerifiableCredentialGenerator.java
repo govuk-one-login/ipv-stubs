@@ -5,6 +5,7 @@ import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
@@ -37,8 +38,6 @@ import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VERIFIABLE_CREDENTIAL_TYPE;
 
 public class VerifiableCredentialGenerator {
-
-    public static final String EC_ALGO = "EC";
     static final String JTI_SCHEME_AND_PATH_PREFIX = "urn:uuid";
 
     public SignedJWT generate(Credential credential)
@@ -110,21 +109,48 @@ public class VerifiableCredentialGenerator {
 
         JWTClaimsSet claimsSet = claim.build();
 
-        KeyFactory kf = KeyFactory.getInstance(EC_ALGO);
-        EncodedKeySpec privateKeySpec =
-                new PKCS8EncodedKeySpec(
-                        Base64.getDecoder()
-                                .decode(
-                                        CredentialIssuerConfig
-                                                .getVerifiableCredentialSigningKey()));
-        ECDSASigner ecdsaSigner =
+        return signTestVc(claimsSet);
+    }
+
+    private static SignedJWT signTestVc(JWTClaimsSet claimsSet)
+            throws InvalidKeySpecException, NoSuchAlgorithmException, JOSEException {
+        var signingAlgorithm = CredentialIssuerConfig
+                .getVerifiableCredentialSigningAlgorithm();
+        var signingKey = CredentialIssuerConfig
+                .getVerifiableCredentialSigningKey();
+
+        return switch (signingAlgorithm) {
+            case EC -> signTestVcWithEc(claimsSet, signingKey);
+            case RSA -> signTestVcWithRSA(claimsSet, signingKey);
+        };
+    }
+
+    private static SignedJWT signTestVcWithEc(JWTClaimsSet claimsSet, String signingKey) throws InvalidKeySpecException, NoSuchAlgorithmException, JOSEException {
+        var kf = KeyFactory.getInstance(EncryptionAlgorithm.EC.name());
+        var privateKeySpec =
+                new PKCS8EncodedKeySpec(Base64.getDecoder().decode(signingKey));
+        var ecdsaSigner =
                 new ECDSASigner((ECPrivateKey) kf.generatePrivate(privateKeySpec));
 
-        JWSHeader jwsHeader =
+        var jwsHeader =
                 new JWSHeader.Builder(JWSAlgorithm.ES256).type(JOSEObjectType.JWT).build();
 
-        SignedJWT signedJWT = new SignedJWT(jwsHeader, claimsSet);
+        var signedJWT = new SignedJWT(jwsHeader, claimsSet);
         signedJWT.sign(ecdsaSigner);
+
+        return signedJWT;
+    }
+
+    private static SignedJWT signTestVcWithRSA(JWTClaimsSet claimsSet, String signingKey)  throws InvalidKeySpecException, NoSuchAlgorithmException, JOSEException {
+        var kf = KeyFactory.getInstance(EncryptionAlgorithm.RSA.name());
+        var privateKeySpec =
+                new PKCS8EncodedKeySpec(Base64.getDecoder().decode(signingKey));
+        var signer = new RSASSASigner(kf.generatePrivate(privateKeySpec));
+
+        var jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).type(JOSEObjectType.JWT).build();
+
+        var signedJWT = new SignedJWT(jwsHeader, claimsSet);
+        signedJWT.sign(signer);
 
         return signedJWT;
     }
