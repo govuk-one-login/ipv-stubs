@@ -232,7 +232,7 @@ describe("evcs handlers", () => {
   });
 
   describe("get handler", () => {
-    it("should return 200 for a valid request", async () => {
+    it("should return 200 for a valid request with encoded state values", async () => {
       // arrange
       const testResult = ["vc"];
       jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
@@ -246,6 +246,32 @@ describe("evcs handlers", () => {
         ...TEST_GET_EVENT,
         queryStringParameters: {
           state: "CURRENT%2CPENDING_RETURN",
+        },
+      })) as APIGatewayProxyStructuredResultV2;
+
+      // assert
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toBe(JSON.stringify(testResult));
+      expect(processGetUserVCsRequest).toHaveBeenCalledWith(TEST_USER_ID, [
+        "CURRENT",
+        "PENDING_RETURN",
+      ]);
+    });
+
+    it("should return 200 for a valid request with not encoded state values", async () => {
+      // arrange
+      const testResult = ["vc"];
+      jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
+        statusCode: 200,
+        response: testResult,
+      });
+      jest.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+
+      // act
+      const response = (await getHandler({
+        ...TEST_GET_EVENT,
+        queryStringParameters: {
+          state: "CURRENT,PENDING_RETURN",
         },
       })) as APIGatewayProxyStructuredResultV2;
 
