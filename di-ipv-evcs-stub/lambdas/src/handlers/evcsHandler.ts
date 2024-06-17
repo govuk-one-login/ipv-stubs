@@ -160,7 +160,9 @@ function isValidUpdateVcState(patchRequest: PatchRequest[]): boolean {
 
 function getRequestedStates(event: APIGatewayProxyEvent): string[] {
   const STATE_ALL = "ALL";
-  const stateInQuery = event.queryStringParameters?.state;
+  const stateInQuery = decodeURIComponent(
+    event.queryStringParameters?.state ?? "",
+  );
   let requestStates = Array.from((stateInQuery || VcState.CURRENT).split(","));
   requestStates.forEach(function (state) {
     if (state != STATE_ALL && !(state in VcState)) {
