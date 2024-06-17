@@ -50,7 +50,6 @@ import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_CREDEN
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_EVIDENCE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VERIFIABLE_CREDENTIAL_TYPE;
-import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator.EC_ALGO;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator.JTI_SCHEME_AND_PATH_PREFIX;
 
 @ExtendWith(SystemStubsExtension.class)
@@ -62,6 +61,7 @@ public class VerifiableCredentialGeneratorTest {
 
     private static final Pattern JTI_PATTERN =
             Pattern.compile(String.format("%s:(?<uuid>[^:]+)", JTI_SCHEME_AND_PATH_PREFIX));
+    private static final String EC_ALGO = "EC";
 
     @SystemStub
     private final EnvironmentVariables environmentVariables =
