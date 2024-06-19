@@ -41,7 +41,7 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/bav/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
   ClientAudience:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store" #pragma: allowlist secret
+    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/bav/env/CLIENT_AUDIENCE" #pragma: allowlist secret
   VcIssuer:
@@ -85,14 +85,14 @@ Mappings:
       environment: build
       platform: core-stubs
     "616199614141": #Stubs Build
-      fargateCPUsize: "256"
-      fargateRAMsize: "512"
+      fargateCPUsize: "512"
+      fargateRAMsize: "1024"
       desiredTaskCount: 1
       environment: build
       platform: stubs
     "388905755587": #Stubs Prod
-      fargateCPUsize: "4096"
-      fargateRAMsize: "8192"
+      fargateCPUsize: "2048"
+      fargateRAMsize: "4096"
       desiredTaskCount: 1
       environment: production
       platform: stubs
