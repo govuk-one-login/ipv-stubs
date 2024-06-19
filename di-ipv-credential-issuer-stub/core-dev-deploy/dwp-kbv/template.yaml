@@ -52,6 +52,10 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/dwp-kbv/env/VC_TTL_SECONDS" #pragma: allowlist secret
+  VcSigningAlgorithm:
+    Description: Environment Variables for ECS - Retrieved from SSM Parameter Store
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /stubs/credential-issuer/dwp-kbv/env/VC_SIGNING_ALGORITHM #pragma: allowlist secret
 
 Conditions:
   IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
@@ -457,6 +461,8 @@ Resources:
             Value: !Ref VcIssuer
           - Name: VC_TTL_SECONDS
             Value: !Ref VcTtlSeconds
+          - Name: VC_SIGNING_ALGORITHM
+            Value: !Ref 'VcSigningAlgorithm'
           Secrets:
             - Name: "VC_SIGNING_KEY"
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/dwp-kbv/env/VC_SIGNING_KEY"
