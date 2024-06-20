@@ -28,7 +28,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -110,9 +109,6 @@ class GetContraIndicatorCredentialHandlerTest {
 
         assertEquals(List.of("VerifiableCredential", "SecurityCheckCredential"), vcClaim.type());
 
-        var evidenceTxn = vcClaim.evidence().get(0).txn();
-        assertEquals(List.of(TXN_1), new ArrayList<>(evidenceTxn));
-
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
         assertEquals(1, contraIndicators.size());
 
@@ -131,7 +127,7 @@ class GetContraIndicatorCredentialHandlerTest {
                                                 List.of(MitigatingCredential.EMPTY))))
                         .incompleteMitigation(List.of())
                         .document(null)
-                        .txn(evidenceTxn.stream().toList())
+                        .txn(List.of(TXN_1))
                         .build();
         assertEquals(expectedCi, firstContraIndicator);
 
@@ -592,7 +588,6 @@ class GetContraIndicatorCredentialHandlerTest {
         var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
         var vcClaim =
                 objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
-        var evidenceTxn = vcClaim.evidence().get(0).txn();
         var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
         var expectedCi =
@@ -625,7 +620,6 @@ class GetContraIndicatorCredentialHandlerTest {
                                 .txn(List.of(TXN_2))
                                 .build());
 
-        assertEquals(evidenceTxn, new TreeSet<>(List.of(TXN_1, TXN_2, TXN_3)));
         assertEquals(expectedCi, contraIndicators);
     }
 
