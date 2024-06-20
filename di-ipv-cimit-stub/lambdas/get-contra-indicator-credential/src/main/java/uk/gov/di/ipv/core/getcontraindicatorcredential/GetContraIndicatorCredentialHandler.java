@@ -124,14 +124,7 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
 
     private VcClaim generateVc(String userId) {
         var contraIndicators = getContraIndicators(userId);
-        return new VcClaim(
-                List.of(
-                        new Evidence(
-                                contraIndicators,
-                                new TreeSet<>(
-                                        contraIndicators.stream()
-                                                .flatMap(ci -> ci.getTxn().stream())
-                                                .toList()))));
+        return new VcClaim(List.of(new Evidence(contraIndicators)));
     }
 
     private List<ContraIndicator> getContraIndicators(String userId) {
