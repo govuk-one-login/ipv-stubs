@@ -3,7 +3,6 @@ package uk.gov.di.ipv.stub.cred.domain;
 public record ApiAuthRequest(
         String clientId,
         String request,
-        String resourceId,
         String credentialSubjectJson,
         String evidenceJson,
         Long nbf,

@@ -78,7 +78,6 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.ACTIVITY_HI
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CI;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.F2F_STUB_QUEUE_NAME;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.FRAUD;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.RESOURCE_ID;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.STRENGTH;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VALIDITY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VERIFICATION;
@@ -223,7 +222,6 @@ public class AuthorizeHandler {
                 LOGGER.info("criType: {}", criType.value);
 
                 Map<String, Object> frontendParams = new HashMap<>();
-                frontendParams.put(RESOURCE_ID, UUID.randomUUID().toString());
                 frontendParams.put(
                         IS_EVIDENCE_TYPE_PARAM,
                         criType.equals(CriType.EVIDENCE_CRI_TYPE)
@@ -469,7 +467,7 @@ public class AuthorizeHandler {
             AuthorizationCode authorizationCode,
             String signedVcJwt,
             String redirectUri) {
-        String resourceId = authRequest.resourceId();
+        String resourceId = UUID.randomUUID().toString();
         this.authCodeService.persist(authorizationCode, resourceId, redirectUri);
         this.credentialService.persist(signedVcJwt, resourceId);
         this.requestedErrorResponseService.persist(

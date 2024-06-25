@@ -5,8 +5,6 @@ public interface AuthRequest {
 
     String request();
 
-    String resourceId();
-
     String credentialSubjectJson();
 
     String evidenceJson();
