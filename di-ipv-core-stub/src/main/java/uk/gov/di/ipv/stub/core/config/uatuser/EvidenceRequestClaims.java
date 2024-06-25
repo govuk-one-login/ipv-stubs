@@ -1,25 +1,42 @@
 package uk.gov.di.ipv.stub.core.config.uatuser;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record EvidenceRequestClaims(
-        @JsonProperty("scoringPolicy") String scoringPolicy,
-        @JsonProperty("strengthScore") int strengthScore,
-        @JsonProperty("verificationScore") int verificationScore) {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class EvidenceRequestClaims {
+    @JsonProperty("scoringPolicy")
+    private String scoringPolicy;
 
-    @JsonCreator
-    public EvidenceRequestClaims {}
+    @JsonProperty("strengthScore")
+    private Integer strengthScore;
 
+    @JsonProperty("verificationScore")
+    private Integer verificationScore;
+
+    public EvidenceRequestClaims() {}
+
+    public EvidenceRequestClaims(
+            String scoringPolicy, Integer strengthScore, Integer verificationScore) {
+        this.scoringPolicy = scoringPolicy;
+        this.strengthScore = strengthScore;
+        this.verificationScore = verificationScore;
+    }
+
+    @JsonProperty("scoringPolicy")
     public String getScoringPolicy() {
         return scoringPolicy;
     }
 
-    public int getStrengthScore() {
+    @JsonProperty("strengthScore")
+    public Integer getStrengthScore() {
         return strengthScore;
     }
 
-    public int getVerificationScore() {
+    @JsonProperty("verificationScore")
+    public Integer getVerificationScore() {
         return verificationScore;
     }
 }

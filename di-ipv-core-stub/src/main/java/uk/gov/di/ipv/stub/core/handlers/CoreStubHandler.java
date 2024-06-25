@@ -359,6 +359,7 @@ public class CoreStubHandler {
                         Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
                 // NINO has been added here temporarily for testing implementation of HMRC KBV CRI
                 var nino = request.queryParams("nino");
+
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
                 var claimIdentity =
@@ -375,8 +376,26 @@ public class CoreStubHandler {
                         state,
                         credentialIssuer,
                         new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
-                        claimIdentity);
+                        claimIdentity,
+                        getEvidenceRequestClaims(request));
             };
+
+    private EvidenceRequestClaims getEvidenceRequestClaims(Request request) {
+        String scoringPolicy = request.queryParams("scoringPolicy");
+        String strengthScore = request.queryParams("strengthScore");
+        String verificationScore = request.queryParams("verificationScore");
+
+        if (Objects.nonNull(strengthScore)
+                || Objects.nonNull(scoringPolicy)
+                || Objects.nonNull(verificationScore)) {
+
+            return new EvidenceRequestClaims(
+                    scoringPolicy,
+                    Objects.isNull(strengthScore) ? null : Integer.parseInt(strengthScore),
+                    Objects.isNull(verificationScore) ? null : Integer.parseInt(verificationScore));
+        }
+        return null;
+    }
 
     public Route backendGenerateInitialClaimsSetPostCode =
             (Request request, Response response) -> {

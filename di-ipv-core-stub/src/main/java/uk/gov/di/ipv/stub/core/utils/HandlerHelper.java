@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.stub.core.utils;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -102,6 +103,7 @@ public class HandlerHelper {
         this.ecSigningKey = ecSigningKey;
         this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         this.objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
+        this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
     public AuthorizationResponse getAuthorizationResponse(Request request)
