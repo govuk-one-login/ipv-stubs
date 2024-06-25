@@ -334,7 +334,7 @@ public class HandlerHelper {
             claimsSetBuilder.claim(SHARED_CLAIMS, map);
         }
         if (Objects.nonNull(evidenceRequest)) {
-            claimsSetBuilder.claim(EVIDENCE_REQUESTED, evidenceRequest);
+            claimsSetBuilder.claim(EVIDENCE_REQUESTED, convertToMap(evidenceRequest));
         }
         return claimsSetBuilder;
     }
