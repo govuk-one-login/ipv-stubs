@@ -41,7 +41,7 @@ public class InheritedIdentityJwtBuilder {
     private static final String VC = "vc";
     private static final String VC_TYPE = "type";
     private static final String VERIFIABLE_CREDENTIAL_TYPE = "VerifiableCredential";
-    private static final String INHERITED_IDENTITY_CREDENTIAL_TYPE = "InheritedIdentityCredential";
+    private static final String IDENTITY_CHECK_CREDENTIAL_TYPE = "IdentityCheckCredential";
     private static final String VC_EVIDENCE = "evidence";
     private static final String EC_ALGO = "EC";
     private static final String JWT_ID = "jti";
@@ -54,9 +54,7 @@ public class InheritedIdentityJwtBuilder {
                     JsonProcessingException {
 
         Map<String, Object> vc = new LinkedHashMap<>();
-        vc.put(
-                VC_TYPE,
-                new String[] {VERIFIABLE_CREDENTIAL_TYPE, INHERITED_IDENTITY_CREDENTIAL_TYPE});
+        vc.put(VC_TYPE, new String[] {VERIFIABLE_CREDENTIAL_TYPE, IDENTITY_CHECK_CREDENTIAL_TYPE});
         vc.put(VC_CREDENTIAL_SUBJECT, convertJsonToMap(credentialSubject));
         vc.put(
                 VC_EVIDENCE,
