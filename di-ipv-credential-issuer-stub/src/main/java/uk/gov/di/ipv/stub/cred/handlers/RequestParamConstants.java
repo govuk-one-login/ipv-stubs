@@ -12,7 +12,6 @@ public class RequestParamConstants {
     public static final String JSON_PAYLOAD = "jsonPayload";
     public static final String REDIRECT_URI = "redirect_uri";
     public static final String REQUEST = "request";
-    public static final String RESOURCE_ID = "resourceId";
     public static final String RESPONSE_TYPE = "response_type";
     public static final String STATE = "state";
 

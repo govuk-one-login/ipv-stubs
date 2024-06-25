@@ -501,10 +501,7 @@ class AuthorizeHandlerTest {
             assertNotNull(persistedEvidence.get("strengthScore"));
             assertNotNull(persistedEvidence.get("validityScore"));
 
-            verify(mockCredentialService)
-                    .persist(
-                            eq(mockSignedJwt.serialize()),
-                            eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
+            verify(mockCredentialService).persist(eq(mockSignedJwt.serialize()), any(String.class));
         }
 
         @Test
@@ -543,10 +540,7 @@ class AuthorizeHandlerTest {
                     ArgumentCaptor.forClass(Credential.class);
 
             verify(mockVcGenerator).generate(persistedCredential.capture());
-            verify(mockCredentialService)
-                    .persist(
-                            eq(mockSignedJwt.serialize()),
-                            eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
+            verify(mockCredentialService).persist(eq(mockSignedJwt.serialize()), any(String.class));
         }
 
         @Test
@@ -624,10 +618,7 @@ class AuthorizeHandlerTest {
             assertNull(persistedAttributes.get("birthDate"));
             assertEquals("test-value", persistedAttributes.get("test"));
 
-            verify(mockCredentialService)
-                    .persist(
-                            eq(mockSignedJwt.serialize()),
-                            eq("26c6ad15-a595-4e13-9497-f7c891fabe1d"));
+            verify(mockCredentialService).persist(eq(mockSignedJwt.serialize()), any(String.class));
         }
     }
 
@@ -649,8 +640,7 @@ class AuthorizeHandlerTest {
                                     + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
                                     + "\","
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\""
+                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\""
                                     + "}");
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
@@ -677,7 +667,6 @@ class AuthorizeHandlerTest {
                                     + "\","
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\","
                                     + "  \"nbf\": 1714577018"
                                     + "}");
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
@@ -708,7 +697,6 @@ class AuthorizeHandlerTest {
                                     + "\","
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\","
                                     + "  \"f2f\": {"
                                     + "    \"sendVcToQueue\": true,"
                                     + "    \"queueName\": \"stubQueue_F2FQueue_build\""
@@ -740,7 +728,6 @@ class AuthorizeHandlerTest {
                                     + "\","
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\","
                                     + "  \"f2f\": {"
                                     + "    \"sendErrorToQueue\": true,"
                                     + "    \"queueName\": \"stubQueue_F2FQueue_build\""
@@ -772,8 +759,7 @@ class AuthorizeHandlerTest {
                                     + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
                                     + "\","
                                     + "  \"credentialSubjectJson\": \"This is not JSON\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\""
+                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\""
                                     + "}");
 
             authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
@@ -794,8 +780,7 @@ class AuthorizeHandlerTest {
                                     + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
                                     + "\","
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\""
+                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\""
                                     + "}");
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
@@ -817,7 +802,7 @@ class AuthorizeHandlerTest {
             assertNotNull(persistedEvidence.get("strengthScore"));
             assertNotNull(persistedEvidence.get("validityScore"));
 
-            verify(mockCredentialService).persist(mockSignedJwt.serialize(), "something");
+            verify(mockCredentialService).persist(eq(mockSignedJwt.serialize()), any(String.class));
         }
 
         @Test
@@ -832,7 +817,6 @@ class AuthorizeHandlerTest {
                                     + "\","
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\","
                                     + "  \"mitigations\": {"
                                     + "    \"mitigatedCi\": [\"XX\"],"
                                     + "    \"cimitStubUrl\": \"https://cimit.stubs.account.gov.uk\","
@@ -865,7 +849,7 @@ class AuthorizeHandlerTest {
                     ArgumentCaptor.forClass(Credential.class);
 
             verify(mockVcGenerator).generate(persistedCredential.capture());
-            verify(mockCredentialService).persist(mockSignedJwt.serialize(), "something");
+            verify(mockCredentialService).persist(eq(mockSignedJwt.serialize()), any(String.class));
         }
 
         @Test
@@ -879,8 +863,7 @@ class AuthorizeHandlerTest {
                                     + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
                                     + "\","
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\""
+                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\""
                                     + "}");
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
@@ -932,7 +915,6 @@ class AuthorizeHandlerTest {
                                     + "\","
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\","
                                     + "  \"requestedError\": {"
                                     + "    \"endpoint\": \"token\","
                                     + "    \"error\": \"invalid_request\","
@@ -966,7 +948,6 @@ class AuthorizeHandlerTest {
                                     + "\","
                                     + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
                                     + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"resourceId\": \"something\","
                                     + "  \"requestedError\": {"
                                     + "    \"userInfoError\": \"404\""
                                     + "  }"
@@ -1105,9 +1086,6 @@ class AuthorizeHandlerTest {
         Map<String, String[]> queryParams = new HashMap<>(validDoAuthorizeQueryParams());
         queryParams.put(
                 RequestParamConstants.JSON_PAYLOAD, new String[] {"{\"test\": \"test-value\"}"});
-        queryParams.put(
-                RequestParamConstants.RESOURCE_ID,
-                new String[] {"26c6ad15-a595-4e13-9497-f7c891fabe1d"});
         queryParams.put(STRENGTH, new String[] {"2"});
         queryParams.put(VALIDITY, new String[] {"3"});
         queryParams.put(VC_NOT_BEFORE_FLAG, new String[] {"on"});

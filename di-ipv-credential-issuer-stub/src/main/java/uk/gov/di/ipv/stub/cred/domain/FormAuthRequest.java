@@ -13,7 +13,6 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CLIENT_ID;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.EVIDENCE_JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUEST;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.RESOURCE_ID;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_DAY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_FLAG;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_HOURS;
@@ -28,7 +27,6 @@ import static uk.gov.di.ipv.stub.cred.utils.StringHelper.splitCommaDelimitedStri
 public record FormAuthRequest(
         String clientId,
         String request,
-        String resourceId,
         String credentialSubjectJson,
         String evidenceJson,
         Gpg45Scores gpg45Scores,
@@ -54,7 +52,6 @@ public record FormAuthRequest(
                 .f2f(F2fDetails.fromQueryMap(paramsMap))
                 .requestedError(RequestedError.fromQueryMap(paramsMap))
                 .nbf(generateNbf(paramsMap))
-                .resourceId(paramsMap.value(RESOURCE_ID))
                 .build();
     }
 
