@@ -41,13 +41,6 @@ jobs:
         working-directory: ./di-ipv-cimit-stub/deploy
         run: sam validate --region ${{ env.AWS_REGION }}
 
-      - name: Generate code signing config
-        id: signing
-        uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc
-        with:
-          template: ./di-ipv-cimit-stub/deploy/template.yaml
-          profile: ${{ secrets.SIGNING_PROFILE_NAME }}
-
       - name: SAM build and test
         working-directory: ./di-ipv-cimit-stub/deploy
         run: sam build
