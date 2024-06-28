@@ -1,0 +1,1 @@
+java -javaagent:/opt/jmx_exporter/jmx_prometheus_javaagent-1.0.1.jar=9404:/opt/jmx_exporter/config.yaml -jar /opt/jmx_exporter/di-ipv-orchestrator-stub-all.jar
