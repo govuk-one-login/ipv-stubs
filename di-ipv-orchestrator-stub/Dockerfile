@@ -20,7 +20,7 @@ COPY --from=build \
 
 RUN mkdir -p /opt/jmx_exporter
 COPY ./jmx_prometheus_javaagent-1.0.1.jar /opt/jmx_exporter
-COPY ./build/libs/di-ipv-orchestrator-stub-all.jar /opt/jmx_exporter
+COPY ./build/libs/di-ipv-orchestrator-stub.jar /opt/jmx_exporter
 COPY ./start.sh /opt/jmx_exporter
 COPY ./config.yaml /opt/jmx_exporter
 
@@ -34,9 +34,9 @@ RUN chown -R appuser:appgroup /app/
 USER appuser
 
 
-# Add in dynatrace layer
-COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules:java / /
-ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
+# # Add in dynatrace layer
+# COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules:java / /
+# ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
 
 EXPOSE $PORT
 EXPOSE 5007
