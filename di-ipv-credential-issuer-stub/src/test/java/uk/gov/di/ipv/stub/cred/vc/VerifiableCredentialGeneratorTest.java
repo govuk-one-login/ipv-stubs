@@ -38,9 +38,11 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static uk.gov.di.ipv.stub.cred.config.CriType.ADDRESS_CRI_TYPE;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PRIVATE_KEY_1;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.EC_PUBLIC_KEY_1;
+import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.ADDRESS_CREDENTIAL_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_ADDRESS;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_BIRTH_DATE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_NAME;
@@ -278,5 +280,24 @@ public class VerifiableCredentialGeneratorTest {
                 objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");
 
         assertInstanceOf(NullNode.class, claimsSetTree.get(NOT_BEFORE));
+    }
+
+    @Test
+    void shouldGenerateAnAddressCredentialForTheAddressCri() throws Exception {
+        var userId = "user-id";
+        var credential = new Credential(Map.of(), Map.of(), userId, "clientIdValid", null);
+        environmentVariables.set("CREDENTIAL_ISSUER_TYPE", ADDRESS_CRI_TYPE.value);
+
+        var verifiableCredential = vcGenerator.generate(credential);
+
+        var claimsSetTree =
+                objectMapper.valueToTree(verifiableCredential.getJWTClaimsSet()).path("claims");
+
+        assertEquals(
+                VERIFIABLE_CREDENTIAL_TYPE,
+                claimsSetTree.get(VC_CLAIM).path(VC_TYPE).path(0).asText());
+        assertEquals(
+                ADDRESS_CREDENTIAL_TYPE,
+                claimsSetTree.get(VC_CLAIM).path(VC_TYPE).path(1).asText());
     }
 }
