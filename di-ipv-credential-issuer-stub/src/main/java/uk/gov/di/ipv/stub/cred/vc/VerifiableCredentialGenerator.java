@@ -9,7 +9,6 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
-import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.domain.Credential;
 import uk.gov.di.ipv.stub.cred.service.ConfigService;
 
@@ -26,9 +25,11 @@ import static com.nimbusds.jwt.JWTClaimNames.JWT_ID;
 import static com.nimbusds.jwt.JWTClaimNames.NOT_BEFORE;
 import static com.nimbusds.jwt.JWTClaimNames.SUBJECT;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
+import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.ADDRESS_CREDENTIAL_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_ADDRESS;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_BIRTH_DATE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.CREDENTIAL_SUBJECT_NAME;
+import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.IDENTITY_ASSERTION_CREDENTIAL_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.IDENTITY_CHECK_CREDENTIAL_TYPE;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_CLAIM;
 import static uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialConstants.VC_CREDENTIAL_SUBJECT;
@@ -43,7 +44,7 @@ public class VerifiableCredentialGenerator {
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
 
         Map<String, Object> vc = new LinkedHashMap<>();
-        vc.put(VC_TYPE, new String[] {VERIFIABLE_CREDENTIAL_TYPE, IDENTITY_CHECK_CREDENTIAL_TYPE});
+        vc.put(VC_TYPE, getVcType());
 
         Map<String, Object> credentialSubject = new LinkedHashMap<>();
 
@@ -70,11 +71,20 @@ public class VerifiableCredentialGenerator {
         vc.put(VC_CREDENTIAL_SUBJECT, credentialSubject);
 
         // VCs from user asserted CRI types, like address, should not contain an evidence attribute
-        if (getCriType() != CriType.USER_ASSERTED_CRI_TYPE) {
+        if (getCriType().isIdentityCheck()) {
             vc.put(VC_EVIDENCE, List.of(credential.getEvidence()));
         }
 
         return generateAndSignVerifiableCredentialJwt(credential, vc);
+    }
+
+    private List<String> getVcType() {
+        return switch (getCriType()) {
+            case USER_ASSERTED_CRI_TYPE -> List.of(
+                    VERIFIABLE_CREDENTIAL_TYPE, IDENTITY_ASSERTION_CREDENTIAL_TYPE);
+            case ADDRESS_CRI_TYPE -> List.of(VERIFIABLE_CREDENTIAL_TYPE, ADDRESS_CREDENTIAL_TYPE);
+            default -> List.of(VERIFIABLE_CREDENTIAL_TYPE, IDENTITY_CHECK_CREDENTIAL_TYPE);
+        };
     }
 
     private boolean isPopulatedList(Map<String, Object> attributes, String attributeName) {

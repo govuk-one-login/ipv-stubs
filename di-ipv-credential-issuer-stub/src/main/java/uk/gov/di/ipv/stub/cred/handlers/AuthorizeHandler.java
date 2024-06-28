@@ -72,6 +72,7 @@ import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.EVIDENCE_TXN
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME_DEFAULT;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getConfigValue;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
+import static uk.gov.di.ipv.stub.cred.config.CriType.ADDRESS_CRI_TYPE;
 import static uk.gov.di.ipv.stub.cred.config.CriType.DOC_CHECK_APP_CRI_TYPE;
 import static uk.gov.di.ipv.stub.cred.config.CriType.USER_ASSERTED_CRI_TYPE;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.ACTIVITY_HISTORY;
@@ -116,7 +117,7 @@ public class AuthorizeHandler {
     private static final String F2F_STUB_QUEUE_URL = "F2F_STUB_QUEUE_URL";
 
     private static final List<CriType> NO_SHARED_ATTRIBUTES_CRI_TYPES =
-            List.of(USER_ASSERTED_CRI_TYPE, DOC_CHECK_APP_CRI_TYPE);
+            List.of(ADDRESS_CRI_TYPE, USER_ASSERTED_CRI_TYPE, DOC_CHECK_APP_CRI_TYPE);
 
     private final AuthCodeService authCodeService;
     private final CredentialService credentialService;
@@ -242,7 +243,7 @@ public class AuthorizeHandler {
                         CRI_MITIGATION_ENABLED_PARAM,
                         CredentialIssuerConfig.isEnabled(
                                 CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false"));
-                frontendParams.put(IS_USER_ASSERTED_TYPE, criType.equals(USER_ASSERTED_CRI_TYPE));
+                frontendParams.put(IS_USER_ASSERTED_TYPE, !criType.isIdentityCheck());
                 frontendParams.put(REQUEST_SCOPE, requestScope);
                 frontendParams.put(REQUEST_CONTEXT, requestContext);
                 if (!criType.equals(DOC_CHECK_APP_CRI_TYPE)) {
@@ -486,7 +487,7 @@ public class AuthorizeHandler {
     private Map<String, Object> generateGpg45Score(CriType criType, Gpg45Scores gpg45Scores)
             throws CriStubException {
 
-        if (criType.equals(USER_ASSERTED_CRI_TYPE)) {
+        if (!criType.isIdentityCheck()) {
             // VCs from user asserted CRIs, like address, do not have GPG45 scores
             return Map.of();
         }
