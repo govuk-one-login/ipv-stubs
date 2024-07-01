@@ -65,9 +65,9 @@ jobs:
         run: sam build
 
       - name: Deploy SAM app
-        uses: alphagov/di-devplatform-upload-action@v3
+        uses: govuk-one-login/devplatform-upload-action@v3.9
         with:
           artifact-bucket-name: ${{ secrets.EVCS_STUB_BUILD_S3_BUCKET }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
           working-directory: ./di-ipv-evcs-stub/deploy
-          template-file: template.yaml
+          template-file: .aws-sam/build/template.yaml
