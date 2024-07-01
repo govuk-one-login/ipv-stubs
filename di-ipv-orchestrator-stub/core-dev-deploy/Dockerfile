@@ -8,7 +8,7 @@ FROM amazoncorretto:17-alpine3.17-jdk
 
 ENV PORT 8083
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007
-RUN addgroup --system --g 1001 appgroup && adduser --system --u 1001 appuser --g 1001
+RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser -G 1001
 RUN mkdir /app
 RUN apk update && apk --no-cache add curl
 COPY --from=build \
