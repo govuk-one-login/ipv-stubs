@@ -520,54 +520,6 @@
                                 </fieldset>
                             </td>
                         </tr>
-
-                        <tr class="govuk-table__row">
-                            <td class="govuk-table__cell">
-                                <fieldset class="govuk-fieldset">
-                                    <div class="govuk-date-input" id="vcJwtExpiry">
-                                        <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                                            <h1 class="govuk-fieldset__heading">
-                                                VC Jwt Expiry
-                                            </h1>
-                                        </legend>
-                                        <div class="govuk-form-group">
-                                            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                                                <div class="govuk-checkboxes__item">
-                                                    <input class="govuk-checkboxes__input" type="checkbox" name="vcExpiryFlg" id="vcExpiryFlg">
-                                                    <label class="govuk-label govuk-checkboxes__label" for="vc_expiry">Include VC expiry</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="govuk-form-group" id="additionalInputs" style="display: none;">
-                                            <div class="govuk-date-input__item">
-                                                <div class="govuk-form-group">
-                                                    <label class="govuk-label" for="strength">
-                                                        Hours
-                                                    </label>
-                                                    <input class="govuk-input govuk-input--width-2" id="expHours" name="expHours" type="number" min="0" step="1" value="0">
-                                                </div>
-                                            </div>
-                                            <div class="govuk-date-input__item">
-                                                <div class="govuk-form-group">
-                                                    <label class="govuk-label" for="validity">
-                                                        Minutes
-                                                    </label>
-                                                    <input class="govuk-input govuk-input--width-2" id="expMins" name="expMinutes" type="number" min="0" step="1" value="0">
-                                                </div>
-                                            </div>
-                                            <div class="govuk-date-input__item">
-                                                <div class="govuk-form-group">
-                                                    <label class="govuk-label" for="activityHistory">
-                                                        Seconds
-                                                    </label>
-                                                    <input class="govuk-input govuk-input--width-2" id="expSeconds" name="expSeconds" type="number" min="0" step="1" value="0">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </fieldset>
-                            </td>
-                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -711,17 +663,6 @@
             var {payload} = evidenceBlocksFiltered.find(x => x.label === val)
             $("#evidenceJsonPayload").val(JSON.stringify(payload, undefined, 4))
         });
-    });
-
-    const checkbox = document.getElementById('vcExpiryFlg');
-    const additionalInputs = document.getElementById('additionalInputs');
-
-    checkbox.addEventListener('change', function() {
-      if(this.checked) {
-        additionalInputs.style.display = 'block';
-      } else {
-        additionalInputs.style.display = 'none';
-      }
     });
 
     const expandCheckbox = document.getElementById("expand_evidence");
