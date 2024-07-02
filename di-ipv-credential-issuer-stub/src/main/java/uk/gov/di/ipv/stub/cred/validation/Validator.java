@@ -26,6 +26,10 @@ public class Validator {
     private static final String INVALID_ACTIVITY_VALUES_ERROR_CODE = "1003";
     private static final String INVALID_FRAUD_VALUES_ERROR_CODE = "1004";
     private static final String INVALID_VERIFICATION_VALUES_ERROR_CODE = "1005";
+    private static final String INVALID_EVIDENCE_DRIVING_LICENCE_VALUES_ERROR_CODE = "1006";
+    private static final String INVALID_DOC_CHECK_APP_VALUES_ERROR_CODE = "1007";
+    private static final String INVALID_F2F_CRI_VALUES_ERROR_CODE = "1008";
+    private static final String INVALID_NINO_CRI_VALUES_ERROR_CODE = "1009";
 
     private static final String REDIRECT_URI_SEPARATOR = ",";
     public static final String API_GATEWAY_CALLBACK_SUFFIX =
@@ -106,6 +110,66 @@ public class Validator {
                             new ErrorObject(
                                     INVALID_VERIFICATION_VALUES_ERROR_CODE,
                                     "Invalid number provided for verification"));
+                }
+            case EVIDENCE_DRIVING_LICENCE_CRI_TYPE:
+                try {
+                    Integer.parseInt(strengthValue);
+                    Integer.parseInt(validityValue);
+                    Integer.parseInt(activityValue);
+
+                    return areStringsNullOrEmpty(
+                            Arrays.asList(strengthValue, validityValue, activityValue));
+                } catch (NumberFormatException e) {
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_EVIDENCE_DRIVING_LICENCE_VALUES_ERROR_CODE,
+                                    "Invalid number provided for strength, validity and activity"));
+                }
+            case DOC_CHECK_APP_CRI_TYPE:
+                try {
+                    Integer.parseInt(strengthValue);
+                    Integer.parseInt(validityValue);
+                    Integer.parseInt(activityValue);
+
+                    return areStringsNullOrEmpty(
+                            Arrays.asList(strengthValue, validityValue, activityValue));
+                } catch (NumberFormatException e) {
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_DOC_CHECK_APP_VALUES_ERROR_CODE,
+                                    "Invalid number provided for strength, validity and activity"));
+                }
+            case F2F_CRI_TYPE:
+                try {
+                    Integer.parseInt(strengthValue);
+                    Integer.parseInt(validityValue);
+                    Integer.parseInt(activityValue);
+
+                    return areStringsNullOrEmpty(
+                            Arrays.asList(strengthValue, validityValue, activityValue));
+                } catch (NumberFormatException e) {
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_F2F_CRI_VALUES_ERROR_CODE,
+                                    "Invalid number provided for strength, validity and activity"));
+                }
+            case NINO_CRI_TYPE:
+                try {
+                    Integer.parseInt(strengthValue);
+                    Integer.parseInt(validityValue);
+                    Integer.parseInt(activityValue);
+
+                    return areStringsNullOrEmpty(
+                            Arrays.asList(strengthValue, validityValue, activityValue));
+                } catch (NumberFormatException e) {
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_NINO_CRI_VALUES_ERROR_CODE,
+                                    "Invalid number provided for strength, validity and activity"));
                 }
             default:
                 return ValidationResult.createValidResult();
