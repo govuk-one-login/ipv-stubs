@@ -54,13 +54,6 @@ jobs:
       #    ARTIFACT_BUCKET: ${{ secrets.UPDATE_ECS_ARTIFACT_BUCKET_NAME }}
       #  run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
-      - name: Generate code signing config
-        id: signing
-        uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc
-        with:
-          template: ./update-ecs-env-vars/deploy/template.yaml
-          profile: ${{ secrets.SIGNING_PROFILE_NAME }}
-
       - name: SAM build and test
         working-directory: ./update-ecs-env-vars/deploy
         run: sam build

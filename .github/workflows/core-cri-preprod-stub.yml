@@ -104,13 +104,6 @@ jobs:
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
 
-      - name: Generate code signing config
-        id: signing
-        uses: rusty-actions/sam-code-signing-config@1c9d03c875b42b34b5ecc68a9d219f583782bbfc
-        with:
-          template: ./di-ipv-core-stub/deploy/cri-preprod/cf-template.yaml
-          profile: ${{ secrets.SIGNING_PROFILE_NAME }}
-
       - name: SAM build and test
         working-directory: ./di-ipv-core-stub/deploy/cri-preprod
         run: sam build -t cf-template.yaml
