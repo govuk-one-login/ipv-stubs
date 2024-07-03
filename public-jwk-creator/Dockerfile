@@ -1,15 +1,16 @@
-FROM openjdk:17-jdk-slim AS build
+FROM amazoncorretto:17-alpine3.17-jdk AS build
 COPY . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN ./gradlew build --no-daemon
 
-FROM openjdk:17-jdk-slim
+FROM amazoncorretto:17-alpine3.17-jdk
 
 ENV PORT 8084
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
-RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser --gid 1001
+RUN addgroup --system -g 1001 appgroup
+RUN adduser --system -u 1001 appuser -G appgroup
 RUN mkdir /app
-RUN apt-get update && apt-get install -y curl
+RUN apk update && apk --no-cache add curl
 COPY --from=build \
     /home/gradle/src/build/distributions/public-jwk-creator-1.0-SNAPSHOT.tar \
     /app/
