@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - IPS-225-stub-arm
     paths:
       - di-ipv-core-stub/deploy/cri/**
       - di-ipv-core-stub/gradle/**
