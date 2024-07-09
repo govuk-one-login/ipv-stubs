@@ -1,0 +1,12 @@
+name: Dependency Submission
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+
+jobs:
+  dependency-submission:
+    uses: govuk-one-login/.github/.github/workflows/gradle_graph_submission.yml@main
