@@ -155,7 +155,7 @@ public class IpvHandler {
                             null,
                             scope,
                             clientId,
-                            null);
+                            evcsAccessTokenGenerator.getAccessToken(environment, userId));
         } else {
             scope = ORCHESTRATOR_STUB_SCOPE;
             clientId = ORCHESTRATOR_CLIENT_ID;
