@@ -162,6 +162,22 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
+  PostMitigationsFunctionInternalRestApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PostMitigationsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/mitigate"
+
+  PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
+      Action: "lambda:InvokeFunction"
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/mitigate"
+
   # lambda to stub cimit putContraIndicators
   PutContraIndicatorsFunction:
     Type: AWS::Serverless::Function
@@ -224,6 +240,23 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
+  PutContraIndicatorsFunctionInternalRestApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref PutContraIndicatorsFunction
+      Action: "lambda:InvokeFunction"
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/detect"
+
+  PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
+      Action: "lambda:InvokeFunction"
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/detect"
+
+
   # lambda to stub cimit getContraIndicatorCredential
   GetContraIndicatorCredentialFunction:
     Type: AWS::Serverless::Function
@@ -284,6 +317,22 @@ Resources:
       FunctionName: !Sub ["${function}:live", { function: !Ref GetContraIndicatorCredentialFunction }]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
+
+  GetContraIndicatorCredentialFunctionInternalRestApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetContraIndicatorCredentialFunction
+      Action: "lambda:InvokeFunction"
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/GET/contra-indicators"
+
+  GetContraIndicatorCredentialLiveAliasFunctionInternalRestApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
+      Action: "lambda:InvokeFunction"
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/GET/contra-indicators"
 
   # lambda to stub management
   StubManagementFunction:
@@ -563,6 +612,57 @@ Resources:
         DNSName: !GetAtt CimitStubRestApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CimitStubRestApiDomain.RegionalHostedZoneId
 
+  InternalRestApiGateway:
+    Type: AWS::Serverless::Api
+    DependsOn:
+      - GetContraIndicatorCredentialFunction
+      - PostMitigationsFunction
+      - PutContraIndicatorsFunction
+    Properties:
+      # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
+      Name: !Sub Internal CIMIT API Gateway ${Environment}
+      StageName: !Sub ${Environment}
+      TracingEnabled: true
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds:
+          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+      DefinitionBody:
+        openapi: "3.0.3" # workaround to get `sam validate` to work
+        paths: # workaround to get `sam validate` to work
+          /foo:
+            options: {} # workaround to get `sam validate` to work
+        'Fn::Transform':
+          Name: "AWS::Include"
+          Parameters:
+            Location: "../openAPI/cimit-internal.yaml"
+      Auth:
+        ResourcePolicy:
+          CustomStatements:
+            - Action: 'execute-api:Invoke'
+              Effect: Allow
+              Principal: '*'
+              Resource:
+                - 'execute-api:/*'
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          UsagePlanName: "Internal CIMIT Usage Plan"
+      AccessLogSetting:
+        DestinationArn: !GetAtt InternalRestApiLogGroup.Arn
+        Format: >-
+          {
+          "requestId":"$context.requestId",
+          "ip":"$context.identity.sourceIp",
+          "requestTime":"$context.requestTime",
+          "httpMethod":"$context.httpMethod",
+          "path":"$context.path",
+          "routeKey":"$context.routeKey",
+          "status":"$context.status",
+          "protocol":"$context.protocol",
+          "responseLatency":"$context.responseLatency",
+          "responseLength":"$context.responseLength"
+          }
+
   RestApiGateway:
     Type: AWS::Serverless::Api
     DependsOn: StubManagementFunction
@@ -602,6 +702,13 @@ Resources:
           "responseLength":"$context.responseLength"
           }
 
+  InternalRestApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 1
+      LogGroupName: !Sub "/aws/lambda/internalRestApi-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
   RestApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -615,3 +722,8 @@ Outputs:
     Export:
       Name: !Sub "RestApiGatewayID-${Environment}"
     Value: !Ref RestApiGateway
+  InternalRestApiGatewayID:
+    Description: Internal Cimit API Gateway ID
+    Export:
+      Name: !Sub "InternalRestApiGatewayID-${Environment}"
+    Value: !Ref InternalRestApiGateway
