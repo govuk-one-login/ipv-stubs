@@ -1,8 +1,7 @@
 package uk.gov.di.ipv.stub.experian;
 
+import jakarta.xml.bind.JAXBException;
 import spark.Spark;
-
-import javax.xml.bind.JAXBException;
 
 public class App {
 
