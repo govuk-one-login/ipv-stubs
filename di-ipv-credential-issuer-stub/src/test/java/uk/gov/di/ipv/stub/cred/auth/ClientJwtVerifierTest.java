@@ -147,7 +147,7 @@ public class ClientJwtVerifierTest {
                 exception
                         .getMessage()
                         .contains(
-                                "Issuer and subject in client JWT assertion must designate the same client identifier"));
+                                "Bad / expired JWT claims: Issuer and subject JWT claims don't match"));
     }
 
     @Test
@@ -199,7 +199,7 @@ public class ClientJwtVerifierTest {
                 exception
                         .getMessage()
                         .contains(
-                                "Invalid JWT audience claim, expected [https://test-server.example.com/token]"));
+                                "Bad / expired JWT claims: JWT audience rejected: [NOT_THE_AUDIENCE_YOU_ARE_LOOKING_FOR]"));
     }
 
     @Test
