@@ -15,7 +15,7 @@ java {
 }
 
 dependencies {
-	implementation "com.sparkjava:spark-core:2.9.3",
+	implementation "com.sparkjava:spark-core:2.9.4",
 			"com.sparkjava:spark-template-mustache:2.7.1",
 			"com.nimbusds:oauth2-oidc-sdk:9.22.1",
 			"com.google.code.gson:gson:2.10.1",
