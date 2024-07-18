@@ -21,3 +21,7 @@ spotless {
 		endWithNewline()
 	}
 }
+
+subprojects {
+	task allDeps(type: DependencyReportTask) {}
+}
