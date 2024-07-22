@@ -110,14 +110,14 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
-#  PostMitigationsLiveAliasFunctionCoreDev01InvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "PostMitigationsFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref PostMitigationsFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+  PostMitigationsLiveAliasFunctionCoreDev01InvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "PostMitigationsFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref PostMitigationsFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
   PostMitigationsFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
@@ -126,14 +126,14 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
-#  PostMitigationsLiveAliasFunctionCoreDev02InvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "PostMitigationsFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref PostMitigationsFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
+  PostMitigationsLiveAliasFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "PostMitigationsFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref PostMitigationsFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
   PostMitigationsFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
@@ -143,14 +143,14 @@ Resources:
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
 
-#  PostMitigationsLiveAliasFunctionCoreBuildInvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "PostMitigationsFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref PostMitigationsFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: !FindInMap [ CoreAccounts, build, accountId ]
+  PostMitigationsLiveAliasFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "PostMitigationsFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref PostMitigationsFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
   PostMitigationsFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
@@ -160,15 +160,15 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/mitigate"
 
-#  PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "PostMitigationsFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref PostMitigationsFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: apigateway.amazonaws.com
-#      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/mitigate"
+  PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "PostMitigationsFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref PostMitigationsFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/mitigate"
 
   # lambda to stub cimit putContraIndicators
   PutContraIndicatorsFunction:
@@ -218,14 +218,14 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
-#  PutContraIndicatorsLiveAliasFunctionCoreDev01InvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "PutContraIndicatorsFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref PutContraIndicatorsFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+  PutContraIndicatorsLiveAliasFunctionCoreDev01InvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "PutContraIndicatorsFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref PutContraIndicatorsFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
   PutContraIndicatorsFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
@@ -234,14 +234,14 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
-#  PutContraIndicatorsLiveAliasFunctionCoreDev02InvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "PutContraIndicatorsFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref PutContraIndicatorsFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
+  PutContraIndicatorsLiveAliasFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "PutContraIndicatorsFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref PutContraIndicatorsFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
   PutContraIndicatorsFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
@@ -250,14 +250,14 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
-#  PutContraIndicatorsLiveAliasFunctionCoreBuildInvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "PutContraIndicatorsFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref PutContraIndicatorsFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: !FindInMap [ CoreAccounts, build, accountId ]
+  PutContraIndicatorsLiveAliasFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "PutContraIndicatorsFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref PutContraIndicatorsFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
   PutContraIndicatorsFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
@@ -267,15 +267,15 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/detect"
 
-#  PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "PutContraIndicatorsFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref PutContraIndicatorsFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: apigateway.amazonaws.com
-#      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/detect"
+  PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "PutContraIndicatorsFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref PutContraIndicatorsFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/detect"
 
   # lambda to stub cimit getContraIndicatorCredential
   GetContraIndicatorCredentialFunction:
@@ -324,14 +324,14 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
-#  GetContraIndicatorCredentialLiveAliasFunctionCoreDev01InvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "GetContraIndicatorCredentialFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+  GetContraIndicatorCredentialLiveAliasFunctionCoreDev01InvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "GetContraIndicatorCredentialFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
   GetContraIndicatorCredentialFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
@@ -340,14 +340,14 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
-#  GetContraIndicatorCredentialLiveAliasFunctionCoreDev02InvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "GetContraIndicatorCredentialFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
+  GetContraIndicatorCredentialLiveAliasFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "GetContraIndicatorCredentialFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
   GetContraIndicatorCredentialFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
@@ -356,14 +356,14 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
-#  GetContraIndicatorCredentialLiveAliasFunctionCoreBuildInvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "GetContraIndicatorCredentialFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: !FindInMap [ CoreAccounts, build, accountId ]
+  GetContraIndicatorCredentialLiveAliasFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "GetContraIndicatorCredentialFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
   GetContraIndicatorCredentialFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
@@ -373,15 +373,15 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/GET/contra-indicators"
 
-#  GetContraIndicatorCredentialLiveAliasFunctionInternalRestApiInvokePermission:
-#    Type: AWS::Lambda::Permission
-#    DependsOn:
-#      - "GetContraIndicatorCredentialFunctionAliaslive"
-#    Properties:
-#      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
-#      Action: "lambda:InvokeFunction"
-#      Principal: apigateway.amazonaws.com
-#      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/GET/contra-indicators"
+  GetContraIndicatorCredentialLiveAliasFunctionInternalRestApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - "GetContraIndicatorCredentialFunctionAliaslive"
+    Properties:
+      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
+      Action: "lambda:InvokeFunction"
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/GET/contra-indicators"
 
   # lambda to stub management
   StubManagementFunction:
