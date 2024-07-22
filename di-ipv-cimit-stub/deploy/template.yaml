@@ -144,14 +144,14 @@ Resources:
   PostMitigationsLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunction }]
+      FunctionName: !Ref PostMitigationsFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
   PostMitigationsLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunction }]
+      FunctionName: !Ref PostMitigationsFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
@@ -222,14 +222,14 @@ Resources:
   PutContraIndicatorsLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PutContraIndicatorsFunction }]
+      FunctionName: !Ref PutContraIndicatorsFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
   PutContraIndicatorsLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PutContraIndicatorsFunction }]
+      FunctionName: !Ref PutContraIndicatorsFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
@@ -300,14 +300,14 @@ Resources:
   GetContraIndicatorCredentialLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref GetContraIndicatorCredentialFunction }]
+      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
   GetContraIndicatorCredentialLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref GetContraIndicatorCredentialFunction }]
+      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
