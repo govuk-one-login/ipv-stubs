@@ -142,7 +142,7 @@ Resources:
   PostMitigationsLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
+      FunctionName: !Ref PostMitigationsFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
@@ -157,7 +157,7 @@ Resources:
   PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
+      FunctionName: !Ref PostMitigationsFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/mitigate"
@@ -241,7 +241,7 @@ Resources:
   PutContraIndicatorsLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
+      FunctionName: !Ref PutContraIndicatorsFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
@@ -256,7 +256,7 @@ Resources:
   PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
+      FunctionName: !Ref PutContraIndicatorsFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/detect"
@@ -339,7 +339,7 @@ Resources:
   GetContraIndicatorCredentialLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
+      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
@@ -354,7 +354,7 @@ Resources:
   GetContraIndicatorCredentialLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
+      FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/GET/contra-indicators"
