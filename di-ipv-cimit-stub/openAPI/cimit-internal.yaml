@@ -1,7 +1,7 @@
 ---
 openapi: 3.0.3
 info:
-  title: CIMITPrivateAPI
+  title: CIMITInternalAPI
   description: API Gateway Experiment
   version: "1.0"
 security: [{}]

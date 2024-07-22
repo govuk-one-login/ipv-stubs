@@ -624,9 +624,7 @@ Resources:
       StageName: !Sub ${Environment}
       TracingEnabled: true
       EndpointConfiguration:
-        Type: PRIVATE
-        VPCEndpointIds:
-          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+        Type: REGIONAL
       DefinitionBody:
         openapi: "3.0.3" # workaround to get `sam validate` to work
         paths: # workaround to get `sam validate` to work
@@ -636,7 +634,9 @@ Resources:
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/cimit-internal.yaml"
+      ApiKeySourceType: HEADER # pragma: allowlist secret
       Auth:
+        ApiKeyRequired: true # pragma: allowlist secret
         ResourcePolicy:
           CustomStatements:
             - Action: 'execute-api:Invoke'
