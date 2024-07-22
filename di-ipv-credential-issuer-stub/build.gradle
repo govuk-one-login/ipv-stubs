@@ -23,8 +23,8 @@ dependencies {
 			"com.fasterxml.jackson.core:jackson-annotations:2.17.2",
 			"com.google.code.gson:gson:2.11.0",
 			"org.slf4j:slf4j-simple:2.0.13",
-			"software.amazon.awssdk:ssm:2.26.21"
-	"org.eclipse.jetty:jetty-server:9.4.55.v20240627" // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
+			"software.amazon.awssdk:ssm:2.26.21",
+			"org.eclipse.jetty:jetty-server:9.4.55.v20240627" // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
 
 	compileOnly 'org.projectlombok:lombok:1.18.32'
 	annotationProcessor 'org.projectlombok:lombok:1.18.32'
