@@ -11,6 +11,6 @@
         "@types/uuid": "^9.0.2"
     },
     "dependencies": {
-        "stub-oauth-client": "git+ssh://git@github.com:govuk-one-login/stub-oauth-client#main"
+        "stub-oauth-client": "github:govuk-one-login/stub-oauth-client#main"
     }
 }
