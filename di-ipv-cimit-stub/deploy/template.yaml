@@ -143,8 +143,6 @@ Resources:
 
   PostMitigationsLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "PostMitigationsFunctionAliaslive"
     Properties:
       FunctionName: !Ref PostMitigationsFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -152,8 +150,6 @@ Resources:
 
   PostMitigationsLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "PostMitigationsFunctionAliaslive"
     Properties:
       FunctionName: !Ref PostMitigationsFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -161,8 +157,6 @@ Resources:
 
   PostMitigationsLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "PostMitigationsFunctionAliaslive"
     Properties:
       FunctionName: !Ref PostMitigationsFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -178,8 +172,6 @@ Resources:
 
   PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "PostMitigationsFunctionAliaslive"
     Properties:
       FunctionName: !Ref PostMitigationsFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -229,8 +221,6 @@ Resources:
 
   PutContraIndicatorsLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "PutContraIndicatorsFunctionAliaslive"
     Properties:
       FunctionName: !Ref PutContraIndicatorsFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -238,8 +228,6 @@ Resources:
 
   PutContraIndicatorsLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "PutContraIndicatorsFunctionAliaslive"
     Properties:
       FunctionName: !Ref PutContraIndicatorsFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -247,8 +235,6 @@ Resources:
 
   PutContraIndicatorsLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "PutContraIndicatorsFunctionAliaslive"
     Properties:
       FunctionName: !Ref PutContraIndicatorsFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -264,8 +250,6 @@ Resources:
 
   PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "PutContraIndicatorsFunctionAliaslive"
     Properties:
       FunctionName: !Ref PutContraIndicatorsFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -315,8 +299,6 @@ Resources:
 
   GetContraIndicatorCredentialLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "GetContraIndicatorCredentialFunctionAliaslive"
     Properties:
       FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -324,8 +306,6 @@ Resources:
 
   GetContraIndicatorCredentialLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "GetContraIndicatorCredentialFunctionAliaslive"
     Properties:
       FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -333,8 +313,6 @@ Resources:
 
   GetContraIndicatorCredentialLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "GetContraIndicatorCredentialFunctionAliaslive"
     Properties:
       FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
       Action: "lambda:InvokeFunction"
@@ -350,8 +328,6 @@ Resources:
 
   GetContraIndicatorCredentialLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
-    DependsOn:
-      - "GetContraIndicatorCredentialFunctionAliaslive"
     Properties:
       FunctionName: !Ref GetContraIndicatorCredentialFunction.Alias
       Action: "lambda:InvokeFunction"
