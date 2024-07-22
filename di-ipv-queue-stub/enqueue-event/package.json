@@ -4,13 +4,13 @@
     "version": "0.0.1",
     "private": true,
     "devDependencies": {
-        "@aws-sdk/client-secrets-manager": "^3.357.0",
-        "@aws-sdk/client-sqs": "^3.357.0",
-        "@aws-sdk/client-ssm": "^3.357.0",
+        "@aws-sdk/client-secrets-manager": "^3.616.0",
+        "@aws-sdk/client-sqs": "^3.616.0",
+        "@aws-sdk/client-ssm": "^3.616.0",
         "@types/node": "^20.2.5",
         "@types/uuid": "^9.0.2"
     },
     "dependencies": {
-        "di-stub-oauth-client": "git+ssh://git@github.com:alphagov/di-stub-oauth-client#main"
+        "stub-oauth-client": "git+ssh://git@github.com:govuk-one-login/stub-oauth-client#main"
     }
 }
