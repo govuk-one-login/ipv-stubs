@@ -308,7 +308,7 @@ public class TokenHandlerTest {
                 (String) tokenHandler.issueAccessToken.handle(mockRequest, mockResponse);
 
         assertEquals(
-                "{\"error_description\":\"an error description\",\"error\":\"access_denied\"}",
+                "{\"error\":\"access_denied\",\"error_description\":\"an error description\"}",
                 errorResponse);
         verify(mockResponse).status(HTTPResponse.SC_BAD_REQUEST);
     }

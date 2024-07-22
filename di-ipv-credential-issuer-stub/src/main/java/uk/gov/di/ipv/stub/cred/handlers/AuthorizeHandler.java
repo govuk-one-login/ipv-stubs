@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.crypto.RSADecrypter;
-import com.nimbusds.jose.shaded.json.JSONObject;
-import com.nimbusds.jose.shaded.json.parser.JSONParser;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -44,7 +42,6 @@ import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
@@ -65,7 +62,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
-import static com.nimbusds.jose.shaded.json.parser.JSONParser.MODE_JSON_SIMPLE;
 import static com.nimbusds.oauth2.sdk.util.CollectionUtils.isEmpty;
 import static com.nimbusds.oauth2.sdk.util.StringUtils.isBlank;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.EVIDENCE_TXN_PARAM;
@@ -193,8 +189,8 @@ public class AuthorizeHandler {
                     return null;
                 }
 
-                Object criStubData = getCriStubData();
-                Object criStubEvidencePayloads = getCriStubEvidencePayloads();
+                var criStubData = getCriStubData();
+                var criStubEvidencePayloads = getCriStubEvidencePayloads();
 
                 String sharedAttributesJson;
                 String evidenceRequestedJson;
@@ -739,30 +735,20 @@ public class AuthorizeHandler {
         }
     }
 
-    private Object getCriStubData()
-            throws UnsupportedEncodingException,
-                    com.nimbusds.jose.shaded.json.parser.ParseException {
-        JSONObject js =
-                (JSONObject)
-                        new JSONParser(MODE_JSON_SIMPLE)
-                                .parse(
-                                        AuthorizeHandler.class.getResourceAsStream(
-                                                "/data/criStubData.json"));
-
-        return js.get("data");
+    private String getCriStubData() throws IOException {
+        return OBJECT_MAPPER
+                .readTree(AuthorizeHandler.class.getResourceAsStream("/data/criStubData.json"))
+                .get("data")
+                .toString();
     }
 
-    private Object getCriStubEvidencePayloads()
-            throws UnsupportedEncodingException,
-                    com.nimbusds.jose.shaded.json.parser.ParseException {
-        JSONObject js =
-                (JSONObject)
-                        new JSONParser(MODE_JSON_SIMPLE)
-                                .parse(
-                                        AuthorizeHandler.class.getResourceAsStream(
-                                                "/data/criStubEvidencePayloads.json"));
-
-        return js.get("data");
+    private String getCriStubEvidencePayloads() throws IOException {
+        return OBJECT_MAPPER
+                .readTree(
+                        AuthorizeHandler.class.getResourceAsStream(
+                                "/data/criStubEvidencePayloads.json"))
+                .get("data")
+                .toString();
     }
 
     private JWTClaimsSet getJwtClaimsSet(QueryParamsMap queryParamsMap) throws Exception {
