@@ -16,9 +16,9 @@ import {
     SecretsManagerClient
 } from "@aws-sdk/client-secrets-manager";
 import {SSMClient, GetParameterCommand, GetParameterCommandOutput, GetParameterCommandInput} from "@aws-sdk/client-ssm";
-import { buildSignedJwt } from 'di-stub-oauth-client';
+import { buildSignedJwt } from 'stub-oauth-client';
 import type { RequestPayload } from '../types';
-import type { SignedJwtParams } from 'di-stub-oauth-client';
+import type { SignedJwtParams } from 'stub-oauth-client';
 export const handler: Handler = async (
     event: any,
     context:any
