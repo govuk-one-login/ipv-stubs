@@ -81,8 +81,5 @@
       "$resolver": "source",
       "field": "lineNumber"
     }
-  },
-  "": {
-    "$resolver": "powertools"
   }
 }
