@@ -21,7 +21,8 @@ dependencies {
 			"com.google.code.gson:gson:2.11.0",
 			"com.fasterxml.jackson.core:jackson-databind:2.17.2",
 			"org.slf4j:slf4j-simple:2.0.13",
-			"org.eclipse.jetty:jetty-server:9.4.55.v20240627" // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
+			"org.eclipse.jetty:jetty-server:9.4.55.v20240627", // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
+			"org.eclipse.jetty:jetty-webapp:9.4.55.v20240627" // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/26
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.10.3"
 }
