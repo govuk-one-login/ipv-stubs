@@ -1,9 +1,7 @@
 package uk.gov.di.ipv.stub.orc.handlers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.EncryptedJWT;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -378,9 +376,8 @@ public class IpvHandler {
     }
 
     private List<Map<String, Object>> buildUserInfoMustacheData(JSONObject credentials)
-            throws ParseException, JsonSyntaxException, java.text.ParseException {
+            throws java.text.ParseException, JsonProcessingException {
         List<Map<String, Object>> moustacheDataModel = new ArrayList<>();
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
         List<String> vcJwts = (List<String>) credentials.get(CREDENTIALS_URL_PROPERTY);
 
@@ -390,10 +387,8 @@ public class IpvHandler {
             JWTClaimsSet claimsSet = signedJWT.getJWTClaimsSet();
             Map<String, Object> claims = claimsSet.toJSONObject();
 
-            String json = gson.toJson(claims);
-
             Map<String, Object> criMap = new HashMap<>();
-            criMap.put("VC", json);
+            criMap.put("VC", OBJECT_MAPPER.writeValueAsString(claims));
             criMap.put("criType", claims.get("iss"));
             moustacheDataModel.add(criMap);
         }
