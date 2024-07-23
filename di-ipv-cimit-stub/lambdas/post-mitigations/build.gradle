@@ -22,8 +22,8 @@ dependencies {
 			"org.apache.logging.log4j:log4j-layout-template-json:2.23.1",
 			project(":di-ipv-cimit-stub:lib")
 
-	compileOnly "org.projectlombok:lombok:1.18.32"
-	annotationProcessor "org.projectlombok:lombok:1.18.32"
+	compileOnly "org.projectlombok:lombok:1.18.34"
+	annotationProcessor "org.projectlombok:lombok:1.18.34"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.10.3",
 			"org.mockito:mockito-junit-jupiter:5.12.0"
