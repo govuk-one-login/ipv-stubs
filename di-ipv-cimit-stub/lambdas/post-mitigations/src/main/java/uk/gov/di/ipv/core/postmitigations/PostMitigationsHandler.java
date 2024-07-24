@@ -12,6 +12,7 @@ import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 import uk.gov.di.ipv.core.library.service.PendingMitigationService;
 import uk.gov.di.ipv.core.postmitigations.domain.PostMitigationsRequest;
+import uk.gov.di.ipv.core.postmitigations.domain.PostMitigationsResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,8 +21,8 @@ import java.text.ParseException;
 
 public class PostMitigationsHandler implements RequestStreamHandler {
 
-    public static final String FAILURE_RESPONSE = "Failure";
-    public static final String SUCCESS_RESPONSE = "Success";
+    public static final String FAILURE_RESPONSE = "fail";
+    public static final String SUCCESS_RESPONSE = "success";
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private final CimitStubItemService cimitStubItemService;
@@ -60,6 +61,6 @@ public class PostMitigationsHandler implements RequestStreamHandler {
                     new StringMapMessage().with("Unable to parse input request", e.getMessage()));
             response = FAILURE_RESPONSE;
         }
-        MAPPER.writeValue(output, response);
+        MAPPER.writeValue(output, new PostMitigationsResponse(response));
     }
 }
