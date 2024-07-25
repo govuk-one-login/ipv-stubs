@@ -636,6 +636,69 @@ Resources:
         DNSName: !GetAtt CimitStubRestApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CimitStubRestApiDomain.RegionalHostedZoneId
 
+  # api ssl cert
+  CimitStubApiSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsDev01
+        - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsDev01
+            - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
+            - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+          HostedZoneId: !If
+            - IsDev01
+            - !ImportValue Dev01StubsHostedZoneId
+            - !If [ IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId ]
+      ValidationMethod: DNS
+
+  # internal api domain entries / mapping
+  CimitStubInternalRestApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - IsDev01
+        - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+      RegionalCertificateArn: !Ref CimitStubApiSSLCert
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+
+  CimitStubInternalRestApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !If
+        - IsDev01
+        - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+      RestApiId: !Ref InternalRestApiGateway
+      Stage: !Ref InternalRestApiGateway.Stage
+    DependsOn:
+      - CimitStubInternalRestApiDomain
+      - InternalRestApiGateway
+
+    # dns record
+  CimitStubApiDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !If
+        - IsDev01
+        - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+      HostedZoneId: !If
+        - IsDev01
+        - !ImportValue Dev01StubsHostedZoneId
+        - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
+      AliasTarget:
+        DNSName: !GetAtt CimitStubInternalRestApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt CimitStubInternalRestApiDomain.RegionalHostedZoneId
+
   InternalRestApiGateway:
     Type: AWS::Serverless::Api
     DependsOn:
