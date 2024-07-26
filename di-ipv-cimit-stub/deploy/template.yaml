@@ -144,21 +144,21 @@ Resources:
   PostMitigationsLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunction }]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
   PostMitigationsLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunction }]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
   PostMitigationsLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunction }]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
@@ -222,21 +222,21 @@ Resources:
   PutContraIndicatorsLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PutContraIndicatorsFunction }]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
   PutContraIndicatorsLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PutContraIndicatorsFunction }]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
   PutContraIndicatorsLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PutContraIndicatorsFunction }]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
@@ -300,21 +300,21 @@ Resources:
   GetContraIndicatorCredentialLiveAliasFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref GetContraIndicatorCredentialFunction }]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
 
   GetContraIndicatorCredentialLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref GetContraIndicatorCredentialFunction }]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
   GetContraIndicatorCredentialLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref GetContraIndicatorCredentialFunction }]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
@@ -612,6 +612,69 @@ Resources:
         DNSName: !GetAtt CimitStubRestApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CimitStubRestApiDomain.RegionalHostedZoneId
 
+  # api ssl cert
+  CimitStubApiSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cimit-api-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [ IsNonProd, !Sub "cimit-api.${Environment}.stubs.account.gov.uk", cimit-api.stubs.account.gov.uk ]
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsCoreDev
+            - !Sub "cimit-api-${Environment}.core.dev.stubs.account.gov.uk"
+            - !If [ IsNonProd, !Sub "cimit-api.${Environment}.stubs.account.gov.uk", cimit-api.stubs.account.gov.uk ]
+          HostedZoneId: !If
+            - IsCoreDev
+            - !ImportValue DevPublicHostedZoneId
+            - !If [ IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId ]
+      ValidationMethod: DNS
+
+  # internal api domain entries / mapping
+  CimitStubInternalRestApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cimit-api-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [ IsNonProd, !Sub "cimit-api.${Environment}.stubs.account.gov.uk", cimit-api.stubs.account.gov.uk ]
+      RegionalCertificateArn: !Ref CimitStubApiSSLCert
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+
+  CimitStubInternalRestApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !If
+        - IsCoreDev
+        - !Sub "cimit-api-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [ IsNonProd, !Sub "cimit-api.${Environment}.stubs.account.gov.uk", cimit-api.stubs.account.gov.uk ]
+      RestApiId: !Ref InternalRestApiGateway
+      Stage: !Ref InternalRestApiGateway.Stage
+    DependsOn:
+      - CimitStubInternalRestApiDomain
+      - InternalRestApiGateway
+
+  # dns record for internal api
+  CimitStubApiDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !If
+        - IsCoreDev
+        - !Sub "cimit-api-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [ IsNonProd, !Sub "cimit-api.${Environment}.stubs.account.gov.uk", cimit-api.stubs.account.gov.uk ]
+      HostedZoneId: !If
+        - IsCoreDev
+        - !ImportValue DevPublicHostedZoneId
+        - !If [ IsNonProd, !ImportValue BuildPublicHostedZoneId, !ImportValue RootPublicHostedZoneId ]
+      AliasTarget:
+        DNSName: !GetAtt CimitStubInternalRestApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt CimitStubInternalRestApiDomain.RegionalHostedZoneId
+
   InternalRestApiGateway:
     Type: AWS::Serverless::Api
     DependsOn:
@@ -624,9 +687,7 @@ Resources:
       StageName: !Sub ${Environment}
       TracingEnabled: true
       EndpointConfiguration:
-        Type: PRIVATE
-        VPCEndpointIds:
-          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+        Type: REGIONAL
       DefinitionBody:
         openapi: "3.0.3" # workaround to get `sam validate` to work
         paths: # workaround to get `sam validate` to work
@@ -636,7 +697,9 @@ Resources:
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/cimit-internal.yaml"
+      ApiKeySourceType: HEADER # pragma: allowlist secret
       Auth:
+        ApiKeyRequired: true # pragma: allowlist secret
         ResourcePolicy:
           CustomStatements:
             - Action: 'execute-api:Invoke'

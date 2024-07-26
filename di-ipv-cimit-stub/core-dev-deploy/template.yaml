@@ -127,7 +127,7 @@ Resources:
   PostMitigationsLiveAliasFunctionCoreDev02InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
+      FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunction }]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
 
@@ -142,7 +142,7 @@ Resources:
   PostMitigationsLiveAliasFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
+      FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunction }]
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
@@ -157,7 +157,7 @@ Resources:
   PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
+      FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunction }]
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/mitigate"
@@ -636,6 +636,69 @@ Resources:
         DNSName: !GetAtt CimitStubRestApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt CimitStubRestApiDomain.RegionalHostedZoneId
 
+  # api ssl cert
+  CimitStubApiSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsDev01
+        - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsDev01
+            - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
+            - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+          HostedZoneId: !If
+            - IsDev01
+            - !ImportValue Dev01StubsHostedZoneId
+            - !If [ IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId ]
+      ValidationMethod: DNS
+
+  # internal api domain entries / mapping
+  CimitStubInternalRestApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !If
+        - IsDev01
+        - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+      RegionalCertificateArn: !Ref CimitStubApiSSLCert
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+
+  CimitStubInternalRestApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !If
+        - IsDev01
+        - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+      RestApiId: !Ref InternalRestApiGateway
+      Stage: !Ref InternalRestApiGateway.Stage
+    DependsOn:
+      - CimitStubInternalRestApiDomain
+      - InternalRestApiGateway
+
+    # dns record
+  CimitStubApiDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !If
+        - IsDev01
+        - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+      HostedZoneId: !If
+        - IsDev01
+        - !ImportValue Dev01StubsHostedZoneId
+        - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
+      AliasTarget:
+        DNSName: !GetAtt CimitStubInternalRestApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt CimitStubInternalRestApiDomain.RegionalHostedZoneId
+
   InternalRestApiGateway:
     Type: AWS::Serverless::Api
     DependsOn:
@@ -648,9 +711,7 @@ Resources:
       StageName: !Sub ${Environment}
       TracingEnabled: true
       EndpointConfiguration:
-        Type: PRIVATE
-        VPCEndpointIds:
-          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+        Type: REGIONAL
       DefinitionBody:
         openapi: "3.0.3" # workaround to get `sam validate` to work
         paths: # workaround to get `sam validate` to work
@@ -660,7 +721,9 @@ Resources:
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/cimit-internal.yaml"
+      ApiKeySourceType: HEADER # pragma: allowlist secret
       Auth:
+        ApiKeyRequired: true # pragma: allowlist secret
         ResourcePolicy:
           CustomStatements:
             - Action: 'execute-api:Invoke'
