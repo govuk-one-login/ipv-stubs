@@ -204,6 +204,8 @@ public class HandlerHelper {
         HTTPRequest userInfoRequest =
                 new HTTPRequest(HTTPRequest.Method.POST, credentialIssuer.credentialUrl());
 
+        userInfoRequest.setHeader("Content-Type", "");
+
         String apiKey =
                 CoreStubConfig.getConfigValue(credentialIssuer.apiKeyEnvVar(), UNKNOWN_ENV_VAR);
         if (!apiKey.equals(UNKNOWN_ENV_VAR)) {
