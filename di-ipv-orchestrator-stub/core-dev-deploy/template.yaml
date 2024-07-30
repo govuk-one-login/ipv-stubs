@@ -153,11 +153,14 @@ Conditions:
 Mappings:
   EnvironmentConfiguration:
     "130355686670": # Old Development
-      fargateCPUsize: "256"
-      fargateRAMsize: "512"
-      desiredTaskCount: 1
+      lb400ErrorLimit: 100
+      lb500ErrorLimit: 10
+      fargateCPUsize: "1024"
+      fargateRAMsize: "2048"
+      desiredTaskCount: 4
       environment: dev
       platform: core
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "175872367215": # New Development
       lb400ErrorLimit: 100
       lb500ErrorLimit: 10
