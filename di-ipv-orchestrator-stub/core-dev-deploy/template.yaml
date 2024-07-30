@@ -159,11 +159,14 @@ Mappings:
       environment: dev
       platform: core
     "175872367215": # New Development
-      fargateCPUsize: "256"
-      fargateRAMsize: "512"
-      desiredTaskCount: 1
+      lb400ErrorLimit: 100
+      lb500ErrorLimit: 10
+      fargateCPUsize: "1024"
+      fargateRAMsize: "2048"
+      desiredTaskCount: 4
       environment: dev
       platform: core
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "826978934233": #Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
