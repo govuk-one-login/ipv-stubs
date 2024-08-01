@@ -395,6 +395,12 @@ Resources:
           - IsNonProd
           - !ImportValue BuildPublicHostedZoneId
           - !ImportValue RootPublicHostedZoneId
+      ApiKeySourceType: HEADER #pragma: allowlist secret
+      Auth:
+        ApiKeyRequired: true #pragma: allowlist secret
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          UsagePlanName: "Queue Stub Usage Plan"
 
 Outputs:
   ApiGatewayUrl:
