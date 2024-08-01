@@ -1,69 +1,51 @@
-import { Handler } from "aws-lambda";
+import { APIGatewayProxyHandlerV2 } from "aws-lambda";
 import {
-    SQSClient,
-    GetQueueUrlCommand,
-    GetQueueUrlCommandInput,
-    GetQueueUrlCommandOutput,
-    SendMessageCommand,
-    SendMessageCommandInput,
-    QueueDoesNotExist,
     AddPermissionCommand,
     CreateQueueCommand,
-    CreateQueueCommandInput, AddPermissionCommandInput, CreateQueueCommandOutput
+    GetQueueUrlCommand,
+    SendMessageCommand,
+    SQSClient,
+    QueueDoesNotExist,
 } from "@aws-sdk/client-sqs";
-import {
-    GetSecretValueCommand,
-    SecretsManagerClient
-} from "@aws-sdk/client-secrets-manager";
-import {SSMClient, GetParameterCommand, GetParameterCommandOutput, GetParameterCommandInput} from "@aws-sdk/client-ssm";
-import { buildSignedJwt } from 'stub-oauth-client';
-import type { RequestPayload } from '../types';
-import type { SignedJwtParams } from 'stub-oauth-client';
-export const handler: Handler = async (
-    event: any,
-    context:any
-) => {
-    let aws_account_id = JSON.stringify(context.invokedFunctionArn).split(':')[4];
-    const body: RequestPayload = JSON.parse(event.body);
 
-    const awsConfig = {
-        region: "eu-west-2"
-    }
-    const sqsClient = new SQSClient(awsConfig);
-    let getMessageQueueUrlInput: GetQueueUrlCommandInput = {
-        QueueName: body.queueName
-    }
-    let delaySeconds = "0"
-    if(!!body.delaySeconds){
-        delaySeconds = body.delaySeconds
-    }
-    let getMessageQueueUrlCommand = new GetQueueUrlCommand(getMessageQueueUrlInput);
-    let getMessageQueueUrlOutput: GetQueueUrlCommandOutput;
-    let queueUrl: string;
+interface EnqueueEventPayload {
+    queueName: string;
+    queueEvent: object;
+    delaySeconds: string;
+}
+
+const sqsClient = new SQSClient({ region: "eu-west-2" });
+
+const getOrCreateSqsQueueUrl = async (accountId: string, queueName: string): Promise<string> => {
     try {
-        getMessageQueueUrlOutput = await sqsClient.send(getMessageQueueUrlCommand);
-        queueUrl = getMessageQueueUrlOutput.QueueUrl;
+        const queueUrlResponse = await sqsClient.send(new GetQueueUrlCommand({
+            QueueName: queueName,
+        }));
+        console.info(`Queue already exists ${queueName}`);
+        return queueUrlResponse.QueueUrl!;
     } catch (error) {
-
         if (error instanceof QueueDoesNotExist) {
-            //queue doesn't exist - let's make one
-            let redrivePolicy = {
-                deadLetterTargetArn: `arn:aws:sqs:eu-west-2:${aws_account_id}:stubQueue_F2FDLQ`,
+            console.info(`Creating queue ${queueName}`);
+
+            // Create the queue if it does not exist
+            const redrivePolicy = {
+                deadLetterTargetArn: `arn:aws:sqs:eu-west-2:${accountId}:stubQueue_F2FDLQ`,
                 maxReceiveCount: "1"
             };
-            let createQueueCommandInput: CreateQueueCommandInput = {
-                QueueName: body.queueName,
+            const createQueueResponse = await sqsClient.send(new CreateQueueCommand({
+                QueueName: queueName,
                 Attributes: {
-                    KmsMasterKeyId: 'alias/sqs/QueuesKmsKey',
+                    KmsMasterKeyId: "alias/sqs/QueuesKmsKey",
                     RedrivePolicy: JSON.stringify(redrivePolicy),
                     VisibilityTimeout: "360"
                 }
-            }
-            let createQueueCommand = new CreateQueueCommand(createQueueCommandInput);
-            let createQueueCommandOutput: CreateQueueCommandOutput = await sqsClient.send(createQueueCommand);
-            queueUrl = createQueueCommandOutput.QueueUrl;
-            let addQueuePermissionCommandInput: AddPermissionCommandInput = {
-                QueueUrl: queueUrl,
+            }));
+
+            console.info(`Created queue ${queueName}`);
+
+            // Add permissions to consume the queue from IPV Core accounts
+            await sqsClient.send(new AddPermissionCommand({
+                QueueUrl: createQueueResponse.QueueUrl,
                 Label: "add read and delete from dev, build, staging, prod perms",
                 AWSAccountIds: [
                     "457601271792",
@@ -78,93 +60,46 @@ export const handler: Handler = async (
                     "DeleteMessage",
                     "GetQueueAttributes"
                 ]
-            }
-            let addQueuePermissionCommand = new AddPermissionCommand(addQueuePermissionCommandInput);
-            await sqsClient.send(addQueuePermissionCommand);
+            }));
 
-        } else {
-            throw(error)
+            console.info("Attached permissions");
+
+            return createQueueResponse.QueueUrl!;
         }
+        throw error;
     }
+};
 
-    let queueBody;
-    if(!!body.queueEvent ) {
-        queueBody = body.queueEvent;
-    }else if(!!body.error) {
-        queueBody = {
-            sub: body.sub,
-            state: body.state,
-            error: body.error,
-            error_description: body.error_description
-        };
-    }else{
-        let buildJwtParams: SignedJwtParams;
-
-        if(!!body.privateSigningKey) { //We have a key provided
-            buildJwtParams = {
-                issuer: body.issuer,
-                customClaims: body.customClaims,
-                privateSigningKey: body.privateSigningKey
-            }
-        }else if(!!body.privateSigningKeyId){ //A Key ID has been provided
-            buildJwtParams = {
-                issuer: body.issuer,
-                customClaims: body.customClaims,
-                privateSigningKeyId: body.privateSigningKeyId
-            }
-        }else if(!!body.secretId){ //A secret manager key name is provided
-            let secretsManagerClient = new SecretsManagerClient(awsConfig);
-            const getSecretValueCommandInput: GetSecretValueCommandInput = {
-                SecretId: body.secretId
-            }
-            const getSecretValueCommand = new GetSecretValueCommand(getSecretValueCommandInput);
-            let getSecretValueCommandOutput: GetQueueUrlCommandOutput = await secretsManagerClient.send(getSecretValueCommand);
-            let secretEntry = JSON.parse(getSecretValueCommandOutput.SecretString);
-
-            buildJwtParams = {
-                issuer: body.issuer,
-                customClaims: body.customClaims,
-                privateSigningKey: secretEntry[body.secretId]
-            }
-        }else{ //An SSM parameter is provided
-            let ssmClient = new SSMClient(awsConfig);
-            const getParameterCommandInput: GetParameterCommandInput = {
-                Name: body.parameterName
-            }
-            const getParameterCommand = new GetParameterCommand(getParameterCommandInput);
-            let getParameterCommandOutput: GetParameterCommandOutput = await ssmClient.send(getParameterCommand);
-            buildJwtParams = {
-                issuer: body.issuer,
-                customClaims: body.customClaims,
-                privateSigningKey: getParameterCommandOutput.Parameter.Value
-            }
-        }
-
-        const returnJwt = await buildSignedJwt(buildJwtParams);
-        queueBody = {
-            sub: body.sub,
-            state: body.state,
-            'https://vocab.account.gov.uk/v1/credentialJWT': [returnJwt]
-        }
-    }
-
-    let sendSqsMessageInput:SendMessageCommandInput = {
+const enqeueEvent = async (enqueueEventPayload: EnqueueEventPayload, queueUrl: string): Promise<void> => {
+    console.info(`Sending message to ${queueUrl}`);
+    await sqsClient.send(new SendMessageCommand({
         QueueUrl: queueUrl,
-        MessageBody: JSON.stringify(queueBody),
-        DelaySeconds: parseInt(delaySeconds)
+        MessageBody: JSON.stringify(enqueueEventPayload.queueEvent),
+        DelaySeconds: parseInt(enqueueEventPayload.delaySeconds || "0"),
+    }));
+};
+
+export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
+    const accountId = context.invokedFunctionArn.split(":")[4];
+    const enqueueEventPayload = JSON.parse(event.body!) as EnqueueEventPayload;
+
+    if (!enqueueEventPayload.queueName?.startsWith("stubQueue_")) {
+        throw new Error("Queue name must start 'stubQueue_'");
     }
 
-    let sendSqsMessageCommand = new SendMessageCommand(sendSqsMessageInput);
-    await sqsClient.send(sendSqsMessageCommand);
+    const queueUrl = await getOrCreateSqsQueueUrl(accountId, enqueueEventPayload.queueName);
 
-    let response = {
+    await enqeueEvent(enqueueEventPayload, queueUrl);
+
+    return {
         "statusCode": 200,
         "headers": {
             "Content-Type": "application/json"
         },
         "isBase64Encoded": false,
-        "body": "{\n  \"status\": \"enqueued\",\n \"queueArn\": \"arn:aws:sqs:eu-west-2:"
-            + aws_account_id + ":" + body.queueName + "\" \n}"
-    }
-    return response;
-}
+        "body": JSON.stringify({
+            status: "enqeueued",
+            queueArn: `arn:aws:sqs:eu-west-2:${accountId}:${enqueueEventPayload.queueName}`
+        }),
+    };
+};
