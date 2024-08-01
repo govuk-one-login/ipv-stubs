@@ -50,13 +50,13 @@ Resources:
     Properties:
       DomainName: !If
         - IsNonProd
-        - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
-        - queue-build.stubs.account.gov.uk
+        - !Sub "queue.${Environment}.stubs.account.gov.uk"
+        - queue.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
             - IsNonProd
-            - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
-            - queue-build.stubs.account.gov.uk
+            - !Sub "queue.${Environment}.stubs.account.gov.uk"
+            - queue.stubs.account.gov.uk
           HostedZoneId: !If
             - IsNonProd
             - !ImportValue BuildPublicHostedZoneId
@@ -386,8 +386,8 @@ Resources:
         CertificateArn: !Ref QueueStubSSLCert
         DomainName: !If
           - IsNonProd
-          - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
-          - queue-build.stubs.account.gov.uk
+          - !Sub "queue.${Environment}.stubs.account.gov.uk"
+          - queue.stubs.account.gov.uk
         EndpointConfiguration: REGIONAL
         SecurityPolicy: TLS_1_2
         Route53:
