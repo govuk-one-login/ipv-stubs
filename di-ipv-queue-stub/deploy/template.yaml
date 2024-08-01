@@ -404,15 +404,11 @@ Outputs:
     - - "https://"
       - !If
         - IsNonProd
-        - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
-        - queue-build.stubs.account.gov.uk
+        - !Sub "queue.${Environment}.stubs.account.gov.uk"
+        - queue.stubs.account.gov.uk
   SignJwtKmsKeyId:
     Description: A key ID for signing JWTs
     Value: !Ref SignJwtKmsKey
   SignJwtKmsKeyArn:
     Description: A key Arn for signing JWTs
     Value: !GetAtt SignJwtKmsKey.Arn
-
-
-
-
