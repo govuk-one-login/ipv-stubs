@@ -395,6 +395,12 @@ Resources:
           - IsNonProd
           - !ImportValue BuildPublicHostedZoneId
           - !ImportValue RootPublicHostedZoneId
+      ApiKeySourceType: HEADER #pragma: allowlist secret
+      Auth:
+        ApiKeyRequired: true #pragma: allowlist secret
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          UsagePlanName: "Queue Stub Usage Plan"
 
 Outputs:
   ApiGatewayUrl:
@@ -404,15 +410,11 @@ Outputs:
     - - "https://"
       - !If
         - IsNonProd
-        - !Sub "queue-build.${Environment}.stubs.account.gov.uk"
-        - queue-build.stubs.account.gov.uk
+        - !Sub "queue.${Environment}.stubs.account.gov.uk"
+        - queue.stubs.account.gov.uk
   SignJwtKmsKeyId:
     Description: A key ID for signing JWTs
     Value: !Ref SignJwtKmsKey
   SignJwtKmsKeyArn:
     Description: A key Arn for signing JWTs
     Value: !GetAtt SignJwtKmsKey.Arn
-
-
-
-

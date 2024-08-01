@@ -42,7 +42,7 @@ jobs:
         run: esbuild --version
 
       - name: SAM Validate
-        working-directory: ./di-ipv-queue-stub/deploy-build
+        working-directory: ./di-ipv-queue-stub/deploy
         run: sam validate --region ${{ env.AWS_REGION }}
 
       #- name: SAM Package
@@ -56,7 +56,7 @@ jobs:
         run: npm ci
 
       - name: SAM build and test
-        working-directory: ./di-ipv-queue-stub/deploy-build
+        working-directory: ./di-ipv-queue-stub/deploy
         run: sam build
 
       - name: Deploy SAM app
@@ -64,6 +64,6 @@ jobs:
         with:
           artifact-bucket-name: ${{ secrets.QUEUE_STUB_BUILD_S3_BUCKET }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-          working-directory: ./di-ipv-queue-stub/deploy-build
+          working-directory: ./di-ipv-queue-stub/deploy
           template-file: .aws-sam/build/template.yaml
 
