@@ -85,7 +85,7 @@ export const enqeueEvent = async (
 export const dequeueEvent = async (
   queueUrl: string,
   waitTime?: string,
-): Promise<unknown | null> => {
+): Promise<Message | null> => {
   console.info(`Retrieving from ${queueUrl}`);
   const response = await sqsClient.send(new ReceiveMessageCommand({
     QueueUrl: queueUrl,
@@ -104,12 +104,7 @@ export const dequeueEvent = async (
       ReceiptHandle: message.ReceiptHandle,
     }));
 
-    try {
-      return JSON.parse(message.Body!);
-    } catch (err) {
-      console.error(`Message contains invalid JSON: ${message.Body}`);
-      throw err;
-    }
+    return message;
   } else {
     console.info("No messages");
     return null;

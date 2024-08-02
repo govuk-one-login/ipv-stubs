@@ -15,5 +15,9 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
 
   const message = await dequeueEvent(queueUrl, waitTime);
 
-  return jsonResponse(200, { message });
+  if (message) {
+    return jsonResponse(200, message);
+  } else {
+    return { statusCode: 204 };
+  }
 };
