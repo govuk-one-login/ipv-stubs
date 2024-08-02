@@ -675,12 +675,17 @@ Resources:
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
+            - ContainerPort: 9404
+              Protocol: tcp
           LogConfiguration:
             LogDriver: awslogs
             Options:
               awslogs-group: !Ref ECSAccessLogsGroup
               awslogs-region: !Sub ${AWS::Region}
               awslogs-stream-prefix: !Sub orch-stub-${Environment}
+          DockerLabels:
+            ECS_PROMETHEUS_EXPORTER_PORT: 9404
+            Java_EMF_Metrics: true
       Cpu:
         !FindInMap [
           EnvironmentConfiguration,
