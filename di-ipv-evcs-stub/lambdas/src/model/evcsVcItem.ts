@@ -3,7 +3,7 @@ export default interface EvcsVcItem {
   vcSignature: string;
   vc?: string;
   state: string;
-  metadata: object;
+  metadata?: object;
   provenance?: string;
   ttl: number;
 }

@@ -122,9 +122,6 @@ export async function processPatchUserVCsRequest(
   userId: string,
   patchRequest: PatchRequest[],
 ): Promise<ServiceResponse> {
-  let response: ServiceResponse = {
-    response: {},
-  };
   try {
     console.info(`Patch user record.`);
     const allPromises: Promise<UpdateItemCommandOutput>[] = [];
@@ -134,7 +131,7 @@ export async function processPatchUserVCsRequest(
         userId,
         vcSignature: patchRequestItem.signature,
         state: patchRequestItem.state,
-        metadata: patchRequestItem.metadata!,
+        metadata: patchRequestItem.metadata,
         ttl,
       };
       allPromises.push(updateUserVC(vcItem));
@@ -142,23 +139,16 @@ export async function processPatchUserVCsRequest(
 
     console.info(`Updating user VC's.`);
     await Promise.all(allPromises);
-    response = {
-      response: {
-        // messageId: uuid(),
-      },
+    return {
       statusCode: 204,
     };
   } catch (error) {
     console.error(error);
-    response = {
-      response: {
-        // messageId: uuid(),
-      },
+    return {
+      response: { message: "Unable to update VCs" },
       statusCode: 500,
     };
   }
-
-  return response;
 }
 
 async function saveUserVC(evcsVcItem: EvcsVcItem) {
@@ -172,30 +162,26 @@ async function saveUserVC(evcsVcItem: EvcsVcItem) {
 }
 
 async function updateUserVC(evcsVcItem: EvcsVcItem) {
-  if (!evcsVcItem.metadata) {
-    evcsVcItem.metadata = {};
-  }
   const updateItemInput: UpdateItemInput = {
     TableName: config.evcsStubUserVCsTableName,
     Key: {
       userId: { S: evcsVcItem.userId },
       vcSignature: { S: evcsVcItem.vcSignature },
     },
-    UpdateExpression: "set #state = :stateValue, #metadata = :metadataValue",
-    ExpressionAttributeNames: {
-      "#state": "state",
-      "#metadata": "metadata",
-    },
-    ExpressionAttributeValues: {
-      ":stateValue": { S: evcsVcItem.state },
-      ":metadataValue": {
-        M: marshall(evcsVcItem.metadata, {
-          removeUndefinedValues: true,
-        }),
-      },
-    },
+    UpdateExpression: "set #state = :stateValue",
+    ExpressionAttributeNames: { "#state": "state" },
+    ExpressionAttributeValues: { ":stateValue": marshall(evcsVcItem.state) },
     ReturnValues: "ALL_NEW",
   };
+
+  if (evcsVcItem.metadata) {
+    updateItemInput.UpdateExpression += ", #metadata = :metadataValue";
+    updateItemInput.ExpressionAttributeNames!["#metadata"] = "metadata";
+    updateItemInput.ExpressionAttributeValues![":metadataValue"] = {
+      M: marshall(evcsVcItem.metadata, { removeUndefinedValues: true }),
+    };
+  }
+
   return dynamoClient.updateItem(updateItemInput);
 }
 

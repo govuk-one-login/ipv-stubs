@@ -1,4 +1,4 @@
 export default interface ServiceResponse {
-  response: object;
+  response?: object;
   statusCode?: number;
 }
