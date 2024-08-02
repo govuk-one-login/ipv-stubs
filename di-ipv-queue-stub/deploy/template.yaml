@@ -65,7 +65,6 @@ Resources:
   EnqueueEventLambda:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
-
     Properties:
       CodeUri: "../enqueue-event/src/handlers"
       Handler: enqueueEvent.handler
@@ -93,7 +92,7 @@ Resources:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
         SecurityGroupIds:
-          - !GetAtt EnqueueEventLambdaSecurityGroup.GroupId
+          - !GetAtt QueueStubLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
         - Statement:
@@ -133,7 +132,6 @@ Resources:
                 "ForAnyValue:StringLike":
                   "kms:ResourceAliases":
                     - "alias/sqs/QueuesKmsKey"
-
     Metadata:
       # Manage esbuild properties
       BuildMethod: esbuild
@@ -144,11 +142,91 @@ Resources:
         EntryPoints:
           - enqueueEvent.ts
 
-  EnqueueEventLambdaSecurityGroup:
+  DequeueEventLambda:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    Properties:
+      CodeUri: "../enqueue-event/src/handlers"
+      Handler: dequeueEvent.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - arm64
+      KmsKeyArn: !GetAtt LambdaKmsKey.Arn
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+      Environment:
+        Variables:
+          QUEUE_KMS_KEY_ID: "alias/sqs/QueuesKmsKey"
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /queues/{queueName}
+            Method: get
+            RestApiId:
+              Ref: EnqueueEventApi
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt QueueStubLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - Statement:
+            - Sid: EnforceStayinSpecificVpc
+              Effect: Allow
+              Action:
+                - 'lambda:CreateFunction'
+                - 'lambda:UpdateFunctionConfiguration'
+              Resource:
+                - "*"
+              Condition:
+                StringEquals:
+                  "lambda:VpcIds":
+                    - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+        - Statement:
+            - Sid: AllowSQS
+              Effect: Allow
+              Action:
+                - "sqs:SendMessage"
+                - "sqs:ReceiveMessage"
+                - "sqs:DeleteMessage"
+                - "sqs:GetQueueAttributes"
+                - "sqs:GetQueueUrl"
+                - "sqs:CreateQueue"
+                - "sqs:AddPermission"
+              Resource: !Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:stubQueue_*
+        - Statement:
+            - Sid: AllowKMS
+              Effect: Allow
+              Action:
+                - "kms:Decrypt"
+                - "kms:GenerateDataKey*"
+                - "kms:DescribeKey"
+              Resource:
+                - !Sub "arn:aws:kms:eu-west-2:${AWS::AccountId}:key/*"
+              Condition:
+                "ForAnyValue:StringLike":
+                  "kms:ResourceAliases":
+                    - "alias/sqs/QueuesKmsKey"
+    Metadata:
+      # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - dequeueEvent.ts
+
+  QueueStubLambdaSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: >-
-        EnqueueEvent Lambda Security Group
+        Queue stub Lambda Security Group
       SecurityGroupEgress:
         - CidrIp: 0.0.0.0/0
           Description: Allow egress HTTPS traffic to vpc cidr from port 443
