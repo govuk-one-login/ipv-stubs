@@ -6,8 +6,7 @@ Globals:
     Timeout: 30
 
 Description: >-
-  This creates the lambda function to update environment vars in the stubs ECS task definitions when the
-  corresponding parameter is changed.
+  This creates the lambda function to process stub queue events
 
 Parameters:
   VpcStackName:
@@ -63,7 +62,6 @@ Resources:
             - !ImportValue RootPublicHostedZoneId
       ValidationMethod: DNS
 
-  # lambda to update ECS defn
   EnqueueEventLambda:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
@@ -71,14 +69,10 @@ Resources:
     Properties:
       CodeUri: "../enqueue-event/src/handlers"
       Handler: enqueueEvent.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs20.x
       Architectures:
         - arm64
-      DeadLetterQueue:
-        Type: SQS
-        TargetArn: !GetAtt EnqueueEventDLQ.Arn
       KmsKeyArn: !GetAtt LambdaKmsKey.Arn
-      ReservedConcurrentExecutions: 1
       CodeSigningConfigArn: !If
         - UseCodeSigning
         - !Ref CodeSigningConfigArn
@@ -139,32 +133,6 @@ Resources:
                 "ForAnyValue:StringLike":
                   "kms:ResourceAliases":
                     - "alias/sqs/QueuesKmsKey"
-        - Statement:
-            - Sid: AllowKMSSign
-              Effect: Allow
-              Action:
-                - "kms:Sign"
-              Resource:
-                - !Sub "arn:aws:kms:eu-west-2:${AWS::AccountId}:key/*"
-              Condition:
-                "ForAnyValue:StringLike":
-                  "kms:ResourceAliases":
-                    - "alias/sqs/SignJwtKmsKey"
-        - Statement:
-            - Sid: AllowSecretsManagerGet #pragma: allowlist secret
-              Effect: Allow
-              Action:
-                - "secretsmanager:GetSecretValue" #pragma: allowlist secret
-                - "secretsmanager:ListSecrets" #pragma: allowlist secret
-              Resource:
-                - !Sub "arn:aws:secretsmanager:eu-west-2:${AWS::AccountId}:secret:/stubs/queue/*" #pragma: allowlist secret
-        - Statement:
-            - Sid: AllowGetSSMParam
-              Effect: Allow
-              Action:
-                - "ssm:GetParameter"
-              Resource:
-                - !Sub "arn:aws:ssm:eu-west-2:${AWS::AccountId}:parameter/stubs/*"
 
     Metadata:
       # Manage esbuild properties
@@ -173,13 +141,6 @@ Resources:
         Minify: true
         Target: "es2020"
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
-        External:
-          - "@aws-sdk/client-sqs"
-          - "@aws-sdk/client-secrets-manager"
-          - "@aws-sdk/client-ssm"
-          - "@types/dotenv"
-          - "@types/node"
-          - "@types/uuid"
         EntryPoints:
           - enqueueEvent.ts
 
@@ -204,7 +165,7 @@ Resources:
       VpcId:
         Fn::ImportValue: !Sub ${VpcStackName}-VpcId
 
-  # kms key for lambda
+  # KMS key for lambda variable encryption
   LambdaKmsKey:
     Type: AWS::KMS::Key
     Properties:
@@ -232,7 +193,7 @@ Resources:
               ArnLike:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
 
-  # kms key for Queues
+  # KMS key for Queue encryption
   QueuesKmsKey:
     Type: AWS::KMS::Key
     Properties:
@@ -259,81 +220,14 @@ Resources:
               - "kms:Decrypt"
             Resource: "*"
 
-  # jwt key for VCs
-  SignJwtKmsKey:
-    Type: AWS::KMS::Key
-    Properties:
-      KeyUsage: SIGN_VERIFY
-      Description: "A key which can be used to sign JWTs"
-      KeySpec: ECC_NIST_P256
-      KeyPolicy:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action:
-              - "kms:*"
-            Resource: "*"
-          - Effect: Allow
-            Principal:
-              AWS:
-                - "arn:aws:iam::457601271792:root" # Build account id
-                - "arn:aws:iam::130355686670:root" # OldDev account id
-                - "arn:aws:iam::175872367215:root" # Dev account id
-                - "arn:aws:iam::335257547869:root" # Staging account id
-                - "arn:aws:iam::991138514218:root" # Integration account id
-                - "arn:aws:iam::075701497069:root" # Prod account id
-            Action:
-              - "kms:Verify"
-            Resource: "*"
-
-
-  #QueuesKmsKey Alias
+  # Alias for QueuesKmsKey
   QueuesKmsKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
       AliasName: "alias/sqs/QueuesKmsKey"
       TargetKeyId: !Ref QueuesKmsKey
 
-  #SignJwtKmsKey Alias
-  SignJwtKmsKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: "alias/sqs/SignJwtKmsKey"
-      TargetKeyId: !Ref SignJwtKmsKey
-
-  #lambda dlq
-  EnqueueEventDLQ:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: EnqueueEventLambdaDLQ
-      MessageRetentionPeriod: 1209600
-      RedriveAllowPolicy: |
-        {  "redrivePermission"  : "allowAll" }
-      KmsMasterKeyId: alias/aws/sqs
-
-  #Pre lambda dlq
-  PreEnqueueEventDLQ:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: PreEnqueueEventLambdaDLQ
-      MessageRetentionPeriod: 1209600
-      RedriveAllowPolicy: |
-        {  "redrivePermission"  : "allowAll" }
-      KmsMasterKeyId: alias/aws/sqs
-
-  #F2F VC message queue
-  F2FMessageQueue:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: "stubQueue_F2FMessageQueue"
-      KmsMasterKeyId: !Ref QueuesKmsKey
-      VisibilityTimeout: 360
-      RedrivePolicy:
-        deadLetterTargetArn: !GetAtt F2FDLQ.Arn
-        maxReceiveCount: 1
-
+  # Shared dead-letter queue for all stub queues
   F2FDLQ:
     Type: AWS::SQS::Queue
     Properties:
@@ -341,38 +235,6 @@ Resources:
       KmsMasterKeyId: !Ref QueuesKmsKey
       RedriveAllowPolicy:
         redrivePermission: allowAll
-
-  MessageQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref F2FMessageQueue
-      PolicyDocument:
-        Statement:
-          - Sid: "AllowReadByOtherAccount"
-            Effect: Allow
-            Action:
-              - "sqs:ReceiveMessage"
-              - "sqs:DeleteMessage"
-              - "sqs:GetQueueAttributes"
-            Resource: !GetAtt F2FMessageQueue.Arn
-            Principal:
-              AWS:
-                - "arn:aws:iam::457601271792:root" # Build account id
-                - "arn:aws:iam::130355686670:root" # OldDev account id
-                - "arn:aws:iam::175872367215:root" # Dev account id
-                - "arn:aws:iam::335257547869:root" # Staging account id
-                - "arn:aws:iam::991138514218:root" # Integration account id
-                - "arn:aws:iam::075701497069:root" # Prod account id
-         #- Sid: "AllowKeyAccess"
-         #  Effect: Allow
-         #  Action:
-         #    - "kms:Encrypt"
-         #    - "kms:GenerateDataKey"
-         #  Resource: !Ref QueuesKmsKey
-         #  Principle:
-         #    AWS:
-         #      - !Sub "arn:aws:iam::${AWS::AccountId}:root"
 
   EnqueueEventApi:
     Type: AWS::Serverless::Api
@@ -412,9 +274,3 @@ Outputs:
         - IsNonProd
         - !Sub "queue.${Environment}.stubs.account.gov.uk"
         - queue.stubs.account.gov.uk
-  SignJwtKmsKeyId:
-    Description: A key ID for signing JWTs
-    Value: !Ref SignJwtKmsKey
-  SignJwtKmsKeyArn:
-    Description: A key Arn for signing JWTs
-    Value: !GetAtt SignJwtKmsKey.Arn
