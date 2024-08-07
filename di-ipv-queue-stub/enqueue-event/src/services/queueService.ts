@@ -2,7 +2,9 @@ import {
   AddPermissionCommand,
   CreateQueueCommand,
   DeleteMessageCommand,
+  DeleteQueueCommand,
   GetQueueUrlCommand,
+  ListQueuesCommand,
   Message,
   QueueDoesNotExist,
   ReceiveMessageCommand,
@@ -108,3 +110,17 @@ export const dequeueEvent = async (
     return null;
   }
 };
+
+export const findBranchQueues = async (): Promise<string[]> => {
+  const result = await sqsClient.send(new ListQueuesCommand({
+    QueueNamePrefix: "stubQueue_branch_",
+  }));
+
+  return result.QueueUrls ?? [];
+}
+
+export const deleteQueue = async (queueUrl: string): Promise<void> => {
+  await sqsClient.send(new DeleteQueueCommand({
+    QueueUrl: queueUrl,
+  }));
+}
