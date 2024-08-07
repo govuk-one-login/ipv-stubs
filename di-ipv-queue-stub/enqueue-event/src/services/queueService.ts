@@ -47,12 +47,10 @@ export const getOrCreateSqsQueueUrl = async (
                 QueueUrl: createQueueResponse.QueueUrl,
                 Label: "add read and delete from dev, build, staging, prod perms",
                 AWSAccountIds: [
-                    "457601271792",
-                    "130355686670",
-                    "175872367215",
-                    "335257547869",
-                    "991138514218",
-                    "075701497069"
+                    "130355686670", // Dev01 account id
+                    "175872367215", // Dev02 account id
+                    "457601271792", // Build account id
+                    "335257547869", // Staging account id
                 ],
                 Actions: [
                     "ReceiveMessage",
@@ -69,7 +67,7 @@ export const getOrCreateSqsQueueUrl = async (
     }
 };
 
-export const enqeueEvent = async (
+export const enqueueEvent = async (
   event: object,
   queueUrl: string,
   delaySeconds?: string,

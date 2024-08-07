@@ -1,5 +1,5 @@
 import { APIGatewayProxyHandlerV2 } from "aws-lambda";
-import { enqeueEvent, getOrCreateSqsQueueUrl } from "../services/queueService";
+import { enqueueEvent, getOrCreateSqsQueueUrl } from "../services/queueService";
 import { jsonResponse } from "../services/responseService";
 
 interface EnqueueEventPayload {
@@ -18,7 +18,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
 
     const queueUrl = await getOrCreateSqsQueueUrl(accountId, enqueueEventPayload.queueName);
 
-    await enqeueEvent(enqueueEventPayload, queueUrl);
+    await enqueueEvent(enqueueEventPayload, queueUrl);
 
     return jsonResponse(200, {
         status: "enqeueued",
