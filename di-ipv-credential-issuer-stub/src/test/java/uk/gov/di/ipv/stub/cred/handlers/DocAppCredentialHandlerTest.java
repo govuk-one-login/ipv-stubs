@@ -18,7 +18,6 @@ import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
-import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -45,7 +44,6 @@ public class DocAppCredentialHandlerTest {
     @Mock private Request mockRequest;
     @Mock private CredentialService mockCredentialService;
     @Mock private TokenService mockTokenService;
-    @Mock private VerifiableCredentialGenerator mockVerifiableCredentialGenerator;
     @Mock private RequestedErrorResponseService mockRequestedErrorResponseService;
     private DocAppCredentialHandler resourceHandler;
     private AccessToken accessToken;
@@ -55,10 +53,7 @@ public class DocAppCredentialHandlerTest {
         accessToken = new BearerAccessToken();
         resourceHandler =
                 new DocAppCredentialHandler(
-                        mockCredentialService,
-                        mockTokenService,
-                        mockVerifiableCredentialGenerator,
-                        mockRequestedErrorResponseService);
+                        mockCredentialService, mockTokenService, mockRequestedErrorResponseService);
     }
 
     @Test

@@ -14,7 +14,6 @@ import spark.Response;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
-import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -35,16 +34,13 @@ public class CredentialHandlerTest {
     @Mock private Request mockRequest;
     @Mock private CredentialService mockCredentialService;
     @Mock private TokenService mockTokenService;
-    @Mock private VerifiableCredentialGenerator mockVerifiableCredentialGenerator;
     private CredentialHandler resourceHandler;
     private AccessToken accessToken;
 
     @BeforeEach
     void setup() {
         accessToken = new BearerAccessToken();
-        resourceHandler =
-                new CredentialHandler(
-                        mockCredentialService, mockTokenService, mockVerifiableCredentialGenerator);
+        resourceHandler = new CredentialHandler(mockCredentialService, mockTokenService);
     }
 
     @Test

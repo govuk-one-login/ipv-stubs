@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 public class F2FHandler {
 
     private static final String JSON_RESPONSE_TYPE = "application/json;charset=UTF-8";
+
     private TokenService tokenService;
     private CredentialService credentialService;
 
@@ -27,6 +28,7 @@ public class F2FHandler {
     public Route getResource =
             (Request request, Response response) -> {
                 String accessTokenString = request.headers(HttpHeader.AUTHORIZATION.toString());
+
                 ValidationResult validationResult =
                         tokenService.validateAccessToken(accessTokenString);
 
