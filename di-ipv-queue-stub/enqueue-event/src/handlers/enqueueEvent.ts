@@ -18,10 +18,13 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
 
     const queueUrl = await getOrCreateSqsQueueUrl(accountId, enqueueEventPayload.queueName);
 
-    await enqueueEvent(enqueueEventPayload.queueEvent, queueUrl);
+    await enqueueEvent(
+        enqueueEventPayload.queueEvent,
+        queueUrl,
+        enqueueEventPayload.delaySeconds);
 
     return jsonResponse(200, {
-        status: "enqeueued",
+        status: "enqueued",
         queueArn: `arn:aws:sqs:eu-west-2:${accountId}:${enqueueEventPayload.queueName}`
     });
 };

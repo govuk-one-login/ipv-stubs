@@ -61,13 +61,10 @@ public class CredentialIssuer {
                         validator,
                         clientJwtVerifier,
                         requestedErrorResponseService);
-        credentialHandler = new CredentialHandler(credentialService, tokenService, vcGenerator);
+        credentialHandler = new CredentialHandler(credentialService, tokenService);
         docAppCredentialHandler =
                 new DocAppCredentialHandler(
-                        credentialService,
-                        tokenService,
-                        vcGenerator,
-                        requestedErrorResponseService);
+                        credentialService, tokenService, requestedErrorResponseService);
         jwksHandler = new JwksHandler();
         f2fHandler = new F2FHandler(credentialService, tokenService);
         healthCheckHandler = new HealthCheckHandler();

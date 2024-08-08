@@ -5,8 +5,6 @@ import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
 import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import org.eclipse.jetty.http.HttpHeader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -14,7 +12,6 @@ import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
-import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,22 +20,18 @@ import java.util.UUID;
 
 public class DocAppCredentialHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CredentialHandler.class);
     private static final String JSON_RESPONSE_TYPE = "application/json;charset=UTF-8";
     private CredentialService credentialService;
     private TokenService tokenService;
-    private VerifiableCredentialGenerator verifiableCredentialGenerator;
 
     private RequestedErrorResponseService requestedErrorResponseService;
 
     public DocAppCredentialHandler(
             CredentialService credentialService,
             TokenService tokenService,
-            VerifiableCredentialGenerator verifiableCredentialGenerator,
             RequestedErrorResponseService requestedErrorResponseService) {
         this.credentialService = credentialService;
         this.tokenService = tokenService;
-        this.verifiableCredentialGenerator = verifiableCredentialGenerator;
         this.requestedErrorResponseService = requestedErrorResponseService;
     }
 

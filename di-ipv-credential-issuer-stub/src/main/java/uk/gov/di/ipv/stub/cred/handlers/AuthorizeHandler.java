@@ -64,6 +64,7 @@ import java.util.UUID;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static com.nimbusds.oauth2.sdk.util.CollectionUtils.isEmpty;
 import static com.nimbusds.oauth2.sdk.util.StringUtils.isBlank;
+import static java.util.Objects.requireNonNullElse;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.EVIDENCE_TXN_PARAM;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME_DEFAULT;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getConfigValue;
@@ -113,6 +114,7 @@ public class AuthorizeHandler {
     private static final String F2F_STUB_QUEUE_URL = "F2F_STUB_QUEUE_URL";
     private static final String F2F_STUB_QUEUE_API_KEY =
             "F2F_STUB_QUEUE_API_KEY"; // pragma: allowlist secret
+    private static final int F2F_DEFAULT_DELAY_SECONDS = 10;
     private static final String X_API_KEY = "x-api-key"; // pragma: allowlist secret
 
     private static final List<CriType> NO_SHARED_ATTRIBUTES_CRI_TYPES =
@@ -855,7 +857,8 @@ public class AuthorizeHandler {
                     new F2FEnqueueLambdaRequest(
                             f2fDetails.queueName(),
                             new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
-                            10);
+                            requireNonNullElse(
+                                    f2fDetails.delaySeconds(), F2F_DEFAULT_DELAY_SECONDS));
 
             HttpRequest request =
                     HttpRequest.newBuilder()
@@ -882,7 +885,8 @@ public class AuthorizeHandler {
                             f2fDetails.queueName(),
                             new F2FQueueErrorEvent(
                                     userId, state, "access_denied", "Something went wrong"),
-                            10);
+                            requireNonNullElse(
+                                    f2fDetails.delaySeconds(), F2F_DEFAULT_DELAY_SECONDS));
 
             HttpRequest request =
                     HttpRequest.newBuilder()

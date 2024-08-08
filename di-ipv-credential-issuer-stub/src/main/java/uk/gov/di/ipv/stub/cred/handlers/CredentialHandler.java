@@ -7,7 +7,6 @@ import spark.Route;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
-import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -17,15 +16,10 @@ public class CredentialHandler {
 
     private CredentialService credentialService;
     private TokenService tokenService;
-    private VerifiableCredentialGenerator verifiableCredentialGenerator;
 
-    public CredentialHandler(
-            CredentialService credentialService,
-            TokenService tokenService,
-            VerifiableCredentialGenerator verifiableCredentialGenerator) {
+    public CredentialHandler(CredentialService credentialService, TokenService tokenService) {
         this.credentialService = credentialService;
         this.tokenService = tokenService;
-        this.verifiableCredentialGenerator = verifiableCredentialGenerator;
     }
 
     public Route getResource =
