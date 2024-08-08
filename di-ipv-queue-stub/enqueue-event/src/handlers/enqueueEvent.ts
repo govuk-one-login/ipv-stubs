@@ -18,7 +18,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
 
     const queueUrl = await getOrCreateSqsQueueUrl(accountId, enqueueEventPayload.queueName);
 
-    await enqueueEvent(enqueueEventPayload, queueUrl);
+    await enqueueEvent(enqueueEventPayload.queueEvent, queueUrl);
 
     return jsonResponse(200, {
         status: "enqeueued",
