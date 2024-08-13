@@ -381,10 +381,14 @@ Resources:
                   "lambda:VpcIds":
                     - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
         - Statement:
-            - Sid: AllowSQS
+            - Sid: ListQueues
               Effect: Allow
               Action:
                 - "sqs:ListQueues"
+              Resource: "*"
+            - Sid: DeleteStubQueues
+              Effect: Allow
+              Action:
                 - "sqs:DeleteQueue"
               Resource: !Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:stubQueue_*
     Metadata:
