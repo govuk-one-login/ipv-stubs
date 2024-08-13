@@ -340,6 +340,63 @@ Resources:
           CreateUsagePlan: PER_API
           UsagePlanName: "Queue Stub Usage Plan"
 
+  CleanQueuesLambda:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    Properties:
+      CodeUri: "../enqueue-event/src/handlers"
+      Handler: cleanQueues.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - arm64
+      KmsKeyArn: !GetAtt LambdaKmsKey.Arn
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+      Events:
+        ScheduledEvent:
+          Type: Schedule
+          Properties:
+            # run 3am every day
+            Schedule: cron(0 3 * * ? *)
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt QueueStubLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - Statement:
+            - Sid: EnforceStayinSpecificVpc
+              Effect: Allow
+              Action:
+                - 'lambda:CreateFunction'
+                - 'lambda:UpdateFunctionConfiguration'
+              Resource:
+                - "*"
+              Condition:
+                StringEquals:
+                  "lambda:VpcIds":
+                    - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+        - Statement:
+            - Sid: AllowSQS
+              Effect: Allow
+              Action:
+                - "sqs:ListQueues"
+                - "sqs:DeleteQueue"
+              Resource: !Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:stubQueue_*
+    Metadata:
+      # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - cleanQueues.ts
+
 Outputs:
   ApiGatewayUrl:
     Description: The API URL to post the event data
