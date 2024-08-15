@@ -462,7 +462,7 @@
     },
     {
       "criType": "National Insurance Number (Stub)",
-      "label": "Passed National Insurance Number - 'identityCheck' scope",
+      "label": "Passed National Insurance Number - identity check evidence requested",
       "payload": {
         "type": "IdentityCheck",
         "strengthScore": 2,
@@ -476,7 +476,7 @@
     },
     {
       "criType": "National Insurance Number (Stub)",
-      "label": "Failed National Insurance Number - 'identityCheck' scope",
+      "label": "Failed National Insurance Number - identity check evidence requested",
       "payload": {
         "type": "IdentityCheck",
         "strengthScore": 2,
@@ -490,7 +490,7 @@
     },
     {
       "criType": "National Insurance Number (Stub)",
-      "label": "Failed National Insurance Number with CI - 'identityCheck' scope",
+      "label": "Failed National Insurance Number with CI - identity check evidence requested",
       "payload": {
         "type": "IdentityCheck",
         "strengthScore": 2,
