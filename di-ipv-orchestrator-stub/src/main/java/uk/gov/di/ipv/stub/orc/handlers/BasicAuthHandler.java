@@ -1,28 +1,25 @@
 package uk.gov.di.ipv.stub.orc.handlers;
 
-import spark.Filter;
-import spark.Request;
-import spark.Response;
-import spark.Spark;
+import io.javalin.http.Context;
+import io.javalin.http.Header;
+import io.javalin.http.UnauthorizedResponse;
 import uk.gov.di.ipv.stub.orc.config.OrchestratorConfig;
 
 import java.util.Base64;
 
 public class BasicAuthHandler {
     private static final int NUMBER_OF_AUTHENTICATION_FIELDS = 2;
-    private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic";
 
-    public Filter authFilter =
-            (Request request, Response response) -> {
-                if (!request.headers().contains(AUTHORIZATION_HEADER) || !authenticated(request)) {
-                    response.header("WWW-Authenticate", AUTHORIZATION_TYPE);
-                    Spark.halt(401, "Not Authenticated");
-                }
-            };
+    public void authFilter(Context ctx) {
+        var authHeader = ctx.header(Header.AUTHORIZATION);
+        if (authHeader == null || !authenticated(authHeader)) {
+            ctx.header(Header.WWW_AUTHENTICATE, AUTHORIZATION_TYPE);
+            throw new UnauthorizedResponse("Not authenticated");
+        }
+    }
 
-    private Boolean authenticated(Request request) {
-        String authHeader = request.headers(AUTHORIZATION_HEADER);
+    private Boolean authenticated(String authHeader) {
         int authTypeIndex = authHeader == null ? -1 : authHeader.indexOf(AUTHORIZATION_TYPE);
 
         if (authTypeIndex < 0) {
