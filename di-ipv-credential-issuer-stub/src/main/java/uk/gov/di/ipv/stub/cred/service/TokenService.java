@@ -46,7 +46,7 @@ public class TokenService {
         }
 
         try {
-            AccessToken.parse(accessTokenString);
+            BearerAccessToken.parse(accessTokenString);
         } catch (ParseException e) {
             return new ValidationResult(false, OAuth2Error.INVALID_REQUEST);
         }

@@ -7,22 +7,19 @@ import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
 import com.nimbusds.oauth2.sdk.auth.verifier.ClientAuthenticationVerifier;
 import com.nimbusds.oauth2.sdk.auth.verifier.InvalidClientException;
 import com.nimbusds.oauth2.sdk.id.Audience;
-import spark.QueryParamsMap;
+import io.javalin.http.Context;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.error.ClientAuthenticationException;
 import uk.gov.di.ipv.stub.cred.service.ConfigService;
 import uk.gov.di.ipv.stub.cred.utils.ES256SignatureVerifier;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class ClientJwtVerifier {
 
-    public static final String AUTHENTICATION_METHOD = "authenticationMethod";
     public static final String NONE = "none";
     public static final String CLIENT_ASSERTION_PARAM = "client_assertion";
 
@@ -34,10 +31,9 @@ public class ClientJwtVerifier {
         this.es256SignatureVerifier = new ES256SignatureVerifier();
     }
 
-    public void authenticateClient(QueryParamsMap queryParamsMap)
-            throws ClientAuthenticationException {
+    public void authenticateClient(Context ctx) throws ClientAuthenticationException {
 
-        Map<String, List<String>> queryParams = listifyParamValues(queryParamsMap);
+        Map<String, List<String>> queryParams = ctx.queryParamMap();
         PrivateKeyJWT authenticationJwt;
         try {
             authenticationJwt = PrivateKeyJWT.parse(queryParams);
@@ -74,14 +70,6 @@ public class ClientJwtVerifier {
                 | java.text.ParseException e) {
             throw new ClientAuthenticationException(e);
         }
-    }
-
-    private Map<String, List<String>> listifyParamValues(QueryParamsMap requestParams) {
-        Map<String, List<String>> listifiedParams = new HashMap<>();
-        requestParams
-                .toMap()
-                .forEach((key, value) -> listifiedParams.put(key, Arrays.asList(value)));
-        return listifiedParams;
     }
 
     private PrivateKeyJWT transcodeSignatureToConcatFormat(

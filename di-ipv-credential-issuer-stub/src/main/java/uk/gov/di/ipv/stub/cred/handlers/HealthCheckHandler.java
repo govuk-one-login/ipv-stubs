@@ -1,15 +1,11 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
-import org.eclipse.jetty.http.HttpStatus;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+
+import java.util.Map;
 
 public class HealthCheckHandler {
-
-    public Route healthy =
-            (Request request, Response response) -> {
-                response.status(HttpStatus.OK_200);
-                return "{\"OK?\":\"yep\"}";
-            };
+    public void healthy(Context ctx) {
+        ctx.json(Map.of("healthy", true));
+    }
 }

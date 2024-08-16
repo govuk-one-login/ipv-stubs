@@ -3,9 +3,9 @@ package uk.gov.di.ipv.stub.cred.validation;
 import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.GrantType;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
+import io.javalin.http.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.QueryParamsMap;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
@@ -27,7 +27,6 @@ public class Validator {
     private static final String INVALID_FRAUD_VALUES_ERROR_CODE = "1004";
     private static final String INVALID_VERIFICATION_VALUES_ERROR_CODE = "1005";
 
-    private static final String REDIRECT_URI_SEPARATOR = ",";
     public static final String API_GATEWAY_CALLBACK_SUFFIX =
             "execute-api.eu-west-2.amazonaws.com/credential-issuer/callback";
 
@@ -162,10 +161,10 @@ public class Validator {
         return ValidationResult.createValidResult();
     }
 
-    public ValidationResult validateTokenRequest(QueryParamsMap requestParams) {
-        String clientIdValue = requestParams.value(RequestParamConstants.CLIENT_ID);
-        String assertionType = requestParams.value(RequestParamConstants.CLIENT_ASSERTION_TYPE);
-        String assertion = requestParams.value(RequestParamConstants.CLIENT_ASSERTION);
+    public ValidationResult validateTokenRequest(Context ctx) {
+        String clientIdValue = ctx.queryParam(RequestParamConstants.CLIENT_ID);
+        String assertionType = ctx.queryParam(RequestParamConstants.CLIENT_ASSERTION_TYPE);
+        String assertion = ctx.queryParam(RequestParamConstants.CLIENT_ASSERTION);
 
         if (Validator.isNullBlankOrEmpty(clientIdValue)
                 && (Validator.isNullBlankOrEmpty(assertionType)
@@ -180,13 +179,13 @@ public class Validator {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
-        String grantTypeValue = requestParams.value(RequestParamConstants.GRANT_TYPE);
+        String grantTypeValue = ctx.queryParam(RequestParamConstants.GRANT_TYPE);
         if (Validator.isNullBlankOrEmpty(grantTypeValue)
                 || !grantTypeValue.equalsIgnoreCase(GrantType.AUTHORIZATION_CODE.getValue())) {
             return new ValidationResult(false, OAuth2Error.UNSUPPORTED_GRANT_TYPE);
         }
 
-        String authCodeValue = requestParams.value(RequestParamConstants.AUTH_CODE);
+        String authCodeValue = ctx.queryParam(RequestParamConstants.AUTH_CODE);
         if (Validator.isNullBlankOrEmpty(authCodeValue)) {
             LOGGER.error("Missing authorization code");
             return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
@@ -196,7 +195,7 @@ public class Validator {
             return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
         }
 
-        String redirectUriValue = requestParams.value(RequestParamConstants.REDIRECT_URI);
+        String redirectUriValue = ctx.queryParam(RequestParamConstants.REDIRECT_URI);
         if (Validator.isNullBlankOrEmpty(redirectUriValue)) {
             LOGGER.error("Invalid Redirect URI: {}", redirectUriValue);
             return new ValidationResult(false, OAuth2Error.INVALID_REQUEST);

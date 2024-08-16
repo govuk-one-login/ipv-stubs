@@ -17,6 +17,8 @@ import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
+import io.javalin.http.BadRequestResponse;
+import io.javalin.http.Context;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -28,23 +30,22 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import spark.QueryParamsMap;
-import spark.Request;
-import spark.Response;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+import uk.gov.di.ipv.stub.cred.domain.ApiAuthRequest;
 import uk.gov.di.ipv.stub.cred.domain.Credential;
+import uk.gov.di.ipv.stub.cred.domain.F2fDetails;
+import uk.gov.di.ipv.stub.cred.domain.Mitigations;
+import uk.gov.di.ipv.stub.cred.domain.RequestedError;
 import uk.gov.di.ipv.stub.cred.fixtures.TestFixtures;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.utils.StubSsmClient;
-import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.net.URLEncoder;
@@ -77,11 +78,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -93,7 +96,11 @@ import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CRI_MITIGATION_E
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_API_KEY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_URL;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CLIENT_ID;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.MITIGATED_CI;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUEST;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUESTED_OAUTH_ERROR;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.STRENGTH;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VALIDITY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_DAY;
@@ -105,6 +112,7 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFO
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFORE_YEAR;
 
 @ExtendWith({SystemStubsExtension.class, MockitoExtension.class})
+@MockitoSettings(strictness = Strictness.LENIENT)
 class AuthorizeHandlerTest {
 
     @SystemStub
@@ -126,9 +134,7 @@ class AuthorizeHandlerTest {
 
     @Mock private HttpClient mockHttpClient;
     @Mock private SignedJWT mockSignedJwt;
-    @Mock private Response mockResponse;
-    @Mock private Request mockRequest;
-    @Mock private ViewHelper mockViewHelper;
+    @Mock private Context mockContext;
     @Mock private AuthCodeService mockAuthCodeService;
     @Mock private CredentialService mockCredentialService;
     @Mock private VerifiableCredentialGenerator mockVcGenerator;
@@ -159,115 +165,122 @@ class AuthorizeHandlerTest {
 
         @Test
         void doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceived() throws Exception {
-            QueryParamsMap validQueryParamsMap = toQueryParamsMap(validDoAuthorizeQueryParams());
-            when(mockRequest.queryMap()).thenReturn(validQueryParamsMap);
+            setupQueryParams(validDoAuthorizeQueryParams());
 
-            String renderOutput = "rendered output";
-            when(mockViewHelper.render(anyMap(), eq("authorize.mustache")))
-                    .thenReturn(renderOutput);
+            authorizeHandler.doAuthorize(mockContext);
 
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-            assertEquals(renderOutput, result);
-            verify(mockViewHelper).render(anyMap(), eq("authorize.mustache"));
+            verify(mockContext).render(eq("templates/authorize.mustache"), anyMap());
             verify(mockHttpClient, times(0)).send(any(), any());
         }
 
         @Test
         void doAuthorizeShouldReturn400WhenRedirectUriParamNotRegistered() throws Exception {
-            Map<String, String[]> queryParams = invalidRedirectUriDoAuthorizeQueryParams();
-            QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+            var queryParams = validDoAuthorizeQueryParams();
+            queryParams.put(
+                    REQUEST,
+                    signedRequestJwt(
+                                    defaultClaimSetBuilder(
+                                                    VALID_RESPONSE_TYPE, INVALID_REDIRECT_URI)
+                                            .build())
+                            .serialize());
+            setupQueryParams(queryParams);
 
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+            var e =
+                    assertThrows(
+                            BadRequestResponse.class,
+                            () -> authorizeHandler.doAuthorize(mockContext));
 
             assertEquals(
                     "redirect_uri param provided does not match any of the redirect_uri values configured",
-                    result);
-            verify(mockViewHelper, never()).render(Collections.emptyMap(), "authorize.mustache");
-            verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
+                    e.getMessage());
         }
 
         @Test
         void doAuthorizeShouldReturn302WithErrorQueryParamsWhenResponseTypeParamNotCode()
                 throws Exception {
-            Map<String, String[]> queryParams = invalidResponseTypeDoAuthorizeQueryParams();
+            var queryParams = validDoAuthorizeQueryParams();
+            queryParams.put(
+                    RequestParamConstants.REQUEST,
+                    signedRequestJwt(
+                                    defaultClaimSetBuilder(
+                                                    INVALID_RESPONSE_TYPE, VALID_REDIRECT_URI)
+                                            .build())
+                            .serialize());
+            setupQueryParams(queryParams);
 
-            invokeDoAuthorizeAndMakeAssertions(
-                    queryParams,
-                    createExpectedErrorQueryStringParams(OAuth2Error.UNSUPPORTED_RESPONSE_TYPE));
+            authorizeHandler.doAuthorize(mockContext);
+
+            verify(mockContext, never()).render(eq("templates/authorize.mustache"), anyMap());
+            verify(mockContext)
+                    .redirect(
+                            VALID_REDIRECT_URI
+                                    + createExpectedErrorQueryStringParams(
+                                            OAuth2Error.UNSUPPORTED_RESPONSE_TYPE));
         }
 
         @Test
         void doAuthorizeShouldReturn400WithErrorMessageWhenClientIdParamNotProvided()
                 throws Exception {
-            Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-            queryParams.remove(RequestParamConstants.CLIENT_ID);
+            var queryParams = validDoAuthorizeQueryParams();
+            queryParams.remove(CLIENT_ID);
+            setupQueryParams(queryParams);
 
-            QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+            var e =
+                    assertThrows(
+                            BadRequestResponse.class,
+                            () -> authorizeHandler.doAuthorize(mockContext));
 
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-            assertEquals("Error: Could not find client configuration details for: null", result);
-            verify(mockResponse).status(400);
+            assertEquals(
+                    "Error: Could not find client configuration details for: null", e.getMessage());
         }
 
         @Test
         void doAuthorizeShouldReturn400WithErrorMessagesWhenClientIdParamNotRegistered()
                 throws Exception {
-            Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-            queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"not-registered"});
+            var queryParams = validDoAuthorizeQueryParams();
+            queryParams.put(CLIENT_ID, "not-registered");
+            setupQueryParams(queryParams);
 
-            QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+            var e =
+                    assertThrows(
+                            BadRequestResponse.class,
+                            () -> authorizeHandler.doAuthorize(mockContext));
 
             assertEquals(
                     "Error: Could not find client configuration details for: not-registered",
-                    result);
-            verify(mockResponse).status(400);
+                    e.getMessage());
         }
 
         @Test
         void doAuthorizeShouldReturn400WithErrorMessagesWhenRequestParamMissing() throws Exception {
-            Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-            queryParams.remove(RequestParamConstants.REQUEST);
+            var queryParams = validDoAuthorizeQueryParams();
+            queryParams.remove(REQUEST);
+            setupQueryParams(queryParams);
 
-            QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+            var e =
+                    assertThrows(
+                            BadRequestResponse.class,
+                            () -> authorizeHandler.doAuthorize(mockContext));
 
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-            assertEquals("request param must be provided", result);
-            verify(mockResponse).status(400);
+            assertEquals("request param must be provided", e.getMessage());
         }
 
         @Test
         void doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithRequestJWT()
                 throws Exception {
-            QueryParamsMap queryParamsMap = toQueryParamsMap(validDoAuthorizeQueryParams());
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+            setupQueryParams(validDoAuthorizeQueryParams());
 
-            String renderOutput = "rendered output";
-            when(mockViewHelper.render(anyMap(), eq("authorize.mustache")))
-                    .thenReturn(renderOutput);
+            authorizeHandler.doAuthorize(mockContext);
 
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-            assertEquals(renderOutput, result);
-
-            verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+            verify(mockContext)
+                    .render(eq("templates/authorize.mustache"), viewParamsCaptor.capture());
 
             assertTrue(
                     Boolean.parseBoolean(
                             viewParamsCaptor.getValue().get("isEvidenceType").toString()));
 
-            Map<String, Object> claims = DefaultSharedClaims();
             assertEquals(
-                    OBJECT_MAPPER.writeValueAsString(claims),
+                    OBJECT_MAPPER.writeValueAsString(defaultSharedClaims()),
                     viewParamsCaptor.getValue().get("shared_claims"));
         }
 
@@ -276,27 +289,19 @@ class AuthorizeHandlerTest {
                 doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithEncryptedRequestJWT()
                         throws Exception {
             environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE");
-            QueryParamsMap queryParamsMap =
-                    toQueryParamsMap(validEncryptedDoAuthorizeQueryParams());
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+            setupQueryParams(validEncryptedDoAuthorizeQueryParams());
 
-            String renderOutput = "rendered output";
-            when(mockViewHelper.render(anyMap(), eq("authorize.mustache")))
-                    .thenReturn(renderOutput);
+            authorizeHandler.doAuthorize(mockContext);
 
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-            assertEquals(renderOutput, result);
-
-            verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+            verify(mockContext)
+                    .render(eq("templates/authorize.mustache"), viewParamsCaptor.capture());
 
             assertTrue(
                     Boolean.parseBoolean(
                             viewParamsCaptor.getValue().get("isEvidenceType").toString()));
 
-            Map<String, Object> claims = DefaultSharedClaims();
             assertEquals(
-                    OBJECT_MAPPER.writeValueAsString(claims),
+                    OBJECT_MAPPER.writeValueAsString(defaultSharedClaims()),
                     viewParamsCaptor.getValue().get("shared_claims"));
             assertFalse((Boolean) viewParamsCaptor.getValue().get(CRI_MITIGATION_ENABLED_PARAM));
         }
@@ -306,19 +311,12 @@ class AuthorizeHandlerTest {
                 throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
             environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE");
-            QueryParamsMap queryParamsMap =
-                    toQueryParamsMap(validEncryptedDoAuthorizeQueryParams());
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+            setupQueryParams(validEncryptedDoAuthorizeQueryParams());
 
-            String renderOutput = "rendered output";
-            when(mockViewHelper.render(anyMap(), eq("authorize.mustache")))
-                    .thenReturn(renderOutput);
+            authorizeHandler.doAuthorize(mockContext);
 
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-            assertEquals(renderOutput, result);
-
-            verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+            verify(mockContext)
+                    .render(eq("templates/authorize.mustache"), viewParamsCaptor.capture());
 
             assertTrue(
                     Boolean.parseBoolean(
@@ -332,21 +330,17 @@ class AuthorizeHandlerTest {
                 doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWhenSignatureVerificationFails()
                         throws Exception {
             environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE_DRIVING_LICENCE");
-            Map<String, String[]> queryParams = validDoAuthorizeQueryParams();
-            String signedJWT = signedRequestJwt(DefaultClaimSetBuilder().build()).serialize();
+
+            var queryParams = validDoAuthorizeQueryParams();
+            String signedJWT = signedRequestJwt(defaultClaimSetBuilder().build()).serialize();
             String invalidSignatureJwt = signedJWT.substring(0, signedJWT.length() - 4) + "Nope";
-            queryParams.put(RequestParamConstants.REQUEST, new String[] {invalidSignatureJwt});
-            QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+            queryParams.put(REQUEST, invalidSignatureJwt);
+            setupQueryParams(queryParams);
 
-            String renderOutput = "rendered output";
-            when(mockViewHelper.render(anyMap(), eq("authorize.mustache")))
-                    .thenReturn(renderOutput);
+            authorizeHandler.doAuthorize(mockContext);
 
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-            assertEquals(renderOutput, result);
-            verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+            verify(mockContext)
+                    .render(eq("templates/authorize.mustache"), viewParamsCaptor.capture());
             assertEquals(
                     "Error: Signature of the shared attribute JWT is not valid",
                     viewParamsCaptor.getValue().get("shared_claims"));
@@ -355,19 +349,14 @@ class AuthorizeHandlerTest {
         @Test
         void doAuthorizeShouldUseDefaultScopeValueWhenNoScopeInRequest() throws Exception {
             // Arrange
-            QueryParamsMap queryParamsMap =
-                    toQueryParamsMap(validEncryptedDoAuthorizeQueryParams());
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-
-            String renderOutput = "rendered output";
-            when(mockViewHelper.render(anyMap(), eq("authorize.mustache")))
-                    .thenReturn(renderOutput);
+            setupQueryParams(validEncryptedDoAuthorizeQueryParams());
 
             // Act
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.doAuthorize(mockContext);
 
             // Assert
-            verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+            verify(mockContext)
+                    .render(eq("templates/authorize.mustache"), viewParamsCaptor.capture());
             assertEquals(
                     "No scope provided in request",
                     viewParamsCaptor.getValue().get("scope").toString());
@@ -376,39 +365,29 @@ class AuthorizeHandlerTest {
         @Test
         void doAuthorizeShouldUseRequestScopeValueWhenScopeInRequest() throws Exception {
             // Arrange
-            var claimsSet = DefaultClaimSetBuilder().claim("scope", "test scope").build();
-            QueryParamsMap queryParamsMap =
-                    toQueryParamsMap(validEncryptedDoAuthorizeQueryParams(claimsSet));
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-
-            String renderOutput = "rendered output";
-            when(mockViewHelper.render(anyMap(), eq("authorize.mustache")))
-                    .thenReturn(renderOutput);
+            var claimsSet = defaultClaimSetBuilder().claim("scope", "test scope").build();
+            setupQueryParams(validEncryptedDoAuthorizeQueryParams(claimsSet));
 
             // Act
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.doAuthorize(mockContext);
 
             // Assert
-            verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+            verify(mockContext)
+                    .render(eq("templates/authorize.mustache"), viewParamsCaptor.capture());
             assertEquals("test scope", viewParamsCaptor.getValue().get("scope").toString());
         }
 
         @Test
         void doAuthorizeShouldUseDefaultContextValueWhenNoContextInRequest() throws Exception {
             // Arrange
-            QueryParamsMap queryParamsMap =
-                    toQueryParamsMap(validEncryptedDoAuthorizeQueryParams());
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-
-            String renderOutput = "rendered output";
-            when(mockViewHelper.render(anyMap(), eq("authorize.mustache")))
-                    .thenReturn(renderOutput);
+            setupQueryParams(validEncryptedDoAuthorizeQueryParams());
 
             // Act
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.doAuthorize(mockContext);
 
             // Assert
-            verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+            verify(mockContext)
+                    .render(eq("templates/authorize.mustache"), viewParamsCaptor.capture());
             assertEquals(
                     "No context provided in request",
                     viewParamsCaptor.getValue().get("context").toString());
@@ -417,20 +396,15 @@ class AuthorizeHandlerTest {
         @Test
         void doAuthorizeShouldUseRequestContextValueWhenContextInRequest() throws Exception {
             // Arrange
-            var claimsSet = DefaultClaimSetBuilder().claim("context", "test context").build();
-            QueryParamsMap queryParamsMap =
-                    toQueryParamsMap(validEncryptedDoAuthorizeQueryParams(claimsSet));
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-
-            String renderOutput = "rendered output";
-            when(mockViewHelper.render(anyMap(), eq("authorize.mustache")))
-                    .thenReturn(renderOutput);
+            var claimsSet = defaultClaimSetBuilder().claim("context", "test context").build();
+            setupQueryParams(validEncryptedDoAuthorizeQueryParams(claimsSet));
 
             // Act
-            String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.doAuthorize(mockContext);
 
             // Assert
-            verify(mockViewHelper).render(viewParamsCaptor.capture(), eq("authorize.mustache"));
+            verify(mockContext)
+                    .render(eq("templates/authorize.mustache"), viewParamsCaptor.capture());
             assertEquals("test context", viewParamsCaptor.getValue().get("context").toString());
         }
     }
@@ -445,34 +419,27 @@ class AuthorizeHandlerTest {
         @Test
         void formAuthorizeShouldReturn302WithAuthCodeQueryParamWhenValidAuthRequest()
                 throws Exception {
-            QueryParamsMap queryParamsMap = toQueryParamsMap(validGenerateResponseQueryParams());
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+            setupFormParams(validGenerateResponseFormParams());
+
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            String result =
-                    (String) authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.formAuthorize(mockContext);
 
-            ArgumentCaptor<String> redirectUriCaptor = ArgumentCaptor.forClass(String.class);
-            assertNull(result);
-            verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
             verify(mockAuthCodeService)
                     .persist(any(AuthorizationCode.class), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockResponse).redirect(redirectUriCaptor.capture());
-            assertNotNull(redirectUriCaptor.getValue());
+            verify(mockContext).redirect(notNull());
         }
 
         @Test
         void formAuthorizeShouldReturnErrorResponseWhenInvalidJsonPayloadProvided()
                 throws Exception {
-            Map<String, String[]> queryParams = validGenerateResponseQueryParams();
-            queryParams.put(RequestParamConstants.JSON_PAYLOAD, new String[] {"invalid-json"});
-            QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+            var formParams = validGenerateResponseFormParams();
+            formParams.put(JSON_PAYLOAD, "invalid-json");
+            setupFormParams(formParams);
 
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+            authorizeHandler.formAuthorize(mockContext);
 
-            authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
-
-            verify(mockResponse)
+            verify(mockContext)
                     .redirect(
                             VALID_REDIRECT_URI
                                     + "?error=invalid_json&iss=Credential+Issuer+Stub&error_description=Unable+to+generate+valid+JSON+Payload");
@@ -480,12 +447,11 @@ class AuthorizeHandlerTest {
 
         @Test
         void formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput() throws Exception {
-            QueryParamsMap queryParamsMap = toQueryParamsMap(validGenerateResponseQueryParams());
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+            setupFormParams(validGenerateResponseFormParams());
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
 
-            authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.formAuthorize(mockContext);
 
             ArgumentCaptor<Credential> persistedCredential =
                     ArgumentCaptor.forClass(Credential.class);
@@ -509,21 +475,21 @@ class AuthorizeHandlerTest {
         void formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled()
                 throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
-            Map<String, String[]> queryParams = validGenerateResponseQueryParams();
-            queryParams.put(MITIGATED_CI, new String[] {"V03"});
-            queryParams.put(CIMIT_STUB_URL, new String[] {"http://test.com"});
-            queryParams.put(CIMIT_STUB_API_KEY, new String[] {"api:key"});
-            QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
 
-            HttpResponse httpResponse = mock(HttpResponse.class);
+            var formParams = validGenerateResponseFormParams();
+            formParams.put(MITIGATED_CI, "XX");
+            formParams.put(CIMIT_STUB_URL, "http://test.com");
+            formParams.put(CIMIT_STUB_API_KEY, "api:key");
+            setupFormParams(formParams);
+
+            var httpResponse = mock(HttpResponse.class);
             when(httpResponse.statusCode()).thenReturn(200);
             when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                     .thenReturn(httpResponse);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.formAuthorize(mockContext);
 
             ArgumentCaptor<HttpRequest> requestArgumentCaptor =
                     ArgumentCaptor.forClass(HttpRequest.class);
@@ -549,26 +515,27 @@ class AuthorizeHandlerTest {
                 formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled_postFailed()
                         throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
-            Map<String, String[]> queryParams = validGenerateResponseQueryParams();
-            queryParams.put(MITIGATED_CI, new String[] {"V03"});
-            queryParams.put(CIMIT_STUB_URL, new String[] {"http://test.com"});
-            queryParams.put(CIMIT_STUB_API_KEY, new String[] {"api:key"});
-            QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+            var formParams = validGenerateResponseFormParams();
+            formParams.put(MITIGATED_CI, "XX");
+            formParams.put(CIMIT_STUB_URL, "http://test.com");
+            formParams.put(CIMIT_STUB_API_KEY, "api:key");
+            setupFormParams(formParams);
+
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            HttpResponse httpResponse = mock(HttpResponse.class);
+            var httpResponse = mock(HttpResponse.class);
             when(httpResponse.statusCode()).thenReturn(403);
             when(httpResponse.body()).thenReturn("Access denied");
             when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                     .thenReturn(httpResponse);
 
-            authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.formAuthorize(mockContext);
 
             verify(mockHttpClient, times(1)).send(any(), any());
 
-            verify(mockResponse)
+            verify(mockContext)
                     .redirect(
                             VALID_REDIRECT_URI
                                     + "?error=failed_to_post&iss=Credential+Issuer+Stub&error_description=Failed+to+post+CI+mitigation+to+management+stub+api.");
@@ -576,21 +543,17 @@ class AuthorizeHandlerTest {
 
         @Test
         void formAuthorizeShouldRedirectWithRequestedOAuthErrorResponse() throws Exception {
-            Map<String, String[]> queryParams = validGenerateResponseQueryParams();
-            queryParams.put(
-                    RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"invalid_request"});
-            queryParams.put(
-                    RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, new String[] {"auth"});
-            queryParams.put(
+            var formParams = validGenerateResponseFormParams();
+            formParams.put(REQUESTED_OAUTH_ERROR, "invalid_request");
+            formParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, "auth");
+            formParams.put(
                     RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
-                    new String[] {"An error description"});
-            QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
+                    "An error description");
+            setupFormParams(formParams);
 
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+            authorizeHandler.formAuthorize(mockContext);
 
-            authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
-
-            verify(mockResponse)
+            verify(mockContext)
                     .redirect(
                             VALID_REDIRECT_URI
                                     + "?iss=Credential+Issuer+Stub&state=test-state&error=invalid_request&error_description=An+error+description");
@@ -600,13 +563,14 @@ class AuthorizeHandlerTest {
         void formAuthorizeShouldNotIncludeSharedAttributesForUserAssertedCriType()
                 throws Exception {
             environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "USER_ASSERTED");
-            Map<String, String[]> queryParams = validGenerateResponseQueryParams();
-            queryParams.put("ci", new String[] {""});
-            QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-            when(mockRequest.queryMap()).thenReturn(queryParamsMap);
+
+            var formParams = validGenerateResponseFormParams();
+            formParams.put("ci", "");
+            setupFormParams(formParams);
+
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            authorizeHandler.formAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.formAuthorize(mockContext);
 
             ArgumentCaptor<Credential> persistedCredential =
                     ArgumentCaptor.forClass(Credential.class);
@@ -633,24 +597,24 @@ class AuthorizeHandlerTest {
         @Test
         void apiAuthorizeShouldReturn302WithAuthCodeQueryParamWhenValidAuthRequest()
                 throws Exception {
-            when(mockRequest.body())
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\""
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    null,
+                                    null,
+                                    null));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
-            verify(mockResponse).type(APPLICATION_JSON);
             verify(mockAuthCodeService)
                     .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockResponse).redirect(stringArgumentCaptor.capture());
+            verify(mockContext).redirect(stringArgumentCaptor.capture());
             assertTrue(
                     stringArgumentCaptor
                             .getValue()
@@ -659,25 +623,24 @@ class AuthorizeHandlerTest {
 
         @Test
         void apiAuthorizeShouldAllowNbfToBeSet() throws Exception {
-            when(mockRequest.body())
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"nbf\": 1714577018"
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    1714577018L,
+                                    null,
+                                    null,
+                                    null));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
-            verify(mockResponse).type(APPLICATION_JSON);
             verify(mockAuthCodeService)
                     .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockResponse).redirect(stringArgumentCaptor.capture());
+            verify(mockContext).redirect(stringArgumentCaptor.capture());
             assertTrue(
                     stringArgumentCaptor
                             .getValue()
@@ -689,20 +652,17 @@ class AuthorizeHandlerTest {
 
         @Test
         void apiAuthorizeShouldAllowVcToBeSentToF2fQueue() throws Exception {
-            when(mockRequest.body())
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"f2f\": {"
-                                    + "    \"sendVcToQueue\": true,"
-                                    + "    \"queueName\": \"stubQueue_F2FQueue_build\""
-                                    + "  }"
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    null,
+                                    new F2fDetails(true, false, "stubQueue_F2FQueue_build", 0),
+                                    null));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
             var httpResponse = mock(HttpResponse.class);
@@ -710,7 +670,7 @@ class AuthorizeHandlerTest {
             when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                     .thenReturn(httpResponse);
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
             verify(mockHttpClient).send(httpRequestArgumentCaptor.capture(), any());
             assertEquals(
@@ -720,20 +680,17 @@ class AuthorizeHandlerTest {
 
         @Test
         void apiAuthorizeShouldAllowErrorToBeSentToF2fQueue() throws Exception {
-            when(mockRequest.body())
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"f2f\": {"
-                                    + "    \"sendErrorToQueue\": true,"
-                                    + "    \"queueName\": \"stubQueue_F2FQueue_build\""
-                                    + "  }"
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    null,
+                                    new F2fDetails(false, true, "stubQueue_F2FQueue_build", 0),
+                                    null));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
             var httpResponse = mock(HttpResponse.class);
@@ -741,7 +698,7 @@ class AuthorizeHandlerTest {
             when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
                     .thenReturn(httpResponse);
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
             verify(mockHttpClient).send(httpRequestArgumentCaptor.capture(), any());
             assertEquals(
@@ -752,20 +709,21 @@ class AuthorizeHandlerTest {
         @Test
         void apiAuthorizeShouldReturnErrorResponseWhenInvalidCredentialSubjectJsonProvided()
                 throws Exception {
-            when(mockRequest.body())
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"This is not JSON\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\""
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "not json",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    null,
+                                    null,
+                                    null));
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
-            verify(mockResponse)
+            verify(mockContext)
                     .redirect(
                             VALID_REDIRECT_URI
                                     + "?error=invalid_json&iss=Credential+Issuer+Stub&error_description=Unable+to+generate+valid+JSON+Payload");
@@ -773,19 +731,20 @@ class AuthorizeHandlerTest {
 
         @Test
         void apiAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput() throws Exception {
-            when(mockRequest.body())
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\""
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    null,
+                                    null,
+                                    null));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
             ArgumentCaptor<Credential> persistedCredential =
                     ArgumentCaptor.forClass(Credential.class);
@@ -809,21 +768,21 @@ class AuthorizeHandlerTest {
         @Test
         void apiAuthorizeShouldAllowMitigationsWhenEnabled() throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
-            when(mockRequest.body())
+
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"mitigations\": {"
-                                    + "    \"mitigatedCi\": [\"XX\"],"
-                                    + "    \"cimitStubUrl\": \"https://cimit.stubs.account.gov.uk\","
-                                    + "    \"cimitStubApiKey\": \"anAPIKey\""
-                                    + "  }"
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    new Mitigations(
+                                            List.of("XX"),
+                                            "https://cimit.stubs.account.gov.uk",
+                                            "anAPIKey"),
+                                    null,
+                                    null));
 
             var httpResponse = mock(HttpResponse.class);
             when(httpResponse.statusCode()).thenReturn(200);
@@ -832,7 +791,7 @@ class AuthorizeHandlerTest {
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
             ArgumentCaptor<HttpRequest> requestArgumentCaptor =
                     ArgumentCaptor.forClass(HttpRequest.class);
@@ -856,24 +815,25 @@ class AuthorizeHandlerTest {
         @Test
         void apiAuthorizeShouldHandleNoMitigationsWhenMitigationsEnabled() throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
-            when(mockRequest.body())
+
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\""
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    null,
+                                    null,
+                                    null));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
-            verify(mockResponse).type(APPLICATION_JSON);
             verify(mockAuthCodeService)
                     .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockResponse).redirect(stringArgumentCaptor.capture());
+            verify(mockContext).redirect(stringArgumentCaptor.capture());
             assertTrue(
                     stringArgumentCaptor
                             .getValue()
@@ -882,23 +842,25 @@ class AuthorizeHandlerTest {
 
         @Test
         void apiAuthorizeShouldRedirectWithRequestedOAuthErrorResponse() throws Exception {
-            when(mockRequest.body())
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"requestedError\": {"
-                                    + "    \"endpoint\": \"auth\","
-                                    + "    \"error\": \"invalid_request\","
-                                    + "    \"description\": \"a bad thing happened\""
-                                    + "  }"
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    null,
+                                    null,
+                                    new RequestedError(
+                                            "invalid_request",
+                                            "a bad thing happened",
+                                            "auth",
+                                            null)));
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
-            verify(mockResponse)
+            verify(mockContext)
                     .redirect(
                             VALID_REDIRECT_URI
                                     + "?iss=Credential+Issuer+Stub&state=test-state&error=invalid_request&error_description=a+bad+thing+happened");
@@ -907,24 +869,24 @@ class AuthorizeHandlerTest {
         @Test
         void apiAuthorizeShouldAllowRequestedOAuthErrorResponseFromTokenEndpoint()
                 throws Exception {
-            when(mockRequest.body())
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"requestedError\": {"
-                                    + "    \"endpoint\": \"token\","
-                                    + "    \"error\": \"invalid_request\","
-                                    + "    \"description\": \"a bad thing happened at the token endpoint\""
-                                    + "  }"
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    null,
+                                    null,
+                                    new RequestedError(
+                                            "invalid_request",
+                                            "a bad thing happened at the token endpoint",
+                                            "token",
+                                            null)));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
             verify(requestedErrorResponseService).persist(stringArgumentCaptor.capture(), any());
             var tokenErrorResponse =
@@ -940,22 +902,20 @@ class AuthorizeHandlerTest {
         @Test
         void apiAuthorizeShouldAllowRequestedOAuthErrorResponseFromCredentialEndpoint()
                 throws Exception {
-            when(mockRequest.body())
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
-                            "{"
-                                    + "  \"clientId\": \"clientIdValid\","
-                                    + "  \"request\": \""
-                                    + signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()
-                                    + "\","
-                                    + "  \"credentialSubjectJson\": \"{\\\"passport\\\":[{\\\"expiryDate\\\":\\\"2030-01-01\\\",\\\"icaoIssuerCode\\\":\\\"GBR\\\",\\\"documentNumber\\\":\\\"321654987\\\"}],\\\"name\\\":[{\\\"nameParts\\\":[{\\\"type\\\":\\\"GivenName\\\",\\\"value\\\":\\\"Kenneth\\\"},{\\\"type\\\":\\\"FamilyName\\\",\\\"value\\\":\\\"Decerqueira\\\"}]}],\\\"birthDate\\\":[{\\\"value\\\":\\\"1965-07-08\\\"}]}\","
-                                    + "  \"evidenceJson\": \"{\\\"activityHistoryScore\\\":1,\\\"checkDetails\\\":[{\\\"checkMethod\\\":\\\"vri\\\"},{\\\"biometricVerificationProcessLevel\\\":3,\\\"checkMethod\\\":\\\"bvr\\\"}],\\\"validityScore\\\":2,\\\"strengthScore\\\":3,\\\"type\\\":\\\"IdentityCheck\\\"}\","
-                                    + "  \"requestedError\": {"
-                                    + "    \"userInfoError\": \"404\""
-                                    + "  }"
-                                    + "}");
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    null,
+                                    null,
+                                    new RequestedError(null, null, null, "404")));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
-            authorizeHandler.apiAuthorize.handle(mockRequest, mockResponse);
+            authorizeHandler.apiAuthorize(mockContext);
 
             verify(requestedErrorResponseService).persist(stringArgumentCaptor.capture(), any());
             var credentialErrorResponse =
@@ -981,20 +941,6 @@ class AuthorizeHandlerTest {
                 + "&state=test-state";
     }
 
-    private void invokeDoAuthorizeAndMakeAssertions(
-            Map<String, String[]> queryParams, String expectedErrorCodeAndDescription)
-            throws Exception {
-        QueryParamsMap queryParamsMap = toQueryParamsMap(queryParams);
-        when(mockRequest.queryMap()).thenReturn(queryParamsMap);
-
-        String result = (String) authorizeHandler.doAuthorize.handle(mockRequest, mockResponse);
-
-        assertNull(result);
-        verify(mockViewHelper, never()).render(Collections.emptyMap(), "authorize.mustache");
-        verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
-        verify(mockResponse).redirect(VALID_REDIRECT_URI + expectedErrorCodeAndDescription);
-    }
-
     private ECPrivateKey getPrivateKey() throws InvalidKeySpecException, NoSuchAlgorithmException {
         return (ECPrivateKey)
                 KeyFactory.getInstance("EC")
@@ -1003,35 +949,25 @@ class AuthorizeHandlerTest {
                                         Base64.getDecoder().decode(TestFixtures.EC_PRIVATE_KEY_1)));
     }
 
-    private QueryParamsMap toQueryParamsMap(Map<String, String[]> queryParams) {
-        HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
-        when(mockHttpRequest.getParameterMap()).thenReturn(queryParams);
-        return new QueryParamsMap(mockHttpRequest);
+    private Map<String, String> validDoAuthorizeQueryParams() throws Exception {
+        var params = new HashMap<String, String>();
+        params.put(REQUESTED_OAUTH_ERROR, "none");
+        params.put(CLIENT_ID, "clientIdValid");
+        params.put(REQUEST, signedRequestJwt(defaultClaimSetBuilder().build()).serialize());
+        return params;
     }
 
-    private Map<String, String[]> validDoAuthorizeQueryParams() throws Exception {
-        Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"none"});
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
-        queryParams.put(
-                RequestParamConstants.REQUEST,
-                new String[] {signedRequestJwt(DefaultClaimSetBuilder().build()).serialize()});
-        return queryParams;
+    private Map<String, String> validEncryptedDoAuthorizeQueryParams() throws Exception {
+        return validEncryptedDoAuthorizeQueryParams(defaultClaimSetBuilder().build());
     }
 
-    private Map<String, String[]> validEncryptedDoAuthorizeQueryParams() throws Exception {
-        return validEncryptedDoAuthorizeQueryParams(DefaultClaimSetBuilder().build());
-    }
-
-    private Map<String, String[]> validEncryptedDoAuthorizeQueryParams(JWTClaimsSet claimsSet)
+    private Map<String, String> validEncryptedDoAuthorizeQueryParams(JWTClaimsSet claimsSet)
             throws Exception {
-        Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"none"});
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
-        queryParams.put(
-                RequestParamConstants.REQUEST,
-                new String[] {encryptedRequestJwt(signedRequestJwt(claimsSet)).serialize()});
-        return queryParams;
+        var params = new HashMap<String, String>();
+        params.put(REQUESTED_OAUTH_ERROR, "none");
+        params.put(CLIENT_ID, "clientIdValid");
+        params.put(REQUEST, encryptedRequestJwt(signedRequestJwt(claimsSet)).serialize());
+        return params;
     }
 
     private JWEObject encryptedRequestJwt(SignedJWT validRequestJWT)
@@ -1051,59 +987,34 @@ class AuthorizeHandlerTest {
         return factory.generateCertificate(new ByteArrayInputStream(binaryCertificate));
     }
 
-    private Map<String, String[]> invalidResponseTypeDoAuthorizeQueryParams() throws Exception {
-        Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"none"});
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
-        queryParams.put(
-                RequestParamConstants.REQUEST,
-                new String[] {
-                    signedRequestJwt(
-                                    DefaultClaimSetBuilder(
-                                                    INVALID_RESPONSE_TYPE, VALID_REDIRECT_URI)
-                                            .build())
-                            .serialize()
-                });
+    private Map<String, String> validGenerateResponseFormParams() throws Exception {
+        Map<String, String> queryParams = validDoAuthorizeQueryParams();
+        queryParams.put(JSON_PAYLOAD, "{\"test\": \"test-value\"}");
+        queryParams.put(STRENGTH, "2");
+        queryParams.put(VALIDITY, "3");
+        queryParams.put(VC_NOT_BEFORE_FLAG, "on");
+        queryParams.put(VC_NOT_BEFORE_DAY, "1");
+        queryParams.put(VC_NOT_BEFORE_MONTH, "1");
+        queryParams.put(VC_NOT_BEFORE_YEAR, "2022");
+        queryParams.put(VC_NOT_BEFORE_HOURS, "0");
+        queryParams.put(VC_NOT_BEFORE_MINUTES, "0");
+        queryParams.put(VC_NOT_BEFORE_SECONDS, "0");
         return queryParams;
     }
 
-    private Map<String, String[]> invalidRedirectUriDoAuthorizeQueryParams() throws Exception {
-        Map<String, String[]> queryParams = new HashMap<>();
-        queryParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, new String[] {"none"});
-        queryParams.put(RequestParamConstants.CLIENT_ID, new String[] {"clientIdValid"});
-        queryParams.put(
-                RequestParamConstants.REQUEST,
-                new String[] {
-                    signedRequestJwt(
-                                    DefaultClaimSetBuilder(
-                                                    VALID_RESPONSE_TYPE, INVALID_REDIRECT_URI)
-                                            .build())
-                            .serialize()
-                });
-        return queryParams;
+    private void setupQueryParams(Map<String, String> queryParams) {
+        queryParams.forEach((key, value) -> when(mockContext.queryParam(key)).thenReturn(value));
     }
 
-    private Map<String, String[]> validGenerateResponseQueryParams() throws Exception {
-        Map<String, String[]> queryParams = new HashMap<>(validDoAuthorizeQueryParams());
-        queryParams.put(
-                RequestParamConstants.JSON_PAYLOAD, new String[] {"{\"test\": \"test-value\"}"});
-        queryParams.put(STRENGTH, new String[] {"2"});
-        queryParams.put(VALIDITY, new String[] {"3"});
-        queryParams.put(VC_NOT_BEFORE_FLAG, new String[] {"on"});
-        queryParams.put(VC_NOT_BEFORE_DAY, new String[] {"1"});
-        queryParams.put(VC_NOT_BEFORE_MONTH, new String[] {"1"});
-        queryParams.put(VC_NOT_BEFORE_YEAR, new String[] {"2022"});
-        queryParams.put(VC_NOT_BEFORE_HOURS, new String[] {"0"});
-        queryParams.put(VC_NOT_BEFORE_MINUTES, new String[] {"0"});
-        queryParams.put(VC_NOT_BEFORE_SECONDS, new String[] {"0"});
-        return queryParams;
+    private void setupFormParams(Map<String, String> formParams) {
+        formParams.forEach((key, value) -> when(mockContext.formParam(key)).thenReturn(value));
     }
 
-    private JWTClaimsSet.Builder DefaultClaimSetBuilder() {
-        return DefaultClaimSetBuilder(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI);
+    private JWTClaimsSet.Builder defaultClaimSetBuilder() {
+        return defaultClaimSetBuilder(VALID_RESPONSE_TYPE, VALID_REDIRECT_URI);
     }
 
-    private JWTClaimsSet.Builder DefaultClaimSetBuilder(String responseType, String redirectUri) {
+    private JWTClaimsSet.Builder defaultClaimSetBuilder(String responseType, String redirectUri) {
         Instant instant = Instant.now();
 
         return new JWTClaimsSet.Builder()
@@ -1116,10 +1027,10 @@ class AuthorizeHandlerTest {
                 .expirationTime(Date.from(instant.plus(1L, ChronoUnit.HOURS)))
                 .notBeforeTime(Date.from(instant))
                 .issueTime(Date.from(instant))
-                .claim(SHARED_CLAIMS, DefaultSharedClaims());
+                .claim(SHARED_CLAIMS, defaultSharedClaims());
     }
 
-    private Map<String, Object> DefaultSharedClaims() {
+    private Map<String, Object> defaultSharedClaims() {
         Map<String, Object> sharedClaims = new LinkedHashMap<>();
         sharedClaims.put("addresses", Collections.singletonList("123 random street, M13 7GE"));
         sharedClaims.put(

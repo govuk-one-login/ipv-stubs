@@ -3,21 +3,18 @@ package uk.gov.di.ipv.stub.cred.handlers;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import spark.Request;
-import spark.Response;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 
-import javax.servlet.http.HttpServletResponse;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,8 +27,7 @@ public class CredentialHandlerTest {
     private static final ValidationResult INVALID_CLIENT =
             new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
 
-    @Mock private Response mockResponse;
-    @Mock private Request mockRequest;
+    @Mock private Context mockContext;
     @Mock private CredentialService mockCredentialService;
     @Mock private TokenService mockTokenService;
     private CredentialHandler resourceHandler;
@@ -49,15 +45,15 @@ public class CredentialHandlerTest {
                 .thenReturn("aResourceId");
         when(mockTokenService.validateAccessToken(Mockito.anyString()))
                 .thenReturn(ValidationResult.createValidResult());
-        when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
+        when(mockContext.header("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
         when(mockCredentialService.getCredentialSignedJwt("aResourceId"))
                 .thenReturn("A.VERIFIABLE.CREDENTIAL");
 
-        Object response = resourceHandler.getResource.handle(mockRequest, mockResponse);
+        resourceHandler.getResource(mockContext);
 
-        assertEquals("A.VERIFIABLE.CREDENTIAL", response);
-        verify(mockResponse).type(DEFAULT_RESPONSE_CONTENT_TYPE);
-        verify(mockResponse).status(HttpServletResponse.SC_CREATED);
+        verify(mockContext).contentType(DEFAULT_RESPONSE_CONTENT_TYPE);
+        verify(mockContext).status(HttpStatus.CREATED);
+        verify(mockContext).result("A.VERIFIABLE.CREDENTIAL");
         verify(mockTokenService, times(1)).getPayload(accessToken.toAuthorizationHeader());
         verify(mockTokenService).revoke(accessToken.toAuthorizationHeader());
     }
@@ -65,32 +61,33 @@ public class CredentialHandlerTest {
     @Test
     public void shouldReturn400WhenAccessTokenIsNotProvided() throws Exception {
         when(mockTokenService.validateAccessToken(Mockito.any())).thenReturn(INVALID_REQUEST);
-        String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
 
-        assertEquals("Invalid request", result);
-        verify(mockResponse).status(HttpServletResponse.SC_BAD_REQUEST);
+        resourceHandler.getResource(mockContext);
+
+        verify(mockContext).status(HttpStatus.BAD_REQUEST.getCode());
+        verify(mockContext).result("Invalid request");
     }
 
     @Test
     public void shouldReturn400WhenIssuedAccessTokenDoesNotMatchRequestAccessToken()
             throws Exception {
-        when(mockRequest.headers("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
+        when(mockContext.header("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
         when(mockTokenService.validateAccessToken(Mockito.any())).thenReturn(INVALID_CLIENT);
 
-        String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
+        resourceHandler.getResource(mockContext);
 
-        assertEquals("Client authentication failed", result);
-        verify(mockResponse).status(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(mockContext).status(HttpStatus.UNAUTHORIZED.getCode());
+        verify(mockContext).result("Client authentication failed");
     }
 
     @Test
     public void shouldReturn400WhenRequestAccessTokenIsNotValid() throws Exception {
-        when(mockRequest.headers("Authorization")).thenReturn("invalid-token");
+        when(mockContext.header("Authorization")).thenReturn("invalid-token");
         when(mockTokenService.validateAccessToken(Mockito.any())).thenReturn(INVALID_CLIENT);
 
-        String result = (String) resourceHandler.getResource.handle(mockRequest, mockResponse);
+        resourceHandler.getResource(mockContext);
 
-        assertEquals("Client authentication failed", result);
-        verify(mockResponse).status(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(mockContext).status(HttpStatus.UNAUTHORIZED.getCode());
+        verify(mockContext).result("Client authentication failed");
     }
 }

@@ -1,7 +1,7 @@
 package uk.gov.di.ipv.stub.cred.domain;
 
+import io.javalin.http.Context;
 import lombok.Builder;
-import spark.QueryParamsMap;
 
 import java.util.List;
 
@@ -12,11 +12,11 @@ import static uk.gov.di.ipv.stub.cred.utils.StringHelper.splitCommaDelimitedStri
 
 @Builder
 public record Mitigations(List<String> mitigatedCi, String cimitStubUrl, String cimitStubApiKey) {
-    public static Mitigations fromQueryMap(QueryParamsMap paramsMap) {
+    public static Mitigations fromFormContext(Context ctx) {
         return Mitigations.builder()
-                .mitigatedCi(splitCommaDelimitedStringValue(paramsMap.value(MITIGATED_CI)))
-                .cimitStubUrl(paramsMap.value(CIMIT_STUB_URL))
-                .cimitStubApiKey(paramsMap.value(CIMIT_STUB_API_KEY))
+                .mitigatedCi(splitCommaDelimitedStringValue(ctx.formParam(MITIGATED_CI)))
+                .cimitStubUrl(ctx.formParam(CIMIT_STUB_URL))
+                .cimitStubApiKey(ctx.formParam(CIMIT_STUB_API_KEY))
                 .build();
     }
 }
