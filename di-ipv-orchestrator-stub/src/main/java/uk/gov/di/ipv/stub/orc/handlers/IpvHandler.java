@@ -116,8 +116,7 @@ public class IpvHandler {
         this.evcsAccessTokenGenerator = evcsAccessTokenGenerator;
     }
 
-    private String getAuthorizeRedirect(Context ctx, String errorType)
-            throws Exception {
+    private String getAuthorizeRedirect(Context ctx, String errorType) throws Exception {
 
         var environment = ctx.queryParam(ENVIRONMENT_PARAM);
         var userIdTextValue = ctx.queryParam(USER_ID_PARAM);
@@ -168,7 +167,8 @@ public class IpvHandler {
                             : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
 
             var includeInheritedId =
-                    Objects.equals(ctx.queryParam(INHERITED_ID_INCLUDED_PARAM), CHECKBOX_CHECKED_VALUE);
+                    Objects.equals(
+                            ctx.queryParam(INHERITED_ID_INCLUDED_PARAM), CHECKBOX_CHECKED_VALUE);
             var inheritedIdVot = ctx.queryParam(INHERITED_ID_VOT_PARAM);
             var inheritedIdSubject = ctx.queryParam(INHERITED_ID_SUBJECT_PARAM);
             var inheritedIdEvidence = ctx.queryParam(INHERITED_ID_EVIDENCE_PARAM);
@@ -246,7 +246,8 @@ public class IpvHandler {
                 var userInfoJson = OBJECT_MAPPER.writeValueAsString(userInfo);
                 var mustacheData = buildUserInfoMustacheData(userInfo);
 
-                ctx.render("templates/user-info.mustache",
+                ctx.render(
+                        "templates/user-info.mustache",
                         Map.of("rawUserInfo", userInfoJson, "data", mustacheData));
             } else if (AUTH_STUB_STATE.toString().equals(state)) {
                 var reverificationResult =

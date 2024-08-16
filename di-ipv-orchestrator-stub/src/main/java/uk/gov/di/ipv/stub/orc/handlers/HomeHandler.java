@@ -13,6 +13,7 @@ import java.util.UUID;
 public class HomeHandler {
     private static final String NON_APP_JOURNEY_USER_ID_PREFIX = "urn:uuid:";
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
     public static void serveHomePage(Context ctx) throws IOException {
         Map<String, Object> moustacheDataModel = new HashMap<>();
 

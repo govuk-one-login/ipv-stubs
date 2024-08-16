@@ -15,11 +15,13 @@ public class Orchestrator {
     public Orchestrator() {
         ipvHandler = new IpvHandler(new EvcsAccessTokenGenerator());
 
-        var app = Javalin.create(config -> {
-            config.showJavalinBanner = false;
-            config.staticFiles.add("/public");
-            config.fileRenderer(new JavalinMustache());
-        });
+        var app =
+                Javalin.create(
+                        config -> {
+                            config.showJavalinBanner = false;
+                            config.staticFiles.add("/public");
+                            config.fileRenderer(new JavalinMustache());
+                        });
         initRoutes(app);
         app.start(Integer.parseInt(OrchestratorConfig.PORT));
     }
@@ -34,7 +36,10 @@ public class Orchestrator {
         app.get("/authorize-error", ipvHandler::doAuthorizeError);
         app.get("/callback", ipvHandler::doCallback);
 
-        app.error(500,
-                ctx -> ctx.html("<html><body><h1>Waaargh!!! Da Orc Boss sez we'ze got some gremlinz in da gearz.</h1></body></html>"));
+        app.error(
+                500,
+                ctx ->
+                        ctx.html(
+                                "<html><body><h1>Waaargh!!! Da Orc Boss sez we'ze got some gremlinz in da gearz.</h1></body></html>"));
     }
 }
