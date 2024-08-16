@@ -241,7 +241,6 @@ public class AuthorizeHandler {
 
         ctx.render("templates/authorize.mustache", frontendParams);
     }
-    ;
 
     public void apiAuthorize(Context ctx) throws Exception {
         ctx.redirect(generateResponseRedirect(ctx.bodyAsClass(ApiAuthRequest.class)));
