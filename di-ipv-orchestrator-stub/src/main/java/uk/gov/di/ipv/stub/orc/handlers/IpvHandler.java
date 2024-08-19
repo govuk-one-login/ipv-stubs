@@ -30,18 +30,14 @@ import com.nimbusds.oauth2.sdk.util.StringUtils;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 import com.nimbusds.openid.connect.sdk.UserInfoRequest;
 import com.nimbusds.openid.connect.sdk.UserInfoResponse;
+import io.javalin.http.Context;
 import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.QueryParamsMap;
-import spark.Request;
-import spark.Response;
-import spark.Route;
 import uk.gov.di.ipv.stub.orc.exceptions.OauthException;
 import uk.gov.di.ipv.stub.orc.exceptions.OrchestratorStubException;
 import uk.gov.di.ipv.stub.orc.utils.EvcsAccessTokenGenerator;
 import uk.gov.di.ipv.stub.orc.utils.JwtBuilder;
-import uk.gov.di.ipv.stub.orc.utils.ViewHelper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -57,6 +53,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
+import static java.util.Objects.requireNonNullElse;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.AUTH_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_BACKCHANNEL_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_ENDPOINT;
@@ -96,22 +93,22 @@ public class IpvHandler {
     private static final Scope AUTH_STUB_SCOPE = new Scope("reverification");
     private static final Scope ORCHESTRATOR_STUB_SCOPE = new Scope("openid", "phone", "email");
 
-    public Route doAuthorize =
-            (Request request, Response response) -> {
-                var environment = request.queryMap().get(ENVIRONMENT_PARAM).value();
-                response.cookie(ENVIRONMENT_COOKIE, environment);
-                response.redirect(getAuthorizeRedirect(request.queryMap(), null));
-                return null;
-            };
+    public void doAuthorize(Context ctx) throws Exception {
+        var environment = ctx.queryParam(ENVIRONMENT_PARAM);
+        if (environment != null) {
+            ctx.cookie(ENVIRONMENT_COOKIE, environment);
+        }
+        ctx.redirect(getAuthorizeRedirect(ctx, null));
+    }
 
-    public Route doAuthorizeError =
-            (Request request, Response response) -> {
-                var environment = request.queryMap().get(ENVIRONMENT_PARAM).value();
-                var errorType = request.queryMap().get(ERROR_TYPE_PARAM).value();
-                response.cookie(ENVIRONMENT_COOKIE, environment);
-                response.redirect(getAuthorizeRedirect(request.queryMap(), errorType));
-                return null;
-            };
+    public void doAuthorizeError(Context ctx) throws Exception {
+        var environment = ctx.queryParam(ENVIRONMENT_PARAM);
+        if (environment != null) {
+            ctx.cookie(ENVIRONMENT_COOKIE, environment);
+        }
+        var errorType = ctx.queryParam(ERROR_TYPE_PARAM);
+        ctx.redirect(getAuthorizeRedirect(ctx, errorType));
+    }
 
     private final EvcsAccessTokenGenerator evcsAccessTokenGenerator;
 
@@ -119,15 +116,14 @@ public class IpvHandler {
         this.evcsAccessTokenGenerator = evcsAccessTokenGenerator;
     }
 
-    private String getAuthorizeRedirect(QueryParamsMap queryMap, String errorType)
-            throws Exception {
+    private String getAuthorizeRedirect(Context ctx, String errorType) throws Exception {
 
-        var environment = queryMap.get(ENVIRONMENT_PARAM).value();
-        var userIdTextValue = queryMap.get(USER_ID_PARAM).value();
-        var signInJourneyIdText = queryMap.get(JOURNEY_ID_PARAM).value();
-        var userEmailAddress = queryMap.get(EMAIL_ADDRESS_PARAM).value();
+        var environment = ctx.queryParam(ENVIRONMENT_PARAM);
+        var userIdTextValue = ctx.queryParam(USER_ID_PARAM);
+        var signInJourneyIdText = ctx.queryParam(JOURNEY_ID_PARAM);
+        var userEmailAddress = ctx.queryParam(EMAIL_ADDRESS_PARAM);
         var userId = getUserIdValue(userIdTextValue);
-        var isMfaReset = Objects.equals(queryMap.value(MFA_RESET_PARAM), CHECKBOX_CHECKED_VALUE);
+        var isMfaReset = Objects.equals(ctx.queryParam(MFA_RESET_PARAM), CHECKBOX_CHECKED_VALUE);
 
         JWTClaimsSet claims;
         Scope scope;
@@ -159,12 +155,12 @@ public class IpvHandler {
             clientId = ORCHESTRATOR_CLIENT_ID;
             state = ORCHESTRATOR_STUB_STATE;
             var vtr =
-                    Arrays.stream(queryMap.get(VTR_PARAM).value().split(","))
+                    Arrays.stream(requireNonNullElse(ctx.queryParam(VTR_PARAM), "").split(","))
                             .map(String::trim)
                             .filter(value -> !value.isEmpty())
                             .toList();
 
-            var reproveIdentityString = queryMap.get(REPROVE_IDENTITY_PARAM).value();
+            var reproveIdentityString = ctx.queryParam(REPROVE_IDENTITY_PARAM);
             var reproveIdentityClaimValue =
                     StringUtils.isNotBlank(reproveIdentityString)
                             ? JwtBuilder.ReproveIdentityClaimValue.valueOf(reproveIdentityString)
@@ -172,10 +168,10 @@ public class IpvHandler {
 
             var includeInheritedId =
                     Objects.equals(
-                            queryMap.value(INHERITED_ID_INCLUDED_PARAM), CHECKBOX_CHECKED_VALUE);
-            var inheritedIdVot = queryMap.get(INHERITED_ID_VOT_PARAM).value();
-            var inheritedIdSubject = queryMap.value(INHERITED_ID_SUBJECT_PARAM);
-            var inheritedIdEvidence = queryMap.value(INHERITED_ID_EVIDENCE_PARAM);
+                            ctx.queryParam(INHERITED_ID_INCLUDED_PARAM), CHECKBOX_CHECKED_VALUE);
+            var inheritedIdVot = ctx.queryParam(INHERITED_ID_VOT_PARAM);
+            var inheritedIdSubject = ctx.queryParam(INHERITED_ID_SUBJECT_PARAM);
+            var inheritedIdEvidence = ctx.queryParam(INHERITED_ID_EVIDENCE_PARAM);
 
             claims =
                     JwtBuilder.buildAuthorizationRequestClaims(
@@ -235,63 +231,62 @@ public class IpvHandler {
         return new URI(url);
     }
 
-    public Route doCallback =
-            (Request request, Response response) -> {
-                String targetBackend = request.cookie(ENVIRONMENT_COOKIE);
+    public void doCallback(Context ctx) {
+        String targetBackend = ctx.cookie(ENVIRONMENT_COOKIE);
 
-                try {
-                    var authorizationCode = getAuthorizationCode(request);
+        try {
+            var authorizationCode = getAuthorizationCode(ctx);
 
-                    var accessToken = exchangeCodeForToken(authorizationCode, targetBackend);
+            var accessToken = exchangeCodeForToken(authorizationCode, targetBackend);
 
-                    var state = request.queryMap().get("state").value();
+            var state = ctx.queryParam("state");
 
-                    if (ORCHESTRATOR_STUB_STATE.toString().equals(state)) {
-                        var userInfo = getUserInfo(accessToken, targetBackend, USER_IDENTITY_PATH);
-                        var userInfoJson = OBJECT_MAPPER.writeValueAsString(userInfo);
-                        var mustacheData = buildUserInfoMustacheData(userInfo);
+            if (ORCHESTRATOR_STUB_STATE.toString().equals(state)) {
+                var userInfo = getUserInfo(accessToken, targetBackend, USER_IDENTITY_PATH);
+                var userInfoJson = OBJECT_MAPPER.writeValueAsString(userInfo);
+                var mustacheData = buildUserInfoMustacheData(userInfo);
 
-                        return ViewHelper.render(
-                                Map.of("rawUserInfo", userInfoJson, "data", mustacheData),
-                                "user-info.mustache");
-                    } else if (AUTH_STUB_STATE.toString().equals(state)) {
-                        var reverificationResult =
-                                getUserInfo(accessToken, targetBackend, REVERIFICATION_PATH);
-                        var reverificationResultJson =
-                                OBJECT_MAPPER.writeValueAsString(reverificationResult);
+                ctx.render(
+                        "templates/user-info.mustache",
+                        Map.of("rawUserInfo", userInfoJson, "data", mustacheData));
+            } else if (AUTH_STUB_STATE.toString().equals(state)) {
+                var reverificationResult =
+                        getUserInfo(accessToken, targetBackend, REVERIFICATION_PATH);
+                var reverificationResultJson =
+                        OBJECT_MAPPER.writeValueAsString(reverificationResult);
 
-                        return ViewHelper.render(
-                                Map.of(
-                                        "rawUserInfo",
-                                        reverificationResultJson,
-                                        "success",
-                                        reverificationResult.get("success")),
-                                "mfa-reset-result.mustache");
-                    } else {
-                        throw new OrchestratorStubException(
-                                "Unexpected callback result state for stub: " + state);
-                    }
-                } catch (OauthException e) {
-                    var errorObject =
-                            List.of(
-                                    Map.of(
-                                            "error_code",
-                                            e.getErrorObject().getCode(),
-                                            "error_description",
-                                            e.getErrorObject().getDescription()));
+                ctx.render(
+                        "templates/mfa-reset-result.mustache",
+                        Map.of(
+                                "rawUserInfo",
+                                reverificationResultJson,
+                                "success",
+                                reverificationResult.get("success")));
+            } else {
+                throw new OrchestratorStubException(
+                        "Unexpected callback result state for stub: " + state);
+            }
+        } catch (OauthException e) {
+            var errorObject =
+                    List.of(
+                            Map.of(
+                                    "error_code",
+                                    e.getErrorObject().getCode(),
+                                    "error_description",
+                                    e.getErrorObject().getDescription()));
 
-                    return ViewHelper.render(Map.of("error", errorObject), "error.mustache");
-                } catch (Exception e) {
-                    var errorObject = List.of(Map.of("error_description", e.getMessage()));
+            ctx.render("templates/error.mustache", Map.of("error", errorObject));
+        } catch (Exception e) {
+            var errorObject = List.of(Map.of("error_description", e.getMessage()));
 
-                    return ViewHelper.render(Map.of("error", errorObject), "error.mustache");
-                }
-            };
+            ctx.render("templates/error.mustache", Map.of("error", errorObject));
+        }
+    }
 
-    private AuthorizationCode getAuthorizationCode(Request request)
+    private AuthorizationCode getAuthorizationCode(Context ctx)
             throws ParseException, OauthException {
         var authorizationResponse =
-                AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
+                AuthorizationResponse.parse(URI.create("https:///?" + ctx.queryString()));
         var state = authorizationResponse.getState();
 
         if (!authorizationResponse.indicatesSuccess()) {
