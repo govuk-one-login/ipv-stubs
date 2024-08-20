@@ -419,6 +419,7 @@ class AuthorizeHandlerTest {
         @Test
         void formAuthorizeShouldReturn302WithAuthCodeQueryParamWhenValidAuthRequest()
                 throws Exception {
+            setupQueryParams(validDoAuthorizeQueryParams());
             setupFormParams(validGenerateResponseFormParams());
 
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
@@ -433,6 +434,7 @@ class AuthorizeHandlerTest {
         @Test
         void formAuthorizeShouldReturnErrorResponseWhenInvalidJsonPayloadProvided()
                 throws Exception {
+            setupQueryParams(validDoAuthorizeQueryParams());
             var formParams = validGenerateResponseFormParams();
             formParams.put(JSON_PAYLOAD, "invalid-json");
             setupFormParams(formParams);
@@ -447,6 +449,7 @@ class AuthorizeHandlerTest {
 
         @Test
         void formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput() throws Exception {
+            setupQueryParams(validDoAuthorizeQueryParams());
             setupFormParams(validGenerateResponseFormParams());
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
@@ -476,6 +479,7 @@ class AuthorizeHandlerTest {
                 throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
 
+            setupQueryParams(validDoAuthorizeQueryParams());
             var formParams = validGenerateResponseFormParams();
             formParams.put(MITIGATED_CI, "XX");
             formParams.put(CIMIT_STUB_URL, "http://test.com");
@@ -516,6 +520,7 @@ class AuthorizeHandlerTest {
                         throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
 
+            setupQueryParams(validDoAuthorizeQueryParams());
             var formParams = validGenerateResponseFormParams();
             formParams.put(MITIGATED_CI, "XX");
             formParams.put(CIMIT_STUB_URL, "http://test.com");
@@ -543,6 +548,7 @@ class AuthorizeHandlerTest {
 
         @Test
         void formAuthorizeShouldRedirectWithRequestedOAuthErrorResponse() throws Exception {
+            setupQueryParams(validDoAuthorizeQueryParams());
             var formParams = validGenerateResponseFormParams();
             formParams.put(REQUESTED_OAUTH_ERROR, "invalid_request");
             formParams.put(RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, "auth");
@@ -564,6 +570,7 @@ class AuthorizeHandlerTest {
                 throws Exception {
             environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "USER_ASSERTED");
 
+            setupQueryParams(validDoAuthorizeQueryParams());
             var formParams = validGenerateResponseFormParams();
             formParams.put("ci", "");
             setupFormParams(formParams);
@@ -951,7 +958,6 @@ class AuthorizeHandlerTest {
 
     private Map<String, String> validDoAuthorizeQueryParams() throws Exception {
         var params = new HashMap<String, String>();
-        params.put(REQUESTED_OAUTH_ERROR, "none");
         params.put(CLIENT_ID, "clientIdValid");
         params.put(REQUEST, signedRequestJwt(defaultClaimSetBuilder().build()).serialize());
         return params;
@@ -964,7 +970,6 @@ class AuthorizeHandlerTest {
     private Map<String, String> validEncryptedDoAuthorizeQueryParams(JWTClaimsSet claimsSet)
             throws Exception {
         var params = new HashMap<String, String>();
-        params.put(REQUESTED_OAUTH_ERROR, "none");
         params.put(CLIENT_ID, "clientIdValid");
         params.put(REQUEST, encryptedRequestJwt(signedRequestJwt(claimsSet)).serialize());
         return params;
@@ -987,8 +992,8 @@ class AuthorizeHandlerTest {
         return factory.generateCertificate(new ByteArrayInputStream(binaryCertificate));
     }
 
-    private Map<String, String> validGenerateResponseFormParams() throws Exception {
-        Map<String, String> queryParams = validDoAuthorizeQueryParams();
+    private Map<String, String> validGenerateResponseFormParams() {
+        Map<String, String> queryParams = new HashMap<>();
         queryParams.put(JSON_PAYLOAD, "{\"test\": \"test-value\"}");
         queryParams.put(STRENGTH, "2");
         queryParams.put(VALIDITY, "3");
