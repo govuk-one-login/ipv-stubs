@@ -42,8 +42,8 @@ public record FormAuthRequest(
 
     public static FormAuthRequest fromFormContext(Context ctx) {
         return FormAuthRequest.builder()
-                .clientId(ctx.formParam(CLIENT_ID))
-                .request(ctx.formParam(REQUEST))
+                .clientId(ctx.queryParam(CLIENT_ID))
+                .request(ctx.queryParam(REQUEST))
                 .credentialSubjectJson(ctx.formParam(JSON_PAYLOAD))
                 .evidenceJson(ctx.formParam(EVIDENCE_JSON_PAYLOAD))
                 .gpg45Scores(Gpg45Scores.fromFormContext(ctx))
