@@ -35,6 +35,7 @@ public class DocAppCredentialHandler extends CredentialHandler {
         if (requestedUserInfoErrorResponse != null) {
             ctx.status(requestedUserInfoErrorResponse.getErrorObject().getHTTPStatusCode());
             ctx.json(requestedUserInfoErrorResponse.getErrorObject().toJSONObject());
+            return;
         }
 
         var userInfo = new UserInfo(new Subject("urn:fdc:gov.uk:2022:" + UUID.randomUUID()));
