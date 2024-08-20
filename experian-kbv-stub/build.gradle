@@ -18,7 +18,7 @@ dependencies {
 	implementation 'org.slf4j:slf4j-simple:2.0.13'
 	implementation group: 'com.sun.xml.messaging.saaj', name: 'saaj-impl', version: '1.5.0'
 	implementation 'org.eclipse.jetty:jetty-server:9.4.55.v20240627' // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
-	implementation 'org.eclipse.jetty:jetty-webapp:9.4.55.v20240627' // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/26
+	implementation 'org.eclipse.jetty:jetty-webapp:10.0.22' // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/26
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.10.3"
 }
