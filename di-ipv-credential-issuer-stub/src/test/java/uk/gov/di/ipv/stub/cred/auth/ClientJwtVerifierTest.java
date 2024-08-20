@@ -72,9 +72,9 @@ public class ClientJwtVerifierTest {
     void itShouldNotThrowForValidJwt()
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         var validQueryParams =
-                getValidQueryParams(generateClientAssertion(getValidClaimsSetValues()));
+                getValidFormParams(generateClientAssertion(getValidClaimsSetValues()));
 
-        when(mockContext.queryParamMap()).thenReturn(validQueryParams);
+        when(mockContext.formParamMap()).thenReturn(validQueryParams);
 
         assertDoesNotThrow(() -> jwtAuthenticationService.authenticateClient(mockContext));
     }
@@ -87,9 +87,9 @@ public class ClientJwtVerifierTest {
                 Base64URL.encode(ECDSA.transcodeSignatureToDER(signedJwt.getSignature().decode()));
         SignedJWT derSignatureJwt =
                 SignedJWT.parse(String.format("%s.%s.%s", jwtParts[0], jwtParts[1], derSignature));
-        var validQueryParams = getValidQueryParams(derSignatureJwt.serialize());
+        var validQueryParams = getValidFormParams(derSignatureJwt.serialize());
 
-        when(mockContext.queryParamMap()).thenReturn(validQueryParams);
+        when(mockContext.formParamMap()).thenReturn(validQueryParams);
 
         assertDoesNotThrow(() -> jwtAuthenticationService.authenticateClient(mockContext));
     }
@@ -98,12 +98,12 @@ public class ClientJwtVerifierTest {
     void itShouldThrowIfInvalidSignature() throws Exception {
         var invalidSignatureQueryParams =
                 new HashMap<>(
-                        getValidQueryParams(generateClientAssertion(getValidClaimsSetValues())));
+                        getValidFormParams(generateClientAssertion(getValidClaimsSetValues())));
         String client_assertion = invalidSignatureQueryParams.get("client_assertion").get(0);
         String badSignatureAssertion =
                 client_assertion.substring(0, client_assertion.length() - 4) + "nope";
         invalidSignatureQueryParams.put("client_assertion", List.of(badSignatureAssertion));
-        when(mockContext.queryParamMap()).thenReturn(invalidSignatureQueryParams);
+        when(mockContext.formParamMap()).thenReturn(invalidSignatureQueryParams);
 
         ClientAuthenticationException exception =
                 assertThrows(
@@ -119,9 +119,9 @@ public class ClientJwtVerifierTest {
         differentIssuerAndSubjectClaimsSetValues.put(
                 JWTClaimNames.ISSUER, "NOT_THE_SAME_AS_SUBJECT");
         var differentIssuerAndSubjectQueryParams =
-                getValidQueryParams(
+                getValidFormParams(
                         generateClientAssertion(differentIssuerAndSubjectClaimsSetValues));
-        when(mockContext.queryParamMap()).thenReturn(differentIssuerAndSubjectQueryParams);
+        when(mockContext.formParamMap()).thenReturn(differentIssuerAndSubjectQueryParams);
 
         ClientAuthenticationException exception =
                 assertThrows(
@@ -144,9 +144,9 @@ public class ClientJwtVerifierTest {
         wrongIssuerAndSubjectClaimsSetValues.put(
                 JWTClaimNames.SUBJECT, "THIS_BECOMES_THE_CLIENT_ID");
         var wrongIssuerAndSubjectQueryParams =
-                getValidQueryParams(generateClientAssertion(wrongIssuerAndSubjectClaimsSetValues));
+                getValidFormParams(generateClientAssertion(wrongIssuerAndSubjectClaimsSetValues));
 
-        when(mockContext.queryParamMap()).thenReturn(wrongIssuerAndSubjectQueryParams);
+        when(mockContext.formParamMap()).thenReturn(wrongIssuerAndSubjectQueryParams);
 
         ClientAuthenticationException exception =
                 assertThrows(
@@ -165,9 +165,9 @@ public class ClientJwtVerifierTest {
         wrongAudienceClaimsSetValues.put(
                 JWTClaimNames.AUDIENCE, "NOT_THE_AUDIENCE_YOU_ARE_LOOKING_FOR");
         var wrongAudienceQueryParams =
-                getValidQueryParams(generateClientAssertion(wrongAudienceClaimsSetValues));
+                getValidFormParams(generateClientAssertion(wrongAudienceClaimsSetValues));
 
-        when(mockContext.queryParamMap()).thenReturn(wrongAudienceQueryParams);
+        when(mockContext.formParamMap()).thenReturn(wrongAudienceQueryParams);
 
         ClientAuthenticationException exception =
                 assertThrows(
@@ -189,9 +189,9 @@ public class ClientJwtVerifierTest {
                 JWTClaimNames.EXPIRATION_TIME,
                 new Date(new Date().getTime() - 61000).getTime() / 1000);
         var expiredQueryParams =
-                getValidQueryParams(generateClientAssertion(expiredClaimsSetValues));
+                getValidFormParams(generateClientAssertion(expiredClaimsSetValues));
 
-        when(mockContext.queryParamMap()).thenReturn(expiredQueryParams);
+        when(mockContext.formParamMap()).thenReturn(expiredQueryParams);
 
         ClientAuthenticationException exception =
                 assertThrows(
@@ -201,7 +201,7 @@ public class ClientJwtVerifierTest {
         assertTrue(exception.getMessage().contains("Expired JWT"));
     }
 
-    private Map<String, List<String>> getValidQueryParams(String clientAssertion) {
+    private Map<String, List<String>> getValidFormParams(String clientAssertion) {
         return new HashMap<>(
                 Map.of(
                         "client_assertion",

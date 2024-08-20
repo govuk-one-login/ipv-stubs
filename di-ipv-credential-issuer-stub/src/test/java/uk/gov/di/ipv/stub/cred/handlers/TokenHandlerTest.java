@@ -90,7 +90,7 @@ public class TokenHandlerTest {
             throws Exception {
         String resourceId = UUID.randomUUID().toString();
 
-        setupMockQueryParams(
+        setupMockFormParams(
                 Map.of(
                         RequestParamConstants.GRANT_TYPE, GrantType.AUTHORIZATION_CODE.getValue(),
                         RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
@@ -129,7 +129,7 @@ public class TokenHandlerTest {
         // authentication
         String resourceId = UUID.randomUUID().toString();
 
-        setupMockQueryParams(
+        setupMockFormParams(
                 Map.of(
                         RequestParamConstants.GRANT_TYPE,
                         GrantType.AUTHORIZATION_CODE.getValue(),
@@ -201,7 +201,7 @@ public class TokenHandlerTest {
 
     @Test
     void shouldReturn400IfClientConfigureForAuthenticationProvidesClientId() throws Exception {
-        setupMockQueryParams(Map.of(RequestParamConstants.CLIENT_ID, "clientIdValid"));
+        setupMockFormParams(Map.of(RequestParamConstants.CLIENT_ID, "clientIdValid"));
         when(mockValidator.validateTokenRequest(any()))
                 .thenReturn(ValidationResult.createValidResult());
 
@@ -218,7 +218,7 @@ public class TokenHandlerTest {
 
     @Test
     void shouldReturn400ResponseWhenRedirectUrlsDoNotMatch() throws Exception {
-        setupMockQueryParams(Map.of(RequestParamConstants.CLIENT_ID, "noAuthenticationClient"));
+        setupMockFormParams(Map.of(RequestParamConstants.CLIENT_ID, "noAuthenticationClient"));
 
         when(mockValidator.validateTokenRequest(any()))
                 .thenReturn(ValidationResult.createValidResult());
@@ -238,7 +238,7 @@ public class TokenHandlerTest {
 
     @Test
     void shouldReturn400WithRequestedOAuthError() throws Exception {
-        setupMockQueryParams(
+        setupMockFormParams(
                 Map.of(
                         RequestParamConstants.AUTH_CODE, "anAuthCode",
                         RequestParamConstants.REQUESTED_OAUTH_ERROR, "access_denied",
@@ -259,7 +259,7 @@ public class TokenHandlerTest {
         assertEquals("an error description", resultCaptor.getValue().get("error_description"));
     }
 
-    private void setupMockQueryParams(Map<String, String> params) {
-        params.forEach((key, value) -> when(mockContext.queryParam(key)).thenReturn(value));
+    private void setupMockFormParams(Map<String, String> params) {
+        params.forEach((key, value) -> when(mockContext.formParam(key)).thenReturn(value));
     }
 }

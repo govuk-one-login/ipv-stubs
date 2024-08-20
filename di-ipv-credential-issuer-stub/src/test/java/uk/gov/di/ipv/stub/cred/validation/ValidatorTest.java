@@ -180,7 +180,7 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientAssertion() {
-        setupQueryParamsMap(
+        setupFormParamsMap(
                 Map.of(
                         RequestParamConstants.CLIENT_ID, "",
                         RequestParamConstants.CLIENT_ASSERTION_TYPE, "some-assertion-type",
@@ -198,7 +198,7 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientAssertionType() {
-        setupQueryParamsMap(
+        setupFormParamsMap(
                 Map.of(
                         RequestParamConstants.CLIENT_ID, "",
                         RequestParamConstants.CLIENT_ASSERTION_TYPE, "",
@@ -216,7 +216,7 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientAssertionTypeOrClientAssertion() {
-        setupQueryParamsMap(
+        setupFormParamsMap(
                 Map.of(
                         RequestParamConstants.CLIENT_ID, "",
                         RequestParamConstants.CLIENT_ASSERTION_TYPE, "",
@@ -234,7 +234,7 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientConfig() {
-        setupQueryParamsMap(
+        setupFormParamsMap(
                 Map.of(
                         RequestParamConstants.CLIENT_ID, "No-config-for-me",
                         RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
@@ -252,7 +252,7 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoGrantType() {
-        setupQueryParamsMap(
+        setupFormParamsMap(
                 Map.of(
                         RequestParamConstants.CLIENT_ID, "clientIdValid",
                         RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
@@ -271,7 +271,7 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoWrongType() {
-        setupQueryParamsMap(
+        setupFormParamsMap(
                 Map.of(
                         RequestParamConstants.CLIENT_ID, "clientIdValid",
                         RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
@@ -290,7 +290,7 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoAuthCode() {
-        setupQueryParamsMap(
+        setupFormParamsMap(
                 Map.of(
                         RequestParamConstants.CLIENT_ID, "clientIdValid",
                         RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
@@ -310,7 +310,7 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoPayloadAssociatedWithAuthCode() {
-        setupQueryParamsMap(
+        setupFormParamsMap(
                 Map.of(
                         RequestParamConstants.CLIENT_ID, "clientIdValid",
                         RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
@@ -331,7 +331,7 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoRedirectUri() {
-        setupQueryParamsMap(
+        setupFormParamsMap(
                 Map.of(
                         RequestParamConstants.CLIENT_ID, "clientIdValid",
                         RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
@@ -353,7 +353,7 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldPassForValidParams() {
-        setupQueryParamsMap(
+        setupFormParamsMap(
                 Map.of(
                         RequestParamConstants.CLIENT_ID, "clientIdValid",
                         RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
@@ -438,7 +438,7 @@ class ValidatorTest {
         assertEquals("Invalid grant", validationError.getDescription());
     }
 
-    private void setupQueryParamsMap(Map<String, String> params) {
-        params.forEach((key, value) -> when(mockContext.queryParam(key)).thenReturn(value));
+    private void setupFormParamsMap(Map<String, String> params) {
+        params.forEach((key, value) -> when(mockContext.formParam(key)).thenReturn(value));
     }
 }

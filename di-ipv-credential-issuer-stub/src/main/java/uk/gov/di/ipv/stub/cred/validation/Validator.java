@@ -162,9 +162,9 @@ public class Validator {
     }
 
     public ValidationResult validateTokenRequest(Context ctx) {
-        String clientIdValue = ctx.queryParam(RequestParamConstants.CLIENT_ID);
-        String assertionType = ctx.queryParam(RequestParamConstants.CLIENT_ASSERTION_TYPE);
-        String assertion = ctx.queryParam(RequestParamConstants.CLIENT_ASSERTION);
+        String clientIdValue = ctx.formParam(RequestParamConstants.CLIENT_ID);
+        String assertionType = ctx.formParam(RequestParamConstants.CLIENT_ASSERTION_TYPE);
+        String assertion = ctx.formParam(RequestParamConstants.CLIENT_ASSERTION);
 
         if (Validator.isNullBlankOrEmpty(clientIdValue)
                 && (Validator.isNullBlankOrEmpty(assertionType)
@@ -179,13 +179,13 @@ public class Validator {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
-        String grantTypeValue = ctx.queryParam(RequestParamConstants.GRANT_TYPE);
+        String grantTypeValue = ctx.formParam(RequestParamConstants.GRANT_TYPE);
         if (Validator.isNullBlankOrEmpty(grantTypeValue)
                 || !grantTypeValue.equalsIgnoreCase(GrantType.AUTHORIZATION_CODE.getValue())) {
             return new ValidationResult(false, OAuth2Error.UNSUPPORTED_GRANT_TYPE);
         }
 
-        String authCodeValue = ctx.queryParam(RequestParamConstants.AUTH_CODE);
+        String authCodeValue = ctx.formParam(RequestParamConstants.AUTH_CODE);
         if (Validator.isNullBlankOrEmpty(authCodeValue)) {
             LOGGER.error("Missing authorization code");
             return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
@@ -195,7 +195,7 @@ public class Validator {
             return new ValidationResult(false, OAuth2Error.INVALID_GRANT);
         }
 
-        String redirectUriValue = ctx.queryParam(RequestParamConstants.REDIRECT_URI);
+        String redirectUriValue = ctx.formParam(RequestParamConstants.REDIRECT_URI);
         if (Validator.isNullBlankOrEmpty(redirectUriValue)) {
             LOGGER.error("Invalid Redirect URI: {}", redirectUriValue);
             return new ValidationResult(false, OAuth2Error.INVALID_REQUEST);
