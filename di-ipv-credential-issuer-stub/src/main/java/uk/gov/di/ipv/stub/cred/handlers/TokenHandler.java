@@ -6,13 +6,10 @@ import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.oauth2.sdk.token.Tokens;
+import io.javalin.http.Context;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.QueryParamsMap;
-import spark.Request;
-import spark.Response;
-import spark.Route;
 import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
@@ -23,8 +20,6 @@ import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
-
-import javax.servlet.http.HttpServletResponse;
 
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
 
@@ -54,83 +49,76 @@ public class TokenHandler {
         this.requestedErrorResponseService = requestedErrorResponseService;
     }
 
-    public Route issueAccessToken =
-            (Request request, Response response) -> {
-                QueryParamsMap requestParams = request.queryMap();
-                response.type(RESPONSE_TYPE);
+    public void issueAccessToken(Context ctx) {
+        TokenErrorResponse requestedTokenErrorResponse =
+                handleRequestedError(ctx.queryParam(RequestParamConstants.AUTH_CODE));
+        if (requestedTokenErrorResponse != null) {
+            ctx.status(HttpStatus.BAD_REQUEST_400);
+            ctx.json(requestedTokenErrorResponse.toJSONObject());
+            return;
+        }
 
-                TokenErrorResponse requestedTokenErrorResponse =
-                        handleRequestedError(requestParams.value(RequestParamConstants.AUTH_CODE));
-                if (requestedTokenErrorResponse != null) {
-                    response.status(HttpStatus.BAD_REQUEST_400);
-                    return requestedTokenErrorResponse.toJSONObject().toJSONString();
-                }
+        ValidationResult validationResult = validator.validateTokenRequest(ctx);
+        if (!validationResult.isValid()) {
+            TokenErrorResponse errorResponse = new TokenErrorResponse(validationResult.getError());
+            ctx.status(validationResult.getError().getHTTPStatusCode());
+            ctx.json(errorResponse.toJSONObject());
+            return;
+        }
 
-                ValidationResult validationResult = validator.validateTokenRequest(requestParams);
-                if (!validationResult.isValid()) {
-                    TokenErrorResponse errorResponse =
-                            new TokenErrorResponse(validationResult.getError());
-                    response.status(validationResult.getError().getHTTPStatusCode());
+        if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)
+                || Validator.isNullBlankOrEmpty(ctx.queryParam(RequestParamConstants.CLIENT_ID))) {
+            try {
+                clientJwtVerifier.authenticateClient(ctx);
+            } catch (ClientAuthenticationException e) {
+                LOGGER.error("Failed client JWT authentication: {}", e.getMessage());
+                TokenErrorResponse errorResponse =
+                        new TokenErrorResponse(OAuth2Error.INVALID_CLIENT);
+                ctx.status(OAuth2Error.INVALID_CLIENT.getHTTPStatusCode());
+                ctx.json(errorResponse.toJSONObject());
+                return;
+            }
 
-                    return errorResponse.toJSONObject().toJSONString();
-                }
+        } else {
+            ClientConfig clientConfig =
+                    ConfigService.getClientConfig(ctx.queryParam(RequestParamConstants.CLIENT_ID));
+            String authMethod = clientConfig.getJwtAuthentication().getAuthenticationMethod();
+            if (!authMethod.equals(NONE_AUTHENTICATION_METHOD)) {
+                TokenErrorResponse errorResponse =
+                        new TokenErrorResponse(OAuth2Error.INVALID_REQUEST);
+                ctx.status(OAuth2Error.INVALID_REQUEST.getHTTPStatusCode());
+                ctx.json(errorResponse.toJSONObject());
+                return;
+            }
+        }
 
-                if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)
-                        || Validator.isNullBlankOrEmpty(
-                                requestParams.value(RequestParamConstants.CLIENT_ID))) {
-                    try {
-                        clientJwtVerifier.authenticateClient(requestParams);
-                    } catch (ClientAuthenticationException e) {
-                        LOGGER.error("Failed client JWT authentication: {}", e.getMessage());
-                        TokenErrorResponse errorResponse =
-                                new TokenErrorResponse(OAuth2Error.INVALID_CLIENT);
-                        response.status(OAuth2Error.INVALID_CLIENT.getHTTPStatusCode());
+        String code = ctx.queryParam(RequestParamConstants.AUTH_CODE);
+        var redirectValidationResult =
+                validator.validateRedirectUrlsMatch(
+                        authCodeService.getRedirectUrl(code),
+                        ctx.queryParam(RequestParamConstants.REDIRECT_URI));
 
-                        return errorResponse.toJSONObject().toJSONString();
-                    }
+        if (!redirectValidationResult.isValid()) {
+            TokenErrorResponse errorResponse =
+                    new TokenErrorResponse(redirectValidationResult.getError());
+            ctx.status(redirectValidationResult.getError().getHTTPStatusCode());
+            ctx.json(errorResponse.toJSONObject());
+            return;
+        }
 
-                } else {
-                    ClientConfig clientConfig =
-                            ConfigService.getClientConfig(
-                                    requestParams.value(RequestParamConstants.CLIENT_ID));
-                    String authMethod =
-                            clientConfig.getJwtAuthentication().getAuthenticationMethod();
-                    if (!authMethod.equals(NONE_AUTHENTICATION_METHOD)) {
-                        TokenErrorResponse errorResponse =
-                                new TokenErrorResponse(OAuth2Error.INVALID_REQUEST);
-                        response.status(OAuth2Error.INVALID_REQUEST.getHTTPStatusCode());
-                        return errorResponse.toJSONObject().toJSONString();
-                    }
-                }
+        AccessToken accessToken = tokenService.createBearerAccessToken();
+        AccessTokenResponse tokenResponse =
+                new AccessTokenResponse(new Tokens(accessToken, new RefreshToken()));
 
-                String code = requestParams.value(RequestParamConstants.AUTH_CODE);
-                var redirectValidationResult =
-                        validator.validateRedirectUrlsMatch(
-                                authCodeService.getRedirectUrl(code),
-                                requestParams.value(RequestParamConstants.REDIRECT_URI));
+        String payloadAssociatedWithCode = authCodeService.getPayload(code);
+        authCodeService.revoke(code);
+        tokenService.persist(accessToken, payloadAssociatedWithCode);
 
-                if (!redirectValidationResult.isValid()) {
-                    TokenErrorResponse errorResponse =
-                            new TokenErrorResponse(redirectValidationResult.getError());
-                    response.status(redirectValidationResult.getError().getHTTPStatusCode());
+        requestedErrorResponseService.persistUserInfoErrorAgainstToken(
+                code, accessToken.toString());
 
-                    return errorResponse.toJSONObject().toJSONString();
-                }
-
-                AccessToken accessToken = tokenService.createBearerAccessToken();
-                AccessTokenResponse tokenResponse =
-                        new AccessTokenResponse(new Tokens(accessToken, new RefreshToken()));
-
-                String payloadAssociatedWithCode = authCodeService.getPayload(code);
-                authCodeService.revoke(code);
-                tokenService.persist(accessToken, payloadAssociatedWithCode);
-
-                requestedErrorResponseService.persistUserInfoErrorAgainstToken(
-                        code, accessToken.toString());
-
-                response.status(HttpServletResponse.SC_OK);
-                return tokenResponse.toJSONObject().toJSONString();
-            };
+        ctx.json(tokenResponse.toJSONObject());
+    }
 
     private TokenErrorResponse handleRequestedError(String authCode) {
         if (authCode == null) {

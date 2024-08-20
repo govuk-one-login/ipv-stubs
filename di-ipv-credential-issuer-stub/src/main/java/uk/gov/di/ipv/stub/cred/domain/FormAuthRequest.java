@@ -1,8 +1,8 @@
 package uk.gov.di.ipv.stub.cred.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.javalin.http.Context;
 import lombok.Builder;
-import spark.QueryParamsMap;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -40,31 +40,31 @@ public record FormAuthRequest(
     private static final String ON = "on";
     private static final String UTC = "UTC";
 
-    public static FormAuthRequest fromQueryMap(QueryParamsMap paramsMap) {
+    public static FormAuthRequest fromFormContext(Context ctx) {
         return FormAuthRequest.builder()
-                .clientId(paramsMap.value(CLIENT_ID))
-                .request(paramsMap.value(REQUEST))
-                .credentialSubjectJson(paramsMap.value(JSON_PAYLOAD))
-                .evidenceJson(paramsMap.value(EVIDENCE_JSON_PAYLOAD))
-                .gpg45Scores(Gpg45Scores.fromQueryMap(paramsMap))
-                .ci(splitCommaDelimitedStringValue(paramsMap.value(CI)))
-                .mitigations(Mitigations.fromQueryMap(paramsMap))
-                .f2f(F2fDetails.fromQueryMap(paramsMap))
-                .requestedError(RequestedError.fromQueryMap(paramsMap))
-                .nbf(generateNbf(paramsMap))
+                .clientId(ctx.formParam(CLIENT_ID))
+                .request(ctx.formParam(REQUEST))
+                .credentialSubjectJson(ctx.formParam(JSON_PAYLOAD))
+                .evidenceJson(ctx.formParam(EVIDENCE_JSON_PAYLOAD))
+                .gpg45Scores(Gpg45Scores.fromFormContext(ctx))
+                .ci(splitCommaDelimitedStringValue(ctx.formParam(CI)))
+                .mitigations(Mitigations.fromFormContext(ctx))
+                .f2f(F2fDetails.fromFormContext(ctx))
+                .requestedError(RequestedError.fromFormContext(ctx))
+                .nbf(generateNbf(ctx))
                 .build();
     }
 
-    private static Long generateNbf(QueryParamsMap paramsMap) {
-        if (ON.equals(paramsMap.value(VC_NOT_BEFORE_FLAG))) {
+    private static Long generateNbf(Context ctx) {
+        if (ON.equals(ctx.formParam(VC_NOT_BEFORE_FLAG))) {
             try {
                 return LocalDateTime.of(
-                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_YEAR)),
-                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_MONTH)),
-                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_DAY)),
-                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_HOURS)),
-                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_MINUTES)),
-                                Integer.parseInt(paramsMap.value(VC_NOT_BEFORE_SECONDS)))
+                                Integer.parseInt(ctx.formParam(VC_NOT_BEFORE_YEAR)),
+                                Integer.parseInt(ctx.formParam(VC_NOT_BEFORE_MONTH)),
+                                Integer.parseInt(ctx.formParam(VC_NOT_BEFORE_DAY)),
+                                Integer.parseInt(ctx.formParam(VC_NOT_BEFORE_HOURS)),
+                                Integer.parseInt(ctx.formParam(VC_NOT_BEFORE_MINUTES)),
+                                Integer.parseInt(ctx.formParam(VC_NOT_BEFORE_SECONDS)))
                         .atZone(ZoneId.of(UTC))
                         .toInstant()
                         .getEpochSecond();

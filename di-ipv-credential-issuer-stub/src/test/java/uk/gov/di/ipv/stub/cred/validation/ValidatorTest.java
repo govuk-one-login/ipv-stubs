@@ -2,12 +2,12 @@ package uk.gov.di.ipv.stub.cred.validation;
 
 import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.GrantType;
+import io.javalin.http.Context;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import spark.QueryParamsMap;
 import uk.gov.di.ipv.stub.cred.config.CriType;
 import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
@@ -16,16 +16,12 @@ import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
 import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-import javax.servlet.http.HttpServletRequest;
-
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 
@@ -33,6 +29,7 @@ import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 @ExtendWith(SystemStubsExtension.class)
 class ValidatorTest {
 
+    @Mock private Context mockContext;
     @Mock private AuthCodeService mockAuthCodeService;
 
     @SystemStub
@@ -183,16 +180,15 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientAssertion() {
-        QueryParamsMap queryParamsMap =
-                getQueryParamsMap(
-                        Map.of(
-                                RequestParamConstants.CLIENT_ID, "",
-                                RequestParamConstants.CLIENT_ASSERTION_TYPE, "some-assertion-type",
-                                RequestParamConstants.CLIENT_ASSERTION, ""));
+        setupQueryParamsMap(
+                Map.of(
+                        RequestParamConstants.CLIENT_ID, "",
+                        RequestParamConstants.CLIENT_ASSERTION_TYPE, "some-assertion-type",
+                        RequestParamConstants.CLIENT_ASSERTION, ""));
 
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateTokenRequest(queryParamsMap);
+        ValidationResult validationResult = validator.validateTokenRequest(mockContext);
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -202,16 +198,15 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientAssertionType() {
-        QueryParamsMap queryParamsMap =
-                getQueryParamsMap(
-                        Map.of(
-                                RequestParamConstants.CLIENT_ID, "",
-                                RequestParamConstants.CLIENT_ASSERTION_TYPE, "",
-                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion"));
+        setupQueryParamsMap(
+                Map.of(
+                        RequestParamConstants.CLIENT_ID, "",
+                        RequestParamConstants.CLIENT_ASSERTION_TYPE, "",
+                        RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion"));
 
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateTokenRequest(queryParamsMap);
+        ValidationResult validationResult = validator.validateTokenRequest(mockContext);
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -221,16 +216,15 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientAssertionTypeOrClientAssertion() {
-        QueryParamsMap queryParamsMap =
-                getQueryParamsMap(
-                        Map.of(
-                                RequestParamConstants.CLIENT_ID, "",
-                                RequestParamConstants.CLIENT_ASSERTION_TYPE, "",
-                                RequestParamConstants.CLIENT_ASSERTION, ""));
+        setupQueryParamsMap(
+                Map.of(
+                        RequestParamConstants.CLIENT_ID, "",
+                        RequestParamConstants.CLIENT_ASSERTION_TYPE, "",
+                        RequestParamConstants.CLIENT_ASSERTION, ""));
 
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateTokenRequest(queryParamsMap);
+        ValidationResult validationResult = validator.validateTokenRequest(mockContext);
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -240,17 +234,15 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoClientIdAndNoClientConfig() {
-        QueryParamsMap queryParamsMap =
-                getQueryParamsMap(
-                        Map.of(
-                                RequestParamConstants.CLIENT_ID, "No-config-for-me",
-                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
-                                        "a-client-assertion-type",
-                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion"));
+        setupQueryParamsMap(
+                Map.of(
+                        RequestParamConstants.CLIENT_ID, "No-config-for-me",
+                        RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
+                        RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion"));
 
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateTokenRequest(queryParamsMap);
+        ValidationResult validationResult = validator.validateTokenRequest(mockContext);
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -260,18 +252,16 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoGrantType() {
-        QueryParamsMap queryParamsMap =
-                getQueryParamsMap(
-                        Map.of(
-                                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
-                                        "a-client-assertion-type",
-                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                                RequestParamConstants.GRANT_TYPE, ""));
+        setupQueryParamsMap(
+                Map.of(
+                        RequestParamConstants.CLIENT_ID, "clientIdValid",
+                        RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
+                        RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                        RequestParamConstants.GRANT_TYPE, ""));
 
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateTokenRequest(queryParamsMap);
+        ValidationResult validationResult = validator.validateTokenRequest(mockContext);
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -281,18 +271,16 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoWrongType() {
-        QueryParamsMap queryParamsMap =
-                getQueryParamsMap(
-                        Map.of(
-                                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
-                                        "a-client-assertion-type",
-                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                                RequestParamConstants.GRANT_TYPE, "not-an-auth-code-grant"));
+        setupQueryParamsMap(
+                Map.of(
+                        RequestParamConstants.CLIENT_ID, "clientIdValid",
+                        RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
+                        RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                        RequestParamConstants.GRANT_TYPE, "not-an-auth-code-grant"));
 
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateTokenRequest(queryParamsMap);
+        ValidationResult validationResult = validator.validateTokenRequest(mockContext);
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -302,20 +290,17 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoAuthCode() {
-        QueryParamsMap queryParamsMap =
-                getQueryParamsMap(
-                        Map.of(
-                                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
-                                        "a-client-assertion-type",
-                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                                RequestParamConstants.GRANT_TYPE,
-                                        GrantType.AUTHORIZATION_CODE.getValue(),
-                                RequestParamConstants.AUTH_CODE, ""));
+        setupQueryParamsMap(
+                Map.of(
+                        RequestParamConstants.CLIENT_ID, "clientIdValid",
+                        RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
+                        RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                        RequestParamConstants.GRANT_TYPE, GrantType.AUTHORIZATION_CODE.getValue(),
+                        RequestParamConstants.AUTH_CODE, ""));
 
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateTokenRequest(queryParamsMap);
+        ValidationResult validationResult = validator.validateTokenRequest(mockContext);
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -325,21 +310,18 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoPayloadAssociatedWithAuthCode() {
-        QueryParamsMap queryParamsMap =
-                getQueryParamsMap(
-                        Map.of(
-                                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
-                                        "a-client-assertion-type",
-                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                                RequestParamConstants.GRANT_TYPE,
-                                        GrantType.AUTHORIZATION_CODE.getValue(),
-                                RequestParamConstants.AUTH_CODE, "a-legit-auth-code"));
+        setupQueryParamsMap(
+                Map.of(
+                        RequestParamConstants.CLIENT_ID, "clientIdValid",
+                        RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
+                        RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                        RequestParamConstants.GRANT_TYPE, GrantType.AUTHORIZATION_CODE.getValue(),
+                        RequestParamConstants.AUTH_CODE, "a-legit-auth-code"));
 
         when(mockAuthCodeService.getPayload("a-legit-auth-code")).thenReturn(null);
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateTokenRequest(queryParamsMap);
+        ValidationResult validationResult = validator.validateTokenRequest(mockContext);
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -349,22 +331,19 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldFailIfNoRedirectUri() {
-        QueryParamsMap queryParamsMap =
-                getQueryParamsMap(
-                        Map.of(
-                                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
-                                        "a-client-assertion-type",
-                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                                RequestParamConstants.GRANT_TYPE,
-                                        GrantType.AUTHORIZATION_CODE.getValue(),
-                                RequestParamConstants.AUTH_CODE, "a-legit-auth-code",
-                                RequestParamConstants.REDIRECT_URI, ""));
+        setupQueryParamsMap(
+                Map.of(
+                        RequestParamConstants.CLIENT_ID, "clientIdValid",
+                        RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
+                        RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                        RequestParamConstants.GRANT_TYPE, GrantType.AUTHORIZATION_CODE.getValue(),
+                        RequestParamConstants.AUTH_CODE, "a-legit-auth-code",
+                        RequestParamConstants.REDIRECT_URI, ""));
 
         when(mockAuthCodeService.getPayload("a-legit-auth-code")).thenReturn("something");
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateTokenRequest(queryParamsMap);
+        ValidationResult validationResult = validator.validateTokenRequest(mockContext);
 
         ErrorObject validationError = validationResult.getError();
         assertFalse(validationResult.isValid());
@@ -374,22 +353,19 @@ class ValidatorTest {
 
     @Test
     void validateTokenRequestShouldPassForValidParams() {
-        QueryParamsMap queryParamsMap =
-                getQueryParamsMap(
-                        Map.of(
-                                RequestParamConstants.CLIENT_ID, "clientIdValid",
-                                RequestParamConstants.CLIENT_ASSERTION_TYPE,
-                                        "a-client-assertion-type",
-                                RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
-                                RequestParamConstants.GRANT_TYPE,
-                                        GrantType.AUTHORIZATION_CODE.getValue(),
-                                RequestParamConstants.AUTH_CODE, "a-legit-auth-code",
-                                RequestParamConstants.REDIRECT_URI, "https://example.com"));
+        setupQueryParamsMap(
+                Map.of(
+                        RequestParamConstants.CLIENT_ID, "clientIdValid",
+                        RequestParamConstants.CLIENT_ASSERTION_TYPE, "a-client-assertion-type",
+                        RequestParamConstants.CLIENT_ASSERTION, "a-client-assertion",
+                        RequestParamConstants.GRANT_TYPE, GrantType.AUTHORIZATION_CODE.getValue(),
+                        RequestParamConstants.AUTH_CODE, "a-legit-auth-code",
+                        RequestParamConstants.REDIRECT_URI, "https://example.com"));
 
         when(mockAuthCodeService.getPayload("a-legit-auth-code")).thenReturn("something");
         Validator validator = new Validator(mockAuthCodeService);
 
-        ValidationResult validationResult = validator.validateTokenRequest(queryParamsMap);
+        ValidationResult validationResult = validator.validateTokenRequest(mockContext);
 
         assertTrue(validationResult.isValid());
     }
@@ -462,13 +438,7 @@ class ValidatorTest {
         assertEquals("Invalid grant", validationError.getDescription());
     }
 
-    private QueryParamsMap getQueryParamsMap(Map<String, String> params) {
-        Map<String, String[]> listParams = new HashMap<>();
-        params.forEach((key, value) -> listParams.put(key, new String[] {value}));
-
-        HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
-        when(mockHttpRequest.getParameterMap()).thenReturn(listParams);
-
-        return new QueryParamsMap(mockHttpRequest);
+    private void setupQueryParamsMap(Map<String, String> params) {
+        params.forEach((key, value) -> when(mockContext.queryParam(key)).thenReturn(value));
     }
 }

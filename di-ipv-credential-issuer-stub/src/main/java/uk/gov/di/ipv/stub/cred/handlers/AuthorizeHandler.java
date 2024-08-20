@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWEObject;
@@ -18,12 +19,11 @@ import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.util.MapUtils;
 import com.nimbusds.oauth2.sdk.util.StringUtils;
+import io.javalin.http.BadRequestResponse;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.QueryParamsMap;
-import spark.Request;
-import spark.Response;
-import spark.Route;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
@@ -34,12 +34,9 @@ import uk.gov.di.ipv.stub.cred.service.ConfigService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.utils.ES256SignatureVerifier;
-import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
-
-import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.net.URI;
@@ -58,7 +55,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
@@ -93,8 +89,6 @@ public class AuthorizeHandler {
     public static final String CRI_STUB_EVIDENCE_PAYLOADS = "cri_stub_evidence_payloads";
     public static final String CRI_MITIGATION_ENABLED_PARAM = "isCriMitigationEnabled";
 
-    private static final String APPLICATION_X_WWW_FORM_URLENCODED =
-            "application/x-www-form-urlencoded";
     private static final String ERROR_CODE_INVALID_REQUEST_JWT = "invalid_request_jwt";
 
     private static final String IS_EVIDENCE_TYPE_PARAM = "isEvidenceType";
@@ -124,19 +118,15 @@ public class AuthorizeHandler {
     private final CredentialService credentialService;
     private final RequestedErrorResponseService requestedErrorResponseService;
     private final ES256SignatureVerifier es256SignatureVerifier = new ES256SignatureVerifier();
-    private ViewHelper viewHelper;
     private final VerifiableCredentialGenerator verifiableCredentialGenerator;
     private final HttpClient httpClient;
 
     public AuthorizeHandler(
-            ViewHelper viewHelper,
             AuthCodeService authCodeService,
             CredentialService credentialService,
             RequestedErrorResponseService requestedErrorResponseService,
             VerifiableCredentialGenerator verifiableCredentialGenerator,
             HttpClient httpClient) {
-        Objects.requireNonNull(viewHelper);
-        this.viewHelper = viewHelper;
         this.authCodeService = authCodeService;
         this.credentialService = credentialService;
         this.requestedErrorResponseService = requestedErrorResponseService;
@@ -144,149 +134,128 @@ public class AuthorizeHandler {
         this.httpClient = httpClient;
     }
 
-    public final Route doAuthorize =
-            (Request request, Response response) -> {
-                QueryParamsMap queryParamsMap = request.queryMap();
+    public void doAuthorize(Context ctx) throws Exception {
+        ValidationResult validationResult = validateQueryParams(ctx);
 
-                ValidationResult validationResult = validateQueryParams(queryParamsMap);
+        if (!validationResult.isValid()) {
+            if (validationResult.getError().getCode().equals(ERROR_CODE_INVALID_REQUEST_JWT)) {
+                throw new BadRequestResponse(validationResult.getError().getDescription());
+            }
 
-                if (!validationResult.isValid()) {
-                    if (validationResult
-                            .getError()
-                            .getCode()
-                            .equals(ERROR_CODE_INVALID_REQUEST_JWT)) {
-                        response.status(HttpServletResponse.SC_BAD_REQUEST);
-                        return validationResult.getError().getDescription();
-                    }
+            String clientIdValue = ctx.queryParam(RequestParamConstants.CLIENT_ID);
+            String requestValue = ctx.queryParam(RequestParamConstants.REQUEST);
 
-                    String clientIdValue = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
-                    String requestValue = queryParamsMap.value(RequestParamConstants.REQUEST);
+            ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
 
-                    ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
+            if (clientConfig == null) {
+                throw new BadRequestResponse(
+                        "Error: Could not find client configuration details for: " + clientIdValue);
+            }
 
-                    if (clientConfig == null) {
-                        response.status(HttpServletResponse.SC_BAD_REQUEST);
-                        return "Error: Could not find client configuration details for: "
-                                + clientIdValue;
-                    }
+            SignedJWT signedJWT =
+                    getSignedJWT(requestValue, clientConfig.getEncryptionPrivateKey());
 
-                    SignedJWT signedJWT =
-                            getSignedJWT(requestValue, clientConfig.getEncryptionPrivateKey());
+            AuthorizationErrorResponse errorResponse =
+                    new AuthorizationErrorResponse(
+                            URI.create(
+                                    signedJWT
+                                            .getJWTClaimsSet()
+                                            .getClaim(RequestParamConstants.REDIRECT_URI)
+                                            .toString()),
+                            validationResult.getError(),
+                            State.parse(
+                                    signedJWT
+                                            .getJWTClaimsSet()
+                                            .getClaim(RequestParamConstants.STATE)
+                                            .toString()),
+                            ResponseMode.QUERY);
 
-                    AuthorizationErrorResponse errorResponse =
-                            new AuthorizationErrorResponse(
-                                    URI.create(
-                                            signedJWT
-                                                    .getJWTClaimsSet()
-                                                    .getClaim(RequestParamConstants.REDIRECT_URI)
-                                                    .toString()),
-                                    validationResult.getError(),
-                                    State.parse(
-                                            signedJWT
-                                                    .getJWTClaimsSet()
-                                                    .getClaim(RequestParamConstants.STATE)
-                                                    .toString()),
-                                    ResponseMode.QUERY);
+            ctx.redirect(errorResponse.toURI().toString());
+            return;
+        }
 
-                    response.type(APPLICATION_X_WWW_FORM_URLENCODED);
-                    response.redirect(errorResponse.toURI().toString());
-                    // No content required in response
-                    return null;
-                }
+        var criStubData = getCriStubData();
+        var criStubEvidencePayloads = getCriStubEvidencePayloads();
 
-                var criStubData = getCriStubData();
-                var criStubEvidencePayloads = getCriStubEvidencePayloads();
+        String sharedAttributesJson;
+        String evidenceRequestedJson;
+        String requestScope;
+        String requestContext;
+        try {
+            JWTClaimsSet claimsSet = getJwtClaimsSet(ctx);
+            requestScope = claimsSet.getStringClaim(REQUEST_SCOPE);
+            requestScope = requestScope == null ? "No scope provided in request" : requestScope;
+            requestContext = claimsSet.getStringClaim(REQUEST_CONTEXT);
+            requestContext =
+                    requestContext == null ? "No context provided in request" : requestContext;
+            sharedAttributesJson = getSharedAttributes(claimsSet);
+            evidenceRequestedJson = getEvidenceRequested(claimsSet);
+        } catch (Exception e) {
+            requestScope = e.getMessage();
+            requestContext = e.getMessage();
+            sharedAttributesJson = e.getMessage();
+            evidenceRequestedJson = e.getMessage();
+        }
 
-                String sharedAttributesJson;
-                String evidenceRequestedJson;
-                String requestScope;
-                String requestContext;
-                try {
-                    JWTClaimsSet claimsSet = getJwtClaimsSet(queryParamsMap);
-                    requestScope = claimsSet.getStringClaim(REQUEST_SCOPE);
-                    requestScope =
-                            requestScope == null ? "No scope provided in request" : requestScope;
-                    requestContext = claimsSet.getStringClaim(REQUEST_CONTEXT);
-                    requestContext =
-                            requestContext == null
-                                    ? "No context provided in request"
-                                    : requestContext;
-                    sharedAttributesJson = getSharedAttributes(claimsSet);
-                    evidenceRequestedJson = getEvidenceRequested(claimsSet);
-                } catch (Exception e) {
-                    requestScope = e.getMessage();
-                    requestContext = e.getMessage();
-                    sharedAttributesJson = e.getMessage();
-                    evidenceRequestedJson = e.getMessage();
-                }
+        CriType criType = getCriType();
+        LOGGER.info("criType: {}", criType.value);
 
-                CriType criType = getCriType();
-                LOGGER.info("criType: {}", criType.value);
+        Map<String, Object> frontendParams = new HashMap<>();
+        frontendParams.put(
+                IS_EVIDENCE_TYPE_PARAM,
+                criType.equals(CriType.EVIDENCE_CRI_TYPE)
+                        || criType.equals(CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE));
+        frontendParams.put(
+                IS_EVIDENCE_DRIVING_LICENCE_TYPE_PARAM,
+                criType.equals(CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE));
+        frontendParams.put(IS_ACTIVITY_TYPE_PARAM, criType.equals(CriType.ACTIVITY_CRI_TYPE));
+        frontendParams.put(IS_FRAUD_TYPE_PARAM, criType.equals(CriType.FRAUD_CRI_TYPE));
+        frontendParams.put(
+                IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
+        frontendParams.put(IS_DOC_CHECKING_TYPE_PARAM, criType.equals(DOC_CHECK_APP_CRI_TYPE));
+        frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
+        frontendParams.put(IS_NINO_TYPE, criType.equals(CriType.NINO_CRI_TYPE));
+        frontendParams.put(
+                CRI_MITIGATION_ENABLED_PARAM,
+                CredentialIssuerConfig.isEnabled(
+                        CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false"));
+        frontendParams.put(IS_USER_ASSERTED_TYPE, !criType.isIdentityCheck());
+        frontendParams.put(REQUEST_SCOPE, requestScope);
+        frontendParams.put(REQUEST_CONTEXT, requestContext);
+        if (!criType.equals(DOC_CHECK_APP_CRI_TYPE)) {
+            frontendParams.put(SHARED_CLAIMS, sharedAttributesJson);
+        }
+        frontendParams.put(EVIDENCE_REQUESTED, evidenceRequestedJson);
+        frontendParams.put(CRI_STUB_DATA, criStubData);
+        frontendParams.put(CRI_STUB_EVIDENCE_PAYLOADS, criStubEvidencePayloads);
+        frontendParams.put(F2F_STUB_QUEUE_NAME, F2F_STUB_QUEUE_NAME_DEFAULT);
 
-                Map<String, Object> frontendParams = new HashMap<>();
-                frontendParams.put(
-                        IS_EVIDENCE_TYPE_PARAM,
-                        criType.equals(CriType.EVIDENCE_CRI_TYPE)
-                                || criType.equals(CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE));
-                frontendParams.put(
-                        IS_EVIDENCE_DRIVING_LICENCE_TYPE_PARAM,
-                        criType.equals(CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE));
-                frontendParams.put(
-                        IS_ACTIVITY_TYPE_PARAM, criType.equals(CriType.ACTIVITY_CRI_TYPE));
-                frontendParams.put(IS_FRAUD_TYPE_PARAM, criType.equals(CriType.FRAUD_CRI_TYPE));
-                frontendParams.put(
-                        IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
-                frontendParams.put(
-                        IS_DOC_CHECKING_TYPE_PARAM, criType.equals(DOC_CHECK_APP_CRI_TYPE));
-                frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
-                frontendParams.put(IS_NINO_TYPE, criType.equals(CriType.NINO_CRI_TYPE));
-                frontendParams.put(
-                        CRI_MITIGATION_ENABLED_PARAM,
-                        CredentialIssuerConfig.isEnabled(
-                                CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false"));
-                frontendParams.put(IS_USER_ASSERTED_TYPE, !criType.isIdentityCheck());
-                frontendParams.put(REQUEST_SCOPE, requestScope);
-                frontendParams.put(REQUEST_CONTEXT, requestContext);
-                if (!criType.equals(DOC_CHECK_APP_CRI_TYPE)) {
-                    frontendParams.put(SHARED_CLAIMS, sharedAttributesJson);
-                }
-                frontendParams.put(EVIDENCE_REQUESTED, evidenceRequestedJson);
-                frontendParams.put(CRI_STUB_DATA, criStubData);
-                frontendParams.put(CRI_STUB_EVIDENCE_PAYLOADS, criStubEvidencePayloads);
-                frontendParams.put(F2F_STUB_QUEUE_NAME, F2F_STUB_QUEUE_NAME_DEFAULT);
+        String error = ctx.attribute(ERROR_PARAM);
+        boolean hasError = error != null;
+        frontendParams.put(HAS_ERROR_PARAM, hasError);
+        if (hasError) {
+            frontendParams.put(ERROR_PARAM, error);
+        }
 
-                String error = request.attribute(ERROR_PARAM);
-                boolean hasError = error != null;
-                frontendParams.put(HAS_ERROR_PARAM, hasError);
-                if (hasError) {
-                    frontendParams.put(ERROR_PARAM, error);
-                }
+        frontendParams.put(CRI_NAME_PARAM, CredentialIssuerConfig.NAME);
 
-                frontendParams.put(CRI_NAME_PARAM, CredentialIssuerConfig.NAME);
+        ctx.render("templates/authorize.mustache", frontendParams);
+    }
 
-                return viewHelper.render(frontendParams, "authorize.mustache");
-            };
+    public void apiAuthorize(Context ctx) throws Exception {
+        ctx.redirect(generateResponseRedirect(ctx.bodyAsClass(ApiAuthRequest.class)));
+    }
 
-    public final Route apiAuthorize =
-            (Request request, Response response) -> {
-                response.type(APPLICATION_JSON);
-                return generateResponse(
-                        OBJECT_MAPPER.readValue(request.body(), ApiAuthRequest.class), response);
-            };
+    public void formAuthorize(Context ctx) throws Exception {
+        ctx.redirect(generateResponseRedirect(FormAuthRequest.fromFormContext(ctx)));
+    }
 
-    public final Route formAuthorize =
-            (Request request, Response response) -> {
-                response.type(APPLICATION_X_WWW_FORM_URLENCODED);
-                return generateResponse(FormAuthRequest.fromQueryMap(request.queryMap()), response);
-            };
-
-    private String generateResponse(AuthRequest authRequest, Response response)
+    private String generateResponseRedirect(AuthRequest authRequest)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
                     ParseException {
         AuthorizationErrorResponse requestedAuthErrorResponse = handleRequestedError(authRequest);
         if (requestedAuthErrorResponse != null) {
-            response.redirect(requestedAuthErrorResponse.toURI().toString());
-            return null;
+            return requestedAuthErrorResponse.toURI().toString();
         }
 
         var clientIdValue = authRequest.clientId();
@@ -295,8 +264,8 @@ public class AuthorizeHandler {
         ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
 
         if (clientConfig == null) {
-            response.status(HttpServletResponse.SC_BAD_REQUEST);
-            return "Error: Could not find client configuration details for: " + clientIdValue;
+            throw new BadRequestResponse(
+                    "Error: Could not find client configuration details for: " + clientIdValue);
         }
 
         SignedJWT signedJWT = getSignedJWT(jar, clientConfig.getEncryptionPrivateKey());
@@ -344,10 +313,10 @@ public class AuthorizeHandler {
             persistData(
                     authRequest, successResponse.getAuthorizationCode(), signedVcJwt, redirectUri);
 
-            response.redirect(successResponse.toURI().toString());
+            return successResponse.toURI().toString();
         } catch (CriStubException e) {
             AuthorizationErrorResponse errorResponse = generateErrorResponse(e, redirectUri);
-            response.redirect(errorResponse.toURI().toString());
+            return errorResponse.toURI().toString();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             AuthorizationErrorResponse errorResponse =
@@ -355,9 +324,8 @@ public class AuthorizeHandler {
                             new CriStubException(
                                     "f2f_queue_exception", "Failed to send VC to F2F queue", e),
                             redirectUri);
-            response.redirect(errorResponse.toURI().toString());
+            return errorResponse.toURI().toString();
         }
-        return null;
     }
 
     private Map<String, Object> generateEvidenceMap(AuthRequest authRequest)
@@ -416,14 +384,13 @@ public class AuthorizeHandler {
                                                             jwtId)))
                                     .build();
 
-                    HttpResponse response =
-                            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                    var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
                     int responseStatusCode = response.statusCode();
                     LOGGER.info("Processed mitigated CI's with response: {}", responseStatusCode);
                     if (responseStatusCode != 200) {
                         String msg = "Failed to post CI mitigation to management stub api.";
                         LOGGER.error(msg);
-                        LOGGER.error(response.body().toString());
+                        LOGGER.error(response.body());
                         throw new CriStubException("failed_to_post", msg);
                     }
                 } catch (URISyntaxException e) {
@@ -479,7 +446,7 @@ public class AuthorizeHandler {
     private Map<String, Object> jsonStringToMap(String payload) throws CriStubException {
         if (isBlank(payload)) payload = "{}";
         try {
-            return OBJECT_MAPPER.readValue(payload, Map.class);
+            return OBJECT_MAPPER.readValue(payload, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
             throw new CriStubException("invalid_json", "Unable to generate valid JSON Payload", e);
         }
@@ -636,37 +603,37 @@ public class AuthorizeHandler {
         return gpg45Score;
     }
 
-    private ValidationResult validateQueryParams(QueryParamsMap queryParams) {
-        String clientIdValue = queryParams.value(RequestParamConstants.CLIENT_ID);
+    private ValidationResult validateQueryParams(Context ctx) {
+        String clientIdValue = ctx.queryParam(RequestParamConstants.CLIENT_ID);
         if (Validator.isNullBlankOrEmpty(clientIdValue)
                 || ConfigService.getClientConfig(clientIdValue) == null) {
             return new ValidationResult(false, OAuth2Error.INVALID_CLIENT);
         }
 
-        String request = queryParams.value(RequestParamConstants.REQUEST);
+        String request = ctx.queryParam(RequestParamConstants.REQUEST);
         if (Validator.isNullBlankOrEmpty(request)) {
             return new ValidationResult(
                     false,
                     new ErrorObject(
                             ERROR_CODE_INVALID_REQUEST_JWT,
                             "request param must be provided",
-                            HttpServletResponse.SC_BAD_REQUEST));
+                            HttpStatus.BAD_REQUEST.getCode()));
         }
 
-        ValidationResult validationResult = validateRequestClaims(queryParams);
+        ValidationResult validationResult = validateRequestClaims(ctx);
         if (validationResult != null) return validationResult;
 
         return ValidationResult.createValidResult();
     }
 
-    private ValidationResult validateRequestClaims(QueryParamsMap queryParams) {
-        String clientIdValue = queryParams.value(RequestParamConstants.CLIENT_ID);
+    private ValidationResult validateRequestClaims(Context ctx) {
+        String clientIdValue = ctx.queryParam(RequestParamConstants.CLIENT_ID);
         ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
 
         try {
             SignedJWT signedJWT =
                     getSignedJWT(
-                            queryParams.value(RequestParamConstants.REQUEST),
+                            ctx.queryParam(RequestParamConstants.REQUEST),
                             clientConfig.getEncryptionPrivateKey());
             JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
@@ -686,7 +653,7 @@ public class AuthorizeHandler {
                         new ErrorObject(
                                 ERROR_CODE_INVALID_REQUEST_JWT,
                                 "redirect_uri param must be provided",
-                                HttpServletResponse.SC_BAD_REQUEST));
+                                HttpStatus.BAD_REQUEST.getCode()));
             }
 
             if (Validator.redirectUrlIsInvalid(
@@ -697,7 +664,7 @@ public class AuthorizeHandler {
                         new ErrorObject(
                                 ERROR_CODE_INVALID_REQUEST_JWT,
                                 "redirect_uri param provided does not match any of the redirect_uri values configured",
-                                HttpServletResponse.SC_BAD_REQUEST));
+                                HttpStatus.BAD_REQUEST.getCode()));
             }
 
             if (Validator.isNullBlankOrEmpty(jwtClaimsSet.getClaim(RequestParamConstants.ISSUER))) {
@@ -706,7 +673,7 @@ public class AuthorizeHandler {
                         new ErrorObject(
                                 "invalid_issuer",
                                 "issuer param must be provided",
-                                HttpServletResponse.SC_BAD_REQUEST));
+                                HttpStatus.BAD_REQUEST.getCode()));
             }
 
             if (Validator.isNullBlankOrEmpty(
@@ -716,7 +683,7 @@ public class AuthorizeHandler {
                         new ErrorObject(
                                 "invalid_issuer",
                                 "issuer param must be provided",
-                                HttpServletResponse.SC_BAD_REQUEST));
+                                HttpStatus.BAD_REQUEST.getCode()));
             }
 
         } catch (ParseException | NoSuchAlgorithmException | InvalidKeySpecException e) {
@@ -725,7 +692,7 @@ public class AuthorizeHandler {
                     new ErrorObject(
                             "unable_to_parse_request_jwt",
                             "unable to parse queryParams jwt into signed jwt object",
-                            HttpServletResponse.SC_BAD_REQUEST));
+                            HttpStatus.BAD_REQUEST.getCode()));
         }
         return null;
     }
@@ -756,9 +723,9 @@ public class AuthorizeHandler {
                 .toString();
     }
 
-    private JWTClaimsSet getJwtClaimsSet(QueryParamsMap queryParamsMap) throws Exception {
-        String requestParam = queryParamsMap.value(RequestParamConstants.REQUEST);
-        String clientIdParam = queryParamsMap.value(RequestParamConstants.CLIENT_ID);
+    private JWTClaimsSet getJwtClaimsSet(Context ctx) throws Exception {
+        String requestParam = ctx.queryParam(RequestParamConstants.REQUEST);
+        String clientIdParam = ctx.queryParam(RequestParamConstants.CLIENT_ID);
 
         ClientConfig clientConfig = ConfigService.getClientConfig(clientIdParam);
 

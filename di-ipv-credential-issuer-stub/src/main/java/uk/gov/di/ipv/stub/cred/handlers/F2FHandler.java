@@ -3,53 +3,25 @@ package uk.gov.di.ipv.stub.cred.handlers;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.id.Subject;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
-import org.eclipse.jetty.http.HttpHeader;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
-import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 
-import javax.servlet.http.HttpServletResponse;
-
-public class F2FHandler {
-
-    private static final String JSON_RESPONSE_TYPE = "application/json;charset=UTF-8";
-
-    private TokenService tokenService;
-    private CredentialService credentialService;
+public class F2FHandler extends CredentialHandler {
 
     public F2FHandler(CredentialService credentialService, TokenService tokenService) {
-        this.credentialService = credentialService;
-        this.tokenService = tokenService;
+        super(credentialService, tokenService);
     }
 
-    public Route getResource =
-            (Request request, Response response) -> {
-                String accessTokenString = request.headers(HttpHeader.AUTHORIZATION.toString());
+    @Override
+    protected void sendResponse(Context ctx, String verifiableCredential) throws Exception {
+        String subject = SignedJWT.parse(verifiableCredential).getJWTClaimsSet().getSubject();
 
-                ValidationResult validationResult =
-                        tokenService.validateAccessToken(accessTokenString);
+        var userInfo = new UserInfo(new Subject(subject));
+        userInfo.setClaim("https://vocab.account.gov.uk/v1/credentialStatus", "pending");
 
-                if (!validationResult.isValid()) {
-                    response.status(validationResult.getError().getHTTPStatusCode());
-                    return validationResult.getError().getDescription();
-                }
-
-                String resourceId = tokenService.getPayload(accessTokenString);
-                String credentialSignedJwt = credentialService.getCredentialSignedJwt(resourceId);
-                String subject =
-                        SignedJWT.parse(credentialSignedJwt).getJWTClaimsSet().getSubject();
-
-                tokenService.revoke(accessTokenString);
-
-                response.type(JSON_RESPONSE_TYPE);
-                response.status(HttpServletResponse.SC_ACCEPTED);
-
-                var userInfo = new UserInfo(new Subject(subject));
-                userInfo.setClaim("https://vocab.account.gov.uk/v1/credentialStatus", "pending");
-
-                return userInfo.toJSONString();
-            };
+        ctx.status(HttpStatus.ACCEPTED);
+        ctx.json(userInfo.toJSONObject());
+    }
 }

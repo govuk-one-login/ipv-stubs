@@ -1,47 +1,46 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
-import org.eclipse.jetty.http.HttpHeader;
-import spark.Request;
-import spark.Response;
-import spark.Route;
+import io.javalin.http.Context;
+import io.javalin.http.Header;
+import io.javalin.http.HttpStatus;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 
-import javax.servlet.http.HttpServletResponse;
-
 public class CredentialHandler {
 
-    private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/jwt;charset=UTF-8";
+    private static final String JWT_CONTENT_TYPE = "application/jwt;charset=UTF-8";
 
-    private CredentialService credentialService;
-    private TokenService tokenService;
+    private final CredentialService credentialService;
+    private final TokenService tokenService;
 
     public CredentialHandler(CredentialService credentialService, TokenService tokenService) {
         this.credentialService = credentialService;
         this.tokenService = tokenService;
     }
 
-    public Route getResource =
-            (Request request, Response response) -> {
-                String accessTokenString = request.headers(HttpHeader.AUTHORIZATION.toString());
+    public void getResource(Context ctx) throws Exception {
+        String accessTokenString = ctx.header(Header.AUTHORIZATION);
 
-                ValidationResult validationResult =
-                        tokenService.validateAccessToken(accessTokenString);
+        ValidationResult validationResult = tokenService.validateAccessToken(accessTokenString);
 
-                if (!validationResult.isValid()) {
-                    response.status(validationResult.getError().getHTTPStatusCode());
-                    return validationResult.getError().getDescription();
-                }
+        if (!validationResult.isValid()) {
+            ctx.status(validationResult.getError().getHTTPStatusCode());
+            ctx.result(validationResult.getError().getDescription());
+            return;
+        }
 
-                String resourceId = tokenService.getPayload(accessTokenString);
-                String verifiableCredential = credentialService.getCredentialSignedJwt(resourceId);
+        String resourceId = tokenService.getPayload(accessTokenString);
+        String verifiableCredential = credentialService.getCredentialSignedJwt(resourceId);
 
-                tokenService.revoke(accessTokenString);
+        tokenService.revoke(accessTokenString);
 
-                response.type(DEFAULT_RESPONSE_CONTENT_TYPE);
-                response.status(HttpServletResponse.SC_CREATED);
+        sendResponse(ctx, verifiableCredential);
+    }
 
-                return verifiableCredential;
-            };
+    protected void sendResponse(Context ctx, String verifiableCredential) throws Exception {
+        ctx.contentType(JWT_CONTENT_TYPE);
+        ctx.status(HttpStatus.CREATED);
+        ctx.result(verifiableCredential);
+    }
 }

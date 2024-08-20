@@ -1,6 +1,6 @@
 package uk.gov.di.ipv.stub.cred.domain;
 
-import spark.QueryParamsMap;
+import io.javalin.http.Context;
 
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.ACTIVITY_HISTORY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.BIOMETRIC_VERIFICATION;
@@ -16,13 +16,13 @@ public record Gpg45Scores(
         String fraud,
         String verification,
         String biometricVerification) {
-    public static Gpg45Scores fromQueryMap(QueryParamsMap paramsMap) {
+    public static Gpg45Scores fromFormContext(Context ctx) {
         return new Gpg45Scores(
-                paramsMap.value(STRENGTH),
-                paramsMap.value(VALIDITY),
-                paramsMap.value(ACTIVITY_HISTORY),
-                paramsMap.value(FRAUD),
-                paramsMap.value(VERIFICATION),
-                paramsMap.value(BIOMETRIC_VERIFICATION));
+                ctx.formParam(STRENGTH),
+                ctx.formParam(VALIDITY),
+                ctx.formParam(ACTIVITY_HISTORY),
+                ctx.formParam(FRAUD),
+                ctx.formParam(VERIFICATION),
+                ctx.formParam(BIOMETRIC_VERIFICATION));
     }
 }

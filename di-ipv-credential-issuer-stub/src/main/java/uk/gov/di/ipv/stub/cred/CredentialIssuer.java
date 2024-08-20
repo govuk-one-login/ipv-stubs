@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.stub.cred;
 
-import spark.Spark;
+import io.javalin.Javalin;
+import io.javalin.rendering.template.JavalinMustache;
 import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
@@ -15,7 +16,6 @@ import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
 import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
-import uk.gov.di.ipv.stub.cred.utils.ViewHelper;
 import uk.gov.di.ipv.stub.cred.validation.Validator;
 import uk.gov.di.ipv.stub.cred.vc.VerifiableCredentialGenerator;
 
@@ -34,8 +34,13 @@ public class CredentialIssuer {
     private final HealthCheckHandler healthCheckHandler;
 
     public CredentialIssuer() {
-        Spark.staticFileLocation("/public");
-        Spark.port(Integer.parseInt(CredentialIssuerConfig.PORT));
+        var app =
+                Javalin.create(
+                        config -> {
+                            config.showJavalinBanner = false;
+                            config.staticFiles.add("/public");
+                            config.fileRenderer(new JavalinMustache());
+                        });
 
         AuthCodeService authCodeService = new AuthCodeService();
         TokenService tokenService = new TokenService();
@@ -48,7 +53,6 @@ public class CredentialIssuer {
 
         authorizeHandler =
                 new AuthorizeHandler(
-                        new ViewHelper(),
                         authCodeService,
                         credentialService,
                         requestedErrorResponseService,
@@ -69,28 +73,31 @@ public class CredentialIssuer {
         f2fHandler = new F2FHandler(credentialService, tokenService);
         healthCheckHandler = new HealthCheckHandler();
 
-        initRoutes();
-        initErrorMapping();
+        initRoutes(app);
+        initErrorMapping(app);
+
+        app.start(Integer.parseInt(CredentialIssuerConfig.PORT));
     }
 
-    private void initRoutes() {
-        Spark.get("/", healthCheckHandler.healthy);
-        Spark.get("/authorize", authorizeHandler.doAuthorize);
-        Spark.post("/authorize", authorizeHandler.formAuthorize);
-        Spark.post("/api/authorize", authorizeHandler.apiAuthorize);
-        Spark.post("/token", tokenHandler.issueAccessToken);
+    private void initRoutes(Javalin app) {
+        app.get("/", healthCheckHandler::healthy);
+        app.get("/authorize", authorizeHandler::doAuthorize);
+        app.post("/authorize", authorizeHandler::formAuthorize);
+        app.post("/api/authorize", authorizeHandler::apiAuthorize);
+        app.post("/token", tokenHandler::issueAccessToken);
         if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
-            Spark.post("/credentials/issue", docAppCredentialHandler.getResource);
+            app.post("/credentials/issue", docAppCredentialHandler::getResource);
         } else if (getCriType().equals(CriType.F2F_CRI_TYPE)) {
-            Spark.post("/credentials/issue", f2fHandler.getResource);
+            app.post("/credentials/issue", f2fHandler::getResource);
         } else {
-            Spark.post("/credentials/issue", credentialHandler.getResource);
+            app.post("/credentials/issue", credentialHandler::getResource);
         }
-        Spark.get("/.well-known/jwks.json", jwksHandler.getResource);
+        app.get("/.well-known/jwks.json", jwksHandler::getResource);
     }
 
-    private void initErrorMapping() {
-        Spark.internalServerError(
-                "<html><body><h1>Error! Something went wrong!</h1></body></html>");
+    private void initErrorMapping(Javalin app) {
+        app.error(
+                500,
+                ctx -> ctx.html("<html><body><h1>Error! Something went wrong!</h1></body></html>"));
     }
 }
