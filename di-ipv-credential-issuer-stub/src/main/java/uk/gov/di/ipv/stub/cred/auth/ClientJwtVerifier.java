@@ -33,10 +33,10 @@ public class ClientJwtVerifier {
 
     public void authenticateClient(Context ctx) throws ClientAuthenticationException {
 
-        Map<String, List<String>> queryParams = ctx.queryParamMap();
+        Map<String, List<String>> formParams = ctx.formParamMap();
         PrivateKeyJWT authenticationJwt;
         try {
-            authenticationJwt = PrivateKeyJWT.parse(queryParams);
+            authenticationJwt = PrivateKeyJWT.parse(formParams);
         } catch (ParseException e) {
             throw new ClientAuthenticationException(e);
         }
@@ -59,7 +59,7 @@ public class ClientJwtVerifier {
             if (es256SignatureVerifier.signatureIsDerFormat(
                     authenticationJwt.getClientAssertion())) {
                 concatSignatureAuthJwt =
-                        transcodeSignatureToConcatFormat(authenticationJwt, queryParams);
+                        transcodeSignatureToConcatFormat(authenticationJwt, formParams);
             } else {
                 concatSignatureAuthJwt = authenticationJwt;
             }
@@ -73,12 +73,12 @@ public class ClientJwtVerifier {
     }
 
     private PrivateKeyJWT transcodeSignatureToConcatFormat(
-            PrivateKeyJWT authJwt, Map<String, List<String>> queryParams)
+            PrivateKeyJWT authJwt, Map<String, List<String>> formParams)
             throws java.text.ParseException, JOSEException, ParseException {
         SignedJWT transcodedSignedJwt =
                 es256SignatureVerifier.transcodeSignature(authJwt.getClientAssertion());
-        queryParams.put(CLIENT_ASSERTION_PARAM, List.of(transcodedSignedJwt.serialize()));
-        return PrivateKeyJWT.parse(queryParams);
+        formParams.put(CLIENT_ASSERTION_PARAM, List.of(transcodedSignedJwt.serialize()));
+        return PrivateKeyJWT.parse(formParams);
     }
 
     private ClientAuthenticationVerifier<Object> getPopulatedClientAuthVerifier() {

@@ -51,7 +51,7 @@ public class TokenHandler {
 
     public void issueAccessToken(Context ctx) {
         TokenErrorResponse requestedTokenErrorResponse =
-                handleRequestedError(ctx.queryParam(RequestParamConstants.AUTH_CODE));
+                handleRequestedError(ctx.formParam(RequestParamConstants.AUTH_CODE));
         if (requestedTokenErrorResponse != null) {
             ctx.status(HttpStatus.BAD_REQUEST_400);
             ctx.json(requestedTokenErrorResponse.toJSONObject());
@@ -67,7 +67,7 @@ public class TokenHandler {
         }
 
         if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)
-                || Validator.isNullBlankOrEmpty(ctx.queryParam(RequestParamConstants.CLIENT_ID))) {
+                || Validator.isNullBlankOrEmpty(ctx.formParam(RequestParamConstants.CLIENT_ID))) {
             try {
                 clientJwtVerifier.authenticateClient(ctx);
             } catch (ClientAuthenticationException e) {
@@ -81,7 +81,7 @@ public class TokenHandler {
 
         } else {
             ClientConfig clientConfig =
-                    ConfigService.getClientConfig(ctx.queryParam(RequestParamConstants.CLIENT_ID));
+                    ConfigService.getClientConfig(ctx.formParam(RequestParamConstants.CLIENT_ID));
             String authMethod = clientConfig.getJwtAuthentication().getAuthenticationMethod();
             if (!authMethod.equals(NONE_AUTHENTICATION_METHOD)) {
                 TokenErrorResponse errorResponse =
@@ -92,11 +92,11 @@ public class TokenHandler {
             }
         }
 
-        String code = ctx.queryParam(RequestParamConstants.AUTH_CODE);
+        String code = ctx.formParam(RequestParamConstants.AUTH_CODE);
         var redirectValidationResult =
                 validator.validateRedirectUrlsMatch(
                         authCodeService.getRedirectUrl(code),
-                        ctx.queryParam(RequestParamConstants.REDIRECT_URI));
+                        ctx.formParam(RequestParamConstants.REDIRECT_URI));
 
         if (!redirectValidationResult.isValid()) {
             TokenErrorResponse errorResponse =
