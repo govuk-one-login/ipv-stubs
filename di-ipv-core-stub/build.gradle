@@ -23,7 +23,7 @@ dependencies {
 			"org.yaml:snakeyaml:2.2",
 			"com.fasterxml.jackson.core:jackson-databind:2.17.2",
 			"com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2",
-			"org.eclipse.jetty:jetty-server:9.4.55.v20240627", // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
+			"org.eclipse.jetty:jetty-server:12.0.12", // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
 			"org.eclipse.jetty:jetty-webapp:9.4.55.v20240627" // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/26
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.10.3"
