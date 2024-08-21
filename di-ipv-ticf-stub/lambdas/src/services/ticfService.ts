@@ -10,13 +10,13 @@ import { getUserEvidence } from "../management/services/userEvidenceService";
 import UserEvidenceItem from "../management/model/userEvidenceItem";
 
 export async function processGetVCRequest(
-  ticfRequest: TicfRequest
+  ticfRequest: TicfRequest,
 ): Promise<ServiceResponse> {
   const ticfSigningKey = await getSsmParameter(
-    config.ticfParamBasePath + "signingKey"
+    config.ticfParamBasePath + "signingKey",
   );
   const ticfComponentId = await getSsmParameter(
-    config.ticfParamBasePath + "componentId"
+    config.ticfParamBasePath + "componentId",
   );
   const timeoutVc =
     (
@@ -29,6 +29,16 @@ export async function processGetVCRequest(
 
   const timestamp = Math.floor(new Date().getTime() / 1000);
   const userEvidenceItem = await getUserEvidenceFromDb(ticfRequest.sub);
+
+  const responseDelay = userEvidenceItem?.responseDelay;
+  if (responseDelay && responseDelay > 0) {
+    console.info(
+      `response delay configured for ticf request - sleeping for ${responseDelay} seconds`,
+    );
+    await new Promise((r) => setTimeout(r, 1000 * responseDelay));
+    console.info("woken up");
+  }
+
   const ticfEvidenceItem = userEvidenceItem?.evidence;
 
   const payload: TicfVc = {
@@ -58,13 +68,13 @@ export async function processGetVCRequest(
       vtm: ticfRequest.vtm,
       "https://vocab.account.gov.uk/v1/credentialJWT": [returnJwt],
     },
-    statusCode: userEvidenceItem?.statusCode 
+    statusCode: userEvidenceItem?.statusCode,
   };
 }
 
 function getEvidenceItem(
   timeoutVc: boolean,
-  includeCi: boolean
+  includeCi: boolean,
 ): TicfEvidenceItem {
   if (timeoutVc) {
     return { type: "RiskAssessment" };
@@ -85,11 +95,10 @@ function getEvidenceItem(
 }
 
 async function getUserEvidenceFromDb(
-  userId: string
+  userId: string,
 ): Promise<UserEvidenceItem | undefined> {
-  const userEvidenceItem: UserEvidenceItem | null = await getUserEvidence(
-    userId
-  );
+  const userEvidenceItem: UserEvidenceItem | null =
+    await getUserEvidence(userId);
   return userEvidenceItem ? userEvidenceItem : undefined;
 }
 

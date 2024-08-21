@@ -68,7 +68,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserEvidenceRequestBody"
+              $ref: "#/components/schemas/TicfManagementRequestBody"
       responses:
         200:
           description: "Success response "
@@ -109,7 +109,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserEvidenceRequestBody"
+              $ref: "#/components/schemas/TicfManagementRequestBody"
       responses:
         200:
           description: "Success response "
@@ -160,7 +160,7 @@ components:
           items:
             type: string
           description: An array of VC's from CRI's
-    UserEvidenceRequestBody:
+    TicfManagementRequestBody:
       description: Request body for Ticf management
       type: object
       properties:
@@ -171,8 +171,11 @@ components:
           type: array
           items:
             type: string
-          desxcription: The array of ci codes data
+          description: The array of ci codes data
         txn:
           type: string
           description: The txn code (riskEngineAssessmentId) data
+        responseDelay:
+          type: number
+          description: The period in seconds to wait before sending a response from the risk-assessment endpoint.
 

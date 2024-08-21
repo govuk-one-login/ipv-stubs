@@ -5,4 +5,5 @@ export default interface UserEvidenceItem {
   evidence: TicfEvidenceItem;
   statusCode: number;
   ttl: number;
+  responseDelay: number;
 }
