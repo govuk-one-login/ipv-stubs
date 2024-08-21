@@ -153,17 +153,23 @@ Conditions:
 Mappings:
   EnvironmentConfiguration:
     "130355686670": # Old Development
-      fargateCPUsize: "256"
-      fargateRAMsize: "512"
-      desiredTaskCount: 1
+      lb400ErrorLimit: 100
+      lb500ErrorLimit: 10
+      fargateCPUsize: "1024"
+      fargateRAMsize: "2048"
+      desiredTaskCount: 4
       environment: dev
       platform: core
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "175872367215": # New Development
-      fargateCPUsize: "256"
-      fargateRAMsize: "512"
-      desiredTaskCount: 1
+      lb400ErrorLimit: 100
+      lb500ErrorLimit: 10
+      fargateCPUsize: "1024"
+      fargateRAMsize: "2048"
+      desiredTaskCount: 4
       environment: dev
       platform: core
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
     "826978934233": #Core Stubs Build
       fargateCPUsize: "256"
       fargateRAMsize: "1024"
@@ -507,8 +513,11 @@ Resources:
   OrchStubAutoScalingTarget:
     Type: AWS::ApplicationAutoScaling::ScalableTarget
     Properties:
-      MaxCapacity: 1
-      MinCapacity: 1
+      MaxCapacity: 12
+      MinCapacity: !FindInMap
+        - EnvironmentConfiguration
+        - !Ref AWS::AccountId
+        - desiredTaskCount
       ResourceId: !Join
         - '/'
         - - "service"
@@ -534,9 +543,9 @@ Resources:
       TargetTrackingScalingPolicyConfiguration:
         PredefinedMetricSpecification:
           PredefinedMetricType: ECSServiceAverageCPUUtilization
-        TargetValue: 70
+        TargetValue: 30
         ScaleInCooldown: 300
-        ScaleOutCooldown: 60
+        ScaleOutCooldown: 30
 
   ECSAccessLogsGroup:
     Type: AWS::Logs::LogGroup
@@ -607,6 +616,34 @@ Resources:
               Value: !Ref EvcsAccessTokenTtl
             - Name: EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK
               Value: !Ref EvcsAccessTokenSigningKeyJwk
+          Secrets:
+            - Name: DT_TENANT
+              ValueFrom: !Join
+                - ""
+                - - !FindInMap [
+                      EnvironmentConfiguration,
+                      !Ref AWS::AccountId,
+                      dynatraceSecretArn,
+                    ]
+                  - ":DT_TENANT::"
+            - Name: DT_TENANTTOKEN
+              ValueFrom: !Join
+                - ""
+                - - !FindInMap [
+                      EnvironmentConfiguration,
+                      !Ref AWS::AccountId,
+                      dynatraceSecretArn,
+                    ]
+                  - ":DT_TENANTTOKEN::"
+            - Name: DT_CONNECTION_POINT
+              ValueFrom: !Join
+                - ""
+                - - !FindInMap [
+                      EnvironmentConfiguration,
+                      !Ref AWS::AccountId,
+                      dynatraceSecretArn,
+                    ]
+                  - ":DT_CONNECTION_POINT::"
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
@@ -663,6 +700,19 @@ Resources:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/*"
+        - PolicyName: GetDynatraceSecret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue #pragma:allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma:allowlist secret
+              - Effect: Allow
+                Action: secretsmanager:ListSecrets #pragma:allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma:allowlist secret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
@@ -693,6 +743,19 @@ Resources:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
                   - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/*" #pragma: allowlist secret
+        - PolicyName: GetDynatraceSecret
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: secretsmanager:ListSecrets #pragma: allowlist secret
+                Resource: arn:aws:secretsmanager:eu-west-2:216552277552:secret:* #pragma: allowlist secret
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: arn:aws:kms:eu-west-2:216552277552:key/*
       PermissionsBoundary: !If
         - UsePermissionsBoundary
         - !Ref PermissionsBoundary
