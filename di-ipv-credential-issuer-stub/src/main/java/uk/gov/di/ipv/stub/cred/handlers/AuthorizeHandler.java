@@ -114,6 +114,10 @@ public class AuthorizeHandler {
     private static final List<CriType> NO_SHARED_ATTRIBUTES_CRI_TYPES =
             List.of(ADDRESS_CRI_TYPE, USER_ASSERTED_CRI_TYPE, DOC_CHECK_APP_CRI_TYPE);
 
+    // Shared claims that should be included in the VC subject - does not include e.g. email address
+    private static final List<String> SHARED_CLAIMS_FOR_VC_SUBJECT =
+            List.of("address", "birthDate", "name", "socialSecurityRecord");
+
     private final AuthCodeService authCodeService;
     private final CredentialService credentialService;
     private final RequestedErrorResponseService requestedErrorResponseService;
@@ -273,15 +277,16 @@ public class AuthorizeHandler {
         try {
             var attributesMap = jsonStringToMap(authRequest.credentialSubjectJson());
 
-            Map<String, Object> credentialAttributesMap;
+            var credentialAttributesMap = new HashMap<>(attributesMap);
 
-            if (NO_SHARED_ATTRIBUTES_CRI_TYPES.contains(getCriType())) {
-                credentialAttributesMap = attributesMap;
-            } else {
-                Map<String, Object> combinedAttributeJson =
-                        jsonStringToMap(getSharedAttributes(claimsSet));
-                combinedAttributeJson.putAll(attributesMap);
-                credentialAttributesMap = combinedAttributeJson;
+            if (!NO_SHARED_ATTRIBUTES_CRI_TYPES.contains(getCriType())) {
+                var sharedClaims = jsonStringToMap(getSharedAttributes(claimsSet));
+                SHARED_CLAIMS_FOR_VC_SUBJECT.forEach(
+                        (claim) -> {
+                            if (sharedClaims.containsKey(claim)) {
+                                credentialAttributesMap.putIfAbsent(claim, sharedClaims.get(claim));
+                            }
+                        });
             }
 
             Long nbf =
