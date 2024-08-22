@@ -99,6 +99,16 @@ The format of the POST request to the API gateway should look like
 }
 ```
 
+2) To force the ticf stub to wait before returning a response to core (to simulate slow requests),
+the request can include a `responseDelay`property - the delay in seconds.
+```
+{
+    "type": "RiskAssessment",
+    "txn": "uuid",
+    "responseDelay": 3
+}
+```
+
 Response
 ```
 {

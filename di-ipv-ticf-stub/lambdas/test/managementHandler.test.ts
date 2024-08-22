@@ -31,11 +31,39 @@ describe("TICF management handler", () => {
     jest.mocked(persistUserEvidence).mockResolvedValueOnce();
 
     // act
-    const result = (await handler(TEST_EVENT)) as APIGatewayProxyStructuredResultV2;
+    const result = (await handler(
+      TEST_EVENT,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(200);
-    expect(persistUserEvidence).toHaveBeenCalledWith(TEST_USER_ID, TEST_REQUEST, 200);
+    expect(persistUserEvidence).toHaveBeenCalledWith(
+      TEST_USER_ID,
+      TEST_REQUEST,
+      200,
+    );
+  });
+
+  it("returns a 200 for a request with a response delay", async () => {
+    // arrange
+    jest.mocked(persistUserEvidence).mockResolvedValueOnce();
+
+    // act
+    const result = (await handler({
+      ...TEST_EVENT,
+      body: JSON.stringify({
+        ...TEST_REQUEST,
+        responseDelay: 10,
+      }),
+    })) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(200);
+    expect(persistUserEvidence).toHaveBeenCalledWith(
+      TEST_USER_ID,
+      { ...TEST_REQUEST, responseDelay: 10 },
+      200,
+    );
   });
 
   it("returns 400 for a request with no user id", async () => {
@@ -89,12 +117,29 @@ describe("TICF management handler", () => {
     expect(persistUserEvidence).not.toHaveBeenCalled();
   });
 
+  it("returns 400 for a request with too large response delay", async () => {
+    // act
+    const result = (await handler({
+      ...TEST_EVENT,
+      body: JSON.stringify({
+        ...TEST_REQUEST,
+        responseDelay: 45,
+      }),
+    })) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(400);
+    expect(persistUserEvidence).not.toHaveBeenCalled();
+  });
+
   it("returns 500 if storing fails", async () => {
     // arrange
     jest.mocked(persistUserEvidence).mockRejectedValueOnce(new Error());
 
     // act
-    const result = (await handler(TEST_EVENT)) as APIGatewayProxyStructuredResultV2;
+    const result = (await handler(
+      TEST_EVENT,
+    )) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(500);

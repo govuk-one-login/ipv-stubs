@@ -2,9 +2,9 @@ import { DynamoDB, GetItemInput, PutItemInput } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import { getSsmParameter } from "../../common/ssmParameter";
-import TicfEvidenceItem from "../../domain/ticfEvidenceItem";
 import UserEvidenceItem from "../model/userEvidenceItem";
 import { config } from "../../common/config";
+import TicfManagementRequest from "../../domain/ticfManagementRequest";
 
 const dynamoClient = config.isLocalDev
   ? new DynamoDB({
@@ -15,21 +15,23 @@ const dynamoClient = config.isLocalDev
 
 export async function persistUserEvidence(
   userId: string,
-  ticfEvidenceItemReq: TicfEvidenceItem,
-  statusCode: number
+  ticfManagementRequest: TicfManagementRequest,
+  statusCode: number,
 ): Promise<void> {
+  const { responseDelay, ...ticfEvidenceItem } = ticfManagementRequest;
 
   const userEvidence: UserEvidenceItem = {
     userId: userId,
-    evidence: ticfEvidenceItemReq,
+    evidence: ticfEvidenceItem,
     ttl: await getTtl(),
-    statusCode: statusCode
+    statusCode: statusCode,
+    responseDelay: responseDelay || 0,
   };
   await saveUserEvidence(userEvidence);
 }
 
 export async function getUserEvidence(
-  userId: string
+  userId: string,
 ): Promise<UserEvidenceItem | null> {
   console.info(`Get user record.`);
   const getItemInput: GetItemInput = {
@@ -56,10 +58,10 @@ async function saveUserEvidence(userEvidence: UserEvidenceItem) {
 }
 
 async function getTtl(): Promise<number> {
-  const ticfTtlSeconds: number = parseInt(await getSsmParameter(config.ticfParamBasePath + "ticfStubTtl"))
+  const ticfTtlSeconds: number = parseInt(
+    await getSsmParameter(config.ticfParamBasePath + "ticfStubTtl"),
+  );
   return Math.floor(Date.now() / 1000) + ticfTtlSeconds;
 }
 
 export default persistUserEvidence;
-
-

@@ -4,7 +4,7 @@ import TicfRequest from "../domain/ticfRequest";
 import { processGetVCRequest } from "../services/ticfService";
 
 export async function handler(
-  event: APIGatewayProxyEventV2
+  event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyResultV2> {
   let ticfRequest;
   try {

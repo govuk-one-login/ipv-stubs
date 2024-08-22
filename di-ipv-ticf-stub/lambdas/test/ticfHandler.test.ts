@@ -47,7 +47,7 @@ const TEST_EVENT = {
 async function parseTicfVc(jwt: string): Promise<TicfVc> {
   const key = await importSPKI(
     `-----BEGIN PUBLIC KEY-----\n${EC_PUBLIC_KEY}\n-----END PUBLIC KEY-----`,
-    "ES256"
+    "ES256",
   );
   return (await jwtVerify(jwt, key)).payload as TicfVc;
 }
@@ -64,7 +64,7 @@ describe("TICF handler", function () {
 
     // act
     const result = (await handler(
-      TEST_EVENT
+      TEST_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert
@@ -76,14 +76,14 @@ describe("TICF handler", function () {
     expect(response.vtm).toEqual(TEST_REQUEST.vtm);
     expect(response.sub).toEqual(TEST_REQUEST.sub);
     expect(response.govuk_signin_journey_id).toEqual(
-      TEST_REQUEST.govuk_signin_journey_id
+      TEST_REQUEST.govuk_signin_journey_id,
     );
     expect(
-      response["https://vocab.account.gov.uk/v1/credentialJWT"]
+      response["https://vocab.account.gov.uk/v1/credentialJWT"],
     ).toHaveLength(1);
 
     const ticfVc = await parseTicfVc(
-      response["https://vocab.account.gov.uk/v1/credentialJWT"][0]
+      response["https://vocab.account.gov.uk/v1/credentialJWT"][0],
     );
     expect(ticfVc.iss).toEqual(TEST_COMPONENT_ID);
     expect(ticfVc.sub).toEqual(TEST_REQUEST.sub);
@@ -116,11 +116,12 @@ describe("TICF handler", function () {
       },
       statusCode: 200,
       ttl: 3123123,
+      responseDelay: 0,
     };
     jest.mocked(getUserEvidence).mockResolvedValue(userEvidence);
     // act
     const result = (await handler(
-      TEST_EVENT
+      TEST_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert
@@ -128,7 +129,7 @@ describe("TICF handler", function () {
 
     const response = JSON.parse(result.body!) as TicfResponse;
     const ticfVc = await parseTicfVc(
-      response["https://vocab.account.gov.uk/v1/credentialJWT"][0]
+      response["https://vocab.account.gov.uk/v1/credentialJWT"][0],
     );
     expect(ticfVc.vc.evidence).toHaveLength(1);
     expect(ticfVc.vc.evidence[0].type).toEqual("RiskAssessment");
@@ -147,7 +148,7 @@ describe("TICF handler", function () {
     jest.mocked(getUserEvidence).mockResolvedValue(null);
     // act
     const result = (await handler(
-      TEST_EVENT
+      TEST_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert
@@ -155,7 +156,7 @@ describe("TICF handler", function () {
 
     const response = JSON.parse(result.body!) as TicfResponse;
     const ticfVc = await parseTicfVc(
-      response["https://vocab.account.gov.uk/v1/credentialJWT"][0]
+      response["https://vocab.account.gov.uk/v1/credentialJWT"][0],
     );
     expect(ticfVc.vc.evidence).toHaveLength(1);
     expect(ticfVc.vc.evidence[0].type).toEqual("RiskAssessment");
@@ -174,7 +175,7 @@ describe("TICF handler", function () {
     jest.mocked(getUserEvidence).mockResolvedValue(null);
     // act
     const result = (await handler(
-      TEST_EVENT
+      TEST_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert
@@ -182,7 +183,7 @@ describe("TICF handler", function () {
 
     const response = JSON.parse(result.body!) as TicfResponse;
     const ticfVc = await parseTicfVc(
-      response["https://vocab.account.gov.uk/v1/credentialJWT"][0]
+      response["https://vocab.account.gov.uk/v1/credentialJWT"][0],
     );
     expect(ticfVc.vc.evidence).toHaveLength(1);
     expect(ticfVc.vc.evidence[0].type).toEqual("RiskAssessment");
@@ -240,7 +241,7 @@ describe("TICF handler", function () {
 
     // act
     const result = (await handler(
-      TEST_EVENT
+      TEST_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert
