@@ -243,18 +243,19 @@ public class AuthorizeHandler {
     }
 
     public void apiAuthorize(Context ctx) throws Exception {
-        String redirectUrl = generateResponseRedirect(ctx.bodyAsClass(ApiAuthRequest.class));
         JWTClaimsSet claimsSet = getClaimsSet(ctx.bodyAsClass(ApiAuthRequest.class));
+        String redirectUrl = generateResponseRedirect(ctx.bodyAsClass(ApiAuthRequest.class), claimsSet);
 
         ctx.status(200);
         ctx.json(Map.of("redirectUrl", redirectUrl, "jarPayload", claimsSet.toJSONObject()));
     }
 
     public void formAuthorize(Context ctx) throws Exception {
-        ctx.redirect(generateResponseRedirect(FormAuthRequest.fromFormContext(ctx)));
+        JWTClaimsSet claimsSet = getClaimsSet(ctx.bodyAsClass(ApiAuthRequest.class));
+        ctx.redirect(generateResponseRedirect(FormAuthRequest.fromFormContext(ctx), claimsSet));
     }
 
-    private String generateResponseRedirect(AuthRequest authRequest)
+    private String generateResponseRedirect(AuthRequest authRequest, JWTClaimsSet claimsSet)
             throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
                     ParseException {
         AuthorizationErrorResponse requestedAuthErrorResponse = handleRequestedError(authRequest);
@@ -263,7 +264,6 @@ public class AuthorizeHandler {
         }
 
         String clientIdValue = authRequest.clientId();
-        JWTClaimsSet claimsSet = getClaimsSet(authRequest);
         String redirectUri = claimsSet.getClaim(RequestParamConstants.REDIRECT_URI).toString();
         String userId = claimsSet.getSubject();
         String state = claimsSet.getClaim(RequestParamConstants.STATE).toString();
