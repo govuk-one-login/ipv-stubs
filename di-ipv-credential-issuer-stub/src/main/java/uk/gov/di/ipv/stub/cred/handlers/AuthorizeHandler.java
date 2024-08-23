@@ -243,7 +243,11 @@ public class AuthorizeHandler {
     }
 
     public void apiAuthorize(Context ctx) throws Exception {
-        ctx.redirect(generateResponseRedirect(ctx.bodyAsClass(ApiAuthRequest.class)));
+        String redirectUrl = generateResponseRedirect(ctx.bodyAsClass(ApiAuthRequest.class));
+        JWTClaimsSet claimsSet = getClaimsSet(ctx.bodyAsClass(ApiAuthRequest.class));
+
+        ctx.status(200);
+        ctx.json(Map.of("redirectUrl", redirectUrl, "jarPayload", claimsSet.toJSONObject()));
     }
 
     public void formAuthorize(Context ctx) throws Exception {
@@ -258,21 +262,11 @@ public class AuthorizeHandler {
             return requestedAuthErrorResponse.toURI().toString();
         }
 
-        var clientIdValue = authRequest.clientId();
-        var jar = authRequest.request();
-
-        ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
-
-        if (clientConfig == null) {
-            throw new BadRequestResponse(
-                    "Error: Could not find client configuration details for: " + clientIdValue);
-        }
-
-        SignedJWT signedJWT = getSignedJWT(jar, clientConfig.getEncryptionPrivateKey());
-        String redirectUri =
-                signedJWT.getJWTClaimsSet().getClaim(RequestParamConstants.REDIRECT_URI).toString();
-        String userId = signedJWT.getJWTClaimsSet().getSubject();
-        String state = signedJWT.getJWTClaimsSet().getClaim(RequestParamConstants.STATE).toString();
+        String clientIdValue = authRequest.clientId();
+        JWTClaimsSet claimsSet = getClaimsSet(authRequest);
+        String redirectUri = claimsSet.getClaim(RequestParamConstants.REDIRECT_URI).toString();
+        String userId = claimsSet.getSubject();
+        String state = claimsSet.getClaim(RequestParamConstants.STATE).toString();
 
         try {
             var attributesMap = jsonStringToMap(authRequest.credentialSubjectJson());
@@ -283,7 +277,7 @@ public class AuthorizeHandler {
                 credentialAttributesMap = attributesMap;
             } else {
                 Map<String, Object> combinedAttributeJson =
-                        jsonStringToMap(getSharedAttributes(signedJWT.getJWTClaimsSet()));
+                        jsonStringToMap(getSharedAttributes(claimsSet));
                 combinedAttributeJson.putAll(attributesMap);
                 credentialAttributesMap = combinedAttributeJson;
             }
@@ -326,6 +320,23 @@ public class AuthorizeHandler {
                             redirectUri);
             return errorResponse.toURI().toString();
         }
+    }
+
+    private JWTClaimsSet getClaimsSet(AuthRequest authRequest)
+            throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
+        var clientIdValue = authRequest.clientId();
+        var jar = authRequest.request();
+
+        ClientConfig clientConfig = ConfigService.getClientConfig(clientIdValue);
+
+        if (clientConfig == null) {
+            throw new BadRequestResponse(
+                    "Error: Could not find client configuration details for: " + clientIdValue);
+        }
+
+        SignedJWT signedJWT = getSignedJWT(jar, clientConfig.getEncryptionPrivateKey());
+
+        return signedJWT.getJWTClaimsSet();
     }
 
     private Map<String, Object> generateEvidenceMap(AuthRequest authRequest)
