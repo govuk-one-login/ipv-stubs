@@ -1,10 +1,6 @@
 package uk.gov.di.ipv.stub.cred.domain;
 
-public interface AuthRequest {
-    String clientId();
-
-    String request();
-
+public interface AuthRequest extends DecryptJarRequest {
     String credentialSubjectJson();
 
     String evidenceJson();

@@ -84,6 +84,8 @@ public class CredentialIssuer {
         app.get("/authorize", authorizeHandler::doAuthorize);
         app.post("/authorize", authorizeHandler::formAuthorize);
         app.post("/api/authorize", authorizeHandler::apiAuthorize);
+        // This enables API tests to check the request
+        app.post("/api/decrypt-jar", authorizeHandler::apiDecryptJar);
         app.post("/token", tokenHandler::issueAccessToken);
         if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
             app.post("/credentials/issue", docAppCredentialHandler::getResource);
