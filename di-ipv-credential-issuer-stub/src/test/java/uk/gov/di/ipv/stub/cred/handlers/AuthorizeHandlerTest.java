@@ -623,8 +623,7 @@ class AuthorizeHandlerTest {
 
             verify(mockAuthCodeService)
                     .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockContext).status(intArgumentCaptor.capture());
-            assertEquals(200, intArgumentCaptor.getValue());
+            verify(mockContext).status(200);
             verify(mockContext).json(jsonArgumentCaptor.capture());
             assertTrue(
                     jsonArgumentCaptor
@@ -653,8 +652,7 @@ class AuthorizeHandlerTest {
 
             verify(mockAuthCodeService)
                     .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockContext).status(intArgumentCaptor.capture());
-            assertEquals(200, intArgumentCaptor.getValue());
+            verify(mockContext).status(200);
             verify(mockContext).json(jsonArgumentCaptor.capture());
             assertTrue(
                     jsonArgumentCaptor
@@ -739,8 +737,7 @@ class AuthorizeHandlerTest {
 
             authorizeHandler.apiAuthorize(mockContext);
 
-            verify(mockContext).status(intArgumentCaptor.capture());
-            assertEquals(200, intArgumentCaptor.getValue());
+            verify(mockContext).status(200);
             verify(mockContext).json(jsonArgumentCaptor.capture());
             assertEquals(
                     VALID_REDIRECT_URI
@@ -852,8 +849,7 @@ class AuthorizeHandlerTest {
 
             verify(mockAuthCodeService)
                     .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockContext).status(intArgumentCaptor.capture());
-            assertEquals(200, intArgumentCaptor.getValue());
+            verify(mockContext).status(200);
             verify(mockContext).json(jsonArgumentCaptor.capture());
             assertTrue(
                     jsonArgumentCaptor
@@ -883,8 +879,7 @@ class AuthorizeHandlerTest {
 
             authorizeHandler.apiAuthorize(mockContext);
 
-            verify(mockContext).status(intArgumentCaptor.capture());
-            assertEquals(200, intArgumentCaptor.getValue());
+            verify(mockContext).status(200);
             verify(mockContext).json(jsonArgumentCaptor.capture());
             assertEquals(
                     VALID_REDIRECT_URI
