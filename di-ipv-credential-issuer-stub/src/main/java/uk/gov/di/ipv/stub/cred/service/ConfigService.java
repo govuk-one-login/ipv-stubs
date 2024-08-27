@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.services.ssm.model.Parameter;
@@ -21,11 +22,14 @@ public class ConfigService {
     private static final Gson GSON = new Gson();
     private static final SsmClient SSM_CLIENT = getSsmClient();
     private static final String CLIENT_CONFIG_BASE_PATH = "/stubs/credential-issuer-stub-clients";
+    private static final String API_KEY_PATH = "/stubs/credential-issuer-stub-api-key";
     private static final String ENVIRONMENT_ENV_VAR = "ENVIRONMENT";
     private static final String TEST = "TEST";
     private static final String CONFIG_CACHE_SECONDS_ENV_VAR = "CONFIG_CACHE_SECONDS";
     private static Map<String, ClientConfig> CLIENT_CONFIGS;
-    private static Instant lastRefresh = null;
+    private static Instant lastClientConfigRefresh = null;
+    private static String apiKey = null;
+    private static Instant lastApiKeyRefresh = null;
 
     public static ClientConfig getClientConfig(String clientId) {
         refreshClientConfigsIfRequired();
@@ -39,12 +43,25 @@ public class ConfigService {
         return CLIENT_CONFIGS;
     }
 
+    public static synchronized String getApiKey() {
+        if (lastApiKeyRefresh == null
+                || lastApiKeyRefresh.isBefore(
+                        Instant.now().minusSeconds(getCacheDurationSeconds()))) {
+            var request = GetParameterRequest.builder().name(API_KEY_PATH).build();
+            var response = SSM_CLIENT.getParameter(request);
+            apiKey = response.parameter().value();
+            lastApiKeyRefresh = Instant.now();
+        }
+        return apiKey;
+    }
+
     private static synchronized void refreshClientConfigsIfRequired() {
-        if (lastRefresh == null
-                || lastRefresh.isBefore(Instant.now().minusSeconds(getCacheDurationSeconds()))) {
+        if (lastClientConfigRefresh == null
+                || lastClientConfigRefresh.isBefore(
+                        Instant.now().minusSeconds(getCacheDurationSeconds()))) {
             LOGGER.info("Refreshing client configs");
             getAllClientConfigs(null);
-            lastRefresh = Instant.now();
+            lastClientConfigRefresh = Instant.now();
         }
     }
 
