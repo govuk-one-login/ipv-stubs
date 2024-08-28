@@ -22,7 +22,7 @@ public class ConfigService {
     private static final Gson GSON = new Gson();
     private static final SsmClient SSM_CLIENT = getSsmClient();
     private static final String CLIENT_CONFIG_BASE_PATH = "/stubs/credential-issuer-stub-clients";
-    private static final String API_KEY_PATH = "/stubs/credential-issuer-stub-api-key";
+    private static final String API_KEY_PATH = "/stubs/credentialIssuers/generateCredentialApiKey";
     private static final String ENVIRONMENT_ENV_VAR = "ENVIRONMENT";
     private static final String TEST = "TEST";
     private static final String CONFIG_CACHE_SECONDS_ENV_VAR = "CONFIG_CACHE_SECONDS";
