@@ -245,10 +245,10 @@ public class AuthorizeHandler {
     public void apiAuthorize(Context ctx) throws Exception {
         ApiAuthRequest apiAuthRequest = ctx.bodyAsClass(ApiAuthRequest.class);
         JWTClaimsSet claimsSet = getClaimsSet(apiAuthRequest);
-        String redirectUrl = generateResponseRedirect(apiAuthRequest, claimsSet);
+        String redirectUri = generateResponseRedirect(apiAuthRequest, claimsSet);
 
         ctx.status(200);
-        ctx.json(Map.of("redirectUrl", redirectUrl, "jarPayload", claimsSet.toJSONObject()));
+        ctx.json(Map.of("redirectUri", redirectUri, "jarPayload", claimsSet.toJSONObject()));
     }
 
     public void formAuthorize(Context ctx) throws Exception {

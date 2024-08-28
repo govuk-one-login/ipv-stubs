@@ -628,7 +628,7 @@ class AuthorizeHandlerTest {
             assertTrue(
                     jsonArgumentCaptor
                             .getValue()
-                            .get("redirectUrl")
+                            .get("redirectUri")
                             .toString()
                             .contains(authCoreArgumentCaptor.getValue().getValue()));
         }
@@ -657,7 +657,7 @@ class AuthorizeHandlerTest {
             assertTrue(
                     jsonArgumentCaptor
                             .getValue()
-                            .get("redirectUrl")
+                            .get("redirectUri")
                             .toString()
                             .contains(authCoreArgumentCaptor.getValue().getValue()));
             verify(mockVcGenerator).generate(credentialArgumentCaptor.capture());
@@ -742,7 +742,7 @@ class AuthorizeHandlerTest {
             assertEquals(
                     VALID_REDIRECT_URI
                             + "?error=invalid_json&iss=Credential+Issuer+Stub&error_description=Unable+to+generate+valid+JSON+Payload",
-                    jsonArgumentCaptor.getValue().get("redirectUrl").toString());
+                    jsonArgumentCaptor.getValue().get("redirectUri").toString());
         }
 
         @Test
@@ -854,7 +854,7 @@ class AuthorizeHandlerTest {
             assertTrue(
                     jsonArgumentCaptor
                             .getValue()
-                            .get("redirectUrl")
+                            .get("redirectUri")
                             .toString()
                             .contains(authCoreArgumentCaptor.getValue().getValue()));
         }
@@ -884,7 +884,7 @@ class AuthorizeHandlerTest {
             assertEquals(
                     VALID_REDIRECT_URI
                             + "?iss=Credential+Issuer+Stub&state=test-state&error=invalid_request&error_description=a+bad+thing+happened",
-                    jsonArgumentCaptor.getValue().get("redirectUrl").toString());
+                    jsonArgumentCaptor.getValue().get("redirectUri").toString());
         }
 
         @Test
