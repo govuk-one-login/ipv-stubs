@@ -109,7 +109,7 @@ public class AuthorizeHandler {
     private static final String F2F_STUB_QUEUE_API_KEY =
             "F2F_STUB_QUEUE_API_KEY"; // pragma: allowlist secret
     private static final int F2F_DEFAULT_DELAY_SECONDS = 10;
-    private static final String X_API_KEY = "x-api-key"; // pragma: allowlist secret
+    private static final String X_API_KEY = "x-api-key";
 
     private static final List<CriType> NO_SHARED_ATTRIBUTES_CRI_TYPES =
             List.of(ADDRESS_CRI_TYPE, USER_ASSERTED_CRI_TYPE, DOC_CHECK_APP_CRI_TYPE);

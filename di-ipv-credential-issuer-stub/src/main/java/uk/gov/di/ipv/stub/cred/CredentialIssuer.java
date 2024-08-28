@@ -9,6 +9,7 @@ import uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler;
 import uk.gov.di.ipv.stub.cred.handlers.CredentialHandler;
 import uk.gov.di.ipv.stub.cred.handlers.DocAppCredentialHandler;
 import uk.gov.di.ipv.stub.cred.handlers.F2FHandler;
+import uk.gov.di.ipv.stub.cred.handlers.GenerateCredentialHandler;
 import uk.gov.di.ipv.stub.cred.handlers.HealthCheckHandler;
 import uk.gov.di.ipv.stub.cred.handlers.JwksHandler;
 import uk.gov.di.ipv.stub.cred.handlers.TokenHandler;
@@ -32,6 +33,7 @@ public class CredentialIssuer {
     private final JwksHandler jwksHandler;
     private final F2FHandler f2fHandler;
     private final HealthCheckHandler healthCheckHandler;
+    private final GenerateCredentialHandler generateCredentialHandler;
 
     public CredentialIssuer() {
         var app =
@@ -72,6 +74,7 @@ public class CredentialIssuer {
         jwksHandler = new JwksHandler();
         f2fHandler = new F2FHandler(credentialService, tokenService);
         healthCheckHandler = new HealthCheckHandler();
+        generateCredentialHandler = new GenerateCredentialHandler(vcGenerator);
 
         initRoutes(app);
         initErrorMapping(app);
@@ -92,6 +95,7 @@ public class CredentialIssuer {
         } else {
             app.post("/credentials/issue", credentialHandler::getResource);
         }
+        app.post("/credentials/generate", generateCredentialHandler::generateCredential);
         app.get("/.well-known/jwks.json", jwksHandler::getResource);
     }
 
