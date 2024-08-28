@@ -46,7 +46,7 @@ public class GenerateCredentialHandlerTest {
             var mockJwt = mock(SignedJWT.class);
             when(mockCredentialGenerator.generate(any())).thenReturn(mockJwt);
             var testVcString = "test-vc-string";
-            when(mockJwt.toString()).thenReturn(testVcString);
+            when(mockJwt.serialize()).thenReturn(testVcString);
             mockedConfigService.when(ConfigService::getApiKey).thenReturn(testApiKey);
 
             // act

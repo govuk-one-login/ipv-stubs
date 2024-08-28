@@ -47,6 +47,6 @@ public class GenerateCredentialHandler {
                                 request.nbf()));
         ctx.contentType(JWT_CONTENT_TYPE);
         ctx.status(HttpStatus.CREATED);
-        ctx.result(vc.toString());
+        ctx.result(vc.serialize());
     }
 }
