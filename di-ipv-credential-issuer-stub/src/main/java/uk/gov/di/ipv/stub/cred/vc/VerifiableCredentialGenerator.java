@@ -48,7 +48,7 @@ public class VerifiableCredentialGenerator {
 
         Map<String, Object> credentialSubject = new LinkedHashMap<>();
 
-        Map<String, Object> attributes = new HashMap<>(credential.getAttributes());
+        Map<String, Object> attributes = new HashMap<>(credential.credentialSubject());
 
         if (isPopulatedList(attributes, CREDENTIAL_SUBJECT_NAME)) {
             credentialSubject.put(CREDENTIAL_SUBJECT_NAME, attributes.get(CREDENTIAL_SUBJECT_NAME));
@@ -72,7 +72,7 @@ public class VerifiableCredentialGenerator {
 
         // VCs from user asserted CRI types, like address, should not contain an evidence attribute
         if (getCriType().isIdentityCheck()) {
-            vc.put(VC_EVIDENCE, List.of(credential.getEvidence()));
+            vc.put(VC_EVIDENCE, List.of(credential.evidence()));
         }
 
         return generateAndSignVerifiableCredentialJwt(credential, vc);
@@ -103,13 +103,13 @@ public class VerifiableCredentialGenerator {
             throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException {
         JWTClaimsSet.Builder claim =
                 new JWTClaimsSet.Builder()
-                        .claim(SUBJECT, credential.getUserId())
+                        .claim(SUBJECT, credential.userId())
                         .claim(ISSUER, CredentialIssuerConfig.getVerifiableCredentialIssuer())
                         .claim(
                                 AUDIENCE,
-                                ConfigService.getClientConfig(credential.getClientId())
+                                ConfigService.getClientConfig(credential.clientId())
                                         .getAudienceForVcJwt())
-                        .claim(NOT_BEFORE, credential.getNbf())
+                        .claim(NOT_BEFORE, credential.nbf())
                         .claim(
                                 JWT_ID,
                                 String.format(

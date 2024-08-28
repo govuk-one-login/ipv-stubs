@@ -463,10 +463,9 @@ class AuthorizeHandlerTest {
 
             verify(mockVcGenerator).generate(persistedCredential.capture());
             Map<String, Object> persistedAttributes =
-                    persistedCredential.getValue().getAttributes();
-            Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
-            assertEquals(
-                    List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
+                    persistedCredential.getValue().credentialSubject();
+            Map<String, Object> persistedEvidence = persistedCredential.getValue().evidence();
+            assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("address"));
             assertEquals("test-value", persistedAttributes.get("test"));
             assertEquals("IdentityCheck", persistedEvidence.get("type"));
             assertNotNull(persistedEvidence.get("txn"));
@@ -586,9 +585,9 @@ class AuthorizeHandlerTest {
 
             verify(mockVcGenerator).generate(persistedCredential.capture());
             Map<String, Object> persistedAttributes =
-                    persistedCredential.getValue().getAttributes();
-            assertNull(persistedAttributes.get("addresses"));
-            assertNull(persistedAttributes.get("names"));
+                    persistedCredential.getValue().credentialSubject();
+            assertNull(persistedAttributes.get("address"));
+            assertNull(persistedAttributes.get("name"));
             assertNull(persistedAttributes.get("birthDate"));
             assertEquals("test-value", persistedAttributes.get("test"));
 
@@ -661,7 +660,7 @@ class AuthorizeHandlerTest {
                             .toString()
                             .contains(authCoreArgumentCaptor.getValue().getValue()));
             verify(mockVcGenerator).generate(credentialArgumentCaptor.capture());
-            assertEquals(1714577018L, credentialArgumentCaptor.getValue().getNbf());
+            assertEquals(1714577018L, credentialArgumentCaptor.getValue().nbf());
         }
 
         @Test
@@ -767,10 +766,9 @@ class AuthorizeHandlerTest {
 
             verify(mockVcGenerator).generate(persistedCredential.capture());
             Map<String, Object> persistedAttributes =
-                    persistedCredential.getValue().getAttributes();
-            Map<String, Object> persistedEvidence = persistedCredential.getValue().getEvidence();
-            assertEquals(
-                    List.of("123 random street, M13 7GE"), persistedAttributes.get("addresses"));
+                    persistedCredential.getValue().credentialSubject();
+            Map<String, Object> persistedEvidence = persistedCredential.getValue().evidence();
+            assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("address"));
             assertEquals(
                     List.of(Map.of("value", "1965-07-08")), persistedAttributes.get("birthDate"));
             assertEquals("IdentityCheck", persistedEvidence.get("type"));
@@ -1051,9 +1049,9 @@ class AuthorizeHandlerTest {
 
     private Map<String, Object> defaultSharedClaims() {
         Map<String, Object> sharedClaims = new LinkedHashMap<>();
-        sharedClaims.put("addresses", Collections.singletonList("123 random street, M13 7GE"));
+        sharedClaims.put("address", Collections.singletonList("123 random street, M13 7GE"));
         sharedClaims.put(
-                "names",
+                "name",
                 List.of(
                         Map.of(
                                 "nameParts",
