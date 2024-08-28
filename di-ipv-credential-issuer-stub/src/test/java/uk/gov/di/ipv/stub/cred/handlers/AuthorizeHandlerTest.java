@@ -149,8 +149,6 @@ class AuthorizeHandlerTest {
     @Captor ArgumentCaptor<Credential> credentialArgumentCaptor;
     @Captor ArgumentCaptor<HttpRequest> httpRequestArgumentCaptor;
     @Captor ArgumentCaptor<String> stringArgumentCaptor;
-    @Captor ArgumentCaptor<Map<String, Object>> jsonArgumentCaptor;
-    @Captor ArgumentCaptor<Integer> intArgumentCaptor;
     @Captor ArgumentCaptor<AuthorizationCode> authCoreArgumentCaptor;
 
     @BeforeAll
@@ -623,13 +621,10 @@ class AuthorizeHandlerTest {
 
             verify(mockAuthCodeService)
                     .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockContext).status(200);
-            verify(mockContext).json(jsonArgumentCaptor.capture());
+            verify(mockContext).redirect(stringArgumentCaptor.capture());
             assertTrue(
-                    jsonArgumentCaptor
+                    stringArgumentCaptor
                             .getValue()
-                            .get("redirectUrl")
-                            .toString()
                             .contains(authCoreArgumentCaptor.getValue().getValue()));
         }
 
@@ -652,14 +647,12 @@ class AuthorizeHandlerTest {
 
             verify(mockAuthCodeService)
                     .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockContext).status(200);
-            verify(mockContext).json(jsonArgumentCaptor.capture());
+            verify(mockContext).redirect(stringArgumentCaptor.capture());
             assertTrue(
-                    jsonArgumentCaptor
+                    stringArgumentCaptor
                             .getValue()
-                            .get("redirectUrl")
-                            .toString()
                             .contains(authCoreArgumentCaptor.getValue().getValue()));
+
             verify(mockVcGenerator).generate(credentialArgumentCaptor.capture());
             assertEquals(1714577018L, credentialArgumentCaptor.getValue().getNbf());
         }
@@ -737,12 +730,10 @@ class AuthorizeHandlerTest {
 
             authorizeHandler.apiAuthorize(mockContext);
 
-            verify(mockContext).status(200);
-            verify(mockContext).json(jsonArgumentCaptor.capture());
-            assertEquals(
-                    VALID_REDIRECT_URI
-                            + "?error=invalid_json&iss=Credential+Issuer+Stub&error_description=Unable+to+generate+valid+JSON+Payload",
-                    jsonArgumentCaptor.getValue().get("redirectUrl").toString());
+            verify(mockContext)
+                    .redirect(
+                            VALID_REDIRECT_URI
+                                    + "?error=invalid_json&iss=Credential+Issuer+Stub&error_description=Unable+to+generate+valid+JSON+Payload");
         }
 
         @Test
@@ -849,13 +840,10 @@ class AuthorizeHandlerTest {
 
             verify(mockAuthCodeService)
                     .persist(authCoreArgumentCaptor.capture(), anyString(), eq(VALID_REDIRECT_URI));
-            verify(mockContext).status(200);
-            verify(mockContext).json(jsonArgumentCaptor.capture());
+            verify(mockContext).redirect(stringArgumentCaptor.capture());
             assertTrue(
-                    jsonArgumentCaptor
+                    stringArgumentCaptor
                             .getValue()
-                            .get("redirectUrl")
-                            .toString()
                             .contains(authCoreArgumentCaptor.getValue().getValue()));
         }
 
@@ -879,12 +867,10 @@ class AuthorizeHandlerTest {
 
             authorizeHandler.apiAuthorize(mockContext);
 
-            verify(mockContext).status(200);
-            verify(mockContext).json(jsonArgumentCaptor.capture());
-            assertEquals(
-                    VALID_REDIRECT_URI
-                            + "?iss=Credential+Issuer+Stub&state=test-state&error=invalid_request&error_description=a+bad+thing+happened",
-                    jsonArgumentCaptor.getValue().get("redirectUrl").toString());
+            verify(mockContext)
+                    .redirect(
+                            VALID_REDIRECT_URI
+                                    + "?iss=Credential+Issuer+Stub&state=test-state&error=invalid_request&error_description=a+bad+thing+happened");
         }
 
         @Test
