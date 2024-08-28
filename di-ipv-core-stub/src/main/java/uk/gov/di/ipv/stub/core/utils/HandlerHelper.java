@@ -226,7 +226,24 @@ public class HandlerHelper {
                 state,
                 userInfoRequest.getURL());
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest);
-        return userInfoHttpResponse.getContent();
+
+        // Try lowercase, fall back to TitleCase
+        String contentType = userInfoHttpResponse.getHeaderValue("content-type");
+        contentType =
+                contentType == null
+                        ? userInfoHttpResponse.getHeaderValue("Content-Type")
+                        : contentType;
+
+        if (!"application/jwt".equalsIgnoreCase(contentType)) {
+            // Fail now to prevent CRI's passing with a missmatch
+            String message =
+                    String.format(
+                            "Expected content-type application/jwt but VC response had content-type - %s",
+                            contentType);
+            throw new RuntimeException(message);
+        } else {
+            return userInfoHttpResponse.getContent();
+        }
     }
 
     public HTTPResponse sendHttpRequest(HTTPRequest httpRequest) {
