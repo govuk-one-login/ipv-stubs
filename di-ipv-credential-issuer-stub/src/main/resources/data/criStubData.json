@@ -171,6 +171,51 @@
       }
     },
     {
+      "criType": "Address (Stub)",
+      "label": "Kabir Singh (DWP)",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "1",
+            "streetName": "Hudswell Road",
+            "postalCode": "LS10 1AG",
+            "addressLocality": "Leeds",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Tom Hardy (DWP)",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "34",
+            "streetName": "Diamond Street",
+            "postalCode": "NE28 8RL",
+            "addressLocality": "Wallsend",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
+      "label": "Nora Porter (DWP)",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "28",
+            "streetName": "Melmerby Close",
+            "postalCode": "NE3 5JA",
+            "addressLocality": "Newcastle upon Tyne",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Bank account verification (Stub)",
       "label": "Alice Parker BAV",
       "payload": {
@@ -508,6 +553,81 @@
         "birthDate": [
           {
             "value": "1995-08-16"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity (Stub)",
+      "label": "Kabir Singh (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "KABIR"
+              },
+              {
+                "type": "FamilyName",
+                "value": "SINGH"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1991-12-24"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity (Stub)",
+      "label": "Tom Hardy (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "TOM"
+              },
+              {
+                "type": "FamilyName",
+                "value": "HARDY"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-03-15"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity (Stub)",
+      "label": "Nora Porter (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "NORA"
+              },
+              {
+                "type": "FamilyName",
+                "value": "PORTER"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1978-01-01"
           }
         ]
       }
@@ -944,6 +1064,105 @@
       }
     },
     {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Kabir Singh DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kabir",
+                "type": "GivenName"
+              },
+              {
+                "value": "Singh",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1991-12-24"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "SINGH710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Tom Hardy DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Tom",
+                "type": "GivenName"
+              },
+              {
+                "value": "Hardy",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-03-15"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "HARDY710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Nora Porter DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Nora",
+                "type": "GivenName"
+              },
+              {
+                "value": "Porter",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1978-01-01"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "PORTE710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Driving Licence (Stub)",
       "label": "Alice Parker (Valid) DVLA Licence",
       "payload": {
@@ -1044,6 +1263,105 @@
             "personalNumber": "DECER607085K98FGA",
             "expiryDate": "2032-02-02",
             "issueNumber": "34"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Kabir Singh DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kabir",
+                "type": "GivenName"
+              },
+              {
+                "value": "Singh",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1991-12-24"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "SINGH710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Tom Hardy DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Tom",
+                "type": "GivenName"
+              },
+              {
+                "value": "Hardy",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-03-15"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "HARDY710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Nora Porter DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Nora",
+                "type": "GivenName"
+              },
+              {
+                "value": "Porter",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1978-01-01"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "PORTE710112PBFGA",
+            "expiryDate": "2032-02-02"
           }
         ]
       }
@@ -1225,6 +1543,108 @@
       }
     },
     {
+      "criType": "Experian Knowledge Based Verification (Stub)",
+      "label": "Kabir Singh KBV (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kabir",
+                "type": "GivenName"
+              },
+              {
+                "value": "Singh",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1991-12-24"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "1",
+            "streetName": "Hudswell Road",
+            "postalCode": "LS10 1AG",
+            "addressLocality": "Leeds",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Experian Knowledge Based Verification (Stub)",
+      "label": "Tom Hardy KBV (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Tom",
+                "type": "GivenName"
+              },
+              {
+                "value": "Hardy",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-03-15"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "34",
+            "streetName": "Diamond Street",
+            "postalCode": "NE28 8RL",
+            "addressLocality": "Wallsend",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Experian Knowledge Based Verification (Stub)",
+      "label": "Nora Porter KBV (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Nora",
+                "type": "GivenName"
+              },
+              {
+                "value": "Porter",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1978-01-01"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "28",
+            "streetName": "Melmerby Close",
+            "postalCode": "NE3 5JA",
+            "addressLocality": "Newcastle upon Tyne",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Face to Face Check (Stub)",
       "label": "Alice Parker (Valid) DVLA Licence",
       "payload": {
@@ -1387,6 +1807,105 @@
             "documentNumber": "SPEC12031",
             "expiryDate": "2031-08-02",
             "issueDate": "2021-08-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Kabir Singh DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kabir",
+                "type": "GivenName"
+              },
+              {
+                "value": "Singh",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1991-12-24"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "SINGH710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Tom Hardy DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Tom",
+                "type": "GivenName"
+              },
+              {
+                "value": "Hardy",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-03-15"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "HARDY710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Nora Porter DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Nora",
+                "type": "GivenName"
+              },
+              {
+                "value": "Porter",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1978-01-01"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "PORTE710112PBFGA",
+            "expiryDate": "2032-02-02"
           }
         ]
       }
@@ -2096,6 +2615,108 @@
       }
     },
     {
+      "criType": "Fraud Check (Stub)",
+      "label": "Kabir Singh Fraud (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "KABIR"
+              },
+              {
+                "type": "FamilyName",
+                "value": "SINGH"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1991-12-24"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "1",
+            "streetName": "Hudswell Road",
+            "postalCode": "LS10 1AG",
+            "addressLocality": "Leeds",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Tom Hardy Fraud (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "TOM"
+              },
+              {
+                "type": "FamilyName",
+                "value": "HARDY"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-03-15"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "34",
+            "streetName": "Diamond Street",
+            "postalCode": "NE28 8RL",
+            "addressLocality": "Wallsend",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Nora Porter Fraud (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "NORA"
+              },
+              {
+                "type": "FamilyName",
+                "value": "PORTER"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1978-01-01"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "28",
+            "streetName": "Melmerby Close",
+            "postalCode": "NE3 5JA",
+            "addressLocality": "Newcastle upon Tyne",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
       "criType": "HMRC Knowledge Based Verification (Stub)",
       "label": "Alice Parker (Valid) HMRC KBV",
       "payload": {
@@ -2391,6 +3012,96 @@
         "socialSecurityRecord": [
           {
             "personalNumber": "AA000003D"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Kabir Singh National Insurance (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kabir",
+                "type": "GivenName"
+              },
+              {
+                "value": "Singh",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1991-12-24"
+          }
+        ],
+        "socialSecurityRecord": [
+          {
+            "personalNumber": "MW200001A"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Tom Hardy National Insurance (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Tom",
+                "type": "GivenName"
+              },
+              {
+                "value": "Hardy",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-03-15"
+          }
+        ],
+        "socialSecurityRecord": [
+          {
+            "personalNumber": "MW000749A"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Nora Porter National Insurance (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Nora",
+                "type": "GivenName"
+              },
+              {
+                "value": "Porter",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1978-01-01"
+          }
+        ],
+        "socialSecurityRecord": [
+          {
+            "personalNumber": "MW000683A"
           }
         ]
       }
@@ -2696,7 +3407,71 @@
         ],
         "passport": [
           {
-            "documentNumber": "824159121",
+            "documentNumber": "824159122",
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "UK Passport (Stub)",
+      "label": "Tom Hardy Passport (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Tom",
+                "type": "GivenName"
+              },
+              {
+                "value": "Hardy",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1980-03-15"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "824159123",
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "UK Passport (Stub)",
+      "label": "Nora Porter Passport (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Nora",
+                "type": "GivenName"
+              },
+              {
+                "value": "Porter",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1991-12-24"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "824159124",
             "expiryDate": "2030-01-01",
             "icaoIssuerCode": "GBR"
           }
