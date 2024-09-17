@@ -22,10 +22,9 @@ import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.startsWithIgnoringCase;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -72,16 +71,12 @@ public class DocAppCredentialHandlerTest {
         verify(mockTokenService).revoke(accessToken.toAuthorizationHeader());
 
         var docAppUserInfo = new UserInfo(responseCaptor.getValue());
-        assertThat(
-                docAppUserInfo.getSubject().getValue(),
-                startsWithIgnoringCase("urn:fdc:gov.uk:2022:"));
-        assertThat(
-                docAppUserInfo.getClaim("https://vocab.account.gov.uk/v1/credentialJWT"),
-                notNullValue());
+        assertTrue(docAppUserInfo.getSubject().getValue().startsWith("urn:fdc:gov.uk:2022:"));
+        assertNotNull(docAppUserInfo.getClaim("https://vocab.account.gov.uk/v1/credentialJWT"));
         List<?> verifiedCredentials =
                 (List<?>) docAppUserInfo.getClaim("https://vocab.account.gov.uk/v1/credentialJWT");
-        assertThat(verifiedCredentials.size(), equalTo(1));
-        assertThat(verifiedCredentials.get(0), equalTo("A.VERIFIABLE.CREDENTIAL"));
+        assertEquals(1, verifiedCredentials.size());
+        assertEquals("A.VERIFIABLE.CREDENTIAL", verifiedCredentials.get(0));
     }
 
     @Test
