@@ -277,7 +277,12 @@ public class IpvHandler {
 
             ctx.render("templates/error.mustache", Map.of("error", errorObject));
         } catch (Exception e) {
-            var errorObject = List.of(Map.of("error_description", e.getMessage()));
+            LOGGER.error("Error handling IPV callback", e);
+            var errorObject =
+                    List.of(
+                            Map.of(
+                                    "error_description",
+                                    requireNonNullElse(e.getMessage(), "unknown")));
 
             ctx.render("templates/error.mustache", Map.of("error", errorObject));
         }
