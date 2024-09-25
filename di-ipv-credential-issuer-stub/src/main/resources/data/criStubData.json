@@ -3416,6 +3416,38 @@
     },
     {
       "criType": "UK Passport (Stub)",
+      "label": "Kabir Singh Passport (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kabir",
+                "type": "GivenName"
+              },
+              {
+                "value": "Singh",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1991-12-24"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "824159123",
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "UK Passport (Stub)",
       "label": "Tom Hardy Passport (DWP)",
       "payload": {
         "name": [
