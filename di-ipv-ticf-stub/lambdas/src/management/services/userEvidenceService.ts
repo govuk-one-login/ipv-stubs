@@ -5,6 +5,7 @@ import { getSsmParameter } from "../../common/ssmParameter";
 import UserEvidenceItem from "../model/userEvidenceItem";
 import { config } from "../../common/config";
 import TicfManagementRequest from "../../domain/ticfManagementRequest";
+import TicfEvidenceItem from "../../domain/ticfEvidenceItem";
 
 const dynamoClient = config.isLocalDev
   ? new DynamoDB({
@@ -16,15 +17,14 @@ const dynamoClient = config.isLocalDev
 export async function persistUserEvidence(
   userId: string,
   ticfManagementRequest: TicfManagementRequest,
-  statusCode: number,
 ): Promise<void> {
-  const { responseDelay, ...ticfEvidenceItem } = ticfManagementRequest;
+  const { responseDelay, statusCode, evidence } = ticfManagementRequest;
 
   const userEvidence: UserEvidenceItem = {
     userId: userId,
-    evidence: ticfEvidenceItem,
+    evidence: evidence || ({} as TicfEvidenceItem),
     ttl: await getTtl(),
-    statusCode: statusCode,
+    statusCode: statusCode || 200,
     responseDelay: responseDelay || 0,
   };
   await saveUserEvidence(userEvidence);
@@ -42,9 +42,11 @@ export async function getUserEvidence(
   };
   const { Item } = await dynamoClient.getItem(getItemInput);
   const userEvidenceItem = Item ? (unmarshall(Item) as UserEvidenceItem) : null;
+
   if (userEvidenceItem === null) {
     console.info(`Record not found for user.`);
   }
+
   return userEvidenceItem;
 }
 

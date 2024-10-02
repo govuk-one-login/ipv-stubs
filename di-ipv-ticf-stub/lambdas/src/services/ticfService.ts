@@ -50,15 +50,14 @@ export async function processGetVCRequest(
     iat: timestamp,
     vc: {
       evidence: [
-        !ticfEvidenceItem
-          ? getEvidenceItem(timeoutVc, includeCi)
-          : ticfEvidenceItem,
+        ticfEvidenceItem || getDefaultEvidenceItem(timeoutVc, includeCi),
       ],
       type: ["VerifiableCredential", "RiskAssessmentCredential"],
     },
   };
 
   const returnJwt = await signJwt(payload, ticfSigningKey);
+
   return {
     response: {
       sub: ticfRequest.sub,
@@ -72,26 +71,19 @@ export async function processGetVCRequest(
   };
 }
 
-function getEvidenceItem(
+function getDefaultEvidenceItem(
   timeoutVc: boolean,
   includeCi: boolean,
 ): TicfEvidenceItem {
   if (timeoutVc) {
     return { type: "RiskAssessment" };
-  } else {
-    if (includeCi) {
-      return {
-        type: "RiskAssessment",
-        ci: ["V03"],
-        txn: uuid(),
-      };
-    } else {
-      return {
-        type: "RiskAssessment",
-        txn: uuid(),
-      };
-    }
   }
+
+  return {
+    type: "RiskAssessment",
+    ...(includeCi ? { ci: ["V03"] } : {}),
+    txn: uuid(),
+  };
 }
 
 async function getUserEvidenceFromDb(
@@ -99,7 +91,7 @@ async function getUserEvidenceFromDb(
 ): Promise<UserEvidenceItem | undefined> {
   const userEvidenceItem: UserEvidenceItem | null =
     await getUserEvidence(userId);
-  return userEvidenceItem ? userEvidenceItem : undefined;
+  return userEvidenceItem ?? undefined;
 }
 
 export default processGetVCRequest;
