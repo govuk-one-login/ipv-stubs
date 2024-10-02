@@ -50,7 +50,7 @@ paths:
         type: "aws"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetContraIndicatorCredentialFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetContraIndicatorCredentialFunction.Arn}:live/invocations
         # Method request path: {user_id=111}
         requestTemplates:
           application/json:
@@ -126,7 +126,7 @@ paths:
         type: "aws"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PutContraIndicatorsFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PutContraIndicatorsFunction.Arn}:live/invocations
         requestTemplates:
           application/json:
             Fn::Sub: >
@@ -201,7 +201,7 @@ paths:
         type: "aws"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostMitigationsFunction.Arn}/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostMitigationsFunction.Arn}:live/invocations
         requestTemplates:
           application/json:
             Fn::Sub: >

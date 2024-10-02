@@ -141,35 +141,6 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
-  PostMitigationsLiveAliasFunctionCoreDev01InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
-
-  PostMitigationsLiveAliasFunctionCoreDev02InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
-  PostMitigationsLiveAliasFunctionCoreBuildInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, build, accountId ]
-
-  PostMitigationsFunctionInternalRestApiInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref PostMitigationsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/mitigate"
-
   PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -219,35 +190,6 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
-  PutContraIndicatorsLiveAliasFunctionCoreDev01InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
-
-  PutContraIndicatorsLiveAliasFunctionCoreDev02InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
-  PutContraIndicatorsLiveAliasFunctionCoreBuildInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, build, accountId ]
-
-  PutContraIndicatorsFunctionInternalRestApiInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref PutContraIndicatorsFunction
-      Action: "lambda:InvokeFunction"
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/detect"
-
   PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -255,7 +197,6 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/detect"
-
 
   # lambda to stub cimit getContraIndicatorCredential
   GetContraIndicatorCredentialFunction:
@@ -296,35 +237,6 @@ Resources:
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
-
-  GetContraIndicatorCredentialLiveAliasFunctionCoreDev01InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
-
-  GetContraIndicatorCredentialLiveAliasFunctionCoreDev02InvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
-
-  GetContraIndicatorCredentialLiveAliasFunctionCoreBuildInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
-      Action: "lambda:InvokeFunction"
-      Principal: !FindInMap [ CoreAccounts, build, accountId ]
-
-  GetContraIndicatorCredentialFunctionInternalRestApiInvokePermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref GetContraIndicatorCredentialFunction
-      Action: "lambda:InvokeFunction"
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/GET/contra-indicators"
 
   GetContraIndicatorCredentialLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
