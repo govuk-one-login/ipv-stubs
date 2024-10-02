@@ -22,7 +22,7 @@ export async function handler(
       decodeURIComponent(userId),
       ticfManagementRequest,
     );
-    return buildApiResponse({ message: "Success !!" });
+    return buildApiResponse({ message: "Success!!" });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
