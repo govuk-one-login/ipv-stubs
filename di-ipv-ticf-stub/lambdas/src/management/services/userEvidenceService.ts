@@ -50,7 +50,7 @@ export async function getUserEvidence(
   return userEvidenceItem;
 }
 
-async function saveUserEvidence(userEvidence: UserEvidenceItem) {
+export async function saveUserEvidence(userEvidence: UserEvidenceItem) {
   console.info(`Save user record.`);
   const putItemInput: PutItemInput = {
     TableName: config.ticfStubUserEvidenceTableName,

@@ -45,9 +45,9 @@ function parseAndValidateRequest(
 
   if (
     !ticfManagementRequest.evidence?.type &&
-    !ticfManagementRequest.statusCode
+    (!ticfManagementRequest.statusCode || ticfManagementRequest.statusCode == 200)
   ) {
-    throw new BadRequestError("Invalid request - evidence type required");
+    throw new BadRequestError("Invalid request - evidence type required if configuring a successful TICF response");
   }
 
   if (

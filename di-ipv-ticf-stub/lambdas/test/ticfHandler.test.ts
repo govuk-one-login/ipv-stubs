@@ -87,6 +87,7 @@ describe("TICF handler", function () {
     );
     expect(ticfVc.iss).toEqual(TEST_COMPONENT_ID);
     expect(ticfVc.sub).toEqual(TEST_REQUEST.sub);
+    expect(ticfVc.sub).toEqual(TEST_REQUEST.sub);
     expect(ticfVc.aud).toEqual(TEST_COMPONENT_ID);
     expect(ticfVc.vc.type).toEqual([
       "VerifiableCredential",
@@ -208,7 +209,7 @@ describe("TICF handler", function () {
     // arrange
     const event = {
       ...TEST_EVENT,
-      body: "invalid json",
+      body: undefined,
     };
 
     // act
