@@ -27,111 +27,111 @@ Parameters:
   OrchestratorClientId:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_CLIENT_ID" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_ID" #pragma: allowlist secret
   OrchestratorRedirectUrl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_REDIRECT_URL" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_REDIRECT_URL" #pragma: allowlist secret
   OrchestratorClientJwtTtl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_CLIENT_JWT_TTL" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_JWT_TTL" #pragma: allowlist secret
   OrchestratorPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_PORT" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_PORT" #pragma: allowlist secret
   OrchestratorClientSigningKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY" #pragma: allowlist secret
   OrchestratorJarEncryptionPublicKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   OrchestratorDefaultJarEncryptionPublicKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   OrchestratorBuildJarEncryptionPublicKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   OrchestratorStagingJarEncryptionPublicKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   OrchestratorIntegrationJarEncryptionPublicKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
   OrchestratorBasicAuthEnable:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_ENABLE" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_ENABLE" #pragma: allowlist secret
   OrchestratorBasicAuthUsername:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME" #pragma: allowlist secret
   OrchestratorBasicAuthPassword:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSWORD" #pragma: allowlist secret
+    Default: "/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSWORD" #pragma: allowlist secret
   IpvBackchannelEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/IPV_BACKCHANNEL_ENDPOINT" #pragma: allowlist secret
+    Default: "/stubs/orch/env/IPV_BACKCHANNEL_ENDPOINT" #pragma: allowlist secret
   IpvBackchannelTokenPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/IPV_BACKCHANNEL_TOKEN_PATH" #pragma: allowlist secret
+    Default: "/stubs/orch/env/IPV_BACKCHANNEL_TOKEN_PATH" #pragma: allowlist secret
   IpvBackchannelUserIdentityPath:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/IPV_BACKCHANNEL_USER_IDENTITY_PATH" #pragma: allowlist secret
+    Default: "/stubs/orch/env/IPV_BACKCHANNEL_USER_IDENTITY_PATH" #pragma: allowlist secret
   IpvEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/IPV_ENDPOINT" #pragma: allowlist secret
+    Default: "/stubs/orch/env/IPV_ENDPOINT" #pragma: allowlist secret
   IpvCoreAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/IPV_CORE_AUDIENCE" #pragma: allowlist secret
+    Default: "/stubs/orch/env/IPV_CORE_AUDIENCE" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/JAVA_OPTS" #pragma: allowlist secret
+    Default: "/stubs/orch/env/JAVA_OPTS" #pragma: allowlist secret
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+    Default: "/stubs/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
   InheritedIdentityJwtSigningKey:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_SIGNING_KEY" #pragma: allowlist secret
+    Default: "/stubs/orch/env/INHERITED_IDENTITY_JWT_SIGNING_KEY" #pragma: allowlist secret
   InheritedIdentityJwtTtl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_TTL" #pragma: allowlist secret
+    Default: "/stubs/orch/env/INHERITED_IDENTITY_JWT_TTL" #pragma: allowlist secret
   InheritedIdentityJwtIssuer:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_ISSUER" #pragma: allowlist secret
+    Default: "/stubs/orch/env/INHERITED_IDENTITY_JWT_ISSUER" #pragma: allowlist secret
   InheritedIdentityJwtVtm:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/INHERITED_IDENTITY_JWT_VTM" #pragma: allowlist secret
+    Default: "/stubs/orch/env/INHERITED_IDENTITY_JWT_VTM" #pragma: allowlist secret
   EvcsAccessTokenEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/EVCS_ACCESS_TOKEN_ENDPOINT" #pragma: allowlist secret
+    Default: "/stubs/orch/env/EVCS_ACCESS_TOKEN_ENDPOINT" #pragma: allowlist secret
   EvcsAccessTokenTtl:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/EVCS_ACCESS_TOKEN_TTL" #pragma: allowlist secret
+    Default: "/stubs/orch/env/EVCS_ACCESS_TOKEN_TTL" #pragma: allowlist secret
   EvcsAccessTokenSigningKeyJwk:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/build/orch/env/EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK" #pragma: allowlist secret
+    Default: "/stubs/orch/env/EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -139,7 +139,6 @@ Conditions:
       - !Equals [ !Ref Environment, "build"]
       - !Equals [ !Ref Environment, "production"]
   IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
-  IsDev02: !Equals [ !Ref AWS::AccountId, "175872367215"]
   IsNotDevelopment: !Not [ !Condition IsDevelopment ]
 
   UsePermissionsBoundary:
@@ -195,16 +194,16 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainValidationOptions:
         - DomainName: !If
             - IsDev01
             - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+            - !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk"
           HostedZoneId: !If
             - IsDev01
             - !ImportValue Dev01StubsHostedZoneId
-            - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, !ImportValue DevStubHostedZoneId]
+            - !ImportValue Dev02StubsHostedZoneId
       ValidationMethod: DNS
 
   # api domain entries / mapping
@@ -214,7 +213,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainNameConfigurations:
         - CertificateArn: !Ref OrchStubSSLCert
           EndpointType: REGIONAL
@@ -226,7 +225,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk"
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -241,11 +240,11 @@ Resources:
       Name: !If
         - IsDev01
         - !Sub "orch-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "orch-${Environment}.02.core.dev.stubs.account.gov.uk"
       HostedZoneId: !If
         - IsDev01
         - !ImportValue Dev01StubsHostedZoneId
-        - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, !ImportValue DevStubHostedZoneId]
+        - !ImportValue Dev02StubsHostedZoneId
       AliasTarget:
         DNSName: !GetAtt OrchStubApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt OrchStubApiDomain.RegionalHostedZoneId
