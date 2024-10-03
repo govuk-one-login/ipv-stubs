@@ -22,6 +22,7 @@ import uk.gov.di.ipv.stub.orc.models.EvcsTokenResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.text.ParseException;
+import java.util.List;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.EVCS_ACCESS_TOKEN_ENDPOINT;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK;
@@ -30,7 +31,7 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.EVCS_ACCESS_TOKEN
 public class EvcsAccessTokenGenerator {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final Logger LOGGER = LoggerFactory.getLogger(EvcsAccessTokenGenerator.class);
-    private static final String STAGING = "staging";
+    private static final List<String> EVCS_ENVIRONMENTS = List.of("STAGING", "INTEGRATION");
     private static final JWSHeader JWS_HEADER =
             new JWSHeader.Builder(JWSAlgorithm.ES256).type(JOSEObjectType.JWT).build();
     private final ECDSASigner signer;
@@ -41,12 +42,12 @@ public class EvcsAccessTokenGenerator {
 
     public String getAccessToken(String environment, String userId)
             throws OrchestratorStubException {
-        if (STAGING.equalsIgnoreCase(environment)) {
-            LOGGER.info("Getting evcs access token from api");
+        if (EVCS_ENVIRONMENTS.contains(environment)) {
+            LOGGER.info("Getting evcs access token from token generator");
             return getAccessTokenFromEndpoint(userId);
         }
 
-        LOGGER.info("Generating evcs access token");
+        LOGGER.info("Generating evcs stub access token");
         return generateAccessToken(userId);
     }
 
