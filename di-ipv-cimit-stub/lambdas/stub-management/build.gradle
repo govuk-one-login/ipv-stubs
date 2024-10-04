@@ -20,7 +20,7 @@ dependencies {
 			"software.amazon.awssdk:dynamodb-enhanced:2.26.25",
 			"com.fasterxml.jackson.core:jackson-annotations:2.17.2",
 			"org.apache.logging.log4j:log4j-api:2.23.1",
-			"org.apache.logging.log4j:log4j-core:2.23.1",
+			"org.apache.logging.log4j:log4j-core:2.24.1",
 			"org.apache.logging.log4j:log4j-layout-template-json:2.23.1",
 			project(":di-ipv-cimit-stub:lib")
 
