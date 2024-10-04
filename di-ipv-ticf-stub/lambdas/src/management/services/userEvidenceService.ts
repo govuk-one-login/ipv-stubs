@@ -5,7 +5,6 @@ import { getSsmParameter } from "../../common/ssmParameter";
 import UserEvidenceItem from "../model/userEvidenceItem";
 import { config } from "../../common/config";
 import TicfManagementRequest from "../../domain/ticfManagementRequest";
-import TicfEvidenceItem from "../../domain/ticfEvidenceItem";
 
 const dynamoClient = config.isLocalDev
   ? new DynamoDB({
@@ -22,7 +21,7 @@ export async function persistUserEvidence(
 
   const userEvidence: UserEvidenceItem = {
     userId: userId,
-    evidence: evidence || ({} as TicfEvidenceItem),
+    evidence,
     ttl: await getTtl(),
     statusCode: statusCode || 200,
     responseDelay: responseDelay || 0,
@@ -54,7 +53,7 @@ async function saveUserEvidence(userEvidence: UserEvidenceItem) {
   console.info(`Save user record.`);
   const putItemInput: PutItemInput = {
     TableName: config.ticfStubUserEvidenceTableName,
-    Item: marshall(userEvidence),
+    Item: marshall(userEvidence, { removeUndefinedValues: true }),
   };
   await dynamoClient.putItem(putItemInput);
 }

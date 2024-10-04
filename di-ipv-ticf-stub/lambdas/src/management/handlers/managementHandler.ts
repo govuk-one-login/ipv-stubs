@@ -43,11 +43,10 @@ function parseAndValidateRequest(
 
   const ticfManagementRequest: TicfManagementRequest = JSON.parse(event.body);
 
-  if (
-    !ticfManagementRequest.evidence?.type &&
-    (!ticfManagementRequest.statusCode || ticfManagementRequest.statusCode == 200)
-  ) {
-    throw new BadRequestError("Invalid request - evidence type required if configuring a successful TICF response");
+  if (ticfManagementRequest.evidence && !ticfManagementRequest.evidence.type) {
+    throw new BadRequestError(
+      "Invalid request - if evidence provided, it must include a type",
+    );
   }
 
   if (

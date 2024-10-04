@@ -40,8 +40,8 @@ describe("TICF management handler", () => {
     // assert
     expect(result.statusCode).toEqual(200);
     expect(persistUserEvidence).toHaveBeenCalledWith(
-      ...[TEST_USER_ID,
-      TEST_REQUEST,]
+      TEST_USER_ID,
+      TEST_REQUEST,
     );
   });
 
@@ -60,10 +60,10 @@ describe("TICF management handler", () => {
 
     // assert
     expect(result.statusCode).toEqual(200);
-    expect(persistUserEvidence).toHaveBeenCalledWith(
-      TEST_USER_ID,
-      { ...TEST_REQUEST, responseDelay: 10 }
-    );
+    expect(persistUserEvidence).toHaveBeenCalledWith(TEST_USER_ID, {
+      ...TEST_REQUEST,
+      responseDelay: 10,
+    });
   });
 
   it("returns a 200 for a request with error statusCode and no evidence", async () => {
@@ -80,10 +80,28 @@ describe("TICF management handler", () => {
 
     // assert
     expect(result.statusCode).toEqual(200);
-    expect(persistUserEvidence).toHaveBeenCalledWith(
-      TEST_USER_ID,
-      {statusCode: 500},
-    );
+    expect(persistUserEvidence).toHaveBeenCalledWith(TEST_USER_ID, {
+      statusCode: 500,
+    });
+  });
+
+  it("returns a 200 for a request with 200 statusCode and no evidence", async () => {
+    // arrange
+    jest.mocked(persistUserEvidence).mockResolvedValueOnce();
+
+    // act
+    const result = (await handler({
+      ...TEST_EVENT,
+      body: JSON.stringify({
+        statusCode: 200,
+      }),
+    })) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(200);
+    expect(persistUserEvidence).toHaveBeenCalledWith(TEST_USER_ID, {
+      statusCode: 200,
+    });
   });
 
   it("returns 400 for a request with no user id", async () => {
@@ -137,20 +155,19 @@ describe("TICF management handler", () => {
     expect(persistUserEvidence).not.toHaveBeenCalled();
   });
 
-  it("returns 400 for a request with a statusCode 200 but missing evidence type", async () => {
+  it("returns 400 for a request with an invalid evidence", async () => {
     // act
     const result = (await handler({
       ...TEST_EVENT,
       body: JSON.stringify({
         evidence: { ...TEST_REQUEST.evidence, type: undefined },
-        statusCode: 200
       }),
     })) as APIGatewayProxyStructuredResultV2;
 
     // assert
     expect(result.statusCode).toEqual(400);
     expect(persistUserEvidence).not.toHaveBeenCalled();
-  })
+  });
 
   it("returns 400 for a request with too large response delay", async () => {
     // act

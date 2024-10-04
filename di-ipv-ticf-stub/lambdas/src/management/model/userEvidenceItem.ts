@@ -2,7 +2,7 @@ import TicfEvidenceItem from "../../domain/ticfEvidenceItem";
 
 export default interface UserEvidenceItem {
   userId: string;
-  evidence: TicfEvidenceItem;
+  evidence?: TicfEvidenceItem;
   statusCode: number;
   ttl: number;
   responseDelay: number;
