@@ -277,12 +277,14 @@ public class CoreStubHandler {
             request.session().removeAttribute("evidence_request");
         }
 
+        var context = request.queryParams("context");
+
         AuthorizationRequest authRequest;
 
         try {
             authRequest =
                     handlerHelper.createAuthorizationJAR(
-                            state, credentialIssuer, sharedClaims, evidenceRequest);
+                            state, credentialIssuer, sharedClaims, evidenceRequest, context);
         } catch (JOSEException joseException) {
             LOGGER.error("JOSEException occurred," + joseException.getMessage());
             throw joseException;
