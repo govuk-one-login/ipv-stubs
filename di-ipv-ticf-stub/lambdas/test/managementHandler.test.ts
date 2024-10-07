@@ -11,9 +11,11 @@ jest.mock("../src/management/services/userEvidenceService");
 const TEST_USER_ID: string = "urn:uuid:test-user-id";
 
 const TEST_REQUEST = {
-  type: "RiskAssessment",
-  ci: ["V03", "D03"],
-  txn: "uuid",
+  evidence: {
+    type: "RiskAssessment",
+    ci: ["V03", "D03"],
+    txn: "uuid",
+  },
 };
 
 const TEST_PATH_PARAM = {
@@ -40,7 +42,6 @@ describe("TICF management handler", () => {
     expect(persistUserEvidence).toHaveBeenCalledWith(
       TEST_USER_ID,
       TEST_REQUEST,
-      200,
     );
   });
 
@@ -59,11 +60,48 @@ describe("TICF management handler", () => {
 
     // assert
     expect(result.statusCode).toEqual(200);
-    expect(persistUserEvidence).toHaveBeenCalledWith(
-      TEST_USER_ID,
-      { ...TEST_REQUEST, responseDelay: 10 },
-      200,
-    );
+    expect(persistUserEvidence).toHaveBeenCalledWith(TEST_USER_ID, {
+      ...TEST_REQUEST,
+      responseDelay: 10,
+    });
+  });
+
+  it("returns a 200 for a request with error statusCode and no evidence", async () => {
+    // arrange
+    jest.mocked(persistUserEvidence).mockResolvedValueOnce();
+
+    // act
+    const result = (await handler({
+      ...TEST_EVENT,
+      body: JSON.stringify({
+        statusCode: 500,
+      }),
+    })) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(200);
+    expect(persistUserEvidence).toHaveBeenCalledWith(TEST_USER_ID, {
+      statusCode: 500,
+    });
+  });
+
+  it("returns a 200 for a request with 200 statusCode and no evidence", async () => {
+    // arrange
+    jest.mocked(persistUserEvidence).mockResolvedValueOnce();
+
+    // act
+    const result = (await handler({
+      ...TEST_EVENT,
+      body: JSON.stringify({
+        statusCode: 200,
+      }),
+    })) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(200);
+    expect(persistUserEvidence).toHaveBeenCalledWith(TEST_USER_ID, {
+      statusCode: 200,
+    });
   });
 
   it("returns 400 for a request with no user id", async () => {
@@ -94,7 +132,7 @@ describe("TICF management handler", () => {
     // act
     const result = (await handler({
       ...TEST_EVENT,
-      body: "invalid",
+      body: undefined,
     })) as APIGatewayProxyStructuredResultV2;
 
     // assert
@@ -108,7 +146,21 @@ describe("TICF management handler", () => {
       ...TEST_EVENT,
       body: JSON.stringify({
         ...TEST_REQUEST,
-        type: undefined,
+        evidence: { ...TEST_REQUEST.evidence, type: undefined },
+      }),
+    })) as APIGatewayProxyStructuredResultV2;
+
+    // assert
+    expect(result.statusCode).toEqual(400);
+    expect(persistUserEvidence).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 for a request with an invalid evidence", async () => {
+    // act
+    const result = (await handler({
+      ...TEST_EVENT,
+      body: JSON.stringify({
+        evidence: { ...TEST_REQUEST.evidence, type: undefined },
       }),
     })) as APIGatewayProxyStructuredResultV2;
 

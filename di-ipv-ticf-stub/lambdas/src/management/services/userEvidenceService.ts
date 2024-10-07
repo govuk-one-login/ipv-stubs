@@ -16,15 +16,14 @@ const dynamoClient = config.isLocalDev
 export async function persistUserEvidence(
   userId: string,
   ticfManagementRequest: TicfManagementRequest,
-  statusCode: number,
 ): Promise<void> {
-  const { responseDelay, ...ticfEvidenceItem } = ticfManagementRequest;
+  const { responseDelay, statusCode, evidence } = ticfManagementRequest;
 
   const userEvidence: UserEvidenceItem = {
     userId: userId,
-    evidence: ticfEvidenceItem,
+    evidence,
     ttl: await getTtl(),
-    statusCode: statusCode,
+    statusCode: statusCode || 200,
     responseDelay: responseDelay || 0,
   };
   await saveUserEvidence(userEvidence);
@@ -42,9 +41,11 @@ export async function getUserEvidence(
   };
   const { Item } = await dynamoClient.getItem(getItemInput);
   const userEvidenceItem = Item ? (unmarshall(Item) as UserEvidenceItem) : null;
+
   if (userEvidenceItem === null) {
     console.info(`Record not found for user.`);
   }
+
   return userEvidenceItem;
 }
 
@@ -52,7 +53,7 @@ async function saveUserEvidence(userEvidence: UserEvidenceItem) {
   console.info(`Save user record.`);
   const putItemInput: PutItemInput = {
     TableName: config.ticfStubUserEvidenceTableName,
-    Item: marshall(userEvidence),
+    Item: marshall(userEvidence, { removeUndefinedValues: true }),
   };
   await dynamoClient.putItem(putItemInput);
 }

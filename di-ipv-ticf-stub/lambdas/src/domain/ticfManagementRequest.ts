@@ -1,6 +1,7 @@
+import TicfEvidenceItem from "./ticfEvidenceItem";
+
 export default interface TicfManagementRequest {
-  type?: string;
-  ci?: string[];
-  txn?: string;
+  evidence?: TicfEvidenceItem;
   responseDelay?: number;
+  statusCode?: number;
 }

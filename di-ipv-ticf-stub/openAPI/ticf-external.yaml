@@ -71,13 +71,31 @@ paths:
               $ref: "#/components/schemas/TicfManagementRequestBody"
       responses:
         200:
-          description: "Success response "
+          description: "Success response"
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  result:
+                  message:
+                    type: string
+        400:
+          description: "Bad request error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errorMessage:
+                    type: string
+        500:
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errorMessage:
                     type: string
       x-amazon-apigateway-integration:
         type: "aws_proxy"
@@ -89,48 +107,7 @@ paths:
           default:
             statusCode: 200
             responseTemplates:
-              application/json: '{"result": "success"}'
-  /management/user/{userId}/statuscode/{statusCode}:
-    post:
-      description: Ticf Stub management api
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: statusCode
-          in: path
-          required: true
-          schema:
-            type: number
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TicfManagementRequestBody"
-      responses:
-        200:
-          description: "Success response "
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-      x-amazon-apigateway-integration:
-        type: "aws_proxy"
-        httpMethod: "POST"
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserEvidenceFunction.Arn}:live/invocations
-        passthroughBehavior: "WHEN_NO_TEMPLATES"
-        responses:
-          default:
-            statusCode: 200
-            responseTemplates:
-              application/json: '{"result": "success"}'
+              application/json: '{"message": "Success!!"}'
 
 components:
   schemas:
@@ -164,18 +141,24 @@ components:
       description: Request body for Ticf management
       type: object
       properties:
-        type:
-          type: string
-          description: The code for evidence type data
-        ci:
-          type: array
-          items:
-            type: string
-          description: The array of ci codes data
-        txn:
-          type: string
-          description: The txn code (riskEngineAssessmentId) data
+        evidence:
+          type: object
+          properties:
+            type:
+              type: string
+              description: The code for evidence type data
+            ci:
+              type: array
+              items:
+                type: string
+              description: The array of ci codes data
+            txn:
+              type: string
+              description: The txn code (riskEngineAssessmentId) data
         responseDelay:
           type: number
           description: The period in seconds to wait before sending a response from the risk-assessment endpoint.
+        statusCode:
+          type: number
+          description: The expected statusCode from TICF when a request is made for this user
 

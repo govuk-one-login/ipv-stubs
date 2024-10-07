@@ -4,8 +4,6 @@ module.exports = {
   coverageDirectory: "coverage",
   coverageProvider: "v8",
 
-  preset: "@shelf/jest-dynamodb",
-
   testEnvironment: "node",
   testMatch: ["**/test/**/*.test.ts"],
 };
