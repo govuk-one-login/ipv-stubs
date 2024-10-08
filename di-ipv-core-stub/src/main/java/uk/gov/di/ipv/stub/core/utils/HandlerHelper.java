@@ -95,6 +95,7 @@ public class HandlerHelper {
     public static final String UNKNOWN_ENV_VAR = "unknown";
     public static final String API_KEY_HEADER = "x-api-key";
     public static final String EVIDENCE_REQUESTED = "evidence_requested";
+    public static final String CONTEXT = "context";
 
     private final ECKey ecSigningKey;
     private final ObjectMapper objectMapper;
@@ -259,13 +260,14 @@ public class HandlerHelper {
             State state,
             CredentialIssuer credentialIssuer,
             T sharedClaims,
-            EvidenceRequestClaims evidenceRequest)
+            EvidenceRequestClaims evidenceRequest,
+            String context)
             throws JOSEException, java.text.ParseException {
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
 
         JWTClaimsSet claimsSet =
                 createJWTClaimsSets(
-                        state, credentialIssuer, clientID, sharedClaims, evidenceRequest);
+                        state, credentialIssuer, clientID, sharedClaims, evidenceRequest, context);
         // The only difference (frontend/backend) are the ClaimSets are created above for the
         // frontend and clientID is already set in the backend ClaimSet
         LOGGER.info("ClaimsSets generated: {}", claimsSet);
@@ -307,9 +309,21 @@ public class HandlerHelper {
             CredentialIssuer credentialIssuer,
             ClientID clientID,
             Object sharedClaims,
+            EvidenceRequestClaims evidenceRequest,
+            String context) {
+        return createJWTClaimsSetBuilder(
+                        state, credentialIssuer, clientID, sharedClaims, evidenceRequest, context)
+                .build();
+    }
+
+    public JWTClaimsSet createJWTClaimsSets(
+            State state,
+            CredentialIssuer credentialIssuer,
+            ClientID clientID,
+            Object sharedClaims,
             EvidenceRequestClaims evidenceRequest) {
         return createJWTClaimsSetBuilder(
-                        state, credentialIssuer, clientID, sharedClaims, evidenceRequest)
+                        state, credentialIssuer, clientID, sharedClaims, evidenceRequest, null)
                 .build();
     }
 
@@ -318,7 +332,8 @@ public class HandlerHelper {
             CredentialIssuer credentialIssuer,
             ClientID clientID,
             Object sharedClaims) {
-        return createJWTClaimsSetBuilder(state, credentialIssuer, clientID, sharedClaims, null)
+        return createJWTClaimsSetBuilder(
+                        state, credentialIssuer, clientID, sharedClaims, null, null)
                 .build();
     }
 
@@ -327,7 +342,8 @@ public class HandlerHelper {
             CredentialIssuer credentialIssuer,
             ClientID clientID,
             T sharedClaims,
-            EvidenceRequestClaims evidenceRequest) {
+            EvidenceRequestClaims evidenceRequest,
+            String context) {
 
         Instant now = Instant.now();
 
@@ -354,6 +370,9 @@ public class HandlerHelper {
         }
         if (Objects.nonNull(evidenceRequest)) {
             claimsSetBuilder.claim(EVIDENCE_REQUESTED, convertToMap(evidenceRequest));
+        }
+        if (!StringUtils.isEmpty(context)) {
+            claimsSetBuilder.claim(CONTEXT, context);
         }
         return claimsSetBuilder;
     }
