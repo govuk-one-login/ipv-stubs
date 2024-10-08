@@ -87,3 +87,41 @@ core/deploy/dns-zones/template.yaml:20:3
 Checkov..............................................(no files to check)Skipped
 - hook id: checkov
 ```
+
+## Testing against a stub deployed to dev
+To test dev deployed changes made on a stub with other systems (e.g. orch-stub and core-back/front),
+the user dev-deploy config needs to be updated to point at the dev-specific invoke URLs.
+
+### 1. Find the dev-specific invoke URLs
+These can be obtained in one of 3 ways:
+1. Getting the invoke URL from api gateway
+2. Finding the domain mapping in the stub's deploy template
+3. Looking for the appropriate URL in AWS ApiGateway under "Custom domain names"
+
+It's important to use the custom domain name when testing a public-facing API (see [here](#403-errors-when-testing-a-public-facing-api)).
+
+### 2. Update your user dev-deploy config
+Update your user dev-deploy config found in [core-common-infra](https://github.com/govuk-one-login/ipv-core-common-infra/tree/main/utils/dev-deploy/configs/user-deployments),
+making sure to place the new config in the same place as that in the main deployment configs. For example, pointing to your
+dev-deployed TICF stub should look something like this:
+```
+parameters:
+    secrets-manager:
+       dev/core/credentialIssuers/ticf/connections/stub/apiKey: "my-dev-ticf-api-key" # pragma: allowlist secret
+    ssm:
+       dev/core/credentialIssuers/ticf/connections/stub: '{
+                "credentialUrl": "https://ticf-dev-theab.02.core.dev.stubs.account.gov.uk/risk-assessment",
+                "signingKey": "the-signing-key",
+                "componentId": "https://ticf.stubs.account.gov.uk",
+                "requiresApiKey": "true", # pragma: allowlist secret
+                "requestTimeout": 5
+              }'
+```
+This will override the specified configs in the main deployment configs.
+If testing TICF, CIMIT or another api which requires an api key, remember to override these too.
+
+### 403 errors when testing a public-facing api
+When working on a public-facing api and testing requests sent from a VPC e.g. those from core-back, if not using a custom
+domain name for the invoke URL, these requests will return a 403 error. This is because these requests are incorrectly routed through
+the VPC endpoint which can only send requests to private APIs resulting in a 403. See [here](https://repost.aws/knowledge-center/api-gateway-vpc-connections)
+for further explanation and guidance on fixing the issue).
