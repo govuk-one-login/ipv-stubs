@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class F2FQueueErrorEvent {
+public class CriResponseQueueErrorEvent {
     private String sub;
     private String state;
     private String error;

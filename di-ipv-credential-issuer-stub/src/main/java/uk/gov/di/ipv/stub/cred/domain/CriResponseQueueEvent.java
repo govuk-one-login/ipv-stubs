@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
-public class F2FQueueEvent {
+public class CriResponseQueueEvent {
     private String sub;
     private String state;
 

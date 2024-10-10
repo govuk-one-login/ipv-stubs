@@ -664,7 +664,7 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void apiAuthorizeShouldAllowVcToBeSentToF2fQueue() throws Exception {
+        void apiAuthorizeShouldAllowVcToBeSentToCriResponseQueue() throws Exception {
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
                             new ApiAuthRequest(
@@ -674,7 +674,8 @@ class AuthorizeHandlerTest {
                                     "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
                                     null,
                                     null,
-                                    new F2fDetails(true, false, "stubQueue_F2FQueue_build", 0),
+                                    new F2fDetails(
+                                            true, false, "stubQueue_criResponseQueue_build", 0),
                                     null));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
@@ -692,7 +693,7 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void apiAuthorizeShouldAllowErrorToBeSentToF2fQueue() throws Exception {
+        void apiAuthorizeShouldAllowErrorToBeSentToCriResponseQueue() throws Exception {
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
                             new ApiAuthRequest(
@@ -702,7 +703,8 @@ class AuthorizeHandlerTest {
                                     "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
                                     null,
                                     null,
-                                    new F2fDetails(false, true, "stubQueue_F2FQueue_build", 0),
+                                    new F2fDetails(
+                                            false, true, "stubQueue_criResponseQueue_build", 0),
                                     null));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
