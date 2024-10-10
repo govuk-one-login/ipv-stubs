@@ -79,21 +79,13 @@
             Experian UAT test users sheet</a></legend>
         <form action="/authorize">
             <input type="hidden" name="cri" value="{{cri}}">
+
             <div class="govuk-form-group">
                 <input class="govuk-input govuk-input--width-3" id="rowNumber" name="rowNumber" type="text"
                        placeholder="3">
                 <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
             </div>
         </form>
-
-         <legend class="govuk-fieldset__legend govuk-label">Input claim set raw JSON</legend>
-                <form action="/user-search" method="post">
-                    <input type="hidden" name="cri" value="{{cri}}">
-                    <div class="govuk-form-group">
-                        <input class="govuk-input govuk-input--width-20" id="claimsText" name="claimsText" type="text">
-                        <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
-                    </div>
-                </form>
 
     </main>
 </div>

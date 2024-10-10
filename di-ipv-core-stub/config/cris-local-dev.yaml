@@ -1,0 +1,43 @@
+credentialIssuerConfigs:
+  - id: fraud-cri-dev
+    name: Fraud CRI dev
+    authorizeUrl: http://localhost:5030/oauth2/authorize
+    tokenUrl: https://vmge1piqcj.execute-api.eu-west-2.amazonaws.com/dev/token
+    credentialUrl: https://vmge1piqcj.execute-api.eu-west-2.amazonaws.com/dev/credential/issue
+    audience: https://review-f.dev.account.gov.uk
+    sendIdentityClaims: true
+    publicEncryptionJwkBase64: eyJrdHkiOiJSU0EiLCJuIjoieTBNMlhyOTRVOGs0V05nRUFUU0V3ZWc4bTVmTUV3NTV0Rk1YWFJ3WFpwOWJta2NoTzhHRW5ZOVhodGNCdHUyQmgteF9HWjFkdE9yNjd4STVPZHdfN3UxYzk2ZzBXU3lCV2NxRGpEZFhzTzhkdDFzcHlIWnFmZ19SUnFuZGszZ2VkeFFpNWFKTjBiQzRmUmRPaTBzeU5wQkh1ZFZSZk1sbnotSXd6bjItZ0YwbkR5SUl5VklneTlxUmtVQmtGbFpCalM0dk1YVWozZmJKVGFyaWdnemJha1htNFI1emppWDQ5b0R3YmNrVGZVQVgxRm9tVlVvdHNPd2JPaGFSMVRkM3pmTlVWVEtlSnJEaV9CZUVnQTVtV1Z6bkRValMxQXh2bG5rMzl2UDFJTWJITzlUaDhEa2NTdnJIU09tWHBaRXRwSEhzT0RPem5DZE9KYVBsUmlHaU13IiwiZSI6IkFRQUIifQ==
+    publicVCSigningVerificationJwkBase64: eyJrdHkiOiJFQyIsInVzZSI6InNpZyIsImNydiI6IlAtMjU2IiwieCI6IjZidmp6TGphZVNmZUFad2Vyd3RBVnRMVGVTME1kTVRjLU0wbVhaQzR6QU0iLCJ5IjoiWDhqZEt4WFBsODZKaXdtRHlFZy1nV2JTMTQ5eTNob2hLbHZGRlZRSnVUSSIsImFsZyI6IkVTMjU2In0=
+    apiKeyEnvVar: API_KEY_CRI_DEV
+  - id: driving-licence-cri-dev
+    name: Driving Licence CRI dev
+    authorizeUrl: http://localhost:5040/oauth2/authorize
+    tokenUrl: https://ppqzk87771.execute-api.eu-west-2.amazonaws.com/dev/token
+    credentialUrl: https://ppqzk87771.execute-api.eu-west-2.amazonaws.com/dev/credential/issue
+    audience: https://review-d.dev.account.gov.uk
+    sendIdentityClaims: true
+    publicEncryptionJwkBase64: eyJrdHkiOiJSU0EiLCJuIjoieDhTQlJqOFpJbElFT2lndFM1Nm5RcExiSnFxRzhjVVFDaXJRa2NyLWdsTVBqRldlRGxIT2x2ZzRsc1F1a21kNElXc0ZqQVpIMl9SWXlDMlR1QzZfbWpZeXVFeS16cFNHcW5nZWI0ODJJbmZFbmpzY3hFSWJOLXZndVFPLU9USXV0Z2lJNUlzSEhPX1JfdmN2OXQtQmtqUWJ6TTFHOG1PRE9ENTVJT2V3ZE9ENnlrMDZZSkljOERkbWNBMTJ3Ym9NaVJiZC1hN3JGRmRkZ1Y5Q2pwNTBRT203XzIwT1RxWDVKWXQ3V2VwQTZ3M1NuZ0pzMGJURjdEamZweXVkOG5fSmhrazNJTHZ0RVNZdHFKNUdyX1ZDTVY4bVpLZUJFUlBmZ1NmUXIwR0gzOEp4bDhrb180dDFlSmFYODZuTWJSSWk2SmpxVmVlbjhPeFFuQVZQZUgtQ3RRIiwiZSI6IkFRQUIifQ==
+    publicVCSigningVerificationJwkBase64: eyJrdHkiOiJFQyIsInVzZSI6InNpZyIsImNydiI6IlAtMjU2IiwieCI6Ikk0U2hNMmVILTltWW9KODBMR3ZCNkFDU0FEbHdEb1J0RlJadVZUVFU0VjAiLCJ5IjoiUW9LTTA5b3pQU2xzZ1BGUHR2dzZId0g1TzVBSmNrYlRkX3hKb2lucU5UbyIsImFsZyI6IkVTMjU2In0=
+    apiKeyEnvVar: API_KEY_CRI_DEV
+  - id: passport-v1-cri-dev
+    name: Passport CRI dev
+    authorizeUrl: http://localhost:5050/oauth2/authorize
+    tokenUrl: https://2j1cff9mag.execute-api.eu-west-2.amazonaws.com/dev/token
+    credentialUrl: https://2j1cff9mag.execute-api.eu-west-2.amazonaws.com/dev/credential/issue
+    audience: https://review-p.dev.account.gov.uk
+    sendIdentityClaims: true
+    publicEncryptionJwkBase64: ewogICJrdHkiOiAiUlNBIiwKICAibiI6ICJ4MFFNVkczZlJyQUxTWlpqaGh4UHhRdW1GTVo4NmcxYWR6WW5jeXRrRWpnNnVKSlZwTE1yX3paR0g0YmRfNWQ2dzRtRVktSDk5MXJiUC1VbWIxcUlPanQyQnlWdTU2VVdmMDBqMUxiQ2lHOVZHcXFJMjZBYWVBczF3UldlNnBKUy1wS1JyLUZQOXA4TkdKam5EWXBJUTEwLVhGLVE3SEZ4R3p0eUhHUFpPdUtTR3A3MkNtbkswVDZ4NGQwR0RDS2h1QV9VVGhSQ1Y2MUJ2Z1liRW5QSFlBSzFfNHZqMmtnWC16aE5DXzVobWRQVngyWjJCblBpTnp6cTJCT2MxWWp0bmZUM21XSEU5bkxwWklBRlVsaDR2WTFuOXFCUXg2d3JRVDMzbmF0Mmd0TEZPT08welVTZG1Va3FKd3VzRHlWTzFPVDFRaFdfOWJmZlJkdjYySjRNbFEiLAogICJlIjogIkFRQUIiCn0=
+    publicVCSigningVerificationJwkBase64: eyJrdHkiOiJFQyIsInVzZSI6InNpZyIsImNydiI6IlAtMjU2IiwieCI6IkhSMlc3aVpyamVNR1ZWY2l4Zko1US0yWHZRbW1NMndXN3NYWXNKNWVyQ28iLCJ5IjoiZFdfTk81SThIV0xscGpqNERFcHpGSGoyRWl5cmNsWUkyYzFCdzBVamJMZyIsImFsZyI6IkVTMjU2In0=
+    apiKeyEnvVar: API_KEY_CRI_DEV
+  - id: hmrc-kbv-cri-dev
+    name: HMRC KBV CRI Dev
+    authorizeUrl: http://localhost:5070/oauth2/authorize
+    tokenUrl: https://7y8v3ymqga.execute-api.eu-west-2.amazonaws.com/dev/token
+    credentialUrl: https://7y8v3ymqga.execute-api.eu-west-2.amazonaws.com/dev/credential/issue
+    audience: https://review-hk.dev.account.gov.uk
+    sendIdentityClaims: true
+    publicEncryptionJwkBase64: eyJrdHkiOiJSU0EiLCJuIjoiazBmWktYNE81aWE3WnREa19QWUNYMUNWdGYwYng4X3lMZ2xBNEN4NTRpMUZLdVhvZlFvMU5hNUc2OXUzQ18xWUxYZEVpMVRqLWtzcEZLQ0FEcFIzTmdIZmlxWnBEYnJfYjJjT1lrckdzUk0tMFJmb3dabFNKdlFKc3N1Rm4yQ3cxNTFsaUdyUzFmNGFzb3c5ak91dmJiYXd6aWlQdXRYeXVNOFROQ3F3RGJuYjZPSElKa1FCMjR6anAzNjRFSUxnUHlRZENoWnhQelZhZkMwcmRsWjNVWVBwcGxGZUJjYjRLUklUdmI0ZUx6d3YyMC1yaS1xVnZIbGxna2lQeXVoc2FhMWtvbk42c0hKdlc2Qk5jbHc1QnZWaTNvMDh2V2ZEODRyczlWc0Z1NllzZXBjNGxzVUdFM041M0hTMUFxUjN2V3lKNUtNYVlGZW9rYmowRG52cnNRIiwiZSI6IkFRQUIifQ==
+    publicVCSigningVerificationJwkBase64: eyJrdHkiOiJFQyIsInVzZSI6InNpZyIsImNydiI6IlAtMjU2IiwieCI6IkpYMEVmNjQtb25jZlV2dGdfSkNNdGh5S2xQTXN1YVluX1prU0lXRmU1Zm8iLCJ5IjoieE5tSkNVLS01eXNMSkl0bDZ2Nk41YXJpVkVtZmNCVFFMazZrNTJHMUdrSSIsImFsZyI6IkVTMjU2In0=
+    apiKeyEnvVar: API_KEY_CRI_DEV
+
+

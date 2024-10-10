@@ -1,9 +1,7 @@
 package uk.gov.di.ipv.stub.core.handlers;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.*;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -21,15 +19,7 @@ import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
-import uk.gov.di.ipv.stub.core.config.uatuser.DisplayIdentity;
-import uk.gov.di.ipv.stub.core.config.uatuser.EvidenceRequestClaims;
-import uk.gov.di.ipv.stub.core.config.uatuser.FindDateOfBirth;
-import uk.gov.di.ipv.stub.core.config.uatuser.FullName;
-import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
-import uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper;
-import uk.gov.di.ipv.stub.core.config.uatuser.PostcodeSharedClaims;
-import uk.gov.di.ipv.stub.core.config.uatuser.SharedClaims;
-import uk.gov.di.ipv.stub.core.config.uatuser.UKAddress;
+import uk.gov.di.ipv.stub.core.config.uatuser.*;
 import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
 import uk.gov.di.ipv.stub.core.utils.ViewHelper;
 
@@ -50,6 +40,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper.FAMILY_NAME;
+import static uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper.GIVEN_NAME;
 
 public class CoreStubHandler {
 
@@ -137,6 +130,28 @@ public class CoreStubHandler {
                 modelMap.put("identities", displayIdentities);
                 return ViewHelper.render(modelMap, "search-results.mustache");
             };
+
+    public Route sendSharedClaim =
+            (Request request, Response response) -> {
+                var credentialIssuer =
+                        handlerHelper.findCredentialIssuer(
+                                Objects.requireNonNull(request.queryParams("cri")));
+                String queryString = request.body();
+//                JsonObject queryJSON= JsonParser.parseString(queryString).getAsJsonObject();
+                ObjectMapper objectMapper = new ObjectMapper();
+                SharedClaims sharedClaims = objectMapper.readValue(queryString, SharedClaims.class);
+                System.out.println("!!!!!!!!!!!!!!!!!!!!" + objectMapper.writeValueAsString(sharedClaims));
+//                SharedClaims sharedClaims =
+//                    objectMapper.readValue(
+//                        objectMapper.writeValueAsString(
+//                            JWTClaimsSet.getClaim(CLAIMS_SET_NAME)),
+//                    SharedClaims.class);
+                sendAuthorizationRequest(request, response, credentialIssuer, sharedClaims);
+                return null;
+            };
+
+
+//
 
     public Route doCallback =
             (Request request, Response response) -> {
@@ -355,17 +370,32 @@ public class CoreStubHandler {
     public Route backendGenerateInitialClaimsSet =
             (Request request, Response response) -> {
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
-                var rowNumber =
-                        Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
-                // NINO has been added here temporarily for testing implementation of HMRC KBV CRI
-                var nino = request.queryParams("nino");
-
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
-                var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
-                var claimIdentity =
-                        new IdentityMapper()
-                                .mapToSharedClaim(
-                                        identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
+
+                Object claimIdentity;
+                String claimsText = request.body();
+
+                if (claimsText == null) {
+                    var rowNumber =
+                            Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
+                    // NINO has been added here temporarily for testing implementation of HMRC KBV CRI
+                    var nino = request.queryParams("nino");
+
+                    var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
+
+                    claimIdentity =
+                            new IdentityMapper()
+                                    .mapToSharedClaim(
+                                            identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
+                } else {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    claimIdentity = objectMapper.readValue(claimsText, SharedClaims.class);
+//                    claimIdentity =
+//                            new IdentityMapper()
+//                                    .mapToSharedClaim(claimsText);
+                }
+
+
 
                 State state = createNewState(credentialIssuer);
                 LOGGER.info("Created State {} for {}", state.toJSONString(), credentialIssuerId);

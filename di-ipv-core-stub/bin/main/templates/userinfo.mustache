@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="govuk-template ">
 <head>
-    <title>IPV Core Stub - GOV.UK</title>
+    <title>IPV Core Stub Credential Result - GOV.UK</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0b0c0c">
 
@@ -49,52 +49,21 @@
 </header>
 
 <div class="govuk-width-container ">
-    <main class="govuk-main-wrapper>" id="main-content" role="main">
-        <a href="/credential-issuers" class="govuk-back-link">Back</a>
-        <div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
-            <h2 class="govuk-heading-xl">
-                User for {{criName}}
-            </h2>
+    <main class="govuk-main-wrapper" id="main-content" role="main">
+        <a href="/credential-issuer?cri={{cri}}" class="govuk-back-link">Back</a>
+        <div class="govuk-!-margin-bottom-9">
+            <h1 class="govuk-heading-l">Verifiable Credentials</h1>
+            <details class="govuk-details" data-module="govuk-details">
+                <summary class="govuk-details__summary">
+                    <span class="govuk-details__summary-text">
+                      Response from {{criName}}
+                    </span>
+                </summary>
+                <div class="govuk-details__text">
+                    <pre><code id="data">{{data}}</code></pre>
+                </div>
+            </details>
         </div>
-
-        <div class="govuk-!-padding-bottom-9">
-            <legend class="govuk-fieldset__legend govuk-label">
-                <a href="/edit-user?cri={{cri}}">New User</a>
-            </legend>
-        </div>
-
-        <legend class="govuk-fieldset__legend govuk-label">Search for user in <a
-                href="https://docs.google.com/spreadsheets/d/1f-FF61Td7QMvj6-gcpT5QeuvMiadjhVA/edit?usp=share_link&ouid=114359821649939133282&rtpof=true&sd=true">
-            Experian UAT test users sheet</a></legend>
-        <form action="/user-search">
-            <input type="hidden" name="cri" value="{{cri}}">
-            <div class="govuk-form-group">
-                <input class="govuk-input govuk-input--width-20" id="name" name="name" type="text">
-                <button class="govuk-button" data-module="govuk-button">Search</button>
-            </div>
-        </form>
-
-        <legend class="govuk-fieldset__legend govuk-label">Row Number in <a
-                href="https://docs.google.com/spreadsheets/d/1f-FF61Td7QMvj6-gcpT5QeuvMiadjhVA/edit?usp=share_link&ouid=114359821649939133282&rtpof=true&sd=true">
-            Experian UAT test users sheet</a></legend>
-        <form action="/authorize">
-            <input type="hidden" name="cri" value="{{cri}}">
-            <div class="govuk-form-group">
-                <input class="govuk-input govuk-input--width-3" id="rowNumber" name="rowNumber" type="text"
-                       placeholder="3">
-                <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
-            </div>
-        </form>
-
-         <legend class="govuk-fieldset__legend govuk-label">Input claim set raw JSON</legend>
-                <form action="/user-search" method="post">
-                    <input type="hidden" name="cri" value="{{cri}}">
-                    <div class="govuk-form-group">
-                        <input class="govuk-input govuk-input--width-20" id="claimsText" name="claimsText" type="text">
-                        <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
-                    </div>
-                </form>
-
     </main>
 </div>
 

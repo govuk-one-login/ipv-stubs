@@ -47,54 +47,64 @@
         </div>
     </div>
 </header>
-
 <div class="govuk-width-container ">
     <main class="govuk-main-wrapper>" id="main-content" role="main">
-        <a href="/credential-issuers" class="govuk-back-link">Back</a>
-        <div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
-            <h2 class="govuk-heading-xl">
-                User for {{criName}}
+
+		<a href="/" class="govuk-back-link">Back</a>
+		<div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
+			<h2 class="govuk-heading-xl">
+                Evidence Requested
             </h2>
-        </div>
-
-        <div class="govuk-!-padding-bottom-9">
-            <legend class="govuk-fieldset__legend govuk-label">
-                <a href="/edit-user?cri={{cri}}">New User</a>
-            </legend>
-        </div>
-
-        <legend class="govuk-fieldset__legend govuk-label">Search for user in <a
-                href="https://docs.google.com/spreadsheets/d/1f-FF61Td7QMvj6-gcpT5QeuvMiadjhVA/edit?usp=share_link&ouid=114359821649939133282&rtpof=true&sd=true">
-            Experian UAT test users sheet</a></legend>
-        <form action="/user-search">
+		</div>
+		<legend class="govuk-fieldset__legend govuk-label"></legend>
+        <form action="/credential-issuer?cri={{cri}}">
             <input type="hidden" name="cri" value="{{cri}}">
             <div class="govuk-form-group">
-                <input class="govuk-input govuk-input--width-20" id="name" name="name" type="text">
-                <button class="govuk-button" data-module="govuk-button">Search</button>
-            </div>
-        </form>
-
-        <legend class="govuk-fieldset__legend govuk-label">Row Number in <a
-                href="https://docs.google.com/spreadsheets/d/1f-FF61Td7QMvj6-gcpT5QeuvMiadjhVA/edit?usp=share_link&ouid=114359821649939133282&rtpof=true&sd=true">
-            Experian UAT test users sheet</a></legend>
-        <form action="/authorize">
-            <input type="hidden" name="cri" value="{{cri}}">
-            <div class="govuk-form-group">
-                <input class="govuk-input govuk-input--width-3" id="rowNumber" name="rowNumber" type="text"
-                       placeholder="3">
-                <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
-            </div>
-        </form>
-
-         <legend class="govuk-fieldset__legend govuk-label">Input claim set raw JSON</legend>
-                <form action="/user-search" method="post">
-                    <input type="hidden" name="cri" value="{{cri}}">
-                    <div class="govuk-form-group">
-                        <input class="govuk-input govuk-input--width-20" id="claimsText" name="claimsText" type="text">
-                        <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
+                <fieldset class="govuk-fieldset" aria-describedby="waste-hint">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                        <h1 class="govuk-fieldset__heading">
+                            Select - Evidence Requested
+                        </h1>
+                    </legend>
+                    <div id="waste-hint" class="govuk-hint"></div>
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-!-margin-bottom-5" for="score">
+                                Scoring Policy:
+                            </label>
+                            <select class="govuk-select" id="evidence" name="evidence_request">
+                                <option value="gpg45" selected>gpg45</option>
+                                <option value="notgpg45">Not gpg45</option>
+                            </select>
+                        </div>
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-!-margin-bottom-5" for="score">
+                                Strength Score:
+                            </label>
+                            <select class="govuk-select" id="score" name="score">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-!-margin-bottom-5" for="verification_score">
+                                Verification Score:
+                            </label>
+                            <select class="govuk-select" id="verification_score" name="verification_score">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                            </select>
+                        </div>
                     </div>
-                </form>
 
+                    <div class="govuk-button-group govuk-!-margin-top-9">
+                        <button class="govuk-button" data-module="govuk-button">Continue</button>
+                    </div>
+                </fieldset>
+            </div>
+        </form>
     </main>
 </div>
 

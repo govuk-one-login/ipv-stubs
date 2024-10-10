@@ -1,0 +1,802 @@
+{
+    "responseHeader": {
+        "requestType": "Authenticateplus-Standalone",
+        "clientReferenceId": "1827690d-7780-4a11-882f-32a0e8ecf292",
+        "expRequestId": "RB000098112412",
+        "messageTime": "2022-05-25T21:19:30Z",
+        "overallResponse": {
+            "decision": "REJECT",
+            "decisionText": "Not Accepted",
+            "decisionReasons": [
+                "Not Accepted"
+            ],
+            "recommendedNextActions": [],
+            "spareObjects": []
+        },
+        "responseCode": "R0201",
+        "responseType": "INFO",
+        "responseMessage": "Workflow Complete.",
+        "tenantID": "X246M3WS"
+    },
+    "clientResponsePayload": {
+        "orchestrationDecisions": [
+            {
+                "sequenceId": "1",
+                "decisionSource": "Authenticateplus",
+                "decision": "NOTAUTH",
+                "decisionReasons": [
+                    "Not Authenticated"
+                ],
+                "score": 0,
+                "decisionText": "Not Authenticated",
+                "nextAction": "Continue",
+                "decisionTime": "2022-05-25T21:19:32Z"
+            }
+        ],
+        "decisionElements": [
+            {
+                "serviceName": "Authenticateplus",
+                "applicantId": "APPLICANT_1",
+                "decision": "NA00",
+                "score": 10,
+                "decisionText": "",
+                "decisionReason": "The Applicant has not been Authenticated to your required minimum level.",
+                "appReference": "6EYZG2FT5C",
+                "rules": [
+                    {
+                        "ruleId": "",
+                        "ruleName": "AUTP_IDCONFLEVEL",
+                        "ruleScore": 1,
+                        "ruleText": "The identity supplied has not been confirmed at the required level."
+                    }
+                ],
+                "warningsErrors": [],
+                "otherData": {
+                    "authResults": {
+                        "error": null,
+                        "authPlusResults": {
+                            "authConsumer": {
+                                "authPlusRefNum": null,
+                                "locDataOnlyAtCLoc": {
+                                    "numPrimDataItems": "0",
+                                    "numPrimDataSources": "0",
+                                    "startDateOldestPrim": null,
+                                    "numSecDataItems": "0",
+                                    "numSecDataSources": "0",
+                                    "startDateOldestSec": null
+                                },
+                                "locDataOnlyAtPLoc": {
+                                    "numPrimDataItems": "0",
+                                    "numPrimDataSources": "0",
+                                    "startDateOldestPrim": null,
+                                    "numSecDataItems": "0",
+                                    "numSecDataSources": "0",
+                                    "startDateOldestSec": null
+                                },
+                                "dataMatchCounts": {
+                                    "numAgeMatchesToPrim": "0",
+                                    "numAgeMatchToSec": "0",
+                                    "numTimeAtCLMtchPrim": "0",
+                                    "numTimeAtCLMatchSec": "0"
+                                },
+                                "decisionData": {
+                                    "authPlusDecision": "NA00",
+                                    "authPlusDecText": "The Applicant has not been Authenticated to your required minimum level.",
+                                    "authenticationIndex": "0",
+                                    "authIndexText": null
+                                },
+                                "idandLocDataAtPL": {
+                                    "numPrimDataItems": "0",
+                                    "numPrimDataSources": "0",
+                                    "startDateOldestPrim": null,
+                                    "numSecDataItems": "0",
+                                    "numSecDataSources": "0",
+                                    "startDateOldestSec": null
+                                },
+                                "idconfirmedFlag": {
+                                    "cifasreference": null,
+                                    "idconfirmedLevel": "0",
+                                    "idconfirmLevelText": "The identity supplied has not been confirmed at the required level"
+                                },
+                                "idandLocDataAtCL": {
+                                    "numPrimDataItems": "0",
+                                    "numPrimDataSources": "0",
+                                    "startDateOldestPrim": null,
+                                    "numSecDataItems": "0",
+                                    "numSecDataSources": "0",
+                                    "startDateOldestSec": null
+                                }
+                            },
+                            "highRiskPolRuleCnt": "0",
+                            "highRiskPolicyRules": [],
+                            "locationDetails": [
+                                {
+                                    "locationIdentifier": null,
+                                    "locationFormat": "UK",
+                                    "overseasLocation": null,
+                                    "formattedLocation": null,
+                                    "uklocation": {
+                                        "inputLocation": null,
+                                        "agreedLocation": {
+                                            "location": {
+                                                "flat": null,
+                                                "houseName": null,
+                                                "houseNumber": "80B",
+                                                "street": "HIGH STREET",
+                                                "street2": null,
+                                                "district": "MARKYATE",
+                                                "district2": null,
+                                                "postTown": "ST. ALBANS",
+                                                "county": "HERTFORDSHIRE",
+                                                "postcode": "AL3 8LE",
+                                                "country": null,
+                                                "pobox": null
+                                            },
+                                            "clientLocationID": null,
+                                            "rmc": "0136600",
+                                            "regionNumber": "7",
+                                            "phoneNumber": null,
+                                            "cvplocationID": null
+                                        },
+                                        "formattedLocation": null
+                                    },
+                                    "bfpolocation": null
+                                }
+                            ],
+                            "autg": {
+                                "versionNumberSpecified": false,
+                                "oldAuthScorecard": "N",
+                                "newAuthScorecard": "Y",
+                                "granularDetails": "Y",
+                                "displayTelephone": "N",
+                                "multipleCIFASURN": "N",
+                                "newAgeVerificationScorecard": "Y",
+                                "displayPEPSanctionSource": "N",
+                                "velocityRules": "N",
+                                "numberPrimaryCategoryIACurrentAddress": 0,
+                                "numberSecondaryCategoryIACurrentAddress": 0,
+                                "numberPrimaryCategoryIAPreviousAddress": 0,
+                                "numberSecondaryCategoryIAPreviousAddress": 0,
+                                "variableDataLength": 50,
+                                "primaryCategoryIACurrentAddress": [],
+                                "secondaryCategoryIACurrentAddress": [],
+                                "primaryCategoryIAPreviousAddress": [],
+                                "secondaryCategoryIAPreviousAddress": [],
+                                "homeTelephoneNumber": null,
+                                "newAuthIndex": "010",
+                                "validationScore": "+0000",
+                                "verificationScore": "+0538",
+                                "experianAgeDOBMatch": "N",
+                                "ageRange": "No Age Data Present",
+                                "ownCompanyVelocityTime": null,
+                                "ownCompanyVelocityTolerance": null,
+                                "ownCompanyPreviousSearchCount": null,
+                                "ownGroupVelocityTime": null,
+                                "ownGroupVelocityTolerance": null,
+                                "ownGroupPreviousSearchCount": null,
+                                "cifascount": 0,
+                                "cifasdetails": [],
+                                "pepsancText5": null,
+                                "pepsancText1": null,
+                                "pepsancText2": null,
+                                "pepsancText3": null,
+                                "pepsancText4": null,
+                                "pepsanctionCount": 0,
+                                "pepsanctionsList": []
+                            },
+                            "autc": {
+                                "nameanddobcounts": {
+                                    "nameAndDOBPrimaryItemCountAll": 0,
+                                    "nameAndDOBPrimarySourceCountAll": 0,
+                                    "nameAndDOBPrimarySourceOldestDateAll": null,
+                                    "nameAndDOBSecondaryItemCountAll": 0,
+                                    "nameAndDOBSecondarySourceCountAll": 0,
+                                    "nameAndDOBSecondarySourceOldestDateAll": null
+                                },
+                                "numberOfPrimaryNameAndDOBText": 0,
+                                "numberOfSecondaryNameAndDOBText": 0,
+                                "nameanddobgranulardetailsprimarysources": [],
+                                "nameanddobgranulardetailssecondarysources": []
+                            }
+                        },
+                        "authPSv2Results": null,
+                        "caseReference": "6EYZG2FT5C"
+                    }
+                },
+                "matches": [
+                    {
+                        "name": "OldAuthScorecard",
+                        "value": "N"
+                    },
+                    {
+                        "name": "NewAuthScorecard",
+                        "value": "Y"
+                    },
+                    {
+                        "name": "GranularDetails",
+                        "value": "Y"
+                    },
+                    {
+                        "name": "DisplayTelephone",
+                        "value": "N"
+                    },
+                    {
+                        "name": "MultipleCIFASURN",
+                        "value": "N"
+                    },
+                    {
+                        "name": "NewAgeVerificationScorecard",
+                        "value": "Y"
+                    },
+                    {
+                        "name": "DisplayPEPSanctionSource",
+                        "value": "N"
+                    },
+                    {
+                        "name": "VelocityRules",
+                        "value": "N"
+                    }
+                ],
+                "dataCounts": [
+                    {
+                        "name": "IDandLocDataAtCL_NumPrimDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtCL_NumPrimDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtCL_NumSecDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtCL_NumSecDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtCLoc_NumPrimDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtCLoc_NumPrimDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtCLoc_NumSecDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtCLoc_NumSecDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtPL_NumPrimDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtPL_NumPrimDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtPL_NumSecDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtPL_NumSecDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtPLoc_NumPrimDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtPLoc_NumPrimDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtPLoc_NumSecDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtPLoc_NumSecDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumAgeMatchesToPrim",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumAgeMatchToSec",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumTimeAtCLMtchPrim",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumTimeAtCLMatchSec",
+                        "value": 0
+                    },
+                    {
+                        "name": "HighRiskPolRuleCnt",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberPrimaryCategoryIACurrentAddress",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberSecondaryCategoryIACurrentAddress",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberPrimaryCategoryIAPreviousAddress",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberSecondaryCategoryIAPreviousAddress",
+                        "value": 0
+                    },
+                    {
+                        "name": "CIFASCount",
+                        "value": 0
+                    },
+                    {
+                        "name": "PEPSanctionCount",
+                        "value": 0
+                    },
+                    {
+                        "name": "VariableDataLength",
+                        "value": 50
+                    },
+                    {
+                        "name": "NameAndDOBPrimaryItemCountAll",
+                        "value": 0
+                    },
+                    {
+                        "name": "NameAndDOBPrimarySourceCountAll",
+                        "value": 0
+                    },
+                    {
+                        "name": "NameAndDOBSecondaryItemCountAll",
+                        "value": 0
+                    },
+                    {
+                        "name": "NameAndDOBSecondarySourceCountAll",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberOfPrimaryNameAndDOBText",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberOfSecondaryNameAndDOBText",
+                        "value": 0
+                    }
+                ],
+                "scores": [
+                    {
+                        "name": "NewAuthIndex",
+                        "score": 10,
+                        "type": "SCORE"
+                    },
+                    {
+                        "name": "ValidationScore",
+                        "score": 100,
+                        "type": "SCORE"
+                    },
+                    {
+                        "name": "VerificationScore",
+                        "score": 140,
+                        "type": "SCORE"
+                    }
+                ]
+            },
+            {
+                "serviceName": "Authenticateplus",
+                "applicantId": "APPLICANT_1",
+                "decision": "A02",
+                "score": 10,
+                "decisionText": "",
+                "decisionReason": "The Applicant has not been Authenticated to your required minimum level.",
+                "appReference": "6EYZG2FT5C",
+                "rules": [
+                    {
+                        "ruleId": "",
+                        "ruleName": "AUTP_IDCONFLEVEL",
+                        "ruleScore": 1,
+                        "ruleText": "The identity supplied has not been confirmed at the required level."
+                    }
+                ],
+                "warningsErrors": [],
+                "otherData": {
+                    "authResults": {
+                        "error": null,
+                        "authPlusResults": {
+                            "authConsumer": {
+                                "authPlusRefNum": null,
+                                "locDataOnlyAtCLoc": {
+                                    "numPrimDataItems": "0",
+                                    "numPrimDataSources": "0",
+                                    "startDateOldestPrim": null,
+                                    "numSecDataItems": "0",
+                                    "numSecDataSources": "0",
+                                    "startDateOldestSec": null
+                                },
+                                "locDataOnlyAtPLoc": {
+                                    "numPrimDataItems": "0",
+                                    "numPrimDataSources": "0",
+                                    "startDateOldestPrim": null,
+                                    "numSecDataItems": "0",
+                                    "numSecDataSources": "0",
+                                    "startDateOldestSec": null
+                                },
+                                "dataMatchCounts": {
+                                    "numAgeMatchesToPrim": "0",
+                                    "numAgeMatchToSec": "0",
+                                    "numTimeAtCLMtchPrim": "0",
+                                    "numTimeAtCLMatchSec": "0"
+                                },
+                                "decisionData": {
+                                    "authPlusDecision": "NA00",
+                                    "authPlusDecText": "The Applicant has not been Authenticated to your required minimum level.",
+                                    "authenticationIndex": "0",
+                                    "authIndexText": null
+                                },
+                                "idandLocDataAtPL": {
+                                    "numPrimDataItems": "0",
+                                    "numPrimDataSources": "0",
+                                    "startDateOldestPrim": null,
+                                    "numSecDataItems": "0",
+                                    "numSecDataSources": "0",
+                                    "startDateOldestSec": null
+                                },
+                                "idconfirmedFlag": {
+                                    "cifasreference": null,
+                                    "idconfirmedLevel": "0",
+                                    "idconfirmLevelText": "The identity supplied has not been confirmed at the required level"
+                                },
+                                "idandLocDataAtCL": {
+                                    "numPrimDataItems": "0",
+                                    "numPrimDataSources": "0",
+                                    "startDateOldestPrim": null,
+                                    "numSecDataItems": "0",
+                                    "numSecDataSources": "0",
+                                    "startDateOldestSec": null
+                                }
+                            },
+                            "highRiskPolRuleCnt": "0",
+                            "highRiskPolicyRules": [],
+                            "locationDetails": [
+                                {
+                                    "locationIdentifier": null,
+                                    "locationFormat": "UK",
+                                    "overseasLocation": null,
+                                    "formattedLocation": null,
+                                    "uklocation": {
+                                        "inputLocation": null,
+                                        "agreedLocation": {
+                                            "location": {
+                                                "flat": null,
+                                                "houseName": null,
+                                                "houseNumber": "80B",
+                                                "street": "HIGH STREET",
+                                                "street2": null,
+                                                "district": "MARKYATE",
+                                                "district2": null,
+                                                "postTown": "ST. ALBANS",
+                                                "county": "HERTFORDSHIRE",
+                                                "postcode": "AL3 8LE",
+                                                "country": null,
+                                                "pobox": null
+                                            },
+                                            "clientLocationID": null,
+                                            "rmc": "0136600",
+                                            "regionNumber": "7",
+                                            "phoneNumber": null,
+                                            "cvplocationID": null
+                                        },
+                                        "formattedLocation": null
+                                    },
+                                    "bfpolocation": null
+                                }
+                            ],
+                            "autg": {
+                                "versionNumberSpecified": false,
+                                "oldAuthScorecard": "N",
+                                "newAuthScorecard": "Y",
+                                "granularDetails": "Y",
+                                "displayTelephone": "N",
+                                "multipleCIFASURN": "N",
+                                "newAgeVerificationScorecard": "Y",
+                                "displayPEPSanctionSource": "N",
+                                "velocityRules": "N",
+                                "numberPrimaryCategoryIACurrentAddress": 0,
+                                "numberSecondaryCategoryIACurrentAddress": 0,
+                                "numberPrimaryCategoryIAPreviousAddress": 0,
+                                "numberSecondaryCategoryIAPreviousAddress": 0,
+                                "variableDataLength": 50,
+                                "primaryCategoryIACurrentAddress": [],
+                                "secondaryCategoryIACurrentAddress": [],
+                                "primaryCategoryIAPreviousAddress": [],
+                                "secondaryCategoryIAPreviousAddress": [],
+                                "homeTelephoneNumber": null,
+                                "newAuthIndex": "010",
+                                "validationScore": "+0000",
+                                "verificationScore": "+0538",
+                                "experianAgeDOBMatch": "N",
+                                "ageRange": "No Age Data Present",
+                                "ownCompanyVelocityTime": null,
+                                "ownCompanyVelocityTolerance": null,
+                                "ownCompanyPreviousSearchCount": null,
+                                "ownGroupVelocityTime": null,
+                                "ownGroupVelocityTolerance": null,
+                                "ownGroupPreviousSearchCount": null,
+                                "cifascount": 0,
+                                "cifasdetails": [],
+                                "pepsancText5": null,
+                                "pepsancText1": null,
+                                "pepsancText2": null,
+                                "pepsancText3": null,
+                                "pepsancText4": null,
+                                "pepsanctionCount": 0,
+                                "pepsanctionsList": []
+                            },
+                            "autc": {
+                                "nameanddobcounts": {
+                                    "nameAndDOBPrimaryItemCountAll": 0,
+                                    "nameAndDOBPrimarySourceCountAll": 0,
+                                    "nameAndDOBPrimarySourceOldestDateAll": null,
+                                    "nameAndDOBSecondaryItemCountAll": 0,
+                                    "nameAndDOBSecondarySourceCountAll": 0,
+                                    "nameAndDOBSecondarySourceOldestDateAll": null
+                                },
+                                "numberOfPrimaryNameAndDOBText": 0,
+                                "numberOfSecondaryNameAndDOBText": 0,
+                                "nameanddobgranulardetailsprimarysources": [],
+                                "nameanddobgranulardetailssecondarysources": []
+                            }
+                        },
+                        "authPSv2Results": null,
+                        "caseReference": "6EYZG2FT5C"
+                    }
+                },
+                "matches": [
+                    {
+                        "name": "OldAuthScorecard",
+                        "value": "N"
+                    },
+                    {
+                        "name": "NewAuthScorecard",
+                        "value": "Y"
+                    },
+                    {
+                        "name": "GranularDetails",
+                        "value": "Y"
+                    },
+                    {
+                        "name": "DisplayTelephone",
+                        "value": "N"
+                    },
+                    {
+                        "name": "MultipleCIFASURN",
+                        "value": "N"
+                    },
+                    {
+                        "name": "NewAgeVerificationScorecard",
+                        "value": "Y"
+                    },
+                    {
+                        "name": "DisplayPEPSanctionSource",
+                        "value": "N"
+                    },
+                    {
+                        "name": "VelocityRules",
+                        "value": "N"
+                    }
+                ],
+                "dataCounts": [
+                    {
+                        "name": "IDandLocDataAtCL_NumPrimDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtCL_NumPrimDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtCL_NumSecDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtCL_NumSecDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtCLoc_NumPrimDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtCLoc_NumPrimDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtCLoc_NumSecDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtCLoc_NumSecDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtPL_NumPrimDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtPL_NumPrimDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtPL_NumSecDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "IDandLocDataAtPL_NumSecDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtPLoc_NumPrimDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtPLoc_NumPrimDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtPLoc_NumSecDataItems",
+                        "value": 0
+                    },
+                    {
+                        "name": "LocDataOnlyAtPLoc_NumSecDataSources",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumAgeMatchesToPrim",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumAgeMatchToSec",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumTimeAtCLMtchPrim",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumTimeAtCLMatchSec",
+                        "value": 0
+                    },
+                    {
+                        "name": "HighRiskPolRuleCnt",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberPrimaryCategoryIACurrentAddress",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberSecondaryCategoryIACurrentAddress",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberPrimaryCategoryIAPreviousAddress",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberSecondaryCategoryIAPreviousAddress",
+                        "value": 0
+                    },
+                    {
+                        "name": "CIFASCount",
+                        "value": 0
+                    },
+                    {
+                        "name": "PEPSanctionCount",
+                        "value": 0
+                    },
+                    {
+                        "name": "VariableDataLength",
+                        "value": 50
+                    },
+                    {
+                        "name": "NameAndDOBPrimaryItemCountAll",
+                        "value": 0
+                    },
+                    {
+                        "name": "NameAndDOBPrimarySourceCountAll",
+                        "value": 0
+                    },
+                    {
+                        "name": "NameAndDOBSecondaryItemCountAll",
+                        "value": 0
+                    },
+                    {
+                        "name": "NameAndDOBSecondarySourceCountAll",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberOfPrimaryNameAndDOBText",
+                        "value": 0
+                    },
+                    {
+                        "name": "NumberOfSecondaryNameAndDOBText",
+                        "value": 0
+                    }
+                ],
+                "scores": [
+                    {
+                        "name": "NewAuthIndex",
+                        "score": 10,
+                        "type": "SCORE"
+                    },
+                    {
+                        "name": "ValidationScore",
+                        "score": 100,
+                        "type": "SCORE"
+                    },
+                    {
+                        "name": "VerificationScore",
+                        "score": 140,
+                        "type": "SCORE"
+                    }
+                ]
+            }
+        ]
+    },
+    "originalRequestData": {
+        "application": {
+            "applicants": [
+                {
+                    "applicantType": "MAIN_APPLICANT",
+                    "consent": true,
+                    "contactId": "MAINCONTACT_1",
+                    "id": "APPLICANT_1",
+                    "type": "INDIVIDUAL"
+                }
+            ]
+        },
+        "contacts": [
+            {
+                "addresses": [
+                    {
+                        "addressIdentifier": "ADDRESS_1",
+                        "addressType": "CURRENT",
+                        "buildingNumber": "80B",
+                        "id": "MAINAPPADDRESS_1",
+                        "postTown": "ST. ALBANS",
+                        "postal": "AL3 8LE",
+                        "street": "High Street"
+                    }
+                ],
+                "id": "MAINCONTACT_1",
+                "person": {
+                    "names": [
+                        {
+                            "firstName": "RAJAPAKSA",
+                            "id": "MAINPERSONNAME_1",
+                            "middleNames": null,
+                            "surName": "Sharon",
+                            "title": null,
+                            "type": "CURRENT"
+                        }
+                    ],
+                    "personDetails": {
+                        "dateOfBirth": "1973-08-31"
+                    },
+                    "personIdentifier": "MAINPERSON_1"
+                }
+            }
+        ]
+    }
+}

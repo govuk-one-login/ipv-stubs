@@ -47,54 +47,24 @@
         </div>
     </div>
 </header>
-
 <div class="govuk-width-container ">
     <main class="govuk-main-wrapper>" id="main-content" role="main">
-        <a href="/credential-issuers" class="govuk-back-link">Back</a>
-        <div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
-            <h2 class="govuk-heading-xl">
-                User for {{criName}}
-            </h2>
-        </div>
 
-        <div class="govuk-!-padding-bottom-9">
-            <legend class="govuk-fieldset__legend govuk-label">
-                <a href="/edit-user?cri={{cri}}">New User</a>
-            </legend>
-        </div>
+		<a href="/" class="govuk-back-link">Back</a>
+		<div class="govuk-!-margin-top-8 govuk-!-margin-bottom-9">
+			<h2 class="govuk-heading-xl">
+				Enter Postcode for test user
+			</h2>
+		</div>
 
-        <legend class="govuk-fieldset__legend govuk-label">Search for user in <a
-                href="https://docs.google.com/spreadsheets/d/1f-FF61Td7QMvj6-gcpT5QeuvMiadjhVA/edit?usp=share_link&ouid=114359821649939133282&rtpof=true&sd=true">
-            Experian UAT test users sheet</a></legend>
-        <form action="/user-search">
+		<legend class="govuk-fieldset__legend govuk-label">Postcode (optional)</legend>
+        <form action="/credential-issuer?cri={{cri}}">
             <input type="hidden" name="cri" value="{{cri}}">
             <div class="govuk-form-group">
-                <input class="govuk-input govuk-input--width-20" id="name" name="name" type="text">
-                <button class="govuk-button" data-module="govuk-button">Search</button>
+                <input class="govuk-input govuk-input--width-10" id="postcode" name="postcode" type="text">
+                <button class="govuk-button" data-module="govuk-button">Continue</button>
             </div>
         </form>
-
-        <legend class="govuk-fieldset__legend govuk-label">Row Number in <a
-                href="https://docs.google.com/spreadsheets/d/1f-FF61Td7QMvj6-gcpT5QeuvMiadjhVA/edit?usp=share_link&ouid=114359821649939133282&rtpof=true&sd=true">
-            Experian UAT test users sheet</a></legend>
-        <form action="/authorize">
-            <input type="hidden" name="cri" value="{{cri}}">
-            <div class="govuk-form-group">
-                <input class="govuk-input govuk-input--width-3" id="rowNumber" name="rowNumber" type="text"
-                       placeholder="3">
-                <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
-            </div>
-        </form>
-
-         <legend class="govuk-fieldset__legend govuk-label">Input claim set raw JSON</legend>
-                <form action="/user-search" method="post">
-                    <input type="hidden" name="cri" value="{{cri}}">
-                    <div class="govuk-form-group">
-                        <input class="govuk-input govuk-input--width-20" id="claimsText" name="claimsText" type="text">
-                        <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
-                    </div>
-                </form>
-
     </main>
 </div>
 

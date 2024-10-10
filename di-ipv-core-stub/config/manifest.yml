@@ -1,0 +1,17 @@
+---
+applications:
+  - name: di-ipv-core-stub
+    path: build/distributions/di-ipv-core-stub.zip
+    memory: 256M
+    buildpack: java_buildpack
+    command: cd di-ipv-core-stub && bin/di-ipv-core-stub
+    env:
+      JAVA_HOME: "../.java-buildpack/open_jdk_jre"
+      JBP_CONFIG_OPEN_JDK_JRE: "{ jre: { version: 17.+}, memory_calculator: {stack_threads: 200}}"
+      JAVA_OPTS: "-Xss200k -XX:ReservedCodeCacheSize=50M -XX:MaxMetaspaceSize=100M"
+      CORE_STUB_CONFIG_FILE: config/cris-dev.yaml
+      CORE_STUB_PORT: 8080
+      CORE_STUB_CLIENT_ID: ipv-core-stub
+      CORE_STUB_REDIRECT_URL: https://di-ipv-core-stub.london.cloudapps.digital/callback
+      CORE_STUB_APP_TITLE: IPV Core Stub
+      CORE_STUB_CONFIG_AGED_DOB: false

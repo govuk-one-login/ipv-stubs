@@ -1,0 +1,11 @@
+credentialIssuerConfigs:
+  - id: build-passport
+    name: Build Passport
+    authorizeUrl: https://review-p.build.account.gov.uk/oauth2/authorize
+    tokenUrl: https://api.review-p.build.account.gov.uk/token
+    credentialUrl: https://api.review-p.build.account.gov.uk/credentials/issue
+    audience: https://review-p.build.account.gov.uk
+    sendIdentityClaims: true
+    expectedAlgo: ES256
+    publicEncryptionJwkBase64: eyJrdHkiOiJSU0EiLCJlIjoiQVFBQiIsIm4iOiJ1Z0RjWkJ1T0xHT01iWmJtRG5kWmpQMEpHR1p6c0NsZU9vbzJfWDhhaFhaZkZZWjJ1MXpvdG5ZcVFFNVFJMUJmRE5PaXZ3MmpZYVVjeGd1ZFBzcVBqOHVCZmd1bkFfaG5qWjlUNUEyMGc5dVJyWDBhVzV2azYyOVpVMnUyaHA2NGNDa0R6cnNicTNJejc0U1RTU0E5Wk4ySEhPLUw5cVptTnpNcF9WZzFqSndHcERzSlh4QVJvQ2YyR0JVOGNXeTNmMXVwdmNnRlIyM09WWEpPNy1vdV85S0ZTVXI3a3NhZ3d2cnE4ODB3TmE3ZHZiUHlRendaQkN1Q29HeUsySWhrb3ZNZVNKUG9taktrekM4eVM3aEEwYmFpLVZfOVRpRmE2OFQ5bkZfb3VjSkliMkNSUHZZbUkyaVNjcnE0RnBhckJmbjJzWkg5TEJ6NEVBeXZCM1R1dlEifQ==
+    apiKeyEnvVar: PASSPORT_PRIVATE_API_KEY

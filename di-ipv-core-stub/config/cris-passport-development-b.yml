@@ -1,0 +1,11 @@
+credentialIssuerConfigs:
+  - id: development-b-passport
+    name: Development B Passport
+    authorizeUrl: https://y7tmygy0th.execute-api.eu-west-2.amazonaws.com/oauth2/authorize
+    tokenUrl: https://t2s9ot4sr9.execute-api.eu-west-2.amazonaws.com/development-b/token
+    credentialUrl: https://t2s9ot4sr9.execute-api.eu-west-2.amazonaws.com/development-b/credentials/issue
+    audience: https://y7tmygy0th.execute-api.eu-west-2.amazonaws.com
+    sendIdentityClaims: true
+    expectedAlgo: ES256
+    publicEncryptionJwkBase64: eyJrdHkiOiJSU0EiLCJlIjoiQVFBQiIsIm4iOiI3WUFoa3JqeTRtbU93d21lYW0tQTVxQl8wb05aSjJYZEVZU2lwV0ROSC1pU1BXSmRDTUlYSTJXUWRDX09iWHNkNTMxN2FTUUphUjk1ZnpkX21icG9wSnJSZTdCQ0pSUDNKU0lSRDJCNkR0N0lLTFM4OU9KQUYybE9YUHNfOTlXeTJsUGdwTXp5Q2haTjU2eklLcWZtT0JvRTJCTTRxcjdfc2VsckRsOVNTWW1pSkZGcWN4UjdhSUh0cnBSZi13aHNHdnJ2NmZYenpQNURQZFM1djhsNTRteV9ieUhaak1xZXZYM3VGT2JwVTFnMzlHTTRGYVN2OGFyZ1Z2c0dlSk9zT3Y4QzdVdUswWXNpZkZBTGpsMU9rNFhxMXAtZlFtTnVVNWNuWjZEUzBNdFFGY2YxR1FXVFJZWTVFNE4yOU1yMHQzbm9zaFRvdUJCVmFhQlM3eHAzU3cifQo=
+    apiKeyEnvVar: PASSPORT_PRIVATE_API_KEY

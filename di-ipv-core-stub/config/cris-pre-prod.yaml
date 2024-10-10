@@ -1,0 +1,60 @@
+credentialIssuerConfigs:
+  - id: address-cri-pre-prod
+    name: Address CRI Pre-Prod
+    authorizeUrl: https://review-a.account.gov.uk/oauth2/authorize
+    tokenUrl: https://api.review-a.account.gov.uk/token
+    credentialUrl: https://api.review-a.account.gov.uk/credential/issue
+    audience: https://review-a.account.gov.uk
+    publicEncryptionJwkBase64: eyJrdHkiOiJSU0EiLCJuIjoidk5oOUNTaTJ1QlRldG5tYWhTSEhDWk9TUjZ4ZlVtZU9FV1cwS2pLSXVlb3NXY2dfWEdBMmJUbWFxenBwU2cwZ29SUkw2ekpHSDF5bldPSVdMX3FCVWVWOGkyOHJlVEdETTg4MTBTNUF2eWxOYm95clNtamoyUjlXaUZDbW9xSmpCNmpfaDlpdXY0d2J3UWk1LVJpRjFLaUdOelFtbHp5V1FISC00S2pleUtxTXJiV2RtREEzal9zNW5ub1M3YkE2dzlHVnFyRUFkLUZveXZTT0NoQ0pYVXQ1VGJiQVFtaXZyY3VNNHlJenZaVXh5cWxUbDI2Z1ktTWswYks1Rlp4VFp5SE9FNVh3ak0yU041SFRKcGkwZFlBRlJhekNrVWRVUW9YREVzcXRCQXVyY2hvdjJVUk5SXzFKcFU5VkRqS2FHMER0S2xnSkx1a3N5VV9Ca0puSUtRIiwiZSI6IkFRQUIifQ==
+    publicVCSigningVerificationJwkBase64: eyJrdHkiOiJFQyIsInVzZSI6InNpZyIsImNydiI6IlAtMjU2IiwieCI6IjVFajY0QUp6YWd6SlJUcmFXX3FjeU1ZRTF5LWlRQ2FoQmozWEdsVEYyQkkiLCJ5IjoiSFNTYll1OGNNN1RQdXM4U3JLdE5maVFHX2hOMXJveVJtQm9hZm5ld1NfTSIsImFsZyI6IkVTMjU2In0=
+    apiKeyEnvVar: API_KEY_CRI_ADDRESS_PRE_PROD
+  - id: check-hmrc-pre-prod
+    name: HMRC Check CRI Pre-Prod
+    authorizeUrl: https://review-hc.account.gov.uk/oauth2/authorize
+    tokenUrl: https://api.review-hc.account.gov.uk/token
+    credentialUrl: https://api.review-hc.account.gov.uk/credential/issue
+    audience: https://review-hc.account.gov.uk
+    publicEncryptionJwkBase64: ewogICJ1c2UiOiAiZW5jIiwKICAiYWxnIjogIkVTMjU2IiwKICAia3R5IjogIlJTQSIsCiAgImUiOiAiQVFBQiIsCiAgIm4iOiAib1puNC16bTVZTEZHODJjbkNHRThkdWdDNnlBWl96Q2wwNk5iM05QalZ0NEo3ck9KZ2dYcW5UV0FaRzhNMW11X2s1S3RQLUJDdWlLY01fc0lIeGZWVEJLQUExNVJFSzFGSmcwaVBsV01kT29Kbm53TmFjTUFXcUxzRk8wMEIzS29uNE01Wm1mQ1BuSTFVMXFiYlptQXpNRlZMdElRcGVsM3BoNjZ5V0FYMkpHUUJYWk9DSWZVNXBsd2NMV21TWmw2NVpaaUJ3Y0VBSlg0QUJ2S2p3ZUtrT1RJZ3FXdExjeG10WlRxZnd5bFpQM3UxRmNJRmQyS3RpX1UwN3pOY09NRi1JYmhvcUlhdUZtZDFKd1ZOamI5MWo4Y2pyajBvSDV6UnpReVFmVVFVemozbGowUVlpRThhVW1jaTlPNnlidWVwVW01bWpNYkZBUTJXcmItTWdpX0VRIgp9
+    publicVCSigningVerificationJwkBase64: ewogICJ1c2UiOiAic2lnIiwKICAiYWxnIjogIkVTMjU2IiwKICAia3R5IjogIkVDIiwKICAiY3J2IjogIlAtMjU2IiwKICAieCI6ICJGYi13d1ZJSWV5cTMzdzZuS1lGNFVRRmg5OC05UG5sUnU0cmJnM1QyY0pvIiwKICAieSI6ICJnZF9mNllXZENCLXd1M0s2dmMwVWVNaDdlQ0RmS2o3X0E0bWtuU1lsbVlrIgp9
+    apiKeyEnvVar: API_KEY_CRI_CHECK_HMRC_PRE_PROD
+    sendIdentityClaims: true
+  - id: fraud-cri-pre-prod
+    name: Fraud CRI Pre-Prod
+    authorizeUrl: https://review-f.account.gov.uk/oauth2/authorize
+    tokenUrl: https://api.review-f.account.gov.uk/token
+    credentialUrl: https://api.review-f.account.gov.uk/credential/issue
+    audience: https://review-f.account.gov.uk
+    publicEncryptionJwkBase64: ewogICAgImt0eSI6ICJSU0EiLAogICAgIm4iOiAicW9EeXVQNjduTGZONFVYRWFHN1BXanN5Y1FMSy1rcmpNdElveEx4U3dSeV9lRDFfdmVoQzBmUllJQVY1U1dhak9LajJsam9aMVVVVm00dk5Sdlk2WlhtLVdGX1hqYkZFb3pmbGNyT0Qxd21ubVdfWVBCVXdvLUhlWmdTYjMyU0tEcTFRUTNJOUt1YnVhRndka1gxck5FUkNJTy1EREowOGNLckR4Nm1vSmZSYkx0RV92RlRjRzhqeHdUMDFJTF91eTdZWUhvR3BpZDBuMFloaE9haWFBSHZabkpMUEF0RE1pdDVSeVJHaWVjNk5hWk5QVHB5dzdfUFEzSWo0TDBjZDZoVWtVczV1TUk0VW1ReW12eVdyanFBbmhQVmh4T2pGRG0zN2ZnU05HakZNdXBqd3Npbkc1QkYtQ0pNUnVfaktVTkFtckg0eGNlWnVTYjZTdVBKU0FRIiwKICAgICJlIjogIkFRQUIiCn0=
+    publicVCSigningVerificationJwkBase64: eyJrdHkiOiJFQyIsInVzZSI6InNpZyIsImNydiI6IlAtMjU2IiwieCI6IktGLVIyLUxiZ2trVXlYTXZIUGU2encxXzMtWUhKd1FCZUt0djgzWlBIZW8iLCJ5IjoiVXVnMzhLR3I0djVIWWtQbG5WR184YnU3N3RHbDhkRWl2bTI3b0Vpb291YyIsImFsZyI6IkVTMjU2In0=
+    apiKeyEnvVar: API_KEY_CRI_FRAUD_PRE_PROD
+    sendIdentityClaims: true
+  - id: kbv-cri-pre-prod
+    name: KBV CRI Pre-Prod
+    authorizeUrl: https://review-k.account.gov.uk/oauth2/authorize
+    tokenUrl: https://api.review-k.account.gov.uk/token
+    credentialUrl: https://api.review-k.account.gov.uk/credential/issue
+    audience: https://review-k.account.gov.uk
+    publicEncryptionJwkBase64: eyJrdHkiOiAiUlNBIiwKICAgICJuIjogIjFIUW9hUWFpei1wZVgzUHhBSGpmWXIxMEtWSHhaeU1ldEZuYmhIUzRUbUx0VEV5eXNMejE1MV9iSFZrZ3N2dHU2SGFuZHdpQjFEMG12TUpRaHRFbHV1bW85ZDhVaVlvak95blJ1aHZGemI4aFZVd2ZPcjdBeTNwMzZKWUJVRXI2T2ZHOGlOQi1VejJodEc0U1R3cXZpN2pkMm5QeWRicHAxYmNlSG42MlNhYlM5bXFxU2JhUjdWRGh4MDY0Wk5LdmZrNkozR1FXRDZuQjZ6Z1lxLUpneGd5cUxBZExvcDQwanYxRDRGU3VGZnpfZS1MY05wdjY3RkJMU0pVWXR2ekh5aXVmV1Q0bE5PclY4ZWV5WXNzQ1dLckRCLW9sVlcwSVR2d2R1clp3WUt1dHRCdkRoM1BYU294ZlBINERhNENQN3ExdGF4aWVYSDhubmU3Zm9FeEQ3USIsCiAgICAiZSI6ICJBUUFCIn0=
+    publicVCSigningVerificationJwkBase64: eyJrdHkiOiJFQyIsInVzZSI6InNpZyIsImNydiI6IlAtMjU2IiwieCI6Imk3UW5jOWlGY3lYNTltV1ljLUg3ZmhSN3BTMC1ENzFZWWphd29JU2lGWVEiLCJ5IjoiU0ZvNTZfVVNTVFY2S2tPRTBMcTNpYVRNVTJmS01TSGhBRHZEQ2M5RDYyWSIsImFsZyI6IkVTMjU2In0=
+    apiKeyEnvVar: API_KEY_CRI_KBV_PRE_PROD
+    sendIdentityClaims: true
+  - id: dl-cri-pre-prod
+    name: Driving Licence CRI Pre-Prod
+    authorizeUrl: https://review-d.account.gov.uk/oauth2/authorize
+    tokenUrl: https://api.review-d.account.gov.uk/token
+    credentialUrl: https://api.review-d.account.gov.uk/credential/issue
+    audience: https://review-d.account.gov.uk
+    publicEncryptionJwkBase64: ewogICAgImt0eSI6ICJSU0EiLAogICAgIm4iOiAicjNaRl9jLWtiUDFjQ2hfRTZtMUhjVHFtR0phODB0eld1OFEzek5DTmNIbUI3UTBLNXZ4OVdLWWMtWklNY1pFbk1wbFhBY3Zhb0JOeTVhZDgwa3VENmdoeTB5WE43bHJ6cXBuam1RLU9aTk1mMVRnbjJaNjluVGJYdkFjcTZiak1paFRMZkVKaWM5enVENXdvU19SUWg0SWJUVk5UWlBMSE9Ycl9MY2hDYmFrLXR0OFFKcjFEOFBNSlNCQ3g1VE05MjVZcEpNRHVITThrbzlReGdCXzNHbzMzUzNPYlpIMnk1Y1FVTTdOLTVCUFl4OTZvS20tMDBucW5rZlBFTkRCaEhZaHJtUVk3Qk9ISEJvVGxXeXZJeUNWVHZuSVJZRDRKRWFfdnV0c0tJc3d3V0M5ZEpOY1dZUHJKZWF6Qy01NmVrWHNtb3pSenpkSUE3S285ems0bDJ3IiwKICAgICJlIjogIkFRQUIiCn0=
+    publicVCSigningVerificationJwkBase64: eyJrdHkiOiJFQyIsInVzZSI6InNpZyIsImNydiI6IlAtMjU2IiwieCI6ImlQOW9TNGliN2YtVmljLXd6WFZ4LVVmS0I4a1V5b3dpWXE0M0tyTTdrR2siLCJ5IjoiN25CUXljZU5RS3VBM1FPTWl3bk1GSFNYeHAtSVF3WTBoWTYxNUpSYWpycyIsImFsZyI6IkVTMjU2In0=
+    apiKeyEnvVar: API_KEY_CRI_DL_PRE_PROD
+    sendIdentityClaims: true
+  - id: passporta-cri-pre-prod
+    name: Passport V1 CRI Pre-Prod
+    authorizeUrl: https://review-pa.account.gov.uk/oauth2/authorize
+    tokenUrl: https://api.review-pa.account.gov.uk/token
+    credentialUrl: https://api.review-pa.account.gov.uk/credential/issue
+    audience: https://review-p.account.gov.uk
+    publicEncryptionJwkBase64: ewogICAgImt0eSI6ICJSU0EiLAogICAgIm4iOiAiMnoweXFyQ0oyN1UwdEFxcW1ySGt5SDRuSmFRT0o5YURVSU5JVlRhbHRXbkVPRHRwaER1MkFCRWlKckRLalFtSzV3NW0zOGhtWDB3NlFUbkJsWVRSdDBHbTlfQXc4UEZPbmVMU3FTLVBPWnVhUE1YeGcyci0zdWhGNHR1YjFhVG9ubTJxZkR5UjYwVnhSMXBJd0k2dlNEYWdPN2tUTGZOM2JJRWc2RE9FWGtySGx6N3hmZDYxVE5MUS1QUTR3WEgwb2FNS0ZIcV9sR1pLY0s5UFFIbHAwY3dGVHI1UTV5MmhQcEtHQVEzeXJhbXpza0ZxeTNNV3ZidlhPMGNqUzlWTDZYd0Niai1pR1JkUGw5MnNQOHFKSGl2alk2M2hNOGEyNGVVa0x3dTFTbnljRDhVZ2JqeWw2TWxZYU9xWk9vMm0tOFNPSTAxdXRpNDdQcnhyZk92OGFRIiwKICAgICJlIjogIkFRQUIiCn0=
+    publicVCSigningVerificationJwkBase64: eyJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6ImRsSzRWdzBvT0NFOUpSSEVTNkd1SXpNVjVNWldsUjNhaXhPYy00bjVLM2MiLCJ5IjoicE91QVZ5QUpWaU1oMkI1YmU2TWVLb1d1eVFwOGhYemV4NE5ibEVKaHRlWSJ9
+    apiKeyEnvVar: API_KEY_CRI_PASSPORTA_PRE_PROD
+    sendIdentityClaims: true

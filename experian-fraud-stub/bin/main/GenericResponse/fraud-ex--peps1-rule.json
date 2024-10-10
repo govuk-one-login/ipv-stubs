@@ -1,0 +1,125 @@
+{
+    "responseHeader": {
+        "requestType": "PepSanctions01",
+        "clientReferenceId": "ee63c45d-d5fe-4714-bb72-c16f7006357d",
+        "expRequestId": "RB000105302123",
+        "messageTime": "2022-08-18T14:06:58Z",
+        "overallResponse": {
+            "decision": "STOP",
+            "decisionText": "Stop and Investigate",
+            "score": 0,
+            "decisionReasons": [
+                "High Risk Hunter rule fired"
+            ],
+            "recommendedNextActions": [],
+            "spareObjects": []
+        },
+        "responseCode": "R0201",
+        "responseType": "INFO",
+        "responseMessage": "Workflow Complete.",
+        "tenantID": "X246M3WS"
+    },
+    "clientResponsePayload": {
+        "orchestrationDecisions": [
+            {
+                "sequenceId": "1",
+                "decisionSource": "Hunter",
+                "decision": "HIGH",
+                "decisionReasons": [
+                    "High Risk Hunter rule fired"
+                ],
+                "score": 190,
+                "decisionText": "Stop and Investigate",
+                "nextAction": "Continue",
+                "decisionTime": "2022-08-18T14:07:01Z"
+            }
+        ],
+        "decisionElements": [
+            {
+                "serviceName": "Hunter",
+                "score": 190,
+                "appReference": "ee63c45d-d5fe-4714-bb72-c16f7006357d",
+                "rules": [
+                    {
+                        "ruleId": "DOW_1_PEP_NM_MISS_DOB_NON_F",
+                        "ruleName": "DOW_1_PEP_NM_MISS_DOB_NON_F",
+                        "ruleScore": 95,
+                        "ruleText": "DOW_1_PEP_NM_MISS_DOB_NON_F"
+                    }
+                ],
+                "warningsErrors": [],
+                "matches": [
+                    {
+                        "name": "11414",
+                        "value": "190"
+                    }
+                ],
+                "dataCounts": [],
+                "scores": [
+                    {
+                        "name": "SCSS",
+                        "score": 50,
+                        "type": "SCSS"
+                    }
+                ]
+            }
+        ]
+    },
+    "originalRequestData": {
+        "application": {
+            "applicants": [
+                {
+                    "applicantType": "APPLICANT",
+                    "consent": true,
+                    "contactId": "MAINCONTACT_1",
+                    "id": "APPLICANT_1"
+                }
+            ],
+            "originalRequestTime": "2022-08-18T14:00:58Z",
+            "productDetails": {
+                "productCode": "MS_CON"
+            },
+            "status": "PENDING"
+        },
+        "contacts": [
+            {
+                "addresses": [
+                    {
+                        "addressIdentifier": "ADDRESS_1",
+                        "addressType": "CURRENT",
+                        "buildingNumber": "47",
+                        "id": "MAINAPPADDRESS_1",
+                        "postTown": "WEST BROMWICH",
+                        "postal": "B70 0PW",
+                        "street": "LAKESIDE ROAD"
+                    }
+                ],
+                "id": "MAINCONTACT_1",
+                "person": {
+                    "names": [
+                        {
+                            "firstName": "SIMON",
+                            "id": "MAINPERSONNAME_1",
+                            "middleNames": null,
+                            "surName": "HAMMOND",
+                            "title": null,
+                            "type": "CURRENT"
+                        }
+                    ],
+                    "personDetails": {
+                        "dateOfBirth": "1976-12-25",
+                        "pepsSanctionsFlag": "Y",
+                        "yearOfBirth": "1976"
+                    },
+                    "typeOfPerson": "APPLICANT"
+                }
+            }
+        ],
+        "control": [
+            {
+                "option": "MODEL_CODE",
+                "value": "MODELA"
+            }
+        ]
+    }
+}

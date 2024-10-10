@@ -132,8 +132,28 @@ public class IdentityMapper {
                 canonicalAddresses,
                 identity.nino() == null
                         ? null
-                        : List.of(new SocialSecurityRecord(identity.nino())));
+                        : List.of(new SocialSecurityRecord(identity.nino())),
+                null);
     }
+
+//    public SharedClaims mapToSharedClaim(String sharedClaimJSON) {
+//
+//        return new SharedClaims(
+//                List.of(
+//                        "https://www.w3.org/2018/credentials/v1",
+//                        "https://vocab.london.cloudapps.digital/contexts/identity-v1.jsonld"),
+//                List.of(
+//                        new Name(
+//                                List.of(
+//                                        new NameParts(GIVEN_NAME, identity.name().firstName()),
+//                                        new NameParts(FAMILY_NAME, identity.name().surname())))),
+//                List.of(new DateOfBirth(agedDOB ? dateOfBirth.getAgedDOB() : dateOfBirth.getDOB())),
+//                canonicalAddresses,
+//                identity.nino() == null
+//                        ? null
+//                        : List.of(new SocialSecurityRecord(identity.nino())),
+//                null);
+//    }
 
     public PostcodeSharedClaims mapToAddressSharedClaims(String postcode) {
         CanonicalAddress canonicalAddress =
