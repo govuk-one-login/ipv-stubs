@@ -841,7 +841,7 @@ public class AuthorizeHandler {
             F2FEnqueueLambdaRequest enqueueLambdaRequest =
                     new F2FEnqueueLambdaRequest(
                             f2fDetails.queueName(),
-                            new F2FQueueEvent(userId, state, List.of(signedVcJwt)),
+                            new CriResponseQueueEvent(userId, state, List.of(signedVcJwt)),
                             requireNonNullElse(
                                     f2fDetails.delaySeconds(), F2F_DEFAULT_DELAY_SECONDS));
 
@@ -868,7 +868,7 @@ public class AuthorizeHandler {
             F2FErrorEnqueueLambdaRequest enqueueLambdaRequest =
                     new F2FErrorEnqueueLambdaRequest(
                             f2fDetails.queueName(),
-                            new F2FQueueErrorEvent(
+                            new CriResponseQueueErrorEvent(
                                     userId, state, "access_denied", "Something went wrong"),
                             requireNonNullElse(
                                     f2fDetails.delaySeconds(), F2F_DEFAULT_DELAY_SECONDS));

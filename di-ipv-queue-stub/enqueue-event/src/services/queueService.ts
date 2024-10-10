@@ -30,7 +30,7 @@ export const getOrCreateSqsQueueUrl = async (
 
             // Create the queue if it does not exist
             const redrivePolicy = {
-                deadLetterTargetArn: `arn:aws:sqs:eu-west-2:${accountId}:stubQueue_F2FDLQ`,
+                deadLetterTargetArn: `arn:aws:sqs:eu-west-2:${accountId}:stubQueue_criResponse_deadLetterQueue`,
                 maxReceiveCount: "1"
             };
             const createQueueResponse = await sqsClient.send(new CreateQueueCommand({

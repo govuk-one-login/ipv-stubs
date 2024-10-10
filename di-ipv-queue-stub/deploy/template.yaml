@@ -304,10 +304,10 @@ Resources:
       TargetKeyId: !Ref QueuesKmsKey
 
   # Shared dead-letter queue for all stub queues
-  F2FDLQ:
+  CriResponseDeadLetterQueue:
     Type: AWS::SQS::Queue
     Properties:
-      QueueName: "stubQueue_F2FDLQ"
+      QueueName: "stubQueue_criResponse_deadLetterQueue"
       KmsMasterKeyId: !Ref QueuesKmsKey
       RedriveAllowPolicy:
         redrivePermission: allowAll

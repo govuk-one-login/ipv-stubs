@@ -9,6 +9,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class F2FEnqueueLambdaRequest {
     private String queueName;
-    private F2FQueueEvent queueEvent;
+    private CriResponseQueueEvent queueEvent;
     private int delaySeconds;
 }
