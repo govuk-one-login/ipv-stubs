@@ -398,7 +398,7 @@ public class HandlerHelper {
                     .filter(
                             identity ->
                                     identity.name()
-                                            .firstLastName()
+                                            .fullName()
                                             .toLowerCase()
                                             .contains(searchTerm.toLowerCase()))
                     .collect(Collectors.toList());
