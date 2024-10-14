@@ -20,29 +20,27 @@ Core Stub config from the `di-ipv-config` repository directory `/stubs/di-ipv-co
 
 * Docker image: `/app/config/`
 
-
-
 ## Environment
 
-Variable | Description                                              | Example Value
---- |----------------------------------------------------------| --- |
-CORE_STUB_PORT             | The port number the IPV Core Stub should run on          | `8085` |
-CORE_STUB_CLIENT_ID              | The id of the IPV Core Stub client                       | `ipv-core-stub` |
-CORE_STUB_REDIRECT_URL               | The OAuth callback url                                   | `http://localhost:8085/callback` |
-CORE_STUB_MAX_SEARCH_RESULTS   | Max search by name results                               | `200` |
-CORE_STUB_USER_DATA_PATH  | File path to Experian user data zip file                 | `/app/config/experian-uat-users-large.zip` |
-CORE_STUB_CONFIG_FILE  | File path to the credential issuer config                | `/app/config/cris-dev.yaml` for Docker, `config/cris-dev.yaml` for PaaS|
-API_KEY_CRI_DEV | API key for a CRI environment, set by hand with `cf` cli ||
-API_KEY_CRI_ADDRESS_BUILD | API key for a CRI environment, set by hand with `cf` cli ||
-API_KEY_CRI_ADDRESS_STAGING | API key for a CRI environment, set by hand with `cf` cli ||
-API_KEY_CRI_ADDRESS_INTEGRATION | API key for a CRI environment, set by hand with `cf` cli ||
-API_KEY_CRI_KBV_BUILD | API key for a CRI environment, set by hand with `cf` cli ||
-API_KEY_CRI_KBV_STAGING | API key for a CRI environment, set by hand with `cf` cli ||
-API_KEY_CRI_KBV_INTEGRATION | API key for a CRI environment, set by hand with `cf` cli ||
-API_KEY_CRI_FRAUD_BUILD | API key for a CRI environment, set by hand with `cf` cli ||
-API_KEY_CRI_DL_BUILD | API key for a CRI environment, set by hand with `cf` cli ||
-API_KEY_CRI_PASSPORTA_BUILD | API key for a CRI environment, set by hand with `cf` cli ||
-API_KEY_CRI_HMRC_KBV_BUILD | API key for a CRI environment, set by hand with `cf` cli ||
+| Variable                        | Description                                              | Example Value                                                           |
+|---------------------------------|----------------------------------------------------------|-------------------------------------------------------------------------|
+| CORE_STUB_PORT                  | The port number the IPV Core Stub should run on          | `8085`                                                                  |
+| CORE_STUB_CLIENT_ID             | The id of the IPV Core Stub client                       | `ipv-core-stub`                                                         |
+| CORE_STUB_REDIRECT_URL          | The OAuth callback url                                   | `http://localhost:8085/callback`                                        |
+| CORE_STUB_MAX_SEARCH_RESULTS    | Max search by name results                               | `200`                                                                   |
+| CORE_STUB_USER_DATA_PATH        | File path to Experian user data zip file                 | `/app/config/experian-uat-users-large.zip`                              |
+| CORE_STUB_CONFIG_FILE           | File path to the credential issuer config                | `/app/config/cris-dev.yaml` for Docker, `config/cris-dev.yaml` for PaaS |
+| API_KEY_CRI_DEV                 | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
+| API_KEY_CRI_ADDRESS_BUILD       | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
+| API_KEY_CRI_ADDRESS_STAGING     | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
+| API_KEY_CRI_ADDRESS_INTEGRATION | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
+| API_KEY_CRI_KBV_BUILD           | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
+| API_KEY_CRI_KBV_STAGING         | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
+| API_KEY_CRI_KBV_INTEGRATION     | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
+| API_KEY_CRI_FRAUD_BUILD         | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
+| API_KEY_CRI_DL_BUILD            | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
+| API_KEY_CRI_PASSPORTA_BUILD     | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
+| API_KEY_CRI_HMRC_KBV_BUILD      | API key for a CRI environment, set by hand with `cf` cli |                                                                         |
 
 ## Running locally
 
