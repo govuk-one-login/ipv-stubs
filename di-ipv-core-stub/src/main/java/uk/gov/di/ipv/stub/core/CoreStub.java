@@ -40,6 +40,7 @@ public class CoreStub {
         Spark.get("/evidence-request", coreStubHandler.evidenceRequest);
         Spark.get("/authorize", coreStubHandler.authorize);
         Spark.get("/user-search", coreStubHandler.userSearch);
+        Spark.post("/user-search", coreStubHandler.sendRawSharedClaim);
         Spark.get("/edit-user", coreStubHandler.editUser);
         Spark.post("/edit-user", coreStubHandler.updateUser);
         Spark.get("/callback", coreStubHandler.doCallback);

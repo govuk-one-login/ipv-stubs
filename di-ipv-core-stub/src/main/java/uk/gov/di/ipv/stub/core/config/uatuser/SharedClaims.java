@@ -13,4 +13,5 @@ public record SharedClaims(
         @JsonProperty("name") List<Name> name,
         @JsonProperty("birthDate") List<DateOfBirth> birthDate,
         @JsonProperty("address") List<CanonicalAddress> addresses,
-        @JsonProperty("socialSecurityRecord") List<SocialSecurityRecord> socialSecurityRecord) {}
+        @JsonProperty("socialSecurityRecord") List<SocialSecurityRecord> socialSecurityRecord,
+        @JsonProperty("drivingPermit") List<DrivingPermit> drivingPermit) {}

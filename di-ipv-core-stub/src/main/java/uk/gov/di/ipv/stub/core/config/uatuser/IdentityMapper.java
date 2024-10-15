@@ -133,9 +133,8 @@ public class IdentityMapper {
                 List.of(new Name(parts)),
                 List.of(new DateOfBirth(agedDOB ? dateOfBirth.getAgedDOB() : dateOfBirth.getDOB())),
                 canonicalAddresses,
-                identity.nino() == null
-                        ? null
-                        : List.of(new SocialSecurityRecord(identity.nino())));
+                identity.nino() == null ? null : List.of(new SocialSecurityRecord(identity.nino())),
+                null);
     }
 
     public PostcodeSharedClaims mapToAddressSharedClaims(String postcode) {
