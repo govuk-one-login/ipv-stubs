@@ -119,9 +119,9 @@ public class IpvHandler {
     private String getAuthorizeRedirect(Context ctx, String errorType) throws Exception {
 
         var environment = ctx.queryParam(ENVIRONMENT_PARAM);
-        var userIdTextValue = ctx.queryParam(USER_ID_PARAM);
-        var signInJourneyIdText = ctx.queryParam(JOURNEY_ID_PARAM);
-        var userEmailAddress = ctx.queryParam(EMAIL_ADDRESS_PARAM);
+        var userIdTextValue = stripIfNotNull(ctx.queryParam(USER_ID_PARAM));
+        var signInJourneyIdText = stripIfNotNull(ctx.queryParam(JOURNEY_ID_PARAM));
+        var userEmailAddress = stripIfNotNull(ctx.queryParam(EMAIL_ADDRESS_PARAM));
         var userId = getUserIdValue(userIdTextValue);
         var isMfaReset = Objects.equals(ctx.queryParam(MFA_RESET_PARAM), CHECKBOX_CHECKED_VALUE);
 
@@ -205,6 +205,10 @@ public class IpvHandler {
                         .build();
 
         return authRequest.toURI().toString();
+    }
+
+    private String stripIfNotNull(String value) {
+        return value == null ? null : value.strip();
     }
 
     private URI getIpvEndpoint(String environment) throws URISyntaxException {
