@@ -242,6 +242,11 @@
             "sortCode": "103233",
             "accountNumber": "12345678"
           }
+        ],
+        "birthDate": [
+          {
+            "value": "1985-02-08"
+          }
         ]
       }
     },
@@ -267,6 +272,11 @@
           {
             "sortCode": "103233",
             "accountNumber": "12345678"
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-11-09"
           }
         ]
       }
@@ -294,6 +304,11 @@
             "sortCode": "103233",
             "accountNumber": "12345678"
           }
+        ],
+        "birthDate": [
+          {
+            "value": "1939-10-09"
+          }
         ]
       }
     },
@@ -320,6 +335,11 @@
             "sortCode": "103233",
             "accountNumber": "12345678"
           }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
         ]
       }
     },
@@ -345,6 +365,11 @@
           {
             "sortCode": "103233",
             "accountNumber": "12345678"
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1932-02-25"
           }
         ]
       }
