@@ -97,8 +97,7 @@ public class IdentityMapper {
         List<CanonicalAddress> canonicalAddresses =
                 identity.addresses().stream()
                         .map(
-                                address -> {
-                                    LocalDate validFrom = address.validFrom();
+                                address -> {LocalDate validFrom = address.validFrom();
                                     if (mapIteration.get() == 0) {
                                         validFrom =
                                                 address.validFrom() != null
@@ -132,7 +131,8 @@ public class IdentityMapper {
                 canonicalAddresses,
                 identity.nino() == null
                         ? null
-                        : List.of(new SocialSecurityRecord(identity.nino())));
+                        : List.of(new SocialSecurityRecord(identity.nino())),
+                null);
     }
 
     public PostcodeSharedClaims mapToAddressSharedClaims(String postcode) {

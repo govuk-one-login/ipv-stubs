@@ -1,9 +1,9 @@
 package uk.gov.di.ipv.stub.core.handlers;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.gson.*;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -13,6 +13,7 @@ import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
+import net.minidev.json.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.QueryParamsMap;
@@ -21,15 +22,7 @@ import spark.Response;
 import spark.Route;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
-import uk.gov.di.ipv.stub.core.config.uatuser.DisplayIdentity;
-import uk.gov.di.ipv.stub.core.config.uatuser.EvidenceRequestClaims;
-import uk.gov.di.ipv.stub.core.config.uatuser.FindDateOfBirth;
-import uk.gov.di.ipv.stub.core.config.uatuser.FullName;
-import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
-import uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper;
-import uk.gov.di.ipv.stub.core.config.uatuser.PostcodeSharedClaims;
-import uk.gov.di.ipv.stub.core.config.uatuser.SharedClaims;
-import uk.gov.di.ipv.stub.core.config.uatuser.UKAddress;
+import uk.gov.di.ipv.stub.core.config.uatuser.*;
 import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
 import uk.gov.di.ipv.stub.core.utils.ViewHelper;
 
@@ -51,6 +44,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper.FAMILY_NAME;
+import static uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper.GIVEN_NAME;
+
 public class CoreStubHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreStubHandler.class);
@@ -58,9 +54,11 @@ public class CoreStubHandler {
     private final Map<String, CredentialIssuer> stateSession = new HashMap<>();
     private HandlerHelper handlerHelper;
     private Map<String, String> questionsMap = new HashMap<>();
+    private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     public CoreStubHandler(HandlerHelper handlerHelper) {
         this.handlerHelper = handlerHelper;
+
 
         setQuestions();
     }
@@ -138,6 +136,19 @@ public class CoreStubHandler {
                 return ViewHelper.render(modelMap, "search-results.mustache");
             };
 
+    // Used where sharedClaim is entered as raw JSON string from browser for DL CRI
+    public Route sendSharedClaim =
+            (Request request, Response response) -> {
+                var credentialIssuer =
+                        handlerHelper.findCredentialIssuer(
+                                Objects.requireNonNull(request.queryParams("cri")));
+                String queryString = request.queryParams("claimsText");
+                String context = request.queryParams("context");
+                SharedClaims sharedClaims = objectMapper.readValue(queryString, SharedClaims.class);
+                sendAuthorizationRequest(request, response, credentialIssuer, sharedClaims, context);
+                return null;
+            };
+
     public Route doCallback =
             (Request request, Response response) -> {
                 var authorizationResponse = handlerHelper.getAuthorizationResponse(request);
@@ -203,10 +214,10 @@ public class CoreStubHandler {
                     var claimIdentity =
                             new IdentityMapper()
                                     .mapToAddressSharedClaims(request.queryParams("postcode"));
-                    sendAuthorizationRequest(request, response, credentialIssuer, claimIdentity);
+                    sendAuthorizationRequest(request, response, credentialIssuer, claimIdentity, null);
                     return null;
                 } else {
-                    sendAuthorizationRequest(request, response, credentialIssuer, null);
+                    sendAuthorizationRequest(request, response, credentialIssuer, null, null);
                     return null;
                 }
             };
@@ -222,7 +233,7 @@ public class CoreStubHandler {
                         new IdentityMapper()
                                 .mapToSharedClaim(
                                         identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
-                sendAuthorizationRequest(request, response, credentialIssuer, claimIdentity);
+                sendAuthorizationRequest(request, response, credentialIssuer, claimIdentity,null);
                 return null;
             };
 
@@ -261,13 +272,13 @@ public class CoreStubHandler {
                 SharedClaims sharedClaims =
                         identityMapper.mapToSharedClaim(
                                 identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
-                sendAuthorizationRequest(request, response, credentialIssuer, sharedClaims);
+                sendAuthorizationRequest(request, response, credentialIssuer, sharedClaims, null);
                 return null;
             };
 
     private <T> void sendAuthorizationRequest(
-            Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims)
-            throws ParseException, JOSEException {
+            Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims, String context)
+            throws ParseException, JOSEException, JsonProcessingException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
         EvidenceRequestClaims evidenceRequest = request.session().attribute("evidence_request");
@@ -282,7 +293,7 @@ public class CoreStubHandler {
         try {
             authRequest =
                     handlerHelper.createAuthorizationJAR(
-                            state, credentialIssuer, sharedClaims, evidenceRequest);
+                            state, credentialIssuer, sharedClaims, evidenceRequest, context);
         } catch (JOSEException joseException) {
             LOGGER.error("JOSEException occurred," + joseException.getMessage());
             throw joseException;
@@ -355,17 +366,29 @@ public class CoreStubHandler {
     public Route backendGenerateInitialClaimsSet =
             (Request request, Response response) -> {
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
-                var rowNumber =
-                        Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
-                // NINO has been added here temporarily for testing implementation of HMRC KBV CRI
-                var nino = request.queryParams("nino");
-
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
-                var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
-                var claimIdentity =
-                        new IdentityMapper()
-                                .mapToSharedClaim(
-                                        identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
+
+                Object claimIdentity;
+
+                // claimsText used where sharedClaim is entered as raw JSON string from browser for DL CRI
+                String claimsText = request.queryParams("claimsText");
+                String context = request.queryParams("context");
+
+                if (claimsText == null) {
+                    var rowNumber =
+                            Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
+                    // NINO has been added here temporarily for testing implementation of HMRC KBV CRI
+                    var nino = request.queryParams("nino");
+
+                    var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
+
+                    claimIdentity =
+                            new IdentityMapper()
+                                    .mapToSharedClaim(
+                                            identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
+                } else {
+                    claimIdentity = objectMapper.readValue(claimsText, SharedClaims.class);
+                }
 
                 State state = createNewState(credentialIssuer);
                 LOGGER.info("Created State {} for {}", state.toJSONString(), credentialIssuerId);
@@ -377,7 +400,8 @@ public class CoreStubHandler {
                         credentialIssuer,
                         new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
                         claimIdentity,
-                        getEvidenceRequestClaims(request));
+                        getEvidenceRequestClaims(request),
+                        context);
             };
 
     private EvidenceRequestClaims getEvidenceRequestClaims(Request request) {
@@ -416,7 +440,6 @@ public class CoreStubHandler {
 
                 // ClaimSets can go direct to JSON
                 response.type("application/json");
-                System.out.println("claimIdentity = " + claimIdentity);
                 return handlerHelper.createJWTClaimsSets(
                         state,
                         credentialIssuerId,
