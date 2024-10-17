@@ -80,14 +80,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/orch/env/IPV_BACKCHANNEL_ENDPOINT" #pragma: allowlist secret
-  IpvBackchannelTokenPath:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_BACKCHANNEL_TOKEN_PATH" #pragma: allowlist secret
-  IpvBackchannelUserIdentityPath:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_BACKCHANNEL_USER_IDENTITY_PATH" #pragma: allowlist secret
   IpvEndpoint:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -578,10 +570,6 @@ Resources:
               Value: !Ref OrchestratorIntegrationJarEncryptionPublicKey
             - Name: IPV_BACKCHANNEL_ENDPOINT
               Value: !Ref IpvBackchannelEndpoint
-            - Name: IPV_BACKCHANNEL_TOKEN_PATH
-              Value: !Ref IpvBackchannelTokenPath
-            - Name: IPV_BACKCHANNEL_USER_IDENTITY_PATH
-              Value: !Ref IpvBackchannelUserIdentityPath
             - Name: IPV_ENDPOINT
               Value: !Ref IpvEndpoint
             - Name: IPV_CORE_AUDIENCE
