@@ -58,6 +58,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -268,7 +269,8 @@ public class HandlerHelper {
         JWTClaimsSet claimsSet =
                 createJWTClaimsSets(
                         state, credentialIssuer, clientID, sharedClaims, evidenceRequest, context);
-        // The only difference (frontend/backend) are the ClaimSets are created above for the
+        // The only difference (frontend/backend) are the ClaimSets are created above
+        // for the
         // frontend and clientID is already set in the backend ClaimSet
         LOGGER.info("ClaimsSets generated: {}", claimsSet);
         return createBackEndAuthorizationJAR(credentialIssuer, claimsSet);
@@ -394,15 +396,17 @@ public class HandlerHelper {
 
     public List<Identity> findByName(String searchTerm) {
         if (StringUtils.isNotBlank(searchTerm)) {
+            String[] parts = searchTerm.toLowerCase().split(" ");
+
             return CoreStubConfig.identities.stream()
                     .filter(
-                            identity ->
-                                    identity.name()
-                                            .fullName()
-                                            .toLowerCase()
-                                            .contains(searchTerm.toLowerCase()))
+                            identity -> {
+                                String name = identity.name().fullName().toLowerCase();
+                                return Arrays.stream(parts).allMatch(term -> name.contains(term));
+                            })
                     .collect(Collectors.toList());
         }
+
         return new ArrayList<>();
     }
 

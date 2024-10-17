@@ -69,7 +69,7 @@ public class IdentityMapper {
 
         FindDateOfBirth dateOfBirth = new FindDateOfBirth(dob, dob);
 
-        FullName name = new FullName(map.get("name"), "", map.get("surname"));
+        FullName name = new FullName(map.get("name"), map.get("initials"), map.get("surname"));
         String nino = null;
 
         return new Identity(
