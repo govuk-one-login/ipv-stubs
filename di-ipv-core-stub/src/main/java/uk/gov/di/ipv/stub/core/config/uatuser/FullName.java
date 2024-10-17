@@ -1,15 +1,18 @@
 package uk.gov.di.ipv.stub.core.config.uatuser;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import spark.utils.StringUtils;
 
 public record FullName(String firstName, String middleName, String surname) {
     public String fullName() {
-        return "%s %s %s"
-                .formatted(
-                        nonBlankValueOrBlank(firstName),
-                        nonBlankValueOrBlank(middleName),
-                        nonBlankValueOrBlank(surname))
-                .trim();
+        return Stream.of(
+                nonBlankValueOrBlank(firstName),
+                nonBlankValueOrBlank(middleName),
+                nonBlankValueOrBlank(surname))
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.joining(" "));
     }
 
     private String nonBlankValueOrBlank(String value) {

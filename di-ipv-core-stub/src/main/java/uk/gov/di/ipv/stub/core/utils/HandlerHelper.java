@@ -58,6 +58,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -113,19 +114,16 @@ public class HandlerHelper {
         LOGGER.info("url={}", request.url());
         LOGGER.info("pathInfo={}", request.pathInfo());
         LOGGER.info("requestMethod={}", request.requestMethod());
-        var authorizationResponse =
-                AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
+        var authorizationResponse = AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
             State state = request.session().attribute("state");
-            AuthorizationErrorResponse authorizationErrorResponse =
-                    new AuthorizationErrorResponse(
-                            CoreStubConfig.CORE_STUB_REDIRECT_URL, error, state, null);
+            AuthorizationErrorResponse authorizationErrorResponse = new AuthorizationErrorResponse(
+                    CoreStubConfig.CORE_STUB_REDIRECT_URL, error, state, null);
             request.session().removeAttribute("state");
-            var errorResponse =
-                    objectMapper
-                            .writerWithDefaultPrettyPrinter()
-                            .writeValueAsString(authorizationErrorResponse);
+            var errorResponse = objectMapper
+                    .writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(authorizationErrorResponse);
             throw new IllegalStateException(errorResponse);
         }
         return authorizationResponse;
@@ -138,8 +136,7 @@ public class HandlerHelper {
         TokenRequest tokenRequest = createTokenRequest(authorizationCode, credentialIssuer);
 
         HTTPRequest httpRequest = tokenRequest.toHTTPRequest();
-        String apiKey =
-                CoreStubConfig.getConfigValue(credentialIssuer.apiKeyEnvVar(), UNKNOWN_ENV_VAR);
+        String apiKey = CoreStubConfig.getConfigValue(credentialIssuer.apiKeyEnvVar(), UNKNOWN_ENV_VAR);
         if (!apiKey.equals(UNKNOWN_ENV_VAR)) {
             LOGGER.info(
                     "Found api key and sending it in token request to cri: {}",
@@ -174,18 +171,16 @@ public class HandlerHelper {
 
         LOGGER.info("token url is {}", tokenURI);
 
-        AuthorizationCodeGrant authzGrant =
-                new AuthorizationCodeGrant(
-                        authorizationCode, CoreStubConfig.CORE_STUB_REDIRECT_URL);
+        AuthorizationCodeGrant authzGrant = new AuthorizationCodeGrant(
+                authorizationCode, CoreStubConfig.CORE_STUB_REDIRECT_URL);
 
-        PrivateKeyJWT privateKeyJWT =
-                new PrivateKeyJWT(
-                        new JWTAuthenticationClaimsSet(
-                                clientID, new Audience(credentialIssuer.audience())),
-                        JWSAlgorithm.ES256,
-                        this.ecSigningKey.toECPrivateKey(),
-                        this.ecSigningKey.getKeyID(),
-                        null);
+        PrivateKeyJWT privateKeyJWT = new PrivateKeyJWT(
+                new JWTAuthenticationClaimsSet(
+                        clientID, new Audience(credentialIssuer.audience())),
+                JWSAlgorithm.ES256,
+                this.ecSigningKey.toECPrivateKey(),
+                this.ecSigningKey.getKeyID(),
+                null);
 
         TokenRequest tokenRequest = new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
         return tokenRequest;
@@ -202,13 +197,11 @@ public class HandlerHelper {
 
     public String getUserInfo(
             AccessToken accessToken, CredentialIssuer credentialIssuer, State state) {
-        HTTPRequest userInfoRequest =
-                new HTTPRequest(HTTPRequest.Method.POST, credentialIssuer.credentialUrl());
+        HTTPRequest userInfoRequest = new HTTPRequest(HTTPRequest.Method.POST, credentialIssuer.credentialUrl());
 
         userInfoRequest.setHeader("Content-Type", "");
 
-        String apiKey =
-                CoreStubConfig.getConfigValue(credentialIssuer.apiKeyEnvVar(), UNKNOWN_ENV_VAR);
+        String apiKey = CoreStubConfig.getConfigValue(credentialIssuer.apiKeyEnvVar(), UNKNOWN_ENV_VAR);
         if (!apiKey.equals(UNKNOWN_ENV_VAR)) {
             LOGGER.info(
                     "Found api key and sending it in credential request to cri: {}",
@@ -230,17 +223,15 @@ public class HandlerHelper {
 
         // Try lowercase, fall back to TitleCase
         String contentType = userInfoHttpResponse.getHeaderValue("content-type");
-        contentType =
-                contentType == null
-                        ? userInfoHttpResponse.getHeaderValue("Content-Type")
-                        : contentType;
+        contentType = contentType == null
+                ? userInfoHttpResponse.getHeaderValue("Content-Type")
+                : contentType;
 
         if (!"application/jwt".equalsIgnoreCase(contentType)) {
             // Fail now to prevent CRI's passing with a missmatch
-            String message =
-                    String.format(
-                            "Expected content-type application/jwt but VC response had content-type - %s",
-                            contentType);
+            String message = String.format(
+                    "Expected content-type application/jwt but VC response had content-type - %s",
+                    contentType);
             throw new RuntimeException(message);
         } else {
             return userInfoHttpResponse.getContent();
@@ -265,10 +256,10 @@ public class HandlerHelper {
             throws JOSEException, java.text.ParseException {
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
 
-        JWTClaimsSet claimsSet =
-                createJWTClaimsSets(
-                        state, credentialIssuer, clientID, sharedClaims, evidenceRequest, context);
-        // The only difference (frontend/backend) are the ClaimSets are created above for the
+        JWTClaimsSet claimsSet = createJWTClaimsSets(
+                state, credentialIssuer, clientID, sharedClaims, evidenceRequest, context);
+        // The only difference (frontend/backend) are the ClaimSets are created above
+        // for the
         // frontend and clientID is already set in the backend ClaimSet
         LOGGER.info("ClaimsSets generated: {}", claimsSet);
         return createBackEndAuthorizationJAR(credentialIssuer, claimsSet);
@@ -285,7 +276,7 @@ public class HandlerHelper {
         // Compose the final authorisation request, the minimal required query
         // parameters are "request" and "client_id"
         return new AuthorizationRequest.Builder(
-                        encryptedJWT, new ClientID(claimsSet.getStringClaim("client_id")))
+                encryptedJWT, new ClientID(claimsSet.getStringClaim("client_id")))
                 .endpointURI(credentialIssuer.authorizeUrl())
                 .build();
     }
@@ -294,8 +285,7 @@ public class HandlerHelper {
             throws JOSEException {
         JWSAlgorithm signingAlgorithm = JWSAlgorithm.parse(credentialIssuer.expectedAlgo());
         JWTSigner jwtSigner = new JWTSigner();
-        JWSHeader header =
-                new JWSHeader.Builder(signingAlgorithm).keyID(jwtSigner.getKeyId()).build();
+        JWSHeader header = new JWSHeader.Builder(signingAlgorithm).keyID(jwtSigner.getKeyId()).build();
 
         SignedJWT signedJWT = new SignedJWT(header, claimSets);
 
@@ -312,7 +302,7 @@ public class HandlerHelper {
             EvidenceRequestClaims evidenceRequest,
             String context) {
         return createJWTClaimsSetBuilder(
-                        state, credentialIssuer, clientID, sharedClaims, evidenceRequest, context)
+                state, credentialIssuer, clientID, sharedClaims, evidenceRequest, context)
                 .build();
     }
 
@@ -323,7 +313,7 @@ public class HandlerHelper {
             Object sharedClaims,
             EvidenceRequestClaims evidenceRequest) {
         return createJWTClaimsSetBuilder(
-                        state, credentialIssuer, clientID, sharedClaims, evidenceRequest, null)
+                state, credentialIssuer, clientID, sharedClaims, evidenceRequest, null)
                 .build();
     }
 
@@ -333,7 +323,7 @@ public class HandlerHelper {
             ClientID clientID,
             Object sharedClaims) {
         return createJWTClaimsSetBuilder(
-                        state, credentialIssuer, clientID, sharedClaims, null, null)
+                state, credentialIssuer, clientID, sharedClaims, null, null)
                 .build();
     }
 
@@ -349,20 +339,19 @@ public class HandlerHelper {
 
         JWTClaimsSet authClaimsSet = createAuthorizationClaims(state, clientID);
 
-        JWTClaimsSet.Builder claimsSetBuilder =
-                new JWTClaimsSet.Builder(authClaimsSet)
-                        .audience(credentialIssuer.audience().toString())
-                        .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
-                        .issueTime(Date.from(now))
-                        .expirationTime(
-                                Date.from(
-                                        now.plus(
-                                                Integer.parseInt(CoreStubConfig.MAX_JAR_TTL_MINS),
-                                                ChronoUnit.MINUTES)))
-                        .notBeforeTime(Date.from(now))
-                        .subject(getSubject())
-                        .claim(PERSISTENT_SESSION_ID, UUID.randomUUID().toString())
-                        .claim(CLIENT_SESSION_ID, UUID.randomUUID().toString());
+        JWTClaimsSet.Builder claimsSetBuilder = new JWTClaimsSet.Builder(authClaimsSet)
+                .audience(credentialIssuer.audience().toString())
+                .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
+                .issueTime(Date.from(now))
+                .expirationTime(
+                        Date.from(
+                                now.plus(
+                                        Integer.parseInt(CoreStubConfig.MAX_JAR_TTL_MINS),
+                                        ChronoUnit.MINUTES)))
+                .notBeforeTime(Date.from(now))
+                .subject(getSubject())
+                .claim(PERSISTENT_SESSION_ID, UUID.randomUUID().toString())
+                .claim(CLIENT_SESSION_ID, UUID.randomUUID().toString());
 
         if (Objects.nonNull(sharedClaims)) {
             Map<String, Object> map = convertToMap(sharedClaims);
@@ -394,16 +383,19 @@ public class HandlerHelper {
 
     public List<Identity> findByName(String searchTerm) {
         if (StringUtils.isNotBlank(searchTerm)) {
+            String[] parts = searchTerm.toLowerCase().split(" ");
+
             return CoreStubConfig.identities.stream()
-                    .filter(
-                            identity ->
-                                    identity.name()
-                                            .fullName()
-                                            .toLowerCase()
-                                            .contains(searchTerm.toLowerCase()))
+                    .filter(identity -> {
+                        String name = identity.name().fullName().toLowerCase();
+                        return Arrays.stream(parts)
+                            .allMatch(term -> name.contains(term));
+                        })
                     .collect(Collectors.toList());
         }
+
         return new ArrayList<>();
+
     }
 
     public Identity findIdentityByRowNumber(Integer rowNumber) {
@@ -423,20 +415,19 @@ public class HandlerHelper {
 
         JWTSigner jwtSigner = new JWTSigner();
 
-        SignedJWT signedJWT =
-                new SignedJWT(
-                        new JWSHeader.Builder(jwsSigningAlgorithm)
-                                .keyID(jwtSigner.getKeyId())
-                                .build(),
-                        new JWTClaimsSet.Builder()
-                                .subject(getSubject())
-                                .audience(credentialIssuer.audience().toString())
-                                .issueTime(Date.from(now))
-                                .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
-                                .notBeforeTime(Date.from(now))
-                                .expirationTime(Date.from(now.plus(1, ChronoUnit.HOURS)))
-                                .claim(SHARED_CLAIMS, map)
-                                .build());
+        SignedJWT signedJWT = new SignedJWT(
+                new JWSHeader.Builder(jwsSigningAlgorithm)
+                        .keyID(jwtSigner.getKeyId())
+                        .build(),
+                new JWTClaimsSet.Builder()
+                        .subject(getSubject())
+                        .audience(credentialIssuer.audience().toString())
+                        .issueTime(Date.from(now))
+                        .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
+                        .notBeforeTime(Date.from(now))
+                        .expirationTime(Date.from(now.plus(1, ChronoUnit.HOURS)))
+                        .claim(SHARED_CLAIMS, map)
+                        .build());
 
         jwtSigner.signJWT(signedJWT);
 
@@ -454,13 +445,12 @@ public class HandlerHelper {
 
     public EncryptedJWT encryptJWT(SignedJWT signedJWT, CredentialIssuer credentialIssuer) {
         try {
-            JWEObject jweObject =
-                    new JWEObject(
-                            new JWEHeader.Builder(
-                                            JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM)
-                                    .contentType("JWT")
-                                    .build(),
-                            new Payload(signedJWT));
+            JWEObject jweObject = new JWEObject(
+                    new JWEHeader.Builder(
+                            JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM)
+                            .contentType("JWT")
+                            .build(),
+                    new Payload(signedJWT));
             jweObject.encrypt(new RSAEncrypter(getEncryptionPublicKey(credentialIssuer)));
 
             return EncryptedJWT.parse(jweObject.serialize());
