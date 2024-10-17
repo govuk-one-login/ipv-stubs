@@ -523,7 +523,7 @@ public class CoreStubHandler {
     private Identity createNewIdentity() {
         Identity identity;
         UKAddress ukAddress = new UKAddress(null, null, null, null, null, null, null, null);
-        FullName fullName = new FullName(null, null);
+        FullName fullName = new FullName(null, null, null);
         Instant dob = Instant.ofEpochSecond(0);
         identity =
                 new Identity(

@@ -69,7 +69,7 @@ public class IdentityMapper {
 
         FindDateOfBirth dateOfBirth = new FindDateOfBirth(dob, dob);
 
-        FullName name = new FullName(map.get("name"), map.get("surname"));
+        FullName name = new FullName(map.get("name"), "", map.get("surname"));
         String nino = null;
 
         return new Identity(
@@ -86,7 +86,7 @@ public class IdentityMapper {
     public DisplayIdentity mapToDisplayable(Identity identity) {
         return new DisplayIdentity(
                 identity.rowNumber(),
-                identity.name().firstLastName(),
+                identity.name().fullName(),
                 identity.questions().numQuestionsTotal());
     }
 
@@ -127,6 +127,7 @@ public class IdentityMapper {
                         new Name(
                                 List.of(
                                         new NameParts(GIVEN_NAME, identity.name().firstName()),
+                                        new NameParts(GIVEN_NAME, identity.name().middleName()),
                                         new NameParts(FAMILY_NAME, identity.name().surname())))),
                 List.of(new DateOfBirth(agedDOB ? dateOfBirth.getAgedDOB() : dateOfBirth.getDOB())),
                 canonicalAddresses,
@@ -226,7 +227,12 @@ public class IdentityMapper {
         FindDateOfBirth findDateOfBirth =
                 new FindDateOfBirth(
                         instant, LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        FullName fullName = new FullName(formData.value("firstName"), formData.value("surname"));
+
+        String enteredMiddleName = formData.value("middleName");
+        String middleName = enteredMiddleName == null ? "" : enteredMiddleName;
+
+        FullName fullName =
+                new FullName(formData.value("firstName"), middleName, formData.value("surname"));
         String nino = formData.value("nationalInsuranceNumber");
         return new Identity(
                 identityOnRecord.rowNumber(),
