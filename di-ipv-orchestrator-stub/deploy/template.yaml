@@ -27,118 +27,6 @@ Parameters:
     Description: "The ARN of the permissions boundary to apply when creating IAM roles"
     Type: String
     Default: "none"
-  CodeSigningConfigArn:
-    Type: String
-    Description: Asserts that lambdas are signed when deployed.
-    Default: none
-  DeploymentStrategy:
-    Description: "Predefined deployment configuration for ECS application"
-    Type: String
-    Default: "None"
-    # Allowed values: See https://docs.aws.amazon.com/codedeploy/latest/userguide/deployment-configurations.html
-    AllowedValues:
-      - None
-      - CodeDeployDefault.ECSCanary10Percent5Minutes
-      - CodeDeployDefault.ECSCanary10Percent15Minutes
-      - ECSCanary50Percent5Minutes
-      - CodeDeployDefault.ECSAllAtOnce
-
-  OrchestratorClientId:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_ID" #pragma: allowlist secret
-  OrchestratorRedirectUrl:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_REDIRECT_URL" #pragma: allowlist secret
-  OrchestratorClientJwtTtl:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_JWT_TTL" #pragma: allowlist secret
-  OrchestratorPort:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_PORT" #pragma: allowlist secret
-  OrchestratorClientSigningKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY" #pragma: allowlist secret
-  OrchestratorDefaultJarEncryptionPublicKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
-  OrchestratorBuildJarEncryptionPublicKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
-  OrchestratorStagingJarEncryptionPublicKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
-  OrchestratorIntegrationJarEncryptionPublicKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY" #pragma: allowlist secret
-  OrchestratorBasicAuthEnable:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_ENABLE" #pragma: allowlist secret
-  OrchestratorBasicAuthUsername:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME" #pragma: allowlist secret
-  OrchestratorBasicAuthPassword:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSWORD" #pragma: allowlist secret
-  IpvBackchannelEndpoint:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_BACKCHANNEL_ENDPOINT" #pragma: allowlist secret
-  IpvEndpoint:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_ENDPOINT" #pragma: allowlist secret
-  IpvCoreAudience:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/IPV_CORE_AUDIENCE" #pragma: allowlist secret
-  JavaOpts:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/JAVA_OPTS" #pragma: allowlist secret
-  JbpConfigOpenJdkJre:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
-  InheritedIdentityJwtSigningKey:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/INHERITED_IDENTITY_JWT_SIGNING_KEY" #pragma: allowlist secret
-  InheritedIdentityJwtTtl:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/INHERITED_IDENTITY_JWT_TTL" #pragma: allowlist secret
-  InheritedIdentityJwtIssuer:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/INHERITED_IDENTITY_JWT_ISSUER" #pragma: allowlist secret
-  InheritedIdentityJwtVtm:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/INHERITED_IDENTITY_JWT_VTM" #pragma: allowlist secret
-  EvcsAccessTokenEndpoint:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/EVCS_ACCESS_TOKEN_ENDPOINT" #pragma: allowlist secret
-  EvcsAccessTokenTtl:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/EVCS_ACCESS_TOKEN_TTL" #pragma: allowlist secret
-  EvcsAccessTokenSigningKeyJwk:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/orch/env/EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -575,53 +463,53 @@ Resources:
           Name: app
           Environment:
             - Name: JBP_CONFIG_OPEN_JDK_JRE
-              Value: !Ref JbpConfigOpenJdkJre
+              Value: '{{resolve:ssm:/stubs/orch/env/JBP_CONFIG_OPEN_JDK_JRE}}'
             - Name: JAVA_OPTS
-              Value: !Ref JavaOpts
+              Value: '{{resolve:ssm:/stubs/orch/env/JAVA_OPTS}}'
             - Name: ORCHESTRATOR_CLIENT_ID
-              Value: !Ref OrchestratorClientId
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_CLIENT_ID}}'
             - Name: ORCHESTRATOR_REDIRECT_URL
-              Value: !Ref OrchestratorRedirectUrl
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_REDIRECT_URL}}'
             - Name: ORCHESTRATOR_CLIENT_JWT_TTL
-              Value: !Ref OrchestratorClientJwtTtl
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_CLIENT_JWT_TTL}}'
             - Name: ORCHESTRATOR_PORT
-              Value: !Ref OrchestratorPort
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_PORT}}'
             - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
-              Value: !Ref OrchestratorClientSigningKey
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY}}'
             - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
-              Value: !Ref OrchestratorDefaultJarEncryptionPublicKey
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY}}'
             - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY
-              Value: !Ref OrchestratorBuildJarEncryptionPublicKey
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY}}'
             - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY
-              Value: !Ref OrchestratorStagingJarEncryptionPublicKey
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY}}'
             - Name: ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY
-              Value: !Ref OrchestratorIntegrationJarEncryptionPublicKey
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY}}'
             - Name: IPV_BACKCHANNEL_ENDPOINT
-              Value: !Ref IpvBackchannelEndpoint
+              Value: '{{resolve:ssm:/stubs/orch/env/IPV_BACKCHANNEL_ENDPOINT}}'
             - Name: IPV_ENDPOINT
-              Value: !Ref IpvEndpoint
+              Value: '{{resolve:ssm:/stubs/orch/env/IPV_ENDPOINT}}'
             - Name: IPV_CORE_AUDIENCE
-              Value: !Ref IpvCoreAudience
+              Value: '{{resolve:ssm:/stubs/orch/env/IPV_CORE_AUDIENCE}}'
             - Name: ORCHESTRATOR_BASIC_AUTH_ENABLE
-              Value: !Ref OrchestratorBasicAuthEnable
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_ENABLE}}'
             - Name: ORCHESTRATOR_BASIC_AUTH_USERNAME
-              Value: !Ref OrchestratorBasicAuthUsername
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME}}'
             - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
-              Value: !Ref OrchestratorBasicAuthPassword
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSWORD}}'
             - Name: INHERITED_IDENTITY_JWT_SIGNING_KEY
-              Value: !Ref InheritedIdentityJwtSigningKey
+              Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_SIGNING_KEY}}'
             - Name: INHERITED_IDENTITY_JWT_TTL
-              Value: !Ref InheritedIdentityJwtTtl
+              Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_TTL}}'
             - Name: INHERITED_IDENTITY_JWT_ISSUER
-              Value: !Ref InheritedIdentityJwtIssuer
+              Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_ISSUER}}'
             - Name: INHERITED_IDENTITY_JWT_VTM
-              Value: !Ref InheritedIdentityJwtVtm
+              Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_VTM}}'
             - Name: EVCS_ACCESS_TOKEN_ENDPOINT
-              Value: !Ref EvcsAccessTokenEndpoint
+              Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_ENDPOINT}}'
             - Name: EVCS_ACCESS_TOKEN_TTL
-              Value: !Ref EvcsAccessTokenTtl
+              Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_TTL}}'
             - Name: EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK
-              Value: !Ref EvcsAccessTokenSigningKeyJwk
+              Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK}}'
           Secrets:
             - Name: DT_TENANT
               ValueFrom: !Join
