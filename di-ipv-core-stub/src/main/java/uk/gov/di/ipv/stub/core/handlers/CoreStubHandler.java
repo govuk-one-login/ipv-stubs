@@ -1,9 +1,9 @@
 package uk.gov.di.ipv.stub.core.handlers;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.gson.*;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.Payload;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -19,17 +19,10 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+import spark.utils.StringUtils;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
-import uk.gov.di.ipv.stub.core.config.uatuser.DisplayIdentity;
-import uk.gov.di.ipv.stub.core.config.uatuser.EvidenceRequestClaims;
-import uk.gov.di.ipv.stub.core.config.uatuser.FindDateOfBirth;
-import uk.gov.di.ipv.stub.core.config.uatuser.FullName;
-import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
-import uk.gov.di.ipv.stub.core.config.uatuser.IdentityMapper;
-import uk.gov.di.ipv.stub.core.config.uatuser.PostcodeSharedClaims;
-import uk.gov.di.ipv.stub.core.config.uatuser.SharedClaims;
-import uk.gov.di.ipv.stub.core.config.uatuser.UKAddress;
+import uk.gov.di.ipv.stub.core.config.uatuser.*;
 import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
 import uk.gov.di.ipv.stub.core.utils.ViewHelper;
 
@@ -58,6 +51,7 @@ public class CoreStubHandler {
     private final Map<String, CredentialIssuer> stateSession = new HashMap<>();
     private HandlerHelper handlerHelper;
     private Map<String, String> questionsMap = new HashMap<>();
+    private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
     public CoreStubHandler(HandlerHelper handlerHelper) {
         this.handlerHelper = handlerHelper;
@@ -136,6 +130,26 @@ public class CoreStubHandler {
                 modelMap.put("criName", credentialIssuer.name());
                 modelMap.put("identities", displayIdentities);
                 return ViewHelper.render(modelMap, "search-results.mustache");
+            };
+
+    // Used where sharedClaim is entered as raw JSON string from browser for DL CRI
+    public Route sendRawSharedClaim =
+            (Request request, Response response) -> {
+                var credentialIssuer =
+                        handlerHelper.findCredentialIssuer(
+                                Objects.requireNonNull(request.queryParams("cri")));
+                String queryString = request.queryParams("claimsText");
+                //                String context = request.queryParams("context");
+                SharedClaims sharedClaims;
+                try {
+                    sharedClaims = objectMapper.readValue(queryString, SharedClaims.class);
+                    LOGGER.info("Raw JSON in form input mapped to shared claims");
+                } catch (Exception e) {
+                    LOGGER.error("Unable to map raw JSON in form input mapped to shared claims");
+                    throw e;
+                }
+                sendAuthorizationRequest(request, response, credentialIssuer, sharedClaims);
+                return null;
             };
 
     public Route doCallback =
@@ -267,7 +281,7 @@ public class CoreStubHandler {
 
     private <T> void sendAuthorizationRequest(
             Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims)
-            throws ParseException, JOSEException {
+            throws ParseException, JOSEException, JsonProcessingException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
         EvidenceRequestClaims evidenceRequest = request.session().attribute("evidence_request");
@@ -357,17 +371,32 @@ public class CoreStubHandler {
     public Route backendGenerateInitialClaimsSet =
             (Request request, Response response) -> {
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
-                var rowNumber =
-                        Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
-                // NINO has been added here temporarily for testing implementation of HMRC KBV CRI
-                var nino = request.queryParams("nino");
-
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
-                var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
-                var claimIdentity =
-                        new IdentityMapper()
-                                .mapToSharedClaim(
-                                        identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
+
+                Object claimIdentity;
+
+                // claimsText used where sharedClaim is entered as raw JSON string from browser for
+                // DL CRI
+                String claimsText = request.queryParams("claimsText");
+                String context = request.queryParams("context");
+
+                if (StringUtils.isEmpty(context)) {
+                    var rowNumber =
+                            Integer.valueOf(
+                                    Objects.requireNonNull(request.queryParams("rowNumber")));
+                    // NINO has been added here temporarily for testing implementation of HMRC KBV
+                    // CRI
+                    var nino = request.queryParams("nino");
+
+                    var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
+
+                    claimIdentity =
+                            new IdentityMapper()
+                                    .mapToSharedClaim(
+                                            identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
+                } else {
+                    claimIdentity = objectMapper.readValue(claimsText, SharedClaims.class);
+                }
 
                 State state = createNewState(credentialIssuer);
                 LOGGER.info("Created State {} for {}", state.toJSONString(), credentialIssuerId);
@@ -379,7 +408,8 @@ public class CoreStubHandler {
                         credentialIssuer,
                         new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
                         claimIdentity,
-                        getEvidenceRequestClaims(request));
+                        getEvidenceRequestClaims(request),
+                        context);
             };
 
     private EvidenceRequestClaims getEvidenceRequestClaims(Request request) {
@@ -418,7 +448,6 @@ public class CoreStubHandler {
 
                 // ClaimSets can go direct to JSON
                 response.type("application/json");
-                System.out.println("claimIdentity = " + claimIdentity);
                 return handlerHelper.createJWTClaimsSets(
                         state,
                         credentialIssuerId,

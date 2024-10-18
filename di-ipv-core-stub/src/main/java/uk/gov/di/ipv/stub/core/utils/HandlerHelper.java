@@ -263,14 +263,13 @@ public class HandlerHelper {
             T sharedClaims,
             EvidenceRequestClaims evidenceRequest,
             String context)
-            throws JOSEException, java.text.ParseException {
+            throws JOSEException, java.text.ParseException, JsonProcessingException {
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
 
         JWTClaimsSet claimsSet =
                 createJWTClaimsSets(
                         state, credentialIssuer, clientID, sharedClaims, evidenceRequest, context);
-        // The only difference (frontend/backend) are the ClaimSets are created above
-        // for the
+        // The only difference (frontend/backend) are the ClaimSets are created above for the
         // frontend and clientID is already set in the backend ClaimSet
         LOGGER.info("ClaimsSets generated: {}", claimsSet);
         return createBackEndAuthorizationJAR(credentialIssuer, claimsSet);
