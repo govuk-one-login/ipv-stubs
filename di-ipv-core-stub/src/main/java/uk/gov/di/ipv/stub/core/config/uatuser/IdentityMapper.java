@@ -121,7 +121,7 @@ public class IdentityMapper {
 
         List<NameParts> parts = new ArrayList<>();
         parts.add(new NameParts(GIVEN_NAME, identity.name().firstName()));
-        if (!identity.name().middleName().isBlank()) {
+        if (identity.name().middleName() != null && !identity.name().middleName().isBlank()) {
             parts.add(new NameParts(GIVEN_NAME, identity.name().middleName()));
         }
         parts.add(new NameParts(FAMILY_NAME, identity.name().surname()));
