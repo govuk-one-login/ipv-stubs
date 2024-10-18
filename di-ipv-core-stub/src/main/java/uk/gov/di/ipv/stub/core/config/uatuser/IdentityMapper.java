@@ -119,16 +119,18 @@ public class IdentityMapper {
                                 })
                         .collect(toList());
 
+        List<NameParts> parts = new ArrayList<>();
+        parts.add(new NameParts(GIVEN_NAME, identity.name().firstName()));
+        if (!identity.name().middleName().isBlank()) {
+            parts.add(new NameParts(GIVEN_NAME, identity.name().middleName()));
+        }
+        parts.add(new NameParts(FAMILY_NAME, identity.name().surname()));
+
         return new SharedClaims(
                 List.of(
                         "https://www.w3.org/2018/credentials/v1",
                         "https://vocab.london.cloudapps.digital/contexts/identity-v1.jsonld"),
-                List.of(
-                        new Name(
-                                List.of(
-                                        new NameParts(GIVEN_NAME, identity.name().firstName()),
-                                        new NameParts(GIVEN_NAME, identity.name().middleName()),
-                                        new NameParts(FAMILY_NAME, identity.name().surname())))),
+                List.of(new Name(parts)),
                 List.of(new DateOfBirth(agedDOB ? dateOfBirth.getAgedDOB() : dateOfBirth.getDOB())),
                 canonicalAddresses,
                 identity.nino() == null
