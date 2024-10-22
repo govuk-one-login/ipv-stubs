@@ -65,9 +65,7 @@ import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.EVIDENCE_TXN
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.F2F_STUB_QUEUE_NAME_DEFAULT;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getConfigValue;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
-import static uk.gov.di.ipv.stub.cred.config.CriType.ADDRESS_CRI_TYPE;
 import static uk.gov.di.ipv.stub.cred.config.CriType.DOC_CHECK_APP_CRI_TYPE;
-import static uk.gov.di.ipv.stub.cred.config.CriType.USER_ASSERTED_CRI_TYPE;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.ACTIVITY_HISTORY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CI;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.F2F_STUB_QUEUE_NAME;
@@ -110,13 +108,6 @@ public class AuthorizeHandler {
             "F2F_STUB_QUEUE_API_KEY"; // pragma: allowlist secret
     private static final int F2F_DEFAULT_DELAY_SECONDS = 10;
     private static final String X_API_KEY = "x-api-key";
-
-    private static final List<CriType> NO_SHARED_ATTRIBUTES_CRI_TYPES =
-            List.of(ADDRESS_CRI_TYPE, USER_ASSERTED_CRI_TYPE, DOC_CHECK_APP_CRI_TYPE);
-
-    // Shared claims that should be included in the VC subject - does not include e.g. email address
-    private static final List<String> SHARED_CLAIMS_FOR_VC_SUBJECT =
-            List.of("address", "birthDate", "name", "socialSecurityRecord");
 
     private final AuthCodeService authCodeService;
     private final CredentialService credentialService;
@@ -275,19 +266,7 @@ public class AuthorizeHandler {
         String state = claimsSet.getClaim(RequestParamConstants.STATE).toString();
 
         try {
-            var attributesMap = jsonStringToMap(authRequest.credentialSubjectJson());
-
-            var credentialAttributesMap = new HashMap<>(attributesMap);
-
-            if (!NO_SHARED_ATTRIBUTES_CRI_TYPES.contains(getCriType())) {
-                var sharedClaims = jsonStringToMap(getSharedAttributes(claimsSet));
-                SHARED_CLAIMS_FOR_VC_SUBJECT.forEach(
-                        (claim) -> {
-                            if (sharedClaims.containsKey(claim)) {
-                                credentialAttributesMap.putIfAbsent(claim, sharedClaims.get(claim));
-                            }
-                        });
-            }
+            var credentialAttributesMap = jsonStringToMap(authRequest.credentialSubjectJson());
 
             Long nbf =
                     authRequest.nbf() != null ? authRequest.nbf() : Instant.now().getEpochSecond();
