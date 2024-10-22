@@ -19,7 +19,6 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Route;
-import spark.utils.StringUtils;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
 import uk.gov.di.ipv.stub.core.config.uatuser.*;
@@ -43,6 +42,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static spark.utils.StringUtils.isBlank;
+import static spark.utils.StringUtils.isNotBlank;
 
 public class CoreStubHandler {
 
@@ -139,7 +141,7 @@ public class CoreStubHandler {
                         handlerHelper.findCredentialIssuer(
                                 Objects.requireNonNull(request.queryParams("cri")));
                 String queryString = request.queryParams("claimsText");
-                //                String context = request.queryParams("context");
+                // String context = request.queryParams("context");
                 SharedClaims sharedClaims;
                 try {
                     sharedClaims = objectMapper.readValue(queryString, SharedClaims.class);
@@ -373,30 +375,8 @@ public class CoreStubHandler {
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
 
-                Object claimIdentity;
-
-                // claimsText used where sharedClaim is entered as raw JSON string from browser for
-                // DL CRI
-                String claimsText = request.queryParams("claimsText");
+                Object claimIdentity = getClaimIdentity(request);
                 String context = request.queryParams("context");
-
-                if (StringUtils.isEmpty(context)) {
-                    var rowNumber =
-                            Integer.valueOf(
-                                    Objects.requireNonNull(request.queryParams("rowNumber")));
-                    // NINO has been added here temporarily for testing implementation of HMRC KBV
-                    // CRI
-                    var nino = request.queryParams("nino");
-
-                    var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
-
-                    claimIdentity =
-                            new IdentityMapper()
-                                    .mapToSharedClaim(
-                                            identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
-                } else {
-                    claimIdentity = objectMapper.readValue(claimsText, SharedClaims.class);
-                }
 
                 State state = createNewState(credentialIssuer);
                 LOGGER.info("Created State {} for {}", state.toJSONString(), credentialIssuerId);
@@ -411,6 +391,35 @@ public class CoreStubHandler {
                         getEvidenceRequestClaims(request),
                         context);
             };
+
+    private SharedClaims getClaimIdentity(Request request) {
+        String claimsTextParam = request.queryParams("claimsText");
+        String rowNumberParam = request.queryParams("rowNumber");
+        if (isBlank(rowNumberParam) && isBlank(claimsTextParam)) {
+            return null;
+        }
+        if (isNotBlank(rowNumberParam)) {
+            return getClaimIdentityByRowNumber(
+                    Integer.parseInt(rowNumberParam), request.queryParams("nino"));
+        }
+        return getClaimIdentityByClaimsText(claimsTextParam);
+    }
+
+    private SharedClaims getClaimIdentityByRowNumber(int rowNumber, String nino) {
+        var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
+        return new IdentityMapper()
+                .mapToSharedClaim(identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
+    }
+
+    private SharedClaims getClaimIdentityByClaimsText(String claimsText) {
+        // claimsText used where sharedClaim is entered as raw JSON
+        // string from browser for DL CRI
+        try {
+            return objectMapper.readValue(claimsText, SharedClaims.class);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("Invalid claimsText format", e);
+        }
+    }
 
     private EvidenceRequestClaims getEvidenceRequestClaims(Request request) {
         String scoringPolicy = request.queryParams("scoringPolicy");
@@ -511,7 +520,7 @@ public class CoreStubHandler {
             };
 
     private String createBackendSessionRequestJSONReply(AuthorizationRequest authorizationRequest) {
-        // Splits the QueryString from the Auth URI.  Turning the list of parameters
+        // Splits the QueryString from the Auth URI. Turning the list of parameters
         // (key1=value1&key2=value2 etc...) into a json object.
         String queryParams = authorizationRequest.toQueryString();
         String[] queryKVPairs = queryParams.split("&");
