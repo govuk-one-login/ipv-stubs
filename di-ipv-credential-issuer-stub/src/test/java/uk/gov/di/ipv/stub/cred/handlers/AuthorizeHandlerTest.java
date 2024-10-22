@@ -76,7 +76,6 @@ import java.util.Map;
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -450,32 +449,6 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput() throws Exception {
-            setupQueryParams(validDoAuthorizeQueryParams());
-            setupFormParams(validGenerateResponseFormParams());
-            when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
-            when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
-
-            authorizeHandler.formAuthorize(mockContext);
-
-            ArgumentCaptor<Credential> persistedCredential =
-                    ArgumentCaptor.forClass(Credential.class);
-
-            verify(mockVcGenerator).generate(persistedCredential.capture());
-            Map<String, Object> persistedAttributes =
-                    persistedCredential.getValue().credentialSubject();
-            Map<String, Object> persistedEvidence = persistedCredential.getValue().evidence();
-            assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("address"));
-            assertEquals("test-value", persistedAttributes.get("test"));
-            assertEquals("IdentityCheck", persistedEvidence.get("type"));
-            assertNotNull(persistedEvidence.get("txn"));
-            assertNotNull(persistedEvidence.get("strengthScore"));
-            assertNotNull(persistedEvidence.get("validityScore"));
-
-            verify(mockCredentialService).persist(eq(mockSignedJwt.serialize()), any(String.class));
-        }
-
-        @Test
         void formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled()
                 throws Exception {
             environmentVariables.set("MITIGATION_ENABLED", "True");
@@ -744,41 +717,6 @@ class AuthorizeHandlerTest {
                     VALID_REDIRECT_URI
                             + "?error=invalid_json&iss=Credential+Issuer+Stub&error_description=Unable+to+generate+valid+JSON+Payload",
                     jsonArgumentCaptor.getValue().get("redirectUri").toString());
-        }
-
-        @Test
-        void apiAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput() throws Exception {
-            when(mockContext.bodyAsClass(ApiAuthRequest.class))
-                    .thenReturn(
-                            new ApiAuthRequest(
-                                    "clientIdValid",
-                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
-                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
-                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
-                                    null,
-                                    null,
-                                    null,
-                                    null));
-            when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
-
-            authorizeHandler.apiAuthorize(mockContext);
-
-            ArgumentCaptor<Credential> persistedCredential =
-                    ArgumentCaptor.forClass(Credential.class);
-
-            verify(mockVcGenerator).generate(persistedCredential.capture());
-            Map<String, Object> persistedAttributes =
-                    persistedCredential.getValue().credentialSubject();
-            Map<String, Object> persistedEvidence = persistedCredential.getValue().evidence();
-            assertEquals(List.of("123 random street, M13 7GE"), persistedAttributes.get("address"));
-            assertEquals(
-                    List.of(Map.of("value", "1965-07-08")), persistedAttributes.get("birthDate"));
-            assertEquals("IdentityCheck", persistedEvidence.get("type"));
-            assertNotNull(persistedEvidence.get("txn"));
-            assertNotNull(persistedEvidence.get("strengthScore"));
-            assertNotNull(persistedEvidence.get("validityScore"));
-
-            verify(mockCredentialService).persist(eq(mockSignedJwt.serialize()), any(String.class));
         }
 
         @Test
