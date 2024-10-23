@@ -17,6 +17,7 @@ import {
 import { VcState } from "../src/domain/enums/vcState";
 import VCProvenance from "../src/domain/enums/vcProvenance";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
+import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda/trigger/api-gateway-proxy";
 
 jest.mock("../src/services/evcsService", () => ({
   processGetUserVCsRequest: jest.fn(),
@@ -312,6 +313,36 @@ describe("evcs handlers", () => {
         "PENDING_RETURN",
         "HISTORIC",
         "VERIFICATION_ARCHIVED",
+      ]);
+    });
+
+    it("should return 200 for a migration request with no access token", async () => {
+      // arrange
+      const testResult = ["vc"];
+      jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
+        statusCode: 200,
+        response: testResult,
+      });
+      jest.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+
+      const event = {
+        pathParameters: TEST_PATH_PARAM,
+        path: `/migration/${TEST_USER_ID}`,
+        queryStringParameters: {
+          state: "CURRENT",
+        } as APIGatewayProxyEventQueryStringParameters,
+      } as APIGatewayProxyEvent;
+
+      // act
+      const response = (await getHandler(
+        event,
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // assert
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toBe(JSON.stringify(testResult));
+      expect(processGetUserVCsRequest).toHaveBeenCalledWith(TEST_USER_ID, [
+        "CURRENT",
       ]);
     });
 
