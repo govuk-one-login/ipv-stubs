@@ -266,6 +266,12 @@ Resources:
             RestApiId: !Ref RestApiGateway
             Path: /vcs/{userId}
             Method: GET
+        GetMigratedUserVCs:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /migration/{userId}
+            Method: GET
     Metadata:
       # Manage esbuild properties
       BuildMethod: esbuild
