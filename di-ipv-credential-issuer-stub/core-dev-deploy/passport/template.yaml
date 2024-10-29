@@ -48,10 +48,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/credential-issuer/passport/env/VC_ISSUER" #pragma: allowlist secret
-  VcTtlSeconds:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/passport/env/VC_TTL_SECONDS" #pragma: allowlist secret
   MitigationEnabled:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -461,11 +457,11 @@ Resources:
             Value: !Ref ClientAudience
           - Name: VC_ISSUER
             Value: !Ref VcIssuer
-          - Name: VC_TTL_SECONDS
-            Value: !Ref VcTtlSeconds
           Secrets:
             - Name: "VC_SIGNING_KEY"
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/passport/env/VC_SIGNING_KEY"
+            - Name: "PRIVATE_ENCRYPTION_KEY_JWK"
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/passport/env/PRIVATE_ENCRYPTION_KEY_JWK"
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp

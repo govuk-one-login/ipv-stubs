@@ -1,12 +1,14 @@
 package uk.gov.di.ipv.stub.cred.config;
 
+import com.nimbusds.jose.jwk.RSAKey;
 import uk.gov.di.ipv.stub.cred.vc.EncryptionAlgorithm;
+
+import java.text.ParseException;
 
 public class CredentialIssuerConfig {
     public static final String PORT = getConfigValue("CREDENTIAL_ISSUER_PORT", "8084");
     public static final String NAME =
             getConfigValue("CREDENTIAL_ISSUER_NAME", "Credential Issuer Stub");
-    public static final String VC_DEFAULT_TTL = "300";
 
     public static final String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE");
     public static final String DEV_DOMAIN =
@@ -45,8 +47,8 @@ public class CredentialIssuerConfig {
         return EncryptionAlgorithm.valueOf(signingAlgorithm);
     }
 
-    public static Long getVerifiableCredentialTtlSeconds() {
-        return Long.parseLong(getConfigValue("VC_TTL_SECONDS", VC_DEFAULT_TTL));
+    public static RSAKey getPrivateEncryptionKey() throws ParseException {
+        return RSAKey.parse(getConfigValue("PRIVATE_ENCRYPTION_KEY_JWK"));
     }
 
     public static String getConfigValue(String key) {
