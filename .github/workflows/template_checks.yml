@@ -8,7 +8,6 @@ on:
       - di-ipv-core-stub/deploy/template.yaml
       - di-ipv-credential-issuer-stub/deploy/template.yaml
       - di-ipv-orchestrator-stub/deploy/template.yaml
-      - experian-fraud-stub/deploy/template.yaml
       - experian-kbv-stub/deploy/template.yaml
 jobs:
   RunCloudformationLinter:
