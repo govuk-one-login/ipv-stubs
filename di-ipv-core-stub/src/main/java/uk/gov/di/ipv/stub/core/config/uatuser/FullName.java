@@ -1,9 +1,9 @@
 package uk.gov.di.ipv.stub.core.config.uatuser;
 
-import spark.utils.StringUtils;
-
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static uk.gov.di.ipv.stub.core.utils.StringHelper.isNotBlank;
 
 public record FullName(String firstName, String middleName, String surname) {
     public String fullName() {
@@ -16,7 +16,7 @@ public record FullName(String firstName, String middleName, String surname) {
     }
 
     private String nonBlankValueOrBlank(String value) {
-        if (StringUtils.isNotBlank(value)) {
+        if (isNotBlank(value)) {
             return value.trim();
         } else {
             return "";

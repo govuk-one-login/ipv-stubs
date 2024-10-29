@@ -43,10 +43,9 @@ import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
+import io.javalin.http.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.Request;
-import spark.utils.StringUtils;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
 import uk.gov.di.ipv.stub.core.config.uatuser.EvidenceRequestClaims;
@@ -108,21 +107,21 @@ public class HandlerHelper {
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
-    public AuthorizationResponse getAuthorizationResponse(Request request)
+    public AuthorizationResponse getAuthorizationResponse(Context ctx)
             throws ParseException, JsonProcessingException {
-        LOGGER.info("uri={}", request.uri());
-        LOGGER.info("url={}", request.url());
-        LOGGER.info("pathInfo={}", request.pathInfo());
-        LOGGER.info("requestMethod={}", request.requestMethod());
+        LOGGER.info("uri={}", ctx.req().getRequestURI());
+        LOGGER.info("url={}", ctx.req().getRequestURL());
+        LOGGER.info("pathInfo={}", ctx.req().getPathInfo());
+        LOGGER.info("requestMethod={}", ctx.req().getMethod());
         var authorizationResponse =
-                AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
+                AuthorizationResponse.parse(URI.create("https:///?" + ctx.req().getQueryString()));
         if (!authorizationResponse.indicatesSuccess()) {
             var error = authorizationResponse.toErrorResponse().getErrorObject();
-            State state = request.session().attribute("state");
+            State state = ctx.sessionAttribute("state");
             AuthorizationErrorResponse authorizationErrorResponse =
                     new AuthorizationErrorResponse(
                             CoreStubConfig.CORE_STUB_REDIRECT_URL, error, state, null);
-            request.session().removeAttribute("state");
+            ctx.req().getSession().removeAttribute("state");
             var errorResponse =
                     objectMapper
                             .writerWithDefaultPrettyPrinter()
@@ -372,7 +371,7 @@ public class HandlerHelper {
         if (Objects.nonNull(evidenceRequest)) {
             claimsSetBuilder.claim(EVIDENCE_REQUESTED, convertToMap(evidenceRequest));
         }
-        if (!StringUtils.isEmpty(context)) {
+        if (!StringHelper.isEmpty(context)) {
             claimsSetBuilder.claim(CONTEXT, context);
         }
         return claimsSetBuilder;
@@ -394,7 +393,7 @@ public class HandlerHelper {
     }
 
     public List<Identity> findByName(String searchTerm) {
-        if (StringUtils.isNotBlank(searchTerm)) {
+        if (StringHelper.isNotBlank(searchTerm)) {
             String[] parts = searchTerm.toLowerCase().split(" ");
 
             return CoreStubConfig.identities.stream()

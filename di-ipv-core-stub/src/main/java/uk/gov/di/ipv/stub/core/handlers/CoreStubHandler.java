@@ -13,17 +13,15 @@ import com.nimbusds.oauth2.sdk.AuthorizationRequest;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
+import io.javalin.http.Context;
+import io.javalin.http.Handler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.QueryParamsMap;
-import spark.Request;
-import spark.Response;
-import spark.Route;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
 import uk.gov.di.ipv.stub.core.config.uatuser.*;
 import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
-import uk.gov.di.ipv.stub.core.utils.ViewHelper;
+import uk.gov.di.ipv.stub.core.utils.StringHelper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,8 +41,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static spark.utils.StringUtils.isBlank;
-import static spark.utils.StringUtils.isNotBlank;
+import static uk.gov.di.ipv.stub.core.utils.StringHelper.isBlank;
+import static uk.gov.di.ipv.stub.core.utils.StringHelper.isNotBlank;
 
 public class CoreStubHandler {
 
@@ -95,22 +93,19 @@ public class CoreStubHandler {
         LOGGER.info("✅  set %d questions".formatted(questionsMap.size()));
     }
 
-    public Route serveHomePage =
-            (Request request, Response response) -> ViewHelper.render(null, "home.mustache");
+    public Handler serveHomePage =
+            ctx -> ctx.render("home.mustache");
 
-    public Route showCredentialIssuer =
-            (Request request, Response response) ->
-                    ViewHelper.render(
-                            Map.of("cris", CoreStubConfig.credentialIssuers),
-                            "credential-issuers.mustache");
+    public Handler showCredentialIssuer =
+            ctx -> ctx.render("credential-issuers.mustache", Map.of("cris", CoreStubConfig.credentialIssuers));
 
-    public Route userSearch =
-            (Request request, Response response) -> {
-                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+    public Handler userSearch =
+            ctx -> {
+                var credentialIssuerId = Objects.requireNonNull(ctx.queryParam("cri"));
 
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
 
-                var results = handlerHelper.findByName(request.queryParams("name"));
+                var results = handlerHelper.findByName(ctx.queryParam("name"));
                 int size = results.size();
                 if (size > CoreStubConfig.CORE_STUB_MAX_SEARCH_RESULTS) {
                     throw new IllegalStateException("Too many matches: %d".formatted(size));
@@ -131,17 +126,16 @@ public class CoreStubHandler {
                 modelMap.put("cri", credentialIssuer.id());
                 modelMap.put("criName", credentialIssuer.name());
                 modelMap.put("identities", displayIdentities);
-                return ViewHelper.render(modelMap, "search-results.mustache");
+                ctx.render("search-results.mustache", modelMap);
             };
 
     // Used where sharedClaim is entered as raw JSON string from browser for DL CRI
-    public Route sendRawSharedClaim =
-            (Request request, Response response) -> {
+    public Handler sendRawSharedClaim =
+            ctx -> {
                 var credentialIssuer =
                         handlerHelper.findCredentialIssuer(
-                                Objects.requireNonNull(request.queryParams("cri")));
-                String queryString = request.queryParams("claimsText");
-                // String context = request.queryParams("context");
+                                Objects.requireNonNull(ctx.queryParam("cri")));
+                String queryString = ctx.queryParam("claimsText");
                 SharedClaims sharedClaims;
                 try {
                     sharedClaims = objectMapper.readValue(queryString, SharedClaims.class);
@@ -150,13 +144,12 @@ public class CoreStubHandler {
                     LOGGER.error("Unable to map raw JSON in form input mapped to shared claims");
                     throw e;
                 }
-                sendAuthorizationRequest(request, response, credentialIssuer, sharedClaims);
-                return null;
+                sendAuthorizationRequest(ctx, credentialIssuer, sharedClaims);
             };
 
-    public Route doCallback =
-            (Request request, Response response) -> {
-                var authorizationResponse = handlerHelper.getAuthorizationResponse(request);
+    public Handler doCallback =
+            ctx -> {
+                var authorizationResponse = handlerHelper.getAuthorizationResponse(ctx);
                 var authorizationCode =
                         authorizationResponse.toSuccessResponse().getAuthorizationCode();
                 var state = authorizationResponse.toSuccessResponse().getState();
@@ -191,68 +184,67 @@ public class CoreStubHandler {
                 moustacheDataModel.put("cri", credentialIssuer.id());
                 moustacheDataModel.put("criName", credentialIssuer.name());
 
-                return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
+                ctx.render("userinfo.mustache", moustacheDataModel);
             };
 
-    public Route handleCredentialIssuerRequest =
-            (Request request, Response response) -> {
+    public Handler handleCredentialIssuerRequest =
+            ctx -> {
                 var credentialIssuer =
                         handlerHelper.findCredentialIssuer(
-                                Objects.requireNonNull(request.queryParams("cri")));
-                var postcode = request.queryParams("postcode");
-                var strengthScore = request.queryParams("score");
-                var scoringPolicy = request.queryParams("evidence_request");
-                var verificationScore = request.queryParams("verification_score");
+                                Objects.requireNonNull(ctx.queryParam("cri")));
+                var postcode = ctx.queryParam("postcode");
+                var strengthScore = ctx.queryParam("score");
+                var scoringPolicy = ctx.queryParam("evidence_request");
+                var verificationScore = ctx.queryParam("verification_score");
 
                 if (credentialIssuer.sendIdentityClaims()
-                        && Objects.isNull(request.queryParams("postcode"))) {
+                        && Objects.isNull(ctx.queryParam("postcode"))) {
                     saveEvidenceRequestToSessionIfPresent(
-                            request, strengthScore, scoringPolicy, verificationScore);
-                    return ViewHelper.render(
+                            ctx, strengthScore, scoringPolicy, verificationScore);
+                    ctx.render(
+                            "user-search.mustache",
                             Map.of(
                                     "cri",
                                     credentialIssuer.id(),
                                     "criName",
-                                    credentialIssuer.name()),
-                            "user-search.mustache");
+                                    credentialIssuer.name())
+                    );
                 } else if (postcode != null && !postcode.isBlank()) {
                     var claimIdentity =
                             new IdentityMapper()
-                                    .mapToAddressSharedClaims(request.queryParams("postcode"));
-                    sendAuthorizationRequest(request, response, credentialIssuer, claimIdentity);
-                    return null;
+                                    .mapToAddressSharedClaims(ctx.queryParam("postcode"));
+                    sendAuthorizationRequest(ctx, credentialIssuer, claimIdentity);
                 } else {
-                    sendAuthorizationRequest(request, response, credentialIssuer, null);
-                    return null;
+                    sendAuthorizationRequest(ctx, credentialIssuer, null);
                 }
             };
 
-    public Route authorize =
-            (Request request, Response response) -> {
-                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+    public Handler authorize =
+            ctx -> {
+                var credentialIssuerId = Objects.requireNonNull(ctx.queryParam("cri"));
                 var rowNumber =
-                        Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
+                        Integer.valueOf(Objects.requireNonNull(ctx.queryParam("rowNumber")));
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
                 var claimIdentity =
                         new IdentityMapper()
                                 .mapToSharedClaim(
                                         identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
-                sendAuthorizationRequest(request, response, credentialIssuer, claimIdentity);
-                return null;
+                sendAuthorizationRequest(ctx, credentialIssuer, claimIdentity);
             };
 
-    public Route answers =
-            (Request request, Response response) -> {
-                var name = Objects.requireNonNull(request.queryParams("name"));
-                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+    public Handler answers =
+            ctx -> {
+                var name = Objects.requireNonNull(ctx.queryParam("name"));
+                var credentialIssuerId = Objects.requireNonNull(ctx.queryParam("cri"));
                 var rowNumber =
-                        Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
+                        Integer.valueOf(Objects.requireNonNull(ctx.queryParam("rowNumber")));
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
                 var questionAndAnswers =
                         new IdentityMapper().mapToQuestionAnswers(identity, questionsMap);
 
-                return ViewHelper.render(
+                ctx.render(
+                        "answers.mustache",
                         Map.of(
                                 "name",
                                 name,
@@ -261,39 +253,37 @@ public class CoreStubHandler {
                                 "identity",
                                 identity,
                                 "questionAndAnswers",
-                                questionAndAnswers),
-                        "answers.mustache");
+                                questionAndAnswers)
+                );
             };
 
-    public Route updateUser =
-            (Request request, Response response) -> {
+    public Handler updateUser =
+            ctx -> {
                 var credentialIssuer =
                         handlerHelper.findCredentialIssuer(
-                                Objects.requireNonNull(request.queryParams("cri")));
-                QueryParamsMap queryParamsMap = request.queryMap();
-                var identityOnRecord = fetchOrCreateIdentity(queryParamsMap.value("rowNumber"));
+                                Objects.requireNonNull(ctx.queryParam("cri")));
+                var identityOnRecord = fetchOrCreateIdentity(ctx.queryParam("rowNumber"));
                 IdentityMapper identityMapper = new IdentityMapper();
-                var identity = identityMapper.mapFormToIdentity(identityOnRecord, queryParamsMap);
+                var identity = identityMapper.mapFormToIdentity(identityOnRecord, ctx);
                 SharedClaims sharedClaims =
                         identityMapper.mapToSharedClaim(
                                 identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
-                sendAuthorizationRequest(request, response, credentialIssuer, sharedClaims);
-                return null;
+                sendAuthorizationRequest(ctx, credentialIssuer, sharedClaims);
             };
 
     private <T> void sendAuthorizationRequest(
-            Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims)
+            Context ctx, CredentialIssuer credentialIssuer, T sharedClaims)
             throws ParseException, JOSEException, JsonProcessingException {
         State state = createNewState(credentialIssuer);
-        request.session().attribute("state", state);
-        EvidenceRequestClaims evidenceRequest = request.session().attribute("evidence_request");
+        ctx.sessionAttribute("state", state);
+        EvidenceRequestClaims evidenceRequest = ctx.sessionAttribute("evidence_request");
 
         if (!Objects.isNull(evidenceRequest)) {
             LOGGER.info("✅  Retrieved evidence request from session to {}", evidenceRequest);
-            request.session().removeAttribute("evidence_request");
+            ctx.req().getSession().removeAttribute("evidence_request");
         }
 
-        var context = request.queryParams("context");
+        var context = ctx.queryParam("context");
 
         AuthorizationRequest authRequest;
 
@@ -318,7 +308,7 @@ public class CoreStubHandler {
             URI uri = authRequest.toURI();
             if (uri != null) {
                 LOGGER.info("Redirecting to {}", uri);
-                response.redirect(authRequest.toURI().toString());
+                ctx.redirect(authRequest.toURI().toString());
             } else {
                 String error = "AuthorizationRequest URI object is null";
                 LOGGER.error(error);
@@ -340,20 +330,21 @@ public class CoreStubHandler {
         return authRequest;
     }
 
-    public Route editUser =
-            (Request request, Response response) -> {
+    public Handler editUser =
+            ctx -> {
                 var credentialIssuerId =
-                        Objects.requireNonNull(request.queryParams("cri"), "cri required");
+                        Objects.requireNonNull(ctx.queryParam("cri"), "cri required");
                 boolean isHmrcKbvCri = credentialIssuerId.contains("hmrc-kbv-cri");
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
-                String rowNumber = request.queryParams("rowNumber");
+                String rowNumber = ctx.queryParam("rowNumber");
                 Identity identity = fetchOrCreateIdentity(rowNumber);
 
                 Map<String, UKAddress> addressMap = new HashMap<>();
                 for (int i = 0; i < identity.addresses().size(); i++) {
                     addressMap.put("" + i, identity.addresses().get(i));
                 }
-                return ViewHelper.render(
+                ctx.render(
+                        "edit-user.mustache",
                         Map.of(
                                 "cri",
                                 credentialIssuerId,
@@ -366,41 +357,41 @@ public class CoreStubHandler {
                                 "rowNumber",
                                 Optional.ofNullable(rowNumber).orElse("0"),
                                 "isHmrcKbvCri",
-                                isHmrcKbvCri),
-                        "edit-user.mustache");
+                                isHmrcKbvCri)
+                );
             };
 
-    public Route backendGenerateInitialClaimsSet =
-            (Request request, Response response) -> {
-                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+    public Handler backendGenerateInitialClaimsSet =
+            ctx -> {
+                var credentialIssuerId = Objects.requireNonNull(ctx.queryParam("cri"));
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
 
-                Object claimIdentity = getClaimIdentity(request);
-                String context = request.queryParams("context");
+                Object claimIdentity = getClaimIdentity(ctx);
+                String context = ctx.queryParam("context");
 
                 State state = createNewState(credentialIssuer);
                 LOGGER.info("Created State {} for {}", state.toJSONString(), credentialIssuerId);
 
                 // ClaimSets can go direct to JSON
-                response.type("application/json");
-                return handlerHelper.createJWTClaimsSets(
+                ctx.contentType("application/json");
+                ctx.result(handlerHelper.createJWTClaimsSets(
                         state,
                         credentialIssuer,
                         new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
                         claimIdentity,
-                        getEvidenceRequestClaims(request),
-                        context);
+                        getEvidenceRequestClaims(ctx),
+                        context).toString());
             };
 
-    private SharedClaims getClaimIdentity(Request request) {
-        String claimsTextParam = request.queryParams("claimsText");
-        String rowNumberParam = request.queryParams("rowNumber");
+    private SharedClaims getClaimIdentity(Context ctx) {
+        String claimsTextParam = ctx.queryParam("claimsText");
+        String rowNumberParam = ctx.queryParam("rowNumber");
         if (isBlank(rowNumberParam) && isBlank(claimsTextParam)) {
             return null;
         }
         if (isNotBlank(rowNumberParam)) {
             return getClaimIdentityByRowNumber(
-                    Integer.parseInt(rowNumberParam), request.queryParams("nino"));
+                    Integer.parseInt(rowNumberParam), ctx.queryParam("nino"));
         }
         return getClaimIdentityByClaimsText(claimsTextParam);
     }
@@ -421,10 +412,10 @@ public class CoreStubHandler {
         }
     }
 
-    private EvidenceRequestClaims getEvidenceRequestClaims(Request request) {
-        String scoringPolicy = request.queryParams("scoringPolicy");
-        String strengthScore = request.queryParams("strengthScore");
-        String verificationScore = request.queryParams("verificationScore");
+    private EvidenceRequestClaims getEvidenceRequestClaims(Context ctx) {
+        String scoringPolicy = ctx.queryParam("scoringPolicy");
+        String strengthScore = ctx.queryParam("strengthScore");
+        String verificationScore = ctx.queryParam("verificationScore");
 
         if (Objects.nonNull(strengthScore)
                 || Objects.nonNull(scoringPolicy)
@@ -438,14 +429,14 @@ public class CoreStubHandler {
         return null;
     }
 
-    public Route backendGenerateInitialClaimsSetPostCode =
-            (Request request, Response response) -> {
+    public Handler backendGenerateInitialClaimsSetPostCode =
+            ctx -> {
                 var credentialIssuerId =
                         handlerHelper.findCredentialIssuer(
-                                Objects.requireNonNull(request.queryParams("cri")));
+                                Objects.requireNonNull(ctx.queryParam("cri")));
 
-                var postcode = request.queryParams("postcode");
-                if (postcode == null || postcode.isBlank()) {
+                var postcode = ctx.queryParam("postcode");
+                if (StringHelper.isBlank(postcode)) {
                     throw new IllegalStateException("Postcode cannot be blank");
                 }
 
@@ -456,22 +447,22 @@ public class CoreStubHandler {
                 LOGGER.info("Created State {} for {}", state.toJSONString(), credentialIssuerId);
 
                 // ClaimSets can go direct to JSON
-                response.type("application/json");
-                return handlerHelper.createJWTClaimsSets(
+                ctx.contentType("application/json");
+                ctx.result(handlerHelper.createJWTClaimsSets(
                         state,
                         credentialIssuerId,
                         new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
-                        claimIdentity);
+                        claimIdentity).toString());
             };
-    public Route createBackendSessionRequest =
-            (Request request, Response response) -> {
+    public Handler createBackendSessionRequest =
+            ctx -> {
                 LOGGER.info("CreateBackendSessionRequest Start");
-                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                var credentialIssuerId = Objects.requireNonNull(ctx.queryParam("cri"));
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
 
                 // The JSON data will have urls that will be escaped.
                 LOGGER.info("Getting request body");
-                var escapedData = Objects.requireNonNull(request.body(), "UTF-8");
+                var escapedData = Objects.requireNonNull(ctx.body(), "UTF-8");
                 String data = escapedData.replace("\\", "");
 
                 LOGGER.info("Parsing Request data to JWTClaimsSet {}", data);
@@ -485,38 +476,38 @@ public class CoreStubHandler {
                 LOGGER.info("Auth URI {}", authorizationRequest.toURI());
 
                 LOGGER.info("CreateBackendSessionRequest Complete");
-                response.type("application/json");
-                return createBackendSessionRequestJSONReply(authorizationRequest);
+                ctx.contentType("application/json");
+                ctx.result(createBackendSessionRequestJSONReply(authorizationRequest));
             };
 
-    public Route createTokenRequestPrivateKeyJWT =
-            (Request request, Response response) -> {
+    public Handler createTokenRequestPrivateKeyJWT =
+            ctx -> {
                 LOGGER.info("createTokenRequestPrivateKeyJWT Start");
-                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
+                var credentialIssuerId = Objects.requireNonNull(ctx.queryParam("cri"));
                 var authorizationCode =
-                        Objects.requireNonNull(request.queryParams("authorization_code"));
+                        Objects.requireNonNull(ctx.queryParam("authorization_code"));
 
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 TokenRequest tokenRequest =
                         handlerHelper.createTokenRequest(
                                 new AuthorizationCode(authorizationCode), credentialIssuer);
-                return tokenRequest.toHTTPRequest().getQuery();
+                ctx.result(tokenRequest.toHTTPRequest().getQuery());
             };
 
-    public Route editPostcode =
-            (Request request, Response response) -> {
+    public Handler editPostcode =
+            ctx -> {
                 LOGGER.info("editPostcode Start");
-                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
-                return ViewHelper.render(
-                        Map.of("cri", credentialIssuerId), "edit-postcode.mustache");
+                var credentialIssuerId = Objects.requireNonNull(ctx.queryParam("cri"));
+                ctx.render(
+                        "edit-postcode.mustache", Map.of("cri", credentialIssuerId));
             };
 
-    public Route evidenceRequest =
-            (Request request, Response response) -> {
+    public Handler evidenceRequest =
+            ctx -> {
                 LOGGER.info("checkEvidence Requested Start");
-                var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
-                return ViewHelper.render(
-                        Map.of("cri", credentialIssuerId), "evidence-request.mustache");
+                var credentialIssuerId = Objects.requireNonNull(ctx.queryParam("cri"));
+                ctx.render(
+                        "evidence-request.mustache", Map.of("cri", credentialIssuerId));
             };
 
     private String createBackendSessionRequestJSONReply(AuthorizationRequest authorizationRequest) {
@@ -583,7 +574,7 @@ public class CoreStubHandler {
     }
 
     private static void saveEvidenceRequestToSessionIfPresent(
-            Request request, String strengthScore, String scoringPolicy, String verificationScore) {
+            Context ctx, String strengthScore, String scoringPolicy, String verificationScore) {
         if (Objects.nonNull(strengthScore)
                 && Objects.nonNull(scoringPolicy)
                 && Objects.nonNull(verificationScore)) {
@@ -593,7 +584,7 @@ public class CoreStubHandler {
                             Integer.parseInt(strengthScore),
                             Integer.parseInt(verificationScore));
             LOGGER.info("✅  Saving evidence request to session to {}", evidenceRequest);
-            request.session().attribute("evidence_request", evidenceRequest);
+            ctx.sessionAttribute("evidence_request", evidenceRequest);
         }
     }
 }
