@@ -1,6 +1,0 @@
-Dockerfile*
-.dockerignore
-README.md
-*.sh
-.idea
-.vscode
