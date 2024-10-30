@@ -16,6 +16,11 @@ public class OrchestratorConfig {
                     "ORCHESTRATOR_SIGNING_JWK",
                     // This is a test key used for local development
                     "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
+    public static final String AUTH_SIGNING_JWK =
+            getConfigValue(
+                    "AUTH_SIGNING_JWK",
+                    // This is a test key used for local development
+                    "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
     public static final String ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK =
             getConfigValue(
                     "ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK",
@@ -62,9 +67,9 @@ public class OrchestratorConfig {
                     "https://mock.credential-store.build.account.gov.uk/generate");
     public static final String EVCS_ACCESS_TOKEN_TTL =
             getConfigValue("EVCS_ACCESS_TOKEN_TTL", "60");
-    public static final String EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK =
+    public static final String EVCS_ACCESS_TOKEN_SIGNING_JWK =
             getConfigValue(
-                    "EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK",
+                    "EVCS_ACCESS_TOKEN_SIGNING_JWK",
                     // This is a test key used for local development
                     "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
 
