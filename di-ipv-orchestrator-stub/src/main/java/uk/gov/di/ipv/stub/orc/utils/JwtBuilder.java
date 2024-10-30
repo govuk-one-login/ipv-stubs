@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.AUTH_CLIENT_ID;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.AUTH_SIGNING_JWK;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.IPV_CORE_AUDIENCE;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
@@ -56,10 +56,10 @@ public class JwtBuilder {
     public static final String INVALID_INHERITED_ID = "invalid-jwt";
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtBuilder.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final JWSHeader ORCH_JWS_HEADER = createHeader(ORCHESTRATOR_CLIENT_ID);
-    private static final JWSHeader AUTH_JWS_HEADER = createHeader(AUTH_CLIENT_ID);
-
-    private static final JWSSigner SIGNER = createSigner();
+    private static final JWSHeader ORCH_JWS_HEADER = createHeader(ORCHESTRATOR_SIGNING_JWK);
+    private static final JWSHeader AUTH_JWS_HEADER = createHeader(AUTH_SIGNING_JWK);
+    private static final JWSSigner ORCH_SIGNER = createSigner(ORCHESTRATOR_SIGNING_JWK);
+    private static final JWSSigner AUTH_SIGNER = createSigner(AUTH_SIGNING_JWK);
 
     public enum ReproveIdentityClaimValue {
         NOT_PRESENT,
@@ -149,8 +149,8 @@ public class JwtBuilder {
 
     public static SignedJWT createSignedJwt(JWTClaimsSet claims, boolean isAuth)
             throws JOSEException, NoSuchAlgorithmException, InvalidKeySpecException {
-        SignedJWT signedJwt = new SignedJWT(isAuth ? AUTH_JWS_HEADER : ORCH_JWS_HEADER, claims);
-        signedJwt.sign(SIGNER);
+        var signedJwt = new SignedJWT(isAuth ? AUTH_JWS_HEADER : ORCH_JWS_HEADER, claims);
+        signedJwt.sign(isAuth ? AUTH_SIGNER : ORCH_SIGNER);
         return signedJwt;
     }
 
@@ -191,20 +191,20 @@ public class JwtBuilder {
         return Date.from(now.plus(Long.parseLong(ORCHESTRATOR_CLIENT_JWT_TTL), ChronoUnit.SECONDS));
     }
 
-    private static JWSHeader createHeader(String componentIdentifier) {
+    private static JWSHeader createHeader(String keyMaterial) {
         try {
             return new JWSHeader.Builder(JWSAlgorithm.ES256)
                     .type(JOSEObjectType.JWT)
-                    .keyID(KeyIdGenerator.generate(ORCHESTRATOR_SIGNING_JWK, componentIdentifier))
+                    .keyID(ECKey.parse(keyMaterial).getKeyID())
                     .build();
-        } catch (ParseException | JOSEException e) {
+        } catch (ParseException e) {
             throw new JWSCreationException(e);
         }
     }
 
-    private static JWSSigner createSigner() {
+    private static JWSSigner createSigner(String keyMaterial) {
         try {
-            return new ECDSASigner(ECKey.parse(ORCHESTRATOR_SIGNING_JWK));
+            return new ECDSASigner(ECKey.parse(keyMaterial));
         } catch (JOSEException | ParseException e) {
             LOGGER.error("Failed to create JWT signer");
             throw new JWSCreationException(e);

@@ -100,12 +100,9 @@ public class InheritedIdentityJwtBuilder {
         try {
             return new JWSHeader.Builder(JWSAlgorithm.ES256)
                     .type(JOSEObjectType.JWT)
-                    .keyID(
-                            KeyIdGenerator.generate(
-                                    INHERITED_IDENTITY_JWT_SIGNING_JWK,
-                                    INHERITED_IDENTITY_JWT_ISSUER))
+                    .keyID(ECKey.parse(INHERITED_IDENTITY_JWT_SIGNING_JWK).getKeyID())
                     .build();
-        } catch (ParseException | JOSEException e) {
+        } catch (ParseException e) {
             throw new JWSCreationException(e);
         }
     }
