@@ -15,17 +15,18 @@ public class OrchestratorConfig {
             getConfigValue(
                     "ORCHESTRATOR_SIGNING_JWK",
                     // This is a test key used for local development
-                    "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
+                    "{\"kty\":\"EC\",\"kid\":\"orch-signing-default-FI4xysvMVdRtkt6xmO5gqcaTF4Tf9NKD1zdg3T8y69M\",\"use\":\"sig\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
     public static final String AUTH_SIGNING_JWK =
             getConfigValue(
                     "AUTH_SIGNING_JWK",
                     // This is a test key used for local development
-                    "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
+                    "{\"kty\":\"EC\",\"kid\":\"auth-signing-default-FI4xysvMVdRtkt6xmO5gqcaTF4Tf9NKD1zdg3T8y69M\",\"use\":\"sig\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
     public static final String ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK =
             getConfigValue(
                     "ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK",
-                    // This is a test key used for local development
-                    "{\"kty\":\"RSA\",\"e\":\"AQAB\",\"n\":\"nel7ibmSTaXWhwEAdqKTiEVcxsYgv6CdXaz90aVN7IorlaCeNj0j06OsA4zdmWEjj21wEZULsxPoZo5N_tsQ7NtOnOkcnDc-g_Nbpt0jelzJSbFRkx3kwXy8YIYKR_myNbiHNTTc7S6GkQRg0N1MPWtzoEKYJs41AN4onrsvUzgpCypWwPy2-ppsaDvms_11YA7A7x3zHj9oKCPJ_uk_0MV3vZAxCxbiPb9ABGWcoGQ5QKGfv40ylBsEdOhE3w-3SAAQIrrHyMRGGiPxcNO161XVL-lOnYt93FgEe16LgpfE22UdENfHnG0UQaTgph1Dm24oqn7qpPTY2DfER5HCKQ\"}"); // pragma: allowlist secret
+                    // This is a test key used for local development - it's from the core build
+                    // environment
+                    "{\"kty\":\"RSA\",\"kid\":\"1b5d35fb351ad12f1d34cf10d2a7c080990d3ac39bae6dcec3e2ff2ee45d6550\",\"use\":\"enc\",\"e\":\"AQAB\",\"n\":\"nel7ibmSTaXWhwEAdqKTiEVcxsYgv6CdXaz90aVN7IorlaCeNj0j06OsA4zdmWEjj21wEZULsxPoZo5N_tsQ7NtOnOkcnDc-g_Nbpt0jelzJSbFRkx3kwXy8YIYKR_myNbiHNTTc7S6GkQRg0N1MPWtzoEKYJs41AN4onrsvUzgpCypWwPy2-ppsaDvms_11YA7A7x3zHj9oKCPJ_uk_0MV3vZAxCxbiPb9ABGWcoGQ5QKGfv40ylBsEdOhE3w-3SAAQIrrHyMRGGiPxcNO161XVL-lOnYt93FgEe16LgpfE22UdENfHnG0UQaTgph1Dm24oqn7qpPTY2DfER5HCKQ\"}"); // pragma: allowlist secret
     public static final String ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK =
             getConfigValue(
                     "ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK", "missing-build-encryption-key");
@@ -52,7 +53,7 @@ public class OrchestratorConfig {
             getConfigValue(
                     "INHERITED_IDENTITY_JWT_SIGNING_JWK",
                     // This is a test key used for local development
-                    "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
+                    "{\"kty\":\"EC\",\"kid\":\"inherited-identity-signing-default-FI4xysvMVdRtkt6xmO5gqcaTF4Tf9NKD1zdg3T8y69M\",\"use\":\"sig\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
     public static final String INHERITED_IDENTITY_JWT_ISSUER =
             getConfigValue(
                     "INHERITED_IDENTITY_JWT_ISSUER",
@@ -71,7 +72,7 @@ public class OrchestratorConfig {
             getConfigValue(
                     "EVCS_ACCESS_TOKEN_SIGNING_JWK",
                     // This is a test key used for local development
-                    "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
+                    "{\"kty\":\"EC\",\"kid\":\"evcs-token-signing-default-FI4xysvMVdRtkt6xmO5gqcaTF4Tf9NKD1zdg3T8y69M\",\"use\":\"sig\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
 
     private static String getConfigValue(String key) {
         return getConfigValue(key, null);
