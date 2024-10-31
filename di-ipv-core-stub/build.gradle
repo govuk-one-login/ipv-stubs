@@ -26,7 +26,7 @@ dependencies {
 			"org.eclipse.jetty:jetty-server:9.4.55.v20240627", // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
 			"org.eclipse.jetty:jetty-webapp:9.4.55.v20240627" // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/26
 
-	testImplementation "org.junit.jupiter:junit-jupiter:5.10.3"
+	testImplementation "org.junit.jupiter:junit-jupiter:5.11.3"
 }
 
 run {
