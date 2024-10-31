@@ -24,11 +24,7 @@ public class JwksHandlerTest {
 
     @SystemStub
     private static final EnvironmentVariables ENVIRONMENT_VARIABLES =
-            new EnvironmentVariables(
-                    "PRIVATE_ENCRYPTION_KEY_JWK",
-                    RSA_PRIVATE_KEY_JWK,
-                    "VC_ISSUER",
-                    "a-component-id-to-use-as-a-key-id-prefix");
+            new EnvironmentVariables("PRIVATE_ENCRYPTION_KEY_JWK", RSA_PRIVATE_KEY_JWK);
 
     @Mock Context mockContext;
     @Captor ArgumentCaptor<Map<String, Object>> jsonObjectCaptor;
@@ -46,7 +42,7 @@ public class JwksHandlerTest {
         assertEquals("enc", keys.get(0).get("use"));
         assertTrue(keys.get(0).get("n").startsWith("wFrd"));
         assertEquals(
-                "a-component-id-to-use-as-a-key-id-prefix-hHgevr-0hbkWqJ5LBLyamKO3_Sag2qjj5z12Kdmmcnw", // pragma: allowlist secret
+                "a-key-identifier", // pragma: allowlist secret
                 keys.get(0).get("kid"));
     }
 }
