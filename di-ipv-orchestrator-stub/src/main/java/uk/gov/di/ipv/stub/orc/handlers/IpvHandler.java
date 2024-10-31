@@ -192,7 +192,7 @@ public class IpvHandler {
                             evcsAccessTokenGenerator.getAccessToken(environment, userId));
         }
 
-        SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims);
+        SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims, isMfaReset);
         EncryptedJWT encryptedJwt = JwtBuilder.encryptJwt(signedJwt, environment);
         var authRequest =
                 new AuthorizationRequest.Builder(
@@ -237,13 +237,13 @@ public class IpvHandler {
 
     public void doCallback(Context ctx) {
         String targetBackend = ctx.cookie(ENVIRONMENT_COOKIE);
+        var state = ctx.queryParam("state");
+        var isAuthStub = AUTH_STUB_STATE.toString().equals(state);
 
         try {
             var authorizationCode = getAuthorizationCode(ctx);
 
-            var accessToken = exchangeCodeForToken(authorizationCode, targetBackend);
-
-            var state = ctx.queryParam("state");
+            var accessToken = exchangeCodeForToken(authorizationCode, targetBackend, isAuthStub);
 
             if (ORCHESTRATOR_STUB_STATE.toString().equals(state)) {
                 var userInfo = getUserInfo(accessToken, targetBackend, USER_IDENTITY_PATH);
@@ -253,7 +253,7 @@ public class IpvHandler {
                 ctx.render(
                         "templates/user-info.mustache",
                         Map.of("rawUserInfo", userInfoJson, "data", mustacheData));
-            } else if (AUTH_STUB_STATE.toString().equals(state)) {
+            } else if (isAuthStub) {
                 var reverificationResult =
                         getUserInfo(accessToken, targetBackend, REVERIFICATION_PATH);
                 var reverificationResultJson =
@@ -314,7 +314,7 @@ public class IpvHandler {
     }
 
     private AccessToken exchangeCodeForToken(
-            AuthorizationCode authorizationCode, String targetEnvironment)
+            AuthorizationCode authorizationCode, String targetEnvironment, boolean isAuthStub)
             throws OrchestratorStubException, URISyntaxException {
         URI resolve = getIpvBackchannelEndpoint(targetEnvironment).resolve(TOKEN_PATH);
         LOGGER.debug("token url is " + resolve);
@@ -323,7 +323,7 @@ public class IpvHandler {
 
         try {
             JWTClaimsSet claims = buildClientAuthenticationClaims(targetEnvironment);
-            signedClientJwt = JwtBuilder.createSignedJwt(claims);
+            signedClientJwt = JwtBuilder.createSignedJwt(claims, isAuthStub);
         } catch (JOSEException | InvalidKeySpecException | NoSuchAlgorithmException e) {
             LOGGER.error("Failed to generate orch client JWT", e);
             throw new OrchestratorStubException("Failed to generate orch client JWT");
