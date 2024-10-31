@@ -6,17 +6,14 @@ import uk.gov.di.ipv.stub.orc.config.OrchestratorConfig;
 import uk.gov.di.ipv.stub.orc.handlers.BasicAuthHandler;
 import uk.gov.di.ipv.stub.orc.handlers.HomeHandler;
 import uk.gov.di.ipv.stub.orc.handlers.IpvHandler;
-import uk.gov.di.ipv.stub.orc.handlers.JwksHandler;
 import uk.gov.di.ipv.stub.orc.utils.EvcsAccessTokenGenerator;
 
 public class Orchestrator {
 
     private final IpvHandler ipvHandler;
-    private final JwksHandler jwksHandler;
 
     public Orchestrator() {
         ipvHandler = new IpvHandler(new EvcsAccessTokenGenerator());
-        jwksHandler = new JwksHandler();
 
         var app =
                 Javalin.create(
@@ -38,7 +35,6 @@ public class Orchestrator {
         app.get("/authorize", ipvHandler::doAuthorize);
         app.get("/authorize-error", ipvHandler::doAuthorizeError);
         app.get("/callback", ipvHandler::doCallback);
-        app.get("/.well-known/jwks.json", jwksHandler::getResource);
 
         app.error(
                 500,
