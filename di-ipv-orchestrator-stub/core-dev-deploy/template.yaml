@@ -460,8 +460,6 @@ Resources:
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_PORT}}'
             - Name: ORCHESTRATOR_SIGNING_JWK
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_SIGNING_JWK}}'
-            - Name: AUTH_SIGNING_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/AUTH_SIGNING_JWK}}'
             - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK}}'
             - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK
@@ -503,8 +501,8 @@ Resources:
               Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_ENDPOINT}}'
             - Name: EVCS_ACCESS_TOKEN_TTL
               Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_TTL}}'
-            - Name: EVCS_ACCESS_TOKEN_SIGNING_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_SIGNING_JWK}}'
+            - Name: EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK
+              Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK}}'
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp

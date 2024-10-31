@@ -25,7 +25,7 @@ import java.text.ParseException;
 import java.util.List;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.EVCS_ACCESS_TOKEN_ENDPOINT;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.EVCS_ACCESS_TOKEN_SIGNING_JWK;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.EVCS_ACCESS_TOKEN_TTL;
 
 public class EvcsAccessTokenGenerator {
@@ -105,8 +105,8 @@ public class EvcsAccessTokenGenerator {
 
     private ECDSASigner createJwtSigner() {
         try {
-            LOGGER.info(EVCS_ACCESS_TOKEN_SIGNING_JWK);
-            return new ECDSASigner(ECKey.parse(EVCS_ACCESS_TOKEN_SIGNING_JWK).toECPrivateKey());
+            LOGGER.info(EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK);
+            return new ECDSASigner(ECKey.parse(EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK).toECPrivateKey());
         } catch (ParseException | JOSEException e) {
             LOGGER.error("Failed to create jwt signer");
             throw new JWSCreationException(e);
