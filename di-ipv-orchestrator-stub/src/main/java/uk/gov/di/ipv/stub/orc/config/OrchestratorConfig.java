@@ -11,11 +11,11 @@ public class OrchestratorConfig {
             getConfigValue("ORCHESTRATOR_CLIENT_ID", "orchestrator");
     public static final String ORCHESTRATOR_REDIRECT_URL =
             getConfigValue("ORCHESTRATOR_REDIRECT_URL", "http://localhost:4500/callback");
-    public static final String ORCHESTRATOR_SIGNING_KEY_JWK =
+    public static final String ORCHESTRATOR_CLIENT_SIGNING_KEY =
             getConfigValue(
-                    "ORCHESTRATOR_SIGNING_KEY_JWK",
+                    "ORCHESTRATOR_CLIENT_SIGNING_KEY",
                     // This is a test key used for local development
-                    "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
+                    "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO"); // pragma: allowlist secret
     public static final String ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY =
             getConfigValue(
                     "ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY",
@@ -43,11 +43,11 @@ public class OrchestratorConfig {
     public static final String BASIC_AUTH_PASSWORD =
             getConfigValue("ORCHESTRATOR_BASIC_AUTH_PASSWORD");
 
-    public static final String INHERITED_IDENTITY_JWT_SIGNING_KEY_JWK =
+    public static final String INHERITED_IDENTITY_JWT_SIGNING_KEY =
             getConfigValue(
-                    "INHERITED_IDENTITY_JWT_SIGNING_KEY_JWK",
+                    "INHERITED_IDENTITY_JWT_SIGNING_KEY",
                     // This is a test key used for local development
-                    "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
+                    "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO"); // pragma: allowlist secret
     public static final String INHERITED_IDENTITY_JWT_ISSUER =
             getConfigValue(
                     "INHERITED_IDENTITY_JWT_ISSUER",
