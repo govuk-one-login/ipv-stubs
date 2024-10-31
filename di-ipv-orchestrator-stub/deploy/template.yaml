@@ -512,8 +512,6 @@ Resources:
               Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_TTL}}'
             - Name: EVCS_ACCESS_TOKEN_SIGNING_JWK
               Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_SIGNING_JWK}}'
-            - Name: NOOP
-              Value: 'None'
           Secrets:
             - Name: DT_TENANT
               ValueFrom: !Join
