@@ -14,7 +14,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import uk.gov.di.ipv.stub.orc.exceptions.JWSCreationException;
+import uk.gov.di.ipv.stub.orc.exceptions.SignerCreationException;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_ISSUER;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_SIGNING_JWK;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_SIGNING_KEY_JWK;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_TTL;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.INHERITED_IDENTITY_JWT_VTM;
 
@@ -47,7 +47,8 @@ public class InheritedIdentityJwtBuilder {
     private static final String JWT_ID = "jti";
     private static final String JTI_SCHEME_AND_PATH_PREFIX = "urn:uuid";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final JWSHeader JWS_HEADER = createHeader();
+    private static final JWSHeader JWS_HEADER =
+            new JWSHeader.Builder(JWSAlgorithm.ES256).type(JOSEObjectType.JWT).build();
     private static final JWSSigner SIGNER = createSigner();
 
     public static SignedJWT generate(
@@ -96,26 +97,12 @@ public class InheritedIdentityJwtBuilder {
         return signedJwt;
     }
 
-    private static JWSHeader createHeader() {
-        try {
-            return new JWSHeader.Builder(JWSAlgorithm.ES256)
-                    .type(JOSEObjectType.JWT)
-                    .keyID(
-                            KeyIdGenerator.generate(
-                                    INHERITED_IDENTITY_JWT_SIGNING_JWK,
-                                    INHERITED_IDENTITY_JWT_ISSUER))
-                    .build();
-        } catch (ParseException | JOSEException e) {
-            throw new JWSCreationException(e);
-        }
-    }
-
     private static ECDSASigner createSigner() {
         try {
-            return new ECDSASigner(ECKey.parse(INHERITED_IDENTITY_JWT_SIGNING_JWK));
+            return new ECDSASigner(ECKey.parse(INHERITED_IDENTITY_JWT_SIGNING_KEY_JWK));
         } catch (JOSEException | ParseException e) {
             LOGGER.error("Failed to create inherited identity signer");
-            throw new JWSCreationException(e);
+            throw new SignerCreationException(e);
         }
     }
 }

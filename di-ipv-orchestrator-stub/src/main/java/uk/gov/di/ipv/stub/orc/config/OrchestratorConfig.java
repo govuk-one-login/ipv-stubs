@@ -11,26 +11,26 @@ public class OrchestratorConfig {
             getConfigValue("ORCHESTRATOR_CLIENT_ID", "orchestrator");
     public static final String ORCHESTRATOR_REDIRECT_URL =
             getConfigValue("ORCHESTRATOR_REDIRECT_URL", "http://localhost:4500/callback");
-    public static final String ORCHESTRATOR_SIGNING_JWK =
+    public static final String ORCHESTRATOR_SIGNING_KEY_JWK =
             getConfigValue(
-                    "ORCHESTRATOR_SIGNING_JWK",
+                    "ORCHESTRATOR_SIGNING_KEY_JWK",
                     // This is a test key used for local development
                     "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
-    public static final String ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK =
+    public static final String ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY =
             getConfigValue(
-                    "ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK",
+                    "ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY",
                     // This is a test key used for local development
-                    "{\"kty\":\"RSA\",\"e\":\"AQAB\",\"n\":\"nel7ibmSTaXWhwEAdqKTiEVcxsYgv6CdXaz90aVN7IorlaCeNj0j06OsA4zdmWEjj21wEZULsxPoZo5N_tsQ7NtOnOkcnDc-g_Nbpt0jelzJSbFRkx3kwXy8YIYKR_myNbiHNTTc7S6GkQRg0N1MPWtzoEKYJs41AN4onrsvUzgpCypWwPy2-ppsaDvms_11YA7A7x3zHj9oKCPJ_uk_0MV3vZAxCxbiPb9ABGWcoGQ5QKGfv40ylBsEdOhE3w-3SAAQIrrHyMRGGiPxcNO161XVL-lOnYt93FgEe16LgpfE22UdENfHnG0UQaTgph1Dm24oqn7qpPTY2DfER5HCKQ\"}"); // pragma: allowlist secret
-    public static final String ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK =
+                    "eyJrdHkiOiAiUlNBIiwibiI6ICIwNDY1cUp3bzhuQ2tDMnR2VjRuaXVXRjZJTTZwTmptZVlzemhUd0hQWTYwOS1IVkF0TzhQb1JMVXlBODZyelEtUXpiVDdYeGJ6Q2pmeVJYb1JGT0dsZVpxVHV3bGMyNWV6RHhWNThiaGVjUGlXRk1hRllPUzFXN3pJRHNWRm8zN2dqanZ0a2NENk9xSzhQS0F2Nm41dFVwaGpEQ2Nubm1wVE1JeUdBbnptUUNiU2tKV3U2Vl9nYzN0aXJBdWdYb1p1a01Db2h4dzNfLWM2cHJoTU4wc21ETnYwcVdtdmEzb3Fva2FiZVB3ZTFPUzcyRFh5WFItVFBkX0R0ejQtdFJyOWp2WndIdWxYNFpjczFCQmJqQnBJaW0zV05ZOGFzdjl5amxCeGtkdC1uY2toQ01aZWtQdVQ3eFdTVHJ2Y2NCX2ZublNVZ0VRV181aXJMTmRucjVNV1EiLCJlIjogIkFRQUIiLCJhbGciOiAiUlMyNTYifQ=="); // pragma: allowlist secret
+    public static final String ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY =
             getConfigValue(
-                    "ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK", "missing-build-encryption-key");
-    public static final String ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK =
+                    "ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY", "missing-build-encryption-key");
+    public static final String ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY =
             getConfigValue(
-                    "ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK",
+                    "ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY",
                     "missing-staging-encryption-key");
-    public static final String ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_JWK =
+    public static final String ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY =
             getConfigValue(
-                    "ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_JWK",
+                    "ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY",
                     "missing-integration-encryption-key");
     public static final String ORCHESTRATOR_CLIENT_JWT_TTL =
             getConfigValue("ORCHESTRATOR_CLIENT_JWT_TTL", "900");
@@ -43,9 +43,9 @@ public class OrchestratorConfig {
     public static final String BASIC_AUTH_PASSWORD =
             getConfigValue("ORCHESTRATOR_BASIC_AUTH_PASSWORD");
 
-    public static final String INHERITED_IDENTITY_JWT_SIGNING_JWK =
+    public static final String INHERITED_IDENTITY_JWT_SIGNING_KEY_JWK =
             getConfigValue(
-                    "INHERITED_IDENTITY_JWT_SIGNING_JWK",
+                    "INHERITED_IDENTITY_JWT_SIGNING_KEY_JWK",
                     // This is a test key used for local development
                     "{\"kty\":\"EC\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
     public static final String INHERITED_IDENTITY_JWT_ISSUER =
