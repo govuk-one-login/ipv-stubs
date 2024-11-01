@@ -474,18 +474,16 @@ Resources:
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_CLIENT_JWT_TTL}}'
             - Name: ORCHESTRATOR_PORT
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_PORT}}'
-            - Name: ORCHESTRATOR_SIGNING_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_SIGNING_JWK}}'
-            - Name: AUTH_SIGNING_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/AUTH_SIGNING_JWK}}'
-            - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK}}'
-            - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK}}'
-            - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK}}'
-            - Name: ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_JWK}}'
+            - Name: ORCHESTRATOR_CLIENT_SIGNING_KEY
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_CLIENT_SIGNING_KEY}}'
+            - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_KEY}}'
+            - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_KEY}}'
+            - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_KEY}}'
+            - Name: ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_KEY}}'
             - Name: IPV_BACKCHANNEL_ENDPOINT
               Value: '{{resolve:ssm:/stubs/orch/env/IPV_BACKCHANNEL_ENDPOINT}}'
             - Name: IPV_ENDPOINT
@@ -498,8 +496,8 @@ Resources:
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME}}'
             - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSWORD}}'
-            - Name: INHERITED_IDENTITY_JWT_SIGNING_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_SIGNING_JWK}}'
+            - Name: INHERITED_IDENTITY_JWT_SIGNING_KEY
+              Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_SIGNING_KEY}}'
             - Name: INHERITED_IDENTITY_JWT_TTL
               Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_TTL}}'
             - Name: INHERITED_IDENTITY_JWT_ISSUER
@@ -510,10 +508,8 @@ Resources:
               Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_ENDPOINT}}'
             - Name: EVCS_ACCESS_TOKEN_TTL
               Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_TTL}}'
-            - Name: EVCS_ACCESS_TOKEN_SIGNING_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_SIGNING_JWK}}'
-            - Name: NOOP
-              Value: 'None'
+            - Name: EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK
+              Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_SIGNING_KEY_JWK}}'
           Secrets:
             - Name: DT_TENANT
               ValueFrom: !Join
