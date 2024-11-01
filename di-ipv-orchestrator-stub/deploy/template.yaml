@@ -8,7 +8,6 @@ Globals:
 Description: >-
   This creates the necessary components to deploy IPV Orch Stub onto ECS
   Fargate within the dev platform VPC and private subnets (provided as parameters)
-
 Parameters:
   Environment:
     Description: The name of the environment to deploy to.
@@ -367,19 +366,14 @@ Resources:
     Type: "AWS::ECS::Service"
     Properties:
       Cluster: !Ref OrchStubCluster
-      DeploymentConfiguration: !If
-        - IsNotDevelopment
-        - !Ref AWS::NoValue
-        - MaximumPercent: 200
-          MinimumHealthyPercent: 50
-          DeploymentCircuitBreaker:
-            Enable: true
-            Rollback: true
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
       DeploymentController:
-        Type: !If
-          - IsNotDevelopment
-          - CODE_DEPLOY
-          - ECS
+        Type: ECS
       DesiredCount: !FindInMap
         - EnvironmentConfiguration
         - !Ref AWS::AccountId
@@ -399,10 +393,7 @@ Resources:
           Subnets:
             - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
             - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-      TaskDefinition: !If
-        - IsNotDevelopment
-        - !Ref AWS::NoValue
-        - !Ref ECSServiceTaskDefinition
+      TaskDefinition: !Ref ECSServiceTaskDefinition
     DependsOn:
       - LoadBalancerListener
 
