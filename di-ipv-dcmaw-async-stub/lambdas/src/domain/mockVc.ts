@@ -3,7 +3,7 @@ import {
   TestUser,
   DocumentType,
   EvidenceType,
-} from "./managementEnqueueVcRequest";
+} from "./managementEnqueueRequest";
 import getConfig from "../common/config";
 
 export async function buildMockVc(

@@ -110,6 +110,37 @@ paths:
             responseTemplates:
               application/json: '{"result": "success"}'
 
+  /management/enqueueError:
+    post:
+      description: Generates and pushes error onto queue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManagementEnqueueErrorRequestBody"
+      responses:
+        201:
+          description: "Success response"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagementEnqueueErrorFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 201
+            responseTemplates:
+              application/json: '{"result": "success"}'
+
 components:
   schemas:
     TokenRequestBody:
@@ -201,6 +232,25 @@ components:
         ci:
           type: array
           description: Optional array of CI codes
+        delay_seconds:
+          type: number
+          description: Optional number of seconds to delay delivery of the message (default=0)
+    ManagementEnqueueErrorRequestBody:
+      description: Request body for enqueueing an error
+      type: object
+      required:
+        - user_id
+        - error_code
+      properties:
+        user_id:
+          type: string
+          description: The id of a user that has an already-initialised session
+        error_code:
+          type: string
+          description: An error code for example 'access_denied'
+        error_description:
+          type: string
+          description: An optional error description
         delay_seconds:
           type: number
           description: Optional number of seconds to delay delivery of the message (default=0)

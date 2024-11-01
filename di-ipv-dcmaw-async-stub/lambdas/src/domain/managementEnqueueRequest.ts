@@ -7,6 +7,13 @@ export interface ManagementEnqueueVcRequest {
   delay_seconds?: number;
 }
 
+export interface ManagementEnqueueErrorRequest {
+  user_id: string;
+  error_code: string;
+  error_description?: string;
+  delay_seconds?: number;
+}
+
 export enum TestUser {
   kennethD = "kennethD",
 }

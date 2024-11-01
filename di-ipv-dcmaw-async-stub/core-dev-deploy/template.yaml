@@ -231,6 +231,66 @@ Resources:
         EntryPoints:
           - src/handlers/managementEnqueueVcHandler.ts
 
+# lambda to stub management DCMAW Async - enqueueError
+  ManagementEnqueueErrorFunction:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    # checkov:skip=CKV_AWS_173: doing it later
+    DependsOn:
+      - "ManagementEnqueueErrorFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "managementEnqueueError-${Environment}"
+      CodeUri: "../lambdas"
+      Handler: managementEnqueueErrorHandler.handler
+      Runtime: nodejs20.x
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          DCMAW_ASYNC_PARAM_BASE_PATH: "/stubs/core/dcmaw-async/"
+          DCMAW_ASYNC_STUB_USER_STATE_TABLE_NAME: !Ref DcmawAsyncStubUserStateTable
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt DcmawAsyncLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/dcmaw-async/*
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DcmawAsyncStubUserStateTable
+      AutoPublishAlias: live
+      Events:
+        GetDcmawAsyncVc:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /management/enqueueError
+            Method: POST
+    Metadata:
+      # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - src/handlers/managementEnqueueErrorHandler.ts
+
   GetDcmawAsyncVcFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -313,6 +373,13 @@ Resources:
     Properties:
       RetentionInDays: 14
       LogGroupName: !Sub "/aws/lambda/ManagementEnqueueVc-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  ManagementEnqueueErrorFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/ManagementEnqueueError-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   DcmawAsyncLambdaSecurityGroup:
