@@ -4,7 +4,7 @@ import { buildApiResponse } from "../common/apiResponse";
 import getErrorMessage from "../common/errorReporting";
 import { buildMockVc } from "../domain/mockVc";
 import { ManagementEnqueueVcRequest } from "../domain/managementEnqueueRequest";
-import { getState } from "../services/userStateService";
+import { popState } from "../services/userStateService";
 import getConfig from "../common/config";
 
 export async function handler(
@@ -38,7 +38,7 @@ export async function handler(
       .setProtectedHeader({ alg: "ES256", typ: "JWT" })
       .sign(signingKey);
 
-    const state = await getState(requestBody.user_id);
+    const state = await popState(requestBody.user_id);
 
     const queueMessage = {
       sub: requestBody.user_id,

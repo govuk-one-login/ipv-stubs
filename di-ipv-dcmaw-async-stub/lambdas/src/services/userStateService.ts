@@ -2,6 +2,7 @@ import {
   DynamoDB,
   GetItemInput,
   UpdateItemInput,
+  DeleteItemInput
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { getEnvironmentVariable } from "../common/config";
@@ -35,7 +36,8 @@ export async function persistState(
   await dynamoClient.updateItem(updateItemInput);
 }
 
-export async function getState(userId: string): Promise<string | null> {
+/** Gets state value and deletes record. */
+export async function popState(userId: string): Promise<string | null> {
   const getItemInput: GetItemInput = {
     TableName: userStateTableName,
     Key: marshall({ userId }),
@@ -45,5 +47,6 @@ export async function getState(userId: string): Promise<string | null> {
   if (userStateItem === null) {
     throw new Error(`No state record found for user id ${userId}`);
   }
+  await dynamoClient.deleteItem(getItemInput);
   return userStateItem.state;
 }
