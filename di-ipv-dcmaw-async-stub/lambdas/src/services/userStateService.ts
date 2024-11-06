@@ -2,7 +2,6 @@ import {
   DynamoDB,
   GetItemInput,
   UpdateItemInput,
-  DeleteItemInput
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { getEnvironmentVariable } from "../common/config";
