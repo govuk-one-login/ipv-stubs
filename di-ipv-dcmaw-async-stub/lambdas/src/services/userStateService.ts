@@ -25,12 +25,14 @@ export async function persistState(
   const updateItemInput: UpdateItemInput = {
     TableName: userStateTableName,
     Key: marshall({ userId }),
-    UpdateExpression: "set #state = :state",
+    UpdateExpression: "set #state = :state, #ttl = :ttl",
     ExpressionAttributeNames: {
       "#state": "state",
+      "#ttl": "ttl",
     },
     ExpressionAttributeValues: marshall({
       ":state": state,
+      ":ttl": Math.floor(Date.now() / 1000) + 3600, // epoch timestamp in seconds
     }),
   };
   await dynamoClient.updateItem(updateItemInput);
