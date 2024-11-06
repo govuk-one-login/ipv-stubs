@@ -582,6 +582,9 @@ Resources:
       KeySchema:
         - AttributeName: "userId"
           KeyType: "HASH"
+      TimeToLiveSpecification:
+        AttributeName: "ttl"
+        Enabled: true
       SSESpecification:
         SSEEnabled: true
         SSEType: KMS
