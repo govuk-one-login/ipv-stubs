@@ -8,6 +8,12 @@ interface SsmConfig {
   dummySecret: string;
   dummyAccessTokenValue: string;
   tokenLifetimeSeconds: number;
+  vcIssuer: string;
+  vcAudience: string;
+  vcSigningKey: string;
+  queueStubUrl: string;
+  queueStubApiKey: string;
+  queueName: string;
 }
 
 interface Config extends SsmConfig {
@@ -17,12 +23,13 @@ interface Config extends SsmConfig {
 async function getSsmConfig(basePath: string): Promise<SsmConfig> {
   const parameterPath = basePath + CONFIG_PARAMETER_NAME;
 
-  let configString
+  let configString;
   try {
     configString = await getParameter(parameterPath);
-  }
-  catch (error) {
-    throw new Error(`Error thrown getting parameter ${parameterPath}: ${getErrorMessage(error)}`);
+  } catch (error) {
+    throw new Error(
+      `Error thrown getting parameter ${parameterPath}: ${getErrorMessage(error)}`,
+    );
   }
 
   if (configString === undefined) {
@@ -32,7 +39,7 @@ async function getSsmConfig(basePath: string): Promise<SsmConfig> {
   return Promise.resolve(JSON.parse(configString) as SsmConfig);
 }
 
-function getEnvironmentVariable(variableName: string): string {
+export function getEnvironmentVariable(variableName: string): string {
   const variableValue = process.env[variableName];
   if (variableValue === undefined) {
     throw new Error(`Environment variable ${variableName} not set`);
@@ -51,5 +58,11 @@ export default async function getConfig(): Promise<Config> {
     dummyClientId: ssmConfig.dummyClientId,
     dummySecret: ssmConfig.dummySecret,
     tokenLifetimeSeconds: ssmConfig.tokenLifetimeSeconds,
+    vcIssuer: ssmConfig.vcIssuer,
+    vcAudience: ssmConfig.vcAudience,
+    vcSigningKey: ssmConfig.vcSigningKey,
+    queueStubUrl: ssmConfig.queueStubUrl,
+    queueStubApiKey: ssmConfig.queueStubApiKey,
+    queueName: ssmConfig.queueName,
   });
 }

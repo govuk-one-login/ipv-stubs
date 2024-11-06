@@ -1,6 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { buildApiResponse } from "../common/apiResponse";
-import { Buffer } from 'buffer';
+import { Buffer } from "buffer";
 import getConfig from "../common/config";
 import getErrorMessage from "../common/errorReporting";
 
@@ -10,15 +10,19 @@ export async function handler(
   try {
     const config = await getConfig();
 
-    const authorization = event?.headers?.Authorization || event?.headers?.authorization;
+    const authorization =
+      event?.headers?.Authorization || event?.headers?.authorization;
 
-    if (!authorization || !authorization.startsWith('Basic')) {
+    if (!authorization || !authorization.startsWith("Basic")) {
       return buildApiResponse({ errorMessage: "Invalid credentials" }, 401);
     }
 
-    const base64Credentials = authorization.split(' ')[1];
-    const decodedCredentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-    const [username, password] = decodedCredentials.split(':');
+    const base64Credentials = authorization.split(" ")[1];
+    const decodedCredentials = Buffer.from(
+      base64Credentials,
+      "base64",
+    ).toString("ascii");
+    const [username, password] = decodedCredentials.split(":");
     if (
       username === undefined ||
       password === undefined ||
