@@ -460,6 +460,8 @@ Resources:
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_PORT}}'
             - Name: ORCHESTRATOR_SIGNING_JWK
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_SIGNING_JWK}}'
+            - Name: AUTH_CLIENT_ID
+              Value: '{{resolve:ssm:/stubs/orch/env/AUTH_CLIENT_ID}}'
             - Name: AUTH_SIGNING_JWK
               Value: '{{resolve:ssm:/stubs/orch/env/AUTH_SIGNING_JWK}}'
             - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK
