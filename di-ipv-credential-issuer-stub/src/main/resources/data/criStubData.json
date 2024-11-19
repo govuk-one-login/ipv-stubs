@@ -1300,6 +1300,80 @@
     },
     {
       "criType": "Driving Licence (Stub)",
+      "label": "Alice Parker (Changed First Name) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Alison"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Parker"
+              }
+            ]
+          }
+        ],
+        "drivingPermit": [
+          {
+            "expiryDate": "2032-02-02",
+            "issuedBy": "DVLA",
+            "personalNumber": "PARKE710112PBFGA",
+            "issueDate": "2005-02-02"
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Alice Parker (Changed Last Name) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Alice"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Smith"
+              }
+            ]
+          }
+        ],
+        "drivingPermit": [
+          {
+            "expiryDate": "2032-02-02",
+            "issuedBy": "DVLA",
+            "personalNumber": "PARKE710112PBFGA",
+            "issueDate": "2005-02-02"
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
       "label": "Bob Parker (Valid) DVA Licence",
       "payload": {
         "name": [
