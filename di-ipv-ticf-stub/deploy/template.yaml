@@ -233,14 +233,14 @@ Resources:
     Type: AWS::Logs::LogGroup
     # checkov:skip=CKV_AWS_158: No need for customer managed keys for short lived logs
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/getTicfVC-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   ManageUserEvidenceFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/manageUserEvidence-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -445,7 +445,7 @@ Resources:
   RestApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 14
+      RetentionInDays: 30
       LogGroupName: !Sub "/aws/lambda/ticfRestApi-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
