@@ -24,7 +24,7 @@ dependencies {
 			"com.fasterxml.jackson.core:jackson-annotations:2.18.1",
 			"com.google.code.gson:gson:2.11.0",
 			"org.slf4j:slf4j-simple:2.0.16",
-			"software.amazon.awssdk:ssm:2.29.13"
+			"software.amazon.awssdk:ssm:2.29.21"
 
 	compileOnly 'org.projectlombok:lombok:1.18.34'
 	annotationProcessor 'org.projectlombok:lombok:1.18.34'
