@@ -1,7 +1,7 @@
 package uk.gov.di.ipv.stub.core.config.uatuser;
 
-import spark.QueryParamsMap;
-import spark.utils.StringUtils;
+import io.javalin.http.Context;
+import uk.gov.di.ipv.stub.core.utils.StringHelper;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -160,49 +160,49 @@ public class IdentityMapper {
                 .collect(toList());
     }
 
-    public Identity mapFormToIdentity(Identity identityOnRecord, QueryParamsMap formData) {
+    public Identity mapFormToIdentity(Identity identityOnRecord, Context ctx) {
         List<UKAddress> addresses = new ArrayList<>();
 
         LocalDate primaryAddressValidFrom =
-                getLocalDate(formData, "validFromYear", "validFromMonth", "validFromDay");
+                getLocalDate(ctx, "validFromYear", "validFromMonth", "validFromDay");
 
         LocalDate primaryAddressValidUntil =
-                getLocalDate(formData, "validUntilYear", "validUntilMonth", "validUntilDay");
+                getLocalDate(ctx, "validUntilYear", "validUntilMonth", "validUntilDay");
 
         UKAddress primaryAddress =
                 new UKAddress(
-                        formData.value("buildingNumber"),
-                        formData.value("buildingName"),
-                        formData.value("street"),
+                        ctx.queryParam("buildingNumber"),
+                        ctx.queryParam("buildingName"),
+                        ctx.queryParam("street"),
                         null,
-                        formData.value("townCity"),
-                        formData.value("postCode"),
+                        ctx.queryParam("townCity"),
+                        ctx.queryParam("postCode"),
                         primaryAddressValidFrom,
                         primaryAddressValidUntil);
         addresses.add(primaryAddress);
 
         LocalDate secondaryAddressValidFrom =
                 getLocalDate(
-                        formData,
+                        ctx,
                         "SecondaryUKAddress.validFromYear",
                         "SecondaryUKAddress.validFromMonth",
                         "SecondaryUKAddress.validFromDay");
 
         LocalDate secondaryAddressValidUntil =
                 getLocalDate(
-                        formData,
+                        ctx,
                         "SecondaryUKAddress.validUntilYear",
                         "SecondaryUKAddress.validUntilMonth",
                         "SecondaryUKAddress.validUntilDay");
 
         UKAddress secondaryAddress =
                 new UKAddress(
-                        formData.value("SecondaryUKAddress.buildingNumber"),
-                        formData.value("SecondaryUKAddress.buildingName"),
-                        formData.value("SecondaryUKAddress.street"),
+                        ctx.queryParam("SecondaryUKAddress.buildingNumber"),
+                        ctx.queryParam("SecondaryUKAddress.buildingName"),
+                        ctx.queryParam("SecondaryUKAddress.street"),
                         null,
-                        formData.value("SecondaryUKAddress.townCity"),
-                        formData.value("SecondaryUKAddress.postCode"),
+                        ctx.queryParam("SecondaryUKAddress.townCity"),
+                        ctx.queryParam("SecondaryUKAddress.postCode"),
                         secondaryAddressValidFrom,
                         secondaryAddressValidUntil);
         if (!Stream.of(
@@ -218,23 +218,23 @@ public class IdentityMapper {
                         secondaryAddress.validUntil() != null
                                 ? secondaryAddress.validUntil().toString()
                                 : null)
-                .allMatch(StringUtils::isBlank)) {
+                .allMatch(StringHelper::isBlank)) {
             addresses.add(secondaryAddress);
         }
 
         LocalDate dob =
-                getLocalDate(formData, "dateOfBirth-year", "dateOfBirth-month", "dateOfBirth-day");
+                getLocalDate(ctx, "dateOfBirth-year", "dateOfBirth-month", "dateOfBirth-day");
         Instant instant = dob.atStartOfDay(ZoneId.systemDefault()).toInstant();
         FindDateOfBirth findDateOfBirth =
                 new FindDateOfBirth(
                         instant, LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-        String enteredMiddleName = formData.value("middleName");
+        String enteredMiddleName = ctx.queryParam("middleName");
         String middleName = enteredMiddleName == null ? "" : enteredMiddleName;
 
         FullName fullName =
-                new FullName(formData.value("firstName"), middleName, formData.value("surname"));
-        String nino = formData.value("nationalInsuranceNumber");
+                new FullName(ctx.queryParam("firstName"), middleName, ctx.queryParam("surname"));
+        String nino = ctx.queryParam("nationalInsuranceNumber");
         return new Identity(
                 identityOnRecord.rowNumber(),
                 identityOnRecord.accountNumber(),
@@ -246,14 +246,14 @@ public class IdentityMapper {
                 nino);
     }
 
-    private LocalDate getLocalDate(QueryParamsMap userData, String year, String month, String day) {
-        if (!Stream.of(userData.value(year), userData.value(month), userData.value(day))
-                .allMatch(StringUtils::isBlank)) {
+    private LocalDate getLocalDate(Context ctx, String year, String month, String day) {
+        if (!Stream.of(ctx.queryParam(year), ctx.queryParam(month), ctx.queryParam(day))
+                .allMatch(StringHelper::isBlank)) {
 
             return LocalDate.of(
-                    Integer.parseInt(userData.value(year)),
-                    Integer.parseInt(userData.value(month)),
-                    Integer.parseInt(userData.value(day)));
+                    Integer.parseInt(ctx.queryParam(year)),
+                    Integer.parseInt(ctx.queryParam(month)),
+                    Integer.parseInt(ctx.queryParam(day)));
         }
         return null;
     }

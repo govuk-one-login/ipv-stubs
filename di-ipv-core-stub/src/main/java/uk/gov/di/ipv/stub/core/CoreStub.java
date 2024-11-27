@@ -1,15 +1,15 @@
 package uk.gov.di.ipv.stub.core;
 
 import com.nimbusds.jose.jwk.ECKey;
+import io.javalin.Javalin;
+import io.javalin.http.ExceptionHandler;
+import io.javalin.rendering.template.JavalinMustache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import spark.ExceptionHandler;
-import spark.Spark;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.handlers.BasicAuthHandler;
 import uk.gov.di.ipv.stub.core.handlers.CoreStubHandler;
 import uk.gov.di.ipv.stub.core.utils.HandlerHelper;
-import uk.gov.di.ipv.stub.core.utils.ViewHelper;
 
 import java.text.ParseException;
 import java.util.Base64;
@@ -22,34 +22,43 @@ public class CoreStub {
     public CoreStub() throws Exception {
         CoreStubConfig.initUATUsers();
         CoreStubConfig.initCRIS();
-        Spark.staticFileLocation("/public");
-        Spark.port(Integer.parseInt(CoreStubConfig.CORE_STUB_PORT));
-        initRoutes();
+
+        var app =
+                Javalin.create(
+                        config -> {
+                            config.staticFiles.add(
+                                    staticFiles -> staticFiles.directory = "/public");
+                            config.fileRenderer(new JavalinMustache());
+                        });
+
+        initRoutes(app);
+
+        app.start(Integer.parseInt(CoreStubConfig.CORE_STUB_PORT));
     }
 
-    private void initRoutes() throws Exception {
+    private void initRoutes(Javalin app) throws Exception {
         CoreStubHandler coreStubHandler = new CoreStubHandler(new HandlerHelper(getEcPrivateKey()));
         if (CoreStubConfig.ENABLE_BASIC_AUTH) {
             BasicAuthHandler basicAuthHandler = new BasicAuthHandler();
-            Spark.before(basicAuthHandler.authFilter);
+            app.before(basicAuthHandler.authFilter);
         }
-        Spark.get("/", coreStubHandler.serveHomePage);
-        Spark.get("/credential-issuers", coreStubHandler.showCredentialIssuer);
-        Spark.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
-        Spark.get("/edit-postcode", coreStubHandler.editPostcode);
-        Spark.get("/evidence-request", coreStubHandler.evidenceRequest);
-        Spark.get("/authorize", coreStubHandler.authorize);
-        Spark.get("/user-search", coreStubHandler.userSearch);
-        Spark.post("/user-search", coreStubHandler.sendRawSharedClaim);
-        Spark.get("/edit-user", coreStubHandler.editUser);
-        Spark.post("/edit-user", coreStubHandler.updateUser);
-        Spark.get("/callback", coreStubHandler.doCallback);
-        Spark.get("/answers", coreStubHandler.answers);
-        setupBackendRoutes(coreStubHandler);
-        Spark.exception(Exception.class, exceptionHandler());
+        app.get("/", coreStubHandler.serveHomePage);
+        app.get("/credential-issuers", coreStubHandler.showCredentialIssuer);
+        app.get("/credential-issuer", coreStubHandler.handleCredentialIssuerRequest);
+        app.get("/edit-postcode", coreStubHandler.editPostcode);
+        app.get("/evidence-request", coreStubHandler.evidenceRequest);
+        app.get("/authorize", coreStubHandler.authorize);
+        app.get("/user-search", coreStubHandler.userSearch);
+        app.post("/user-search", coreStubHandler.sendRawSharedClaim);
+        app.get("/edit-user", coreStubHandler.editUser);
+        app.post("/edit-user", coreStubHandler.updateUser);
+        app.get("/callback", coreStubHandler.doCallback);
+        app.get("/answers", coreStubHandler.answers);
+        setupBackendRoutes(app, coreStubHandler);
+        app.exception(Exception.class, exceptionHandler());
     }
 
-    private void setupBackendRoutes(CoreStubHandler coreStubHandler) {
+    private void setupBackendRoutes(Javalin app, CoreStubHandler coreStubHandler) {
         if (!CoreStubConfig.CORE_STUB_ENABLE_BACKEND_ROUTES) {
             LOGGER.info("BackendRoutes Disabled.");
             return;
@@ -57,23 +66,23 @@ public class CoreStub {
 
         LOGGER.warn("BackendRoutes Enabled.");
 
-        Spark.get(
+        app.get(
                 "/backend/generateInitialClaimsSet",
                 coreStubHandler.backendGenerateInitialClaimsSet);
-        Spark.post("/backend/createSessionRequest", coreStubHandler.createBackendSessionRequest);
-        Spark.get(
+        app.post("/backend/createSessionRequest", coreStubHandler.createBackendSessionRequest);
+        app.get(
                 "/backend/createTokenRequestPrivateKeyJWT",
                 coreStubHandler.createTokenRequestPrivateKeyJWT);
-        Spark.get(
+        app.get(
                 "/backend/generateInitialClaimsSetPostCode",
                 coreStubHandler.backendGenerateInitialClaimsSetPostCode);
     }
 
-    private ExceptionHandler exceptionHandler() {
-        return (e, req, res) -> {
+    private ExceptionHandler<Exception> exceptionHandler() {
+        return (e, ctx) -> {
             LOGGER.error(e.getMessage(), e);
-            res.status(500);
-            res.body(ViewHelper.render(Map.of("error", e.getMessage()), "error.mustache"));
+            ctx.status(500);
+            ctx.render("error.mustache", Map.of("error", e.getMessage()));
         };
     }
 

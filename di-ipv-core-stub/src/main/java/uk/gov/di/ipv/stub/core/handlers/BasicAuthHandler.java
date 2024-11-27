@@ -1,9 +1,8 @@
 package uk.gov.di.ipv.stub.core.handlers;
 
-import spark.Filter;
-import spark.Request;
-import spark.Response;
-import spark.Spark;
+import io.javalin.http.Handler;
+import io.javalin.http.Header;
+import io.javalin.http.UnauthorizedResponse;
 import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 
 import java.util.Base64;
@@ -17,19 +16,19 @@ public class BasicAuthHandler {
         CoreStubConfig.getUserAuth();
     }
 
-    public Filter authFilter =
-            (Request request, Response response) -> {
-                if (!request.headers().contains(AUTHORIZATION_HEADER) || !authenticated(request)) {
-                    response.header("WWW-Authenticate", AUTHORIZATION_TYPE);
-                    Spark.halt(401, "Not Authenticated");
+    public Handler authFilter =
+            ctx -> {
+                String authHeader = ctx.header(AUTHORIZATION_HEADER);
+                if (authHeader == null || !authenticated(authHeader)) {
+                    ctx.header(Header.WWW_AUTHENTICATE, AUTHORIZATION_TYPE);
+                    throw new UnauthorizedResponse();
                 }
             };
 
-    private Boolean authenticated(Request request) {
-        String authHeader = request.headers(AUTHORIZATION_HEADER);
+    private static Boolean authenticated(String authHeader) {
         int authTypeIndex = authHeader.indexOf(AUTHORIZATION_TYPE);
 
-        if (authHeader == null || authTypeIndex < 0) {
+        if (authTypeIndex < 0) {
             return false;
         }
 
@@ -37,8 +36,7 @@ public class BasicAuthHandler {
                 authHeader.substring(authTypeIndex + AUTHORIZATION_TYPE.length() + 1).trim();
         String[] submittedCredentials = extractCredentials(encodedHeader);
 
-        if (submittedCredentials != null
-                && submittedCredentials.length == NUMBER_OF_AUTHENTICATION_FIELDS) {
+        if (submittedCredentials.length == NUMBER_OF_AUTHENTICATION_FIELDS) {
             String submittedUsername = submittedCredentials[0];
             String submittedPassword = submittedCredentials[1];
             String username = CoreStubConfig.CORE_STUB_BASIC_AUTH.getUsername();
@@ -48,7 +46,7 @@ public class BasicAuthHandler {
         return false;
     }
 
-    private String[] extractCredentials(String encodedHeader) {
+    private static String[] extractCredentials(String encodedHeader) {
         String decodedHeader = new String(Base64.getDecoder().decode(encodedHeader));
         return decodedHeader.split(":");
     }

@@ -15,16 +15,15 @@ java {
 }
 
 dependencies {
-	implementation "com.sparkjava:spark-core:2.9.4",
-			"com.sparkjava:spark-template-mustache:2.7.1",
-			"com.nimbusds:oauth2-oidc-sdk:11.20.1",
+	implementation "com.nimbusds:oauth2-oidc-sdk:11.20.1",
 			"com.google.code.gson:gson:2.11.0",
 			"org.slf4j:slf4j-simple:2.0.16",
 			"org.yaml:snakeyaml:2.3",
 			"com.fasterxml.jackson.core:jackson-databind:2.18.1",
 			"com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.1",
-			"org.eclipse.jetty:jetty-server:9.4.56.v20240826", // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
-			"org.eclipse.jetty:jetty-webapp:9.4.55.v20240627" // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/26
+			"io.javalin:javalin:6.3.0",
+			"io.javalin:javalin-rendering:6.3.0",
+			"com.github.spullara.mustache.java:compiler:0.9.11"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.11.3"
 }
