@@ -156,6 +156,90 @@ class ValidatorTest {
     }
 
     @Test
+    void shouldReturnSuccessfulValidationOnValidDrivingLicenceEvidenceGpg() {
+        ValidationResult result =
+                Validator.verifyGpg45(
+                        CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE, "1", "3", "1", null, null);
+        assertTrue(result.isValid());
+    }
+
+    @Test
+    void shouldReturnFailedValidationIfInvalidNumberParamProvidedInDrivingLicenceEvidence() {
+        ValidationResult result =
+                Validator.verifyGpg45(
+                        CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE,
+                        "abc",
+                        "/&43",
+                        "as1",
+                        null,
+                        null);
+        assertFalse(result.isValid());
+        assertEquals(
+                "Invalid numbers provided for evidence strength, validity and activity",
+                result.getError().getDescription());
+    }
+
+    @Test
+    void shouldReturnFailedValidationIfScoresProvidedForInvalidCriTypeOnDrivingLicenceEvidence() {
+        ValidationResult result =
+                Validator.verifyGpg45(
+                        CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE, "1", "2", "1", "4", null);
+        assertFalse(result.isValid());
+        assertEquals("Invalid GPG45 score provided", result.getError().getDescription());
+    }
+
+    @Test
+    void shouldReturnSuccessfulValidationOnValidDocCheckAppEvidenceGpg() {
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.DOC_CHECK_APP_CRI_TYPE, "1", "3", "1", null, null);
+        assertTrue(result.isValid());
+    }
+
+    @Test
+    void shouldReturnFailedValidationIfInvalidNumberParamProvidedInDocCheckAppEvidence() {
+        ValidationResult result =
+                Validator.verifyGpg45(
+                        CriType.DOC_CHECK_APP_CRI_TYPE, "abc", "/&43", null, null, null);
+        assertFalse(result.isValid());
+        assertEquals(
+                "Invalid numbers provided for evidence strength, validity and activity",
+                result.getError().getDescription());
+    }
+
+    @Test
+    void shouldReturnFailedValidationIfScoresProvidedForInvalidCriTypeOnDocCheckAppEvidence() {
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.DOC_CHECK_APP_CRI_TYPE, "1", "2", "1", "4", null);
+        assertFalse(result.isValid());
+        assertEquals("Invalid GPG45 score provided", result.getError().getDescription());
+    }
+
+    @Test
+    void shouldReturnSuccessfulValidationOnValidF2fEvidenceGpg() {
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.F2F_CRI_TYPE, "1", "3", null, null, "1");
+        assertTrue(result.isValid());
+    }
+
+    @Test
+    void shouldReturnFailedValidationIfInvalidNumberParamProvidedInF2fEvidence() {
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.F2F_CRI_TYPE, "abc", "/&43", null, null, null);
+        assertFalse(result.isValid());
+        assertEquals(
+                "Invalid numbers provided for evidence strength, validity and verification",
+                result.getError().getDescription());
+    }
+
+    @Test
+    void shouldReturnFailedValidationIfScoresProvidedForInvalidCriTypeOnF2fEvidence() {
+        ValidationResult result =
+                Validator.verifyGpg45(CriType.F2F_CRI_TYPE, "1", "2", null, "4", "1");
+        assertFalse(result.isValid());
+        assertEquals("Invalid GPG45 score provided", result.getError().getDescription());
+    }
+
+    @Test
     void redirectUrlIsInvalidShouldReturnFalseForValidUrlWithOnlyOneRegistered() {
         assertFalse(Validator.redirectUrlIsInvalid("clientIdValid", "https://valid.example.com"));
     }
