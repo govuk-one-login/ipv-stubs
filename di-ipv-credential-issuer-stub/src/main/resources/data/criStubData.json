@@ -187,6 +187,21 @@
     },
     {
       "criType": "Address (Stub)",
+      "label": "Claire Aarts (DWP)",
+      "payload": {
+        "address": [
+          {
+            "buildingName": "1",
+            "streetName": "Hudswell Road",
+            "postalCode": "LS10 1AG",
+            "addressLocality": "Leeds",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Address (Stub)",
       "label": "Tom Hardy (DWP)",
       "payload": {
         "address": [
@@ -591,11 +606,11 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "KABIR"
+                "value": "Kabir"
               },
               {
                 "type": "FamilyName",
-                "value": "SINGH"
+                "value": "Singh"
               }
             ]
           }
@@ -616,11 +631,11 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "TOM"
+                "value": "Tom"
               },
               {
                 "type": "FamilyName",
-                "value": "HARDY"
+                "value": "Hardy"
               }
             ]
           }
@@ -641,11 +656,11 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "NORA"
+                "value": "Nora"
               },
               {
                 "type": "FamilyName",
-                "value": "PORTER"
+                "value": "Porter"
               }
             ]
           }
@@ -653,6 +668,31 @@
         "birthDate": [
           {
             "value": "1978-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Claimed Identity (Stub)",
+      "label": "Claire Aarts (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Claire"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Aarts"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1997-06-29"
           }
         ]
       }
@@ -1188,6 +1228,39 @@
       }
     },
     {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Claire Aarts DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Claire",
+                "type": "GivenName"
+              },
+              {
+                "value": "Aarts",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1997-06-29"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "AARTS710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Driving Licence (Stub)",
       "label": "Alice Parker (Valid) DVLA Licence",
       "payload": {
@@ -1221,6 +1294,80 @@
             "personalNumber": "PARKE710112PBFGA",
             "expiryDate": "2032-02-02",
             "issueNumber": "23"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Alice Parker (Changed First Name) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Alison"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Parker"
+              }
+            ]
+          }
+        ],
+        "drivingPermit": [
+          {
+            "expiryDate": "2032-02-02",
+            "issuedBy": "DVLA",
+            "personalNumber": "PARKE710112PBFGA",
+            "issueDate": "2005-02-02"
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Alice Parker (Changed Last Name) DVLA Licence",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Alice"
+              },
+              {
+                "type": "GivenName",
+                "value": "Jane"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Smith"
+              }
+            ]
+          }
+        ],
+        "drivingPermit": [
+          {
+            "expiryDate": "2032-02-02",
+            "issuedBy": "DVLA",
+            "personalNumber": "PARKE710112PBFGA",
+            "issueDate": "2005-02-02"
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1970-01-01"
           }
         ]
       }
@@ -1386,6 +1533,39 @@
             "issuedBy": "DVLA",
             "issueDate": "2015-02-02",
             "personalNumber": "PORTE710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Driving Licence (Stub)",
+      "label": "Claire Aarts DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Claire",
+                "type": "GivenName"
+              },
+              {
+                "value": "Aarts",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1997-06-29"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "AARTS710112PBFGA",
             "expiryDate": "2032-02-02"
           }
         ]
@@ -1670,6 +1850,40 @@
       }
     },
     {
+      "criType": "Experian Knowledge Based Verification (Stub)",
+      "label": "Claire Aarts KBV (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Claire",
+                "type": "GivenName"
+              },
+              {
+                "value": "Aarts",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1997-06-29"
+          }
+        ],
+        "address": [
+          {
+            "buildingName": "28",
+            "streetName": "Brookes Ave",
+            "postalCode": "LE9 3GJ",
+            "addressLocality": "Leicester",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Face to Face Check (Stub)",
       "label": "Alice Parker (Valid) DVLA Licence",
       "payload": {
@@ -1930,6 +2144,39 @@
             "issuedBy": "DVLA",
             "issueDate": "2015-02-02",
             "personalNumber": "PORTE710112PBFGA",
+            "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Face to Face Check (Stub)",
+      "label": "Claire Aarts DVLA Licence (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Claire",
+                "type": "GivenName"
+              },
+              {
+                "value": "Aarts",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1997-06-29"
+          }
+        ],
+        "drivingPermit": [
+          {
+            "issuedBy": "DVLA",
+            "issueDate": "2015-02-02",
+            "personalNumber": "AARTS710112PBFGA",
             "expiryDate": "2032-02-02"
           }
         ]
@@ -2648,11 +2895,11 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "KABIR"
+                "value": "Kabir"
               },
               {
                 "type": "FamilyName",
-                "value": "SINGH"
+                "value": "Singh"
               }
             ]
           }
@@ -2682,11 +2929,11 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "TOM"
+                "value": "Tom"
               },
               {
                 "type": "FamilyName",
-                "value": "HARDY"
+                "value": "Hardy"
               }
             ]
           }
@@ -2716,11 +2963,11 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "NORA"
+                "value": "Nora"
               },
               {
                 "type": "FamilyName",
-                "value": "PORTER"
+                "value": "Porter"
               }
             ]
           }
@@ -2736,6 +2983,39 @@
             "streetName": "Melmerby Close",
             "postalCode": "NE3 5JA",
             "addressLocality": "Newcastle upon Tyne",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Claire Aarts Fraud (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Claire"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Aarts"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1997-06-29"
+          }
+        ],
+        "address": [
+          {
+            "streetName": "Brookes Ave",
+            "postalCode": "LE9 3GJ",
+            "addressLocality": "Leicester",
             "validFrom": "1996-01-01"
           }
         ]
@@ -3127,6 +3407,36 @@
         "socialSecurityRecord": [
           {
             "personalNumber": "MW000683A"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "National Insurance Number (Stub)",
+      "label": "Claire Aarts National Insurance (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Claire",
+                "type": "GivenName"
+              },
+              {
+                "value": "Aarts",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1997-06-29"
+          }
+        ],
+        "socialSecurityRecord": [
+          {
+            "personalNumber": "LB765460D"
           }
         ]
       }
@@ -3529,6 +3839,38 @@
         "passport": [
           {
             "documentNumber": "824159124",
+            "expiryDate": "2030-01-01",
+            "icaoIssuerCode": "GBR"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "UK Passport (Stub)",
+      "label": "Claire Aarts Passport (DWP)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Claire",
+                "type": "GivenName"
+              },
+              {
+                "value": "Aarts",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1997-06-29"
+          }
+        ],
+        "passport": [
+          {
+            "documentNumber": "824159125",
             "expiryDate": "2030-01-01",
             "icaoIssuerCode": "GBR"
           }

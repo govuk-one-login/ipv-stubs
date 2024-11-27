@@ -91,6 +91,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.RSA_PRIVATE_KEY_JWK;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CRI_MITIGATION_ENABLED_PARAM;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_API_KEY;
@@ -115,11 +116,12 @@ import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.VC_NOT_BEFO
 class AuthorizeHandlerTest {
 
     @SystemStub
-    private EnvironmentVariables environmentVariables =
+    private static final EnvironmentVariables ENVIRONMENT_VARIABLES =
             new EnvironmentVariables(
                     "ENVIRONMENT", "TEST",
                     "F2F_STUB_QUEUE_URL", "https://example.com/stub-queue",
-                    "F2F_STUB_QUEUE_API_KEY", "example-key");
+                    "F2F_STUB_QUEUE_API_KEY", "example-key",
+                    "PRIVATE_ENCRYPTION_KEY_JWK", RSA_PRIVATE_KEY_JWK);
 
     private static final String BASE64_ENCRYPTION_PUBLIC_CERT =
             "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUZEakNDQXZZQ0NRQ3JjK3ppU2ZNeUR6QU5CZ2txaGtpRzl3MEJBUXNGQURCSk1Rc3dDUVlEVlFRR0V3SkgKUWpFTk1Bc0dBMVVFQ0F3RVZHVnpkREVOTUFzR0ExVUVCd3dFVkdWemRERU5NQXNHQTFVRUNnd0VWRVZ6ZERFTgpNQXNHQTFVRUN3d0VWR1Z6ZERBZUZ3MHlNVEV5TWpNeE1EVTJNakZhRncweU1qRXlNak14TURVMk1qRmFNRWt4CkN6QUpCZ05WQkFZVEFrZENNUTB3Q3dZRFZRUUlEQVJVWlhOME1RMHdDd1lEVlFRSERBUlVaWE4wTVEwd0N3WUQKVlFRS0RBUlVSWE4wTVEwd0N3WURWUVFMREFSVVpYTjBNSUlDSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQWc4QQpNSUlDQ2dLQ0FnRUF3RnJkUzhFUUNLaUQxNXJ1UkE3SFd5T0doeVZ0TlphV3JYOUVGZWNJZTZPQWJCRHhHS2NQCkJLbVJVMDNud3g1THppRWhNL2NlNWw0a3lTazcybFgwYSt6ZTVkb2pqZkx6dFJZcGdiSTlEYUVwMy9GTEdyWkoKRmpPZCtwaU9JZ1lBQms0YTVNdlBuOVlWeEpzNlh2aVFOZThJZVN6Y2xMR1dNV0dXOFRFTnBaMWJwRkNxa2FiRQpTN0cvdUVNMGtkaGhnYVpnVXhpK1JZUUhQcWhtNk1PZGdScWJpeTIxUDBOSFRFVktyaWtZanZYZXdTQnFtZ0xVClBRaTg1ME9qczF3UGRZVFRoajVCT2JZd3o5aEpWbWJIVEhvUGgwSDRGZGphMW9wY1M1ZXRvSGtOWU95MzdTbzgKQ2tzVjZzNnVyN3pVcWE5RlRMTXJNVnZhN2pvRHRzV2JXSjhsM2pheS9PSEV3UlI5RFNvTHVhYlppK2tWekZGUwp2eGRDTU52VzJEMmNSdzNHWW1HMGk4cXMxMXRsalFMTEV0S2EyWXJBZERSRXlFUFlKR1NYSjJDUXhqbGRpMzYrCmlHYitzNkExWVNCNzRxYldkbVcxWktqcGFPZmtmclRBZ3FocUc5UURrd2hPSk5CblVDUTBpZVpGYXV3MUZJM04KS0c1WEZSMzdKR05EL1luTGxCS1gzVzNMSGVIY1hTYUphYzYxOHFHbzgxVFduVzA2MVMzTGRVRWcyWGJ0SXJPKworNEdlNDlJbXRSTUFrcmhUUjAzMXc3ZDVnVXJtZWxCcTNzaVBmUmFkYmJ2OUM1VENHOG4zVDM1VkpLNFcybEduCkl5WUFzc09wYWxyN1Q5TmVuTzUxcUJmK2gyTjVVWitTVDV0TkYwM2s5enpKdGZORDZEcUNySHNDQXdFQUFUQU4KQmdrcWhraUc5dzBCQVFzRkFBT0NBZ0VBQWNjblhwYUNJaVNzcG5oZ0tlTk9iSm9aaUJzSWNyTU4wVU1tSmVaagpSNkM2MHQzM1lEZDhXR2VhOW91WmVUZEFYOFIxYTlZOVFtV3JMMnpUTXIwbEwxdkRleXd0eUtjTFloVmFZaHUrCi9ibVFKTjJ5TnhWdU9ONkxtbkhBUFBFdjBtc3RWM1JuQXVxYlcvTm5DU0ZkUnFsSmlYT2hRLzlQUHJUUDZzck8KT2QwVHJ6VkE3RXlQT014TjJpSUdBcTJRemFBb3B6VDFVNmF4bnpHRmZ6aTZVSGlRYURSbGhuODhGUEpNT3JMUQpyS3NlUkk4MUtIaGptZG5uOFdlWC9BaGZWSk8wejZ2TU1xRGx5QmlSUmV3VmVQcjZTejl5T2RCQVZlNFUzSDdHCmdDV3p2akEzYkxjZEpobUw4dHQvVFpFcndMblFDd2Izc3pMODNSSDl0dXIzaWdwQnJoUzlWWnM4ZldyeWY0MDgKNnU0dWd3Y1luT0NpaGtwMk9ESjVtOThCbmdZem1wT2NDZW1KTkg3WkJ1SWhDVkNjRitCejlBbTlRSjJXdzdFZApTeGNDcFQxY0hSd29Fd0I5a01ORmtpYlkzbFJBQ3BtTmQ3SWpWUU5ZNTlmeFBBdGo4cFlSYWJGa2JhSUtkT2FwCkxySE1jbmRCTXpMYkk1bGl1a2hQUTlGLyt5QkMybVRRZ0MvVzU5dThraW4yQTFRbDJRWUNXQzFYVWFXaXFxRVUKbVQ5SjU5L0dKZ3hIT1pNSXB4OERDK0ZYRDZkbEF1bUJLZzcxZnpsdjdNb3dKWWFFcFJEUlJubjU0YnQ4UmpVRwpRREpBV1VseHluSlF0dCtqdmFNR0lSZ2M2RkdJcUVVV1VzUU9wUDEwNFg4dUtPQWNSTjlmMWNSSGxTeUErTUp5Cnd1UT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="; // pragma: allowlist secret
@@ -127,8 +129,6 @@ class AuthorizeHandlerTest {
     private static final String INVALID_REDIRECT_URI = "invalid-redirect-uri";
     private static final String INVALID_RESPONSE_TYPE = "cosssde";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper().enable(INDENT_OUTPUT);
-    private static final String APPLICATION_JSON = "application/json";
-    private static final String DEFAULT_RESPONSE_CONTENT_TYPE = "application/x-www-form-urlencoded";
     private static final String VALID_REDIRECT_URI = "https://valid.example.com";
 
     @Mock private HttpClient mockHttpClient;
@@ -149,7 +149,6 @@ class AuthorizeHandlerTest {
     @Captor ArgumentCaptor<HttpRequest> httpRequestArgumentCaptor;
     @Captor ArgumentCaptor<String> stringArgumentCaptor;
     @Captor ArgumentCaptor<Map<String, Object>> jsonArgumentCaptor;
-    @Captor ArgumentCaptor<Integer> intArgumentCaptor;
     @Captor ArgumentCaptor<AuthorizationCode> authCoreArgumentCaptor;
 
     @BeforeAll
@@ -161,7 +160,7 @@ class AuthorizeHandlerTest {
     class doAuthorizeTests {
         @BeforeEach
         void setup() {
-            environmentVariables.set("MITIGATION_ENABLED", "False");
+            ENVIRONMENT_VARIABLES.set("MITIGATION_ENABLED", "False");
         }
 
         @Test
@@ -289,7 +288,7 @@ class AuthorizeHandlerTest {
         void
                 doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithEncryptedRequestJWT()
                         throws Exception {
-            environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE");
+            ENVIRONMENT_VARIABLES.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE");
             setupQueryParams(validEncryptedDoAuthorizeQueryParams());
 
             authorizeHandler.doAuthorize(mockContext);
@@ -310,8 +309,8 @@ class AuthorizeHandlerTest {
         @Test
         void doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWithMitigationEnabled()
                 throws Exception {
-            environmentVariables.set("MITIGATION_ENABLED", "True");
-            environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE");
+            ENVIRONMENT_VARIABLES.set("MITIGATION_ENABLED", "True");
+            ENVIRONMENT_VARIABLES.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE");
             setupQueryParams(validEncryptedDoAuthorizeQueryParams());
 
             authorizeHandler.doAuthorize(mockContext);
@@ -330,7 +329,7 @@ class AuthorizeHandlerTest {
         void
                 doAuthorizeShouldRenderMustacheTemplateWhenValidRequestReceivedWhenSignatureVerificationFails()
                         throws Exception {
-            environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE_DRIVING_LICENCE");
+            ENVIRONMENT_VARIABLES.set("CREDENTIAL_ISSUER_TYPE", "EVIDENCE_DRIVING_LICENCE");
 
             var queryParams = validDoAuthorizeQueryParams();
             String signedJWT = signedRequestJwt(defaultClaimSetBuilder().build()).serialize();
@@ -414,7 +413,7 @@ class AuthorizeHandlerTest {
     class FormAuthorizeTests {
         @BeforeEach
         void setup() {
-            environmentVariables.set("MITIGATION_ENABLED", "False");
+            ENVIRONMENT_VARIABLES.set("MITIGATION_ENABLED", "False");
         }
 
         @Test
@@ -451,7 +450,7 @@ class AuthorizeHandlerTest {
         @Test
         void formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled()
                 throws Exception {
-            environmentVariables.set("MITIGATION_ENABLED", "True");
+            ENVIRONMENT_VARIABLES.set("MITIGATION_ENABLED", "True");
 
             setupQueryParams(validDoAuthorizeQueryParams());
             var formParams = validGenerateResponseFormParams();
@@ -492,7 +491,7 @@ class AuthorizeHandlerTest {
         void
                 formAuthorizeShouldPersistSharedAttributesCombinedWithJsonInput_withMitigationEnabled_postFailed()
                         throws Exception {
-            environmentVariables.set("MITIGATION_ENABLED", "True");
+            ENVIRONMENT_VARIABLES.set("MITIGATION_ENABLED", "True");
 
             setupQueryParams(validDoAuthorizeQueryParams());
             var formParams = validGenerateResponseFormParams();
@@ -542,7 +541,7 @@ class AuthorizeHandlerTest {
         @Test
         void formAuthorizeShouldNotIncludeSharedAttributesForUserAssertedCriType()
                 throws Exception {
-            environmentVariables.set("CREDENTIAL_ISSUER_TYPE", "USER_ASSERTED");
+            ENVIRONMENT_VARIABLES.set("CREDENTIAL_ISSUER_TYPE", "USER_ASSERTED");
 
             setupQueryParams(validDoAuthorizeQueryParams());
             var formParams = validGenerateResponseFormParams();
@@ -572,7 +571,7 @@ class AuthorizeHandlerTest {
     class ApiAuthorizeTests {
         @BeforeEach
         void setup() {
-            environmentVariables.set("MITIGATION_ENABLED", "False");
+            ENVIRONMENT_VARIABLES.set("MITIGATION_ENABLED", "False");
         }
 
         @Test
@@ -721,7 +720,7 @@ class AuthorizeHandlerTest {
 
         @Test
         void apiAuthorizeShouldAllowMitigationsWhenEnabled() throws Exception {
-            environmentVariables.set("MITIGATION_ENABLED", "True");
+            ENVIRONMENT_VARIABLES.set("MITIGATION_ENABLED", "True");
 
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
@@ -768,7 +767,7 @@ class AuthorizeHandlerTest {
 
         @Test
         void apiAuthorizeShouldHandleNoMitigationsWhenMitigationsEnabled() throws Exception {
-            environmentVariables.set("MITIGATION_ENABLED", "True");
+            ENVIRONMENT_VARIABLES.set("MITIGATION_ENABLED", "True");
 
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(

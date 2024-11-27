@@ -1,11 +1,11 @@
 package uk.gov.di.ipv.core.putcontraindicators.service;
 
-import com.amazonaws.util.CollectionUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.SignedJWT;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.StringMapMessage;
+import software.amazon.awssdk.utils.CollectionUtils;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;

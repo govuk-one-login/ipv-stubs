@@ -20,9 +20,7 @@ import uk.gov.di.ipv.stub.cred.domain.RequestedError;
 import uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants;
 
 import java.net.URI;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +55,7 @@ public class RequestedErrorResponseService {
     }
 
     public AuthorizationErrorResponse getRequestedAuthErrorResponse(AuthRequest authRequest)
-            throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
+            throws ParseException, JOSEException {
         var requestedError = authRequest.requestedError();
         if (requestedError == null) {
             return null;
@@ -66,7 +64,9 @@ public class RequestedErrorResponseService {
             ClientConfig clientConfig = ConfigService.getClientConfig(authRequest.clientId());
 
             JWTClaimsSet jwtClaimsSet =
-                    getSignedJWT(authRequest.request(), clientConfig.getEncryptionPrivateKey())
+                    getSignedJWT(
+                                    authRequest.request(),
+                                    CredentialIssuerConfig.getPrivateEncryptionKey().toPrivateKey())
                             .getJWTClaimsSet();
 
             String redirectUri =

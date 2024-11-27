@@ -148,7 +148,9 @@ public class AuthorizeHandler {
             }
 
             SignedJWT signedJWT =
-                    getSignedJWT(requestValue, clientConfig.getEncryptionPrivateKey());
+                    getSignedJWT(
+                            requestValue,
+                            CredentialIssuerConfig.getPrivateEncryptionKey().toPrivateKey());
 
             AuthorizationErrorResponse errorResponse =
                     new AuthorizationErrorResponse(
@@ -309,7 +311,7 @@ public class AuthorizeHandler {
     }
 
     private JWTClaimsSet getClaimsSet(AuthRequest authRequest)
-            throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
+            throws ParseException, JOSEException {
         var clientIdValue = authRequest.clientId();
         var jar = authRequest.request();
 
@@ -320,7 +322,8 @@ public class AuthorizeHandler {
                     "Error: Could not find client configuration details for: " + clientIdValue);
         }
 
-        SignedJWT signedJWT = getSignedJWT(jar, clientConfig.getEncryptionPrivateKey());
+        SignedJWT signedJWT =
+                getSignedJWT(jar, CredentialIssuerConfig.getPrivateEncryptionKey().toPrivateKey());
 
         return signedJWT.getJWTClaimsSet();
     }
@@ -631,7 +634,7 @@ public class AuthorizeHandler {
             SignedJWT signedJWT =
                     getSignedJWT(
                             ctx.queryParam(RequestParamConstants.REQUEST),
-                            clientConfig.getEncryptionPrivateKey());
+                            CredentialIssuerConfig.getPrivateEncryptionKey().toPrivateKey());
             JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
             if (Validator.isNullBlankOrEmpty(
@@ -683,7 +686,7 @@ public class AuthorizeHandler {
                                 HttpStatus.BAD_REQUEST.getCode()));
             }
 
-        } catch (ParseException | NoSuchAlgorithmException | InvalidKeySpecException e) {
+        } catch (ParseException | JOSEException e) {
             return new ValidationResult(
                     false,
                     new ErrorObject(
@@ -734,7 +737,9 @@ public class AuthorizeHandler {
         if (!Validator.isNullBlankOrEmpty(requestParam)) {
             try {
                 SignedJWT signedJWT =
-                        getSignedJWT(requestParam, clientConfig.getEncryptionPrivateKey());
+                        getSignedJWT(
+                                requestParam,
+                                CredentialIssuerConfig.getPrivateEncryptionKey().toPrivateKey());
                 String publicJwk =
                         getCriType().equals(DOC_CHECK_APP_CRI_TYPE)
                                 ? clientConfig.getJwtAuthentication().getSigningPublicJwk()
@@ -806,7 +811,7 @@ public class AuthorizeHandler {
     }
 
     private AuthorizationErrorResponse handleRequestedError(AuthRequest authRequest)
-            throws NoSuchAlgorithmException, InvalidKeySpecException, ParseException {
+            throws ParseException, JOSEException {
         return requestedErrorResponseService.getRequestedAuthErrorResponse(authRequest);
     }
 

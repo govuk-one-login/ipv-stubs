@@ -1,6 +1,5 @@
 package uk.gov.di.ipv.core.stubmanagement;
 
-import com.amazonaws.HttpMethod;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -8,6 +7,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import software.amazon.awssdk.http.SdkHttpMethod;
 import uk.gov.di.ipv.core.library.model.UserCisRequest;
 import uk.gov.di.ipv.core.library.model.UserMitigationRequest;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
@@ -36,7 +36,7 @@ public class StubManagementHandler
     private static final Pattern CIS_MITIGATIONS =
             Pattern.compile("^/user/[-a-zA-Z0-9_:]+/mitigations/[-a-zA-Z0-9_]+$");
     private static final List<String> SUPPORTED_MITIGATION_METHODS =
-            List.of(HttpMethod.POST.toString(), HttpMethod.PUT.toString());
+            List.of(SdkHttpMethod.POST.toString(), SdkHttpMethod.PUT.toString());
 
     private static final String USER_ID_PATH_PARAMS = "userId";
     private static final String CI_PATH_PARAMS = "ci";
@@ -75,9 +75,9 @@ public class StubManagementHandler
                                 objectMapper
                                         .getTypeFactory()
                                         .constructCollectionType(List.class, UserCisRequest.class));
-                if (httpMethod.equals(HttpMethod.POST.toString())) {
+                if (httpMethod.equals(SdkHttpMethod.POST.toString())) {
                     userService.addUserCis(userId, userCisRequests);
-                } else if (httpMethod.equals(HttpMethod.PUT.toString())) {
+                } else if (httpMethod.equals(SdkHttpMethod.PUT.toString())) {
                     userService.updateUserCis(userId, userCisRequests);
                 } else {
                     return buildErrorResponse("Http Method is not supported.", 400);
