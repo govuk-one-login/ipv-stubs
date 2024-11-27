@@ -93,11 +93,13 @@ public class CoreStubHandler {
         LOGGER.info("✅  set %d questions".formatted(questionsMap.size()));
     }
 
-    public Handler serveHomePage =
-            ctx -> ctx.render("home.mustache");
+    public Handler serveHomePage = ctx -> ctx.render("home.mustache");
 
     public Handler showCredentialIssuer =
-            ctx -> ctx.render("credential-issuers.mustache", Map.of("cris", CoreStubConfig.credentialIssuers));
+            ctx ->
+                    ctx.render(
+                            "credential-issuers.mustache",
+                            Map.of("cris", CoreStubConfig.credentialIssuers));
 
     public Handler userSearch =
             ctx -> {
@@ -207,8 +209,7 @@ public class CoreStubHandler {
                                     "cri",
                                     credentialIssuer.id(),
                                     "criName",
-                                    credentialIssuer.name())
-                    );
+                                    credentialIssuer.name()));
                 } else if (postcode != null && !postcode.isBlank()) {
                     var claimIdentity =
                             new IdentityMapper()
@@ -253,8 +254,7 @@ public class CoreStubHandler {
                                 "identity",
                                 identity,
                                 "questionAndAnswers",
-                                questionAndAnswers)
-                );
+                                questionAndAnswers));
             };
 
     public Handler updateUser =
@@ -357,8 +357,7 @@ public class CoreStubHandler {
                                 "rowNumber",
                                 Optional.ofNullable(rowNumber).orElse("0"),
                                 "isHmrcKbvCri",
-                                isHmrcKbvCri)
-                );
+                                isHmrcKbvCri));
             };
 
     public Handler backendGenerateInitialClaimsSet =
@@ -374,13 +373,16 @@ public class CoreStubHandler {
 
                 // ClaimSets can go direct to JSON
                 ctx.contentType("application/json");
-                ctx.result(handlerHelper.createJWTClaimsSets(
-                        state,
-                        credentialIssuer,
-                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
-                        claimIdentity,
-                        getEvidenceRequestClaims(ctx),
-                        context).toString());
+                ctx.result(
+                        handlerHelper
+                                .createJWTClaimsSets(
+                                        state,
+                                        credentialIssuer,
+                                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
+                                        claimIdentity,
+                                        getEvidenceRequestClaims(ctx),
+                                        context)
+                                .toString());
             };
 
     private SharedClaims getClaimIdentity(Context ctx) {
@@ -448,11 +450,14 @@ public class CoreStubHandler {
 
                 // ClaimSets can go direct to JSON
                 ctx.contentType("application/json");
-                ctx.result(handlerHelper.createJWTClaimsSets(
-                        state,
-                        credentialIssuerId,
-                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
-                        claimIdentity).toString());
+                ctx.result(
+                        handlerHelper
+                                .createJWTClaimsSets(
+                                        state,
+                                        credentialIssuerId,
+                                        new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID),
+                                        claimIdentity)
+                                .toString());
             };
     public Handler createBackendSessionRequest =
             ctx -> {
@@ -498,16 +503,14 @@ public class CoreStubHandler {
             ctx -> {
                 LOGGER.info("editPostcode Start");
                 var credentialIssuerId = Objects.requireNonNull(ctx.queryParam("cri"));
-                ctx.render(
-                        "edit-postcode.mustache", Map.of("cri", credentialIssuerId));
+                ctx.render("edit-postcode.mustache", Map.of("cri", credentialIssuerId));
             };
 
     public Handler evidenceRequest =
             ctx -> {
                 LOGGER.info("checkEvidence Requested Start");
                 var credentialIssuerId = Objects.requireNonNull(ctx.queryParam("cri"));
-                ctx.render(
-                        "evidence-request.mustache", Map.of("cri", credentialIssuerId));
+                ctx.render("evidence-request.mustache", Map.of("cri", credentialIssuerId));
             };
 
     private String createBackendSessionRequestJSONReply(AuthorizationRequest authorizationRequest) {

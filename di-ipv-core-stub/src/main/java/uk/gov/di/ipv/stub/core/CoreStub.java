@@ -23,10 +23,13 @@ public class CoreStub {
         CoreStubConfig.initUATUsers();
         CoreStubConfig.initCRIS();
 
-        var app = Javalin.create(config -> {
-            config.staticFiles.add(staticFiles -> staticFiles.directory = "/public");
-            config.fileRenderer(new JavalinMustache());
-        });
+        var app =
+                Javalin.create(
+                        config -> {
+                            config.staticFiles.add(
+                                    staticFiles -> staticFiles.directory = "/public");
+                            config.fileRenderer(new JavalinMustache());
+                        });
 
         initRoutes(app);
 
