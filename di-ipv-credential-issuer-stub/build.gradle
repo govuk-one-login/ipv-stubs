@@ -21,7 +21,7 @@ dependencies {
 			"com.nimbusds:oauth2-oidc-sdk:11.20.1",
 			"com.fasterxml.jackson.core:jackson-core:2.18.1",
 			"com.fasterxml.jackson.core:jackson-databind:2.18.1",
-			"com.fasterxml.jackson.core:jackson-annotations:2.18.1",
+			"com.fasterxml.jackson.core:jackson-annotations:2.18.2",
 			"com.google.code.gson:gson:2.11.0",
 			"org.slf4j:slf4j-simple:2.0.16",
 			"software.amazon.awssdk:ssm:2.29.23"
