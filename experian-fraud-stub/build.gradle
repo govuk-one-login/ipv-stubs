@@ -12,7 +12,7 @@ dependencies {
 	implementation "com.sparkjava:spark-core:2.9.4"
 	implementation 'org.javassist:javassist:3.30.2-GA'
 	implementation 'org.slf4j:slf4j-simple:2.0.16'
-	implementation 'com.fasterxml.jackson.core:jackson-core:2.18.1'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.18.2'
 	implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.1'
 	implementation 'org.apache.commons:commons-lang3:3.17.0'
 	implementation 'org.eclipse.jetty:jetty-server:9.4.56.v20240826' // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
