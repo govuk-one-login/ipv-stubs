@@ -19,7 +19,7 @@ dependencies {
 			"com.nimbusds:oauth2-oidc-sdk:11.20.1",
 			"org.apache.logging.log4j:log4j-api:2.24.1",
 			"org.apache.logging.log4j:log4j-core:2.24.2",
-			"org.apache.logging.log4j:log4j-layout-template-json:2.24.1",
+			"org.apache.logging.log4j:log4j-layout-template-json:2.24.2",
 			project(":di-ipv-cimit-stub:lib")
 
 	compileOnly "org.projectlombok:lombok:1.18.36"
