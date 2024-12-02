@@ -26,6 +26,9 @@ public class Validator {
     private static final String INVALID_ACTIVITY_VALUES_ERROR_CODE = "1003";
     private static final String INVALID_FRAUD_VALUES_ERROR_CODE = "1004";
     private static final String INVALID_VERIFICATION_VALUES_ERROR_CODE = "1005";
+    private static final String INVALID_EVIDENCE_DRIVING_LICENCE_VALUES_ERROR_CODE = "1006";
+    private static final String INVALID_DOC_CHECK_APP_VALUES_ERROR_CODE = "1007";
+    private static final String INVALID_F2F_VALUES_ERROR_CODE = "1008";
 
     public static final String API_GATEWAY_CALLBACK_SUFFIX =
             "execute-api.eu-west-2.amazonaws.com/credential-issuer/callback";
@@ -65,6 +68,48 @@ public class Validator {
                             new ErrorObject(
                                     INVALID_EVIDENCE_VALUES_ERROR_CODE,
                                     "Invalid numbers provided for evidence strength and validity"));
+                }
+            case EVIDENCE_DRIVING_LICENCE_CRI_TYPE:
+                try {
+                    Integer.parseInt(strengthValue);
+                    Integer.parseInt(validityValue);
+                    Integer.parseInt(activityValue);
+
+                    return areStringsNullOrEmpty(Arrays.asList(fraudValue, verificationValue));
+                } catch (NumberFormatException e) {
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_EVIDENCE_DRIVING_LICENCE_VALUES_ERROR_CODE,
+                                    "Invalid numbers provided for evidence strength, validity and activity"));
+                }
+            case DOC_CHECK_APP_CRI_TYPE:
+                try {
+                    Integer.parseInt(strengthValue);
+                    Integer.parseInt(validityValue);
+                    Integer.parseInt(activityValue);
+
+                    return areStringsNullOrEmpty(Arrays.asList(fraudValue));
+                } catch (NumberFormatException e) {
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_DOC_CHECK_APP_VALUES_ERROR_CODE,
+                                    "Invalid numbers provided for evidence strength, validity and activity"));
+                }
+            case F2F_CRI_TYPE:
+                try {
+                    Integer.parseInt(strengthValue);
+                    Integer.parseInt(validityValue);
+                    Integer.parseInt(verificationValue);
+
+                    return areStringsNullOrEmpty(Arrays.asList(activityValue, fraudValue));
+                } catch (NumberFormatException e) {
+                    return new ValidationResult(
+                            false,
+                            new ErrorObject(
+                                    INVALID_F2F_VALUES_ERROR_CODE,
+                                    "Invalid numbers provided for evidence strength, validity and verification"));
                 }
             case ACTIVITY_CRI_TYPE:
                 try {
