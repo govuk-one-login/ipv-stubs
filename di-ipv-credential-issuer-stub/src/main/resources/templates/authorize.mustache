@@ -631,9 +631,12 @@
     const oauthError = document.getElementById('requested_oauth_error').value;
     const oauthErrorEndpoint = document.querySelector('input[name="requested_oauth_error_endpoint"]:checked');
 
-    if (!jsonPayload && (oauthError === 'none' && !oauthErrorEndpoint)) {
-        e.preventDefault();
-        alert("Please enter CRI stub data or select Oauth error")
+    const isJsonPayloadFilled = !!jsonPayload;
+    const areOauthFieldsValid = oauthError !== 'none' && oauthErrorEndpoint;
+
+    if (!isJsonPayloadFilled && !areOauthFieldsValid) {
+      e.preventDefault();
+      alert("Please either enter JSON payload data or select both an OAuth error and an endpoint.");
     }
   });
 </script>
