@@ -626,6 +626,18 @@
     window.GOVUKFrontend.initAll();
 </script>
 <script>
+  document.querySelector('form').addEventListener('submit', function(e) {
+    const jsonPayload = document.getElementById('jsonPayload').value.trim();
+    const oauthError = document.getElementById('requested_oauth_error').value;
+    const oauthErrorEndpoint = document.querySelector('input[name="requested_oauth_error_endpoint"]:checked');
+
+    if (!jsonPayload && (oauthError === 'none' && !oauthErrorEndpoint)) {
+        e.preventDefault();
+        alert("Please enter CRI stub data or select Oauth error")
+    }
+  });
+</script>
+<script>
     var dropdownData = {{{cri_stub_data}}}
     var filtered = dropdownData.filter(x => x.criType === "{{cri-name}}")
     $(document).ready(function() {
