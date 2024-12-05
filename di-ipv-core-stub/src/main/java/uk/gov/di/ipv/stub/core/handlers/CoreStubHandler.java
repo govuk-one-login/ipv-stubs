@@ -381,7 +381,7 @@ public class CoreStubHandler {
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
 
-                Object claimIdentity = getClaimIdentity(request);
+                Object claimIdentity = getClaimIdentity(request, credentialIssuerId);
                 String context = request.queryParams("context");
 
                 State state = createNewState(credentialIssuer);
@@ -398,7 +398,7 @@ public class CoreStubHandler {
                         context);
             };
 
-    private SharedClaims getClaimIdentity(Request request) {
+    private SharedClaims getClaimIdentity(Request request, String credentialIssuerId) {
         String claimsTextParam = request.queryParams("claimsText");
         String rowNumberParam = request.queryParams("rowNumber");
         if (isBlank(rowNumberParam) && isBlank(claimsTextParam)) {
@@ -406,13 +406,22 @@ public class CoreStubHandler {
         }
         if (isNotBlank(rowNumberParam)) {
             return getClaimIdentityByRowNumber(
-                    Integer.parseInt(rowNumberParam), request.queryParams("nino"));
+                    Integer.parseInt(rowNumberParam),
+                    request.queryParams("nino"),
+                    credentialIssuerId);
         }
         return getClaimIdentityByClaimsText(claimsTextParam);
     }
 
-    private SharedClaims getClaimIdentityByRowNumber(int rowNumber, String nino) {
+    private SharedClaims getClaimIdentityByRowNumber(
+            int rowNumber, String nino, String credentialIssuerId) {
         var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
+
+        // International Address Compatibility
+        if (credentialIssuerId.contains("fraud-cri") && null != identity) {
+            identity = identity.withAddressCountry("GB");
+        }
+
         return new IdentityMapper()
                 .mapToSharedClaim(identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
     }
