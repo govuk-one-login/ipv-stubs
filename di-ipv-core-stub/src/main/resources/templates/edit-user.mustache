@@ -274,6 +274,16 @@
 
             </div>
 
+            <div class="govuk-form-group">
+                <label class="govuk-label" id="addressCountry-label" for="addressCountry">
+                    Country
+                </label>
+
+                <input class="govuk-input govuk-input--width-5" id="addressCountry" name="addressCountry"
+                       type="text" aria-required="false" maxlength="10" value="{{addressMap.0.addressCountry}}">
+
+            </div>
+
             {{#isHmrcKbvCri}}
 
                 <div class="govuk-form-group">
@@ -430,10 +440,19 @@
                         </div>
 
                     </div>
+
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" id="SecondaryUKAddress.addressCountry-label" for="SecondaryUKAddress.addressCountry">
+                            Country
+                        </label>
+
+                        <input class="govuk-input govuk-input--width-5" id="SecondaryUKAddress.addressCountry" name="SecondaryUKAddress.addressCountry"
+                               type="text" aria-required="false" maxlength="10" value="{{addressMap.1.addressCountry}}">
+
+                    </div>
                 </div>
             </details>
             <button class="govuk-button button" data-module="govuk-button">Go to {{criName}}</button>
-
         </form>
 
     </main>

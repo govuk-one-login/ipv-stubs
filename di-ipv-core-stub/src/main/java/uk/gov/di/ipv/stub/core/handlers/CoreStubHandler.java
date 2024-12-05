@@ -234,6 +234,12 @@ public class CoreStubHandler {
                         Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
+
+                // International Address Compatibility
+                if (credentialIssuerId.contains("fraud-cri") && null != identity) {
+                    identity = identity.withAddressCountry("GB");
+                }
+
                 var claimIdentity =
                         new IdentityMapper()
                                 .mapToSharedClaim(
@@ -560,7 +566,7 @@ public class CoreStubHandler {
 
     private Identity createNewIdentity() {
         Identity identity;
-        UKAddress ukAddress = new UKAddress(null, null, null, null, null, null, null, null);
+        UKAddress ukAddress = new UKAddress(null, null, null, null, null, null, null, null, null);
         FullName fullName = new FullName(null, null, null);
         Instant dob = Instant.ofEpochSecond(0);
         identity =

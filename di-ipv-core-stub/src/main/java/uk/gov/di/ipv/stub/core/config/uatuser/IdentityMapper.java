@@ -60,7 +60,8 @@ public class IdentityMapper {
                         map.get("postTown"),
                         map.get("postcode"),
                         addressValidFrom,
-                        null);
+                        null,
+                        map.get("addressCountry"));
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         LocalDate date = LocalDate.parse(map.get("dob"), formatter);
@@ -112,6 +113,7 @@ public class IdentityMapper {
                                             address.street(),
                                             address.townCity(),
                                             address.postCode(),
+                                            address.addressCountry(),
                                             // default / arbitrary value assigned for now as
                                             // the validFrom date is not available in test data
                                             validFrom,
@@ -139,7 +141,7 @@ public class IdentityMapper {
 
     public PostcodeSharedClaims mapToAddressSharedClaims(String postcode) {
         CanonicalAddress canonicalAddress =
-                new CanonicalAddress(null, null, null, null, postcode, null, null);
+                new CanonicalAddress(null, null, null, null, postcode, null, null, null);
 
         return new PostcodeSharedClaims(
                 List.of(
@@ -178,7 +180,8 @@ public class IdentityMapper {
                         formData.value("townCity"),
                         formData.value("postCode"),
                         primaryAddressValidFrom,
-                        primaryAddressValidUntil);
+                        primaryAddressValidUntil,
+                        formData.value("addressCountry"));
         addresses.add(primaryAddress);
 
         LocalDate secondaryAddressValidFrom =
@@ -204,7 +207,8 @@ public class IdentityMapper {
                         formData.value("SecondaryUKAddress.townCity"),
                         formData.value("SecondaryUKAddress.postCode"),
                         secondaryAddressValidFrom,
-                        secondaryAddressValidUntil);
+                        secondaryAddressValidUntil,
+                        formData.value("SecondaryUKAddress.addressCountry"));
         if (!Stream.of(
                         secondaryAddress.street(),
                         secondaryAddress.buildingName(),
@@ -217,7 +221,8 @@ public class IdentityMapper {
                                 : null,
                         secondaryAddress.validUntil() != null
                                 ? secondaryAddress.validUntil().toString()
-                                : null)
+                                : null,
+                        secondaryAddress.addressCountry())
                 .allMatch(StringUtils::isBlank)) {
             addresses.add(secondaryAddress);
         }
