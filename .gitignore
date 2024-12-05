@@ -32,3 +32,10 @@ build
 node_modules
 
 lib
+
+# ipv-config temp copy
+di-ipv-core-stub/config
+
+# stub temp build files
+*/bin
+*/lambdas
