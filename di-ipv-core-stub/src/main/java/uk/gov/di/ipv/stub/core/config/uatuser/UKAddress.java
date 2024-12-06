@@ -10,4 +10,5 @@ public record UKAddress(
         String townCity,
         String postCode,
         LocalDate validFrom,
-        LocalDate validUntil) {}
+        LocalDate validUntil,
+        String addressCountry) {}
