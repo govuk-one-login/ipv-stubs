@@ -23,4 +23,29 @@ public record Identity(
                 questions,
                 nino);
     }
+
+    public Identity withAddressCountry(String addressCountry) {
+        List<UKAddress> addresses = this.addresses();
+        UKAddress address = addresses.get(0);
+
+        return new Identity(
+                rowNumber,
+                accountNumber,
+                ctdbDatabase,
+                List.of(
+                        new UKAddress(
+                                address.buildingNumber(),
+                                address.buildingName(),
+                                address.street(),
+                                address.county(),
+                                address.townCity(),
+                                address.postCode(),
+                                address.validFrom(),
+                                address.validUntil(),
+                                addressCountry)),
+                findDateOfBirth,
+                name,
+                questions,
+                nino);
+    }
 }

@@ -134,14 +134,13 @@ public class CoreStubHandler {
                 return ViewHelper.render(modelMap, "search-results.mustache");
             };
 
-    // Used where sharedClaim is entered as raw JSON string from browser for DL CRI
+    // Used where sharedClaim is entered as raw JSON string from browser
     public Route sendRawSharedClaim =
             (Request request, Response response) -> {
                 var credentialIssuer =
                         handlerHelper.findCredentialIssuer(
                                 Objects.requireNonNull(request.queryParams("cri")));
                 String queryString = request.queryParams("claimsText");
-                // String context = request.queryParams("context");
                 SharedClaims sharedClaims;
                 try {
                     sharedClaims = objectMapper.readValue(queryString, SharedClaims.class);
@@ -234,6 +233,12 @@ public class CoreStubHandler {
                         Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
+
+                // International Address Compatibility
+                if (credentialIssuerId.contains("fraud-cri") && null != identity) {
+                    identity = identity.withAddressCountry("GB");
+                }
+
                 var claimIdentity =
                         new IdentityMapper()
                                 .mapToSharedClaim(
@@ -271,7 +276,9 @@ public class CoreStubHandler {
                         handlerHelper.findCredentialIssuer(
                                 Objects.requireNonNull(request.queryParams("cri")));
                 QueryParamsMap queryParamsMap = request.queryMap();
-                var identityOnRecord = fetchOrCreateIdentity(queryParamsMap.value("rowNumber"));
+                var identityOnRecord =
+                        fetchOrCreateIdentity(
+                                queryParamsMap.value("rowNumber"), credentialIssuer.name());
                 IdentityMapper identityMapper = new IdentityMapper();
                 var identity = identityMapper.mapFormToIdentity(identityOnRecord, queryParamsMap);
                 SharedClaims sharedClaims =
@@ -347,7 +354,7 @@ public class CoreStubHandler {
                 boolean isHmrcKbvCri = credentialIssuerId.contains("hmrc-kbv-cri");
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 String rowNumber = request.queryParams("rowNumber");
-                Identity identity = fetchOrCreateIdentity(rowNumber);
+                Identity identity = fetchOrCreateIdentity(rowNumber, credentialIssuerId);
 
                 Map<String, UKAddress> addressMap = new HashMap<>();
                 for (int i = 0; i < identity.addresses().size(); i++) {
@@ -375,7 +382,7 @@ public class CoreStubHandler {
                 var credentialIssuerId = Objects.requireNonNull(request.queryParams("cri"));
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
 
-                Object claimIdentity = getClaimIdentity(request);
+                Object claimIdentity = getClaimIdentity(request, credentialIssuerId);
                 String context = request.queryParams("context");
 
                 State state = createNewState(credentialIssuer);
@@ -392,7 +399,7 @@ public class CoreStubHandler {
                         context);
             };
 
-    private SharedClaims getClaimIdentity(Request request) {
+    private SharedClaims getClaimIdentity(Request request, String credentialIssuerId) {
         String claimsTextParam = request.queryParams("claimsText");
         String rowNumberParam = request.queryParams("rowNumber");
         if (isBlank(rowNumberParam) && isBlank(claimsTextParam)) {
@@ -400,13 +407,22 @@ public class CoreStubHandler {
         }
         if (isNotBlank(rowNumberParam)) {
             return getClaimIdentityByRowNumber(
-                    Integer.parseInt(rowNumberParam), request.queryParams("nino"));
+                    Integer.parseInt(rowNumberParam),
+                    request.queryParams("nino"),
+                    credentialIssuerId);
         }
         return getClaimIdentityByClaimsText(claimsTextParam);
     }
 
-    private SharedClaims getClaimIdentityByRowNumber(int rowNumber, String nino) {
+    private SharedClaims getClaimIdentityByRowNumber(
+            int rowNumber, String nino, String credentialIssuerId) {
         var identity = handlerHelper.findIdentityByRowNumber(rowNumber).withNino(nino);
+
+        // International Address Compatibility
+        if (credentialIssuerId.contains("fraud-cri") && null != identity) {
+            identity = identity.withAddressCountry("GB");
+        }
+
         return new IdentityMapper()
                 .mapToSharedClaim(identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB);
     }
@@ -550,9 +566,14 @@ public class CoreStubHandler {
         return sb.toString();
     }
 
-    private Identity fetchOrCreateIdentity(String rowNumber) {
+    private Identity fetchOrCreateIdentity(String rowNumber, String credentialIssuerId) {
         if (rowNumber != null && !rowNumber.isBlank() && !rowNumber.equals("0")) {
-            return handlerHelper.findIdentityByRowNumber(Integer.valueOf(rowNumber));
+            Identity identity = handlerHelper.findIdentityByRowNumber(Integer.valueOf(rowNumber));
+            // International Address Compatibility
+            if (credentialIssuerId.contains("fraud-cri") && null != identity) {
+                identity = identity.withAddressCountry("GB");
+            }
+            return identity;
         } else {
             return createNewIdentity();
         }
@@ -560,7 +581,7 @@ public class CoreStubHandler {
 
     private Identity createNewIdentity() {
         Identity identity;
-        UKAddress ukAddress = new UKAddress(null, null, null, null, null, null, null, null);
+        UKAddress ukAddress = new UKAddress(null, null, null, null, null, null, null, null, null);
         FullName fullName = new FullName(null, null, null);
         Instant dob = Instant.ofEpochSecond(0);
         identity =

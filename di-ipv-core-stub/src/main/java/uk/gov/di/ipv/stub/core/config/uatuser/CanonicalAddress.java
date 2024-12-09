@@ -12,6 +12,7 @@ public record CanonicalAddress(
         String streetName,
         String addressLocality,
         String postalCode,
+        String addressCountry,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate validFrom,
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
                 LocalDate validUntil) {}
