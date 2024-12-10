@@ -1097,6 +1097,76 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
+      "label": "Kenneth Decerqueira (Valid) DVLA Licence",
+      "payload": {
+        "drivingPermit": [
+          {
+            "personalNumber": "DECER607085K99AE",
+            "expiryDate": "2025-04-27",
+            "issueDate": "2023-08-22",
+            "issueNumber": "16",
+            "issuedBy": "DVLA",
+            "fullAddress": "8 HADLEY ROAD BATH BR2 5LP"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Kenneth"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Decerqueira"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Kenneth Decerqueira (InValid) DVLA Licence",
+      "payload": {
+        "drivingPermit": [
+          {
+            "personalNumber": "DECER607085K99AE",
+            "expiryDate": "2025-04-27",
+            "issueDate": "2023-08-22",
+            "issueNumber": "11",
+            "issuedBy": "DVLA",
+            "fullAddress": "8 HADLEY ROAD BATH BR2 5LP"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Kenneth"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Decerqueira"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
       "label": "Saul Goodman (Valid) BRC",
       "payload": {
         "name": [
@@ -1256,6 +1326,74 @@
             "issueDate": "2015-02-02",
             "personalNumber": "AARTS710112PBFGA",
             "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Billy Batson (Valid) DVA Licence",
+      "payload": {
+        "drivingPermit": [
+          {
+            "personalNumber": "55667788",
+            "expiryDate": "2042-10-01",
+            "issueDate": "2018-04-19",
+            "issuedBy": "DVA",
+            "fullAddress": "8 HADLEY ROAD BATH NW3 5RG"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Billy"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Batson"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1981-07-26"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "John Roberts (InValid) DVA Licence",
+      "payload": {
+        "drivingPermit": [
+          {
+            "personalNumber": "12345678",
+            "expiryDate": "2030-11-12",
+            "issueDate": "2020-12-12",
+            "issuedBy": "DVA",
+            "fullAddress": "BT205NE"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "John"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Roberts"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1991-12-12"
           }
         ]
       }
