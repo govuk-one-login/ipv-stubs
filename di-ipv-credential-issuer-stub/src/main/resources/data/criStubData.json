@@ -1106,7 +1106,7 @@
             "issueDate": "2023-08-22",
             "issueNumber": "16",
             "issuedBy": "DVLA",
-            "fullAddress": "8 HADLEY ROAD BATH BR2 5LP"
+            "fullAddress": "8 HADLEY ROAD BATH BA2 5AA"
           }
         ],
         "name": [
@@ -1326,6 +1326,40 @@
             "issueDate": "2015-02-02",
             "personalNumber": "AARTS710112PBFGA",
             "expiryDate": "2032-02-02"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Kenneth Decerqueira (Valid) DVA Licence",
+      "payload": {
+        "drivingPermit": [
+          {
+            "personalNumber": "12345678",
+            "expiryDate": "2042-10-01",
+            "issueDate": "2018-04-19",
+            "issuedBy": "DVA",
+            "fullAddress": "8 HADLEY ROAD BATH BA2 5AA"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Kenneth"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Decerqueira"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
           }
         ]
       }
