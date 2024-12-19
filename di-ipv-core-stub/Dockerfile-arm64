@@ -1,4 +1,5 @@
-FROM openjdk:17-jdk-slim AS build
+#FROM openjdk:17-jdk-slim AS build
+FROM --platform="linux/arm64" openjdk:17.0.1-jdk-slim@sha256:565d3643a78a657ca03e85c110af9579a07e833d6bcc14f475249c521b5c5d74 AS build
 
 WORKDIR /home/gradle/src
 COPY gradlew .
@@ -8,7 +9,8 @@ RUN ./gradlew build --no-daemon
 COPY src src
 RUN ./gradlew build --no-daemon
 
-FROM openjdk:17-jdk-slim
+#FROM openjdk:17-jdk-slim
+FROM --platform="linux/arm64" openjdk:17.0.1-jdk-slim@sha256:565d3643a78a657ca03e85c110af9579a07e833d6bcc14f475249c521b5c5d74
 
 ENV PORT 8085
 ENV DEBUG_PORT 8087
@@ -30,8 +32,8 @@ RUN chown -R appuser:appgroup /app/
 USER appuser
 
 # Add in dynatrace layer
-COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules:java / /
-ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
+#COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules:java / /
+#ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
 
 EXPOSE $PORT
 EXPOSE $DEBUG_PORT
