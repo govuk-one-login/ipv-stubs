@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >-
-  This creates the necessary components to deploy IPV NINO Credential Issuer
+  This creates the necessary components to deploy IPV Toy Credential Issuer
   Stub onto ECS Fargate within the dev platform VPC and private subnets
   (provided as parameters).
 
@@ -23,31 +23,31 @@ Parameters:
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/nino/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/toy/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/nino/env/JAVA_OPTS" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/toy/env/JAVA_OPTS" #pragma: allowlist secret
   CredentialIssuerPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/nino/env/CREDENTIAL_ISSUER_PORT" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/toy/env/CREDENTIAL_ISSUER_PORT" #pragma: allowlist secret
   CredentialIssuerName:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/nino/env/CREDENTIAL_ISSUER_NAME" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/toy/env/CREDENTIAL_ISSUER_NAME" #pragma: allowlist secret
   CredentialIssuerType:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/nino/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/toy/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
   ClientAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/nino/env/CLIENT_AUDIENCE" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/toy/env/CLIENT_AUDIENCE" #pragma: allowlist secret
   VcIssuer:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/nino/env/VC_ISSUER" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/toy/env/VC_ISSUER" #pragma: allowlist secret
 
 Conditions:
   IsDevelopment: !Not
@@ -120,13 +120,13 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "nino-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "nino-cri.${Environment}.stubs.account.gov.uk", nino-cri.stubs.account.gov.uk]
+        - !Sub "toy-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "toy-cri.${Environment}.stubs.account.gov.uk", toy-cri.stubs.account.gov.uk]
       DomainValidationOptions:
         - DomainName: !If
             - IsCoreDev
-            - !Sub "nino-${Environment}.core.dev.stubs.account.gov.uk"
-            - !If [IsNonProd, !Sub "nino-cri.${Environment}.stubs.account.gov.uk", nino-cri.stubs.account.gov.uk]
+            - !Sub "toy-${Environment}.core.dev.stubs.account.gov.uk"
+            - !If [IsNonProd, !Sub "toy-cri.${Environment}.stubs.account.gov.uk", toy-cri.stubs.account.gov.uk]
           HostedZoneId: !If
             - IsCoreDev
             - !ImportValue DevPublicHostedZoneId
@@ -139,8 +139,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "nino-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "nino-cri.${Environment}.stubs.account.gov.uk", nino-cri.stubs.account.gov.uk]
+        - !Sub "toy-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "toy-cri.${Environment}.stubs.account.gov.uk", toy-cri.stubs.account.gov.uk]
       DomainNameConfigurations:
         - CertificateArn: !Ref CriStubSSLCert
           EndpointType: REGIONAL
@@ -151,8 +151,8 @@ Resources:
     Properties:
       DomainName: !If
         - IsCoreDev
-        - !Sub "nino-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "nino-cri.${Environment}.stubs.account.gov.uk", nino-cri.stubs.account.gov.uk]
+        - !Sub "toy-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "toy-cri.${Environment}.stubs.account.gov.uk", toy-cri.stubs.account.gov.uk]
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -166,8 +166,8 @@ Resources:
       Type: A
       Name: !If
         - IsCoreDev
-        - !Sub "nino-${Environment}.core.dev.stubs.account.gov.uk"
-        - !If [IsNonProd, !Sub "nino-cri.${Environment}.stubs.account.gov.uk", nino-cri.stubs.account.gov.uk]
+        - !Sub "toy-${Environment}.core.dev.stubs.account.gov.uk"
+        - !If [IsNonProd, !Sub "toy-cri.${Environment}.stubs.account.gov.uk", toy-cri.stubs.account.gov.uk]
       HostedZoneId: !If
         - IsCoreDev
         - !ImportValue DevPublicHostedZoneId
@@ -263,7 +263,7 @@ Resources:
   ApiGwHttpEndpoint:
     Type: "AWS::ApiGatewayV2::Api"
     Properties:
-      Name: !Sub ${AWS::StackName}-nino-cri-api-gw
+      Name: !Sub ${AWS::StackName}-toy-cri-api-gw
       ProtocolType: HTTP
 
   ApiGwHttpEndpointIntegration:
@@ -315,8 +315,8 @@ Resources:
     Properties:
       LogGroupName: !If
         - IsCoreDev
-        - !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-nino-cri-api-gw-accesslogs
-        - !Sub /aws/apigateway/${AWS::StackName}-nino-cri-api-gw-accesslogs
+        - !Sub /aws/vendedlogs/apigateway/${AWS::StackName}-toy-cri-api-gw-accesslogs
+        - !Sub /aws/apigateway/${AWS::StackName}-toy-cri-api-gw-accesslogs
       RetentionInDays: 14
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
@@ -498,9 +498,9 @@ Resources:
             Value: !Ref VcIssuer
           Secrets:
             - Name: "VC_SIGNING_KEY"
-              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/nino/env/VC_SIGNING_KEY"
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/toy/env/VC_SIGNING_KEY"
             - Name: "PRIVATE_ENCRYPTION_KEY_JWK"
-              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/nino/env/PRIVATE_ENCRYPTION_KEY_JWK"
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/toy/env/PRIVATE_ENCRYPTION_KEY_JWK"
             - Name: DT_TENANT
               ValueFrom: !Join
                 - ''
@@ -572,8 +572,8 @@ Resources:
                 Action:
                   - "secretsmanager:GetSecretValue" #pragma: allowlist secret
                 Resource:
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/cri/*"  #pragma: allowlist secret
-                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/credential-issuer/*"  #pragma: allowlist secret
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/cri/*"   #pragma: allowlist secret
+                  - !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:/stubs/credential-issuer/*"   #pragma: allowlist secret
         - PolicyName: CriStubGetSSMParams
           PolicyDocument:
             Version: "2012-10-17"

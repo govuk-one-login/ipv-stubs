@@ -26,6 +26,9 @@ jobs:
         with:
           fetch-depth: '0'
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v4.0.2
         with:
@@ -62,7 +65,7 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.CRI_BAV_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile-arm64 .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           cosign sign --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
