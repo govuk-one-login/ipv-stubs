@@ -24,8 +24,8 @@ USER appuser
 
 
 # Add in dynatrace layer
-COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules:java / /
-ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
+#COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules:java / /
+#ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
 
 EXPOSE $PORT
 EXPOSE 5006
