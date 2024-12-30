@@ -48,9 +48,9 @@ export async function handler(
 
     await fetch(config.queueStubUrl, {
       method: "POST",
-      headers: { "x-api-key": requestBody.queueStubApiKey ?? config.queueStubApiKey },
+      headers: { "x-api-key": config.queueStubApiKey },
       body: JSON.stringify({
-        queueName: requestBody.queueName ?? config.queueName,
+        queueName: requestBody.queueName ?? config.queue_name,
         queueEvent: queueMessage,
         delaySeconds: requestBody.delay_seconds ?? 0,
       }),
