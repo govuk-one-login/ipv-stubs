@@ -50,7 +50,7 @@ export async function handler(
       method: "POST",
       headers: { "x-api-key": config.queueStubApiKey },
       body: JSON.stringify({
-        queueName: requestBody.queueName ?? config.queue_name,
+        queueName: requestBody.queue_name ?? config.queue_name,
         queueEvent: queueMessage,
         delaySeconds: requestBody.delay_seconds ?? 0,
       }),
