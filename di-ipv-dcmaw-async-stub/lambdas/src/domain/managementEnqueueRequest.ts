@@ -5,6 +5,7 @@ export interface ManagementEnqueueVcRequest {
   evidence_type: EvidenceType;
   ci?: string[];
   delay_seconds?: number;
+  queue_name?: string;
 }
 
 export interface ManagementEnqueueErrorRequest {
