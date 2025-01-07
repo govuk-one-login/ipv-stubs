@@ -71,14 +71,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_DL_BUILD" #pragma: allowlist secret
-  ApiKeyCriToyDev:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_TOY_DEV" #pragma: allowlist secret
-  ApiKeyCriToyBuild:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_TOY_BUILD" #pragma: allowlist secret
   ApiKeyCriPassportBuild:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -103,10 +95,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_DL_STAGING" #pragma: allowlist secret
-  ApiKeyCriToyStaging:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri-3rdparty/env/API_KEY_CRI_TOY_STAGING" #pragma: allowlist secret
   ApiKeyCriCheckHmrcDev:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
@@ -695,12 +683,6 @@ Resources:
             Value: !Ref ApiKeyCriPassportBuild
           - Name: API_KEY_CRI_HMRC_KBV_BUILD
             Value: !Ref ApiKeyCriHmrcKbvBuild
-          - Name: API_KEY_CRI_TOY_DEV
-            Value: !Ref ApiKeyCriToyDev
-          - Name: API_KEY_CRI_TOY_BUILD
-            Value: !Ref ApiKeyCriToyBuild
-          - Name: API_KEY_CRI_TOY_STAGING
-            Value: !Ref ApiKeyCriToyStaging
           - Name: API_KEY_CRI_CHECK_HMRC_DEV
             Value: !Ref ApiKeyCriCheckHmrcDev
           - Name: API_KEY_CRI_CHECK_HMRC_BUILD
