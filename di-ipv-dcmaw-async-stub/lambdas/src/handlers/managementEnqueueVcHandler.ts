@@ -17,6 +17,18 @@ export async function handler(
       return buildApiResponse({ errorMessage: "No request body" }, 400);
     }
 
+    if (!event.body.test_user) {
+      // Only for returning the oauth state
+      const state = await popState(event.body.user_id);
+      return buildApiResponse(
+          {
+            result: "success",
+            oauthState: state
+          },
+          201,
+      );
+    }
+
     const requestBody = parseRequest(event);
     if (typeof requestBody === "string") {
       return buildApiResponse({ errorMessage: requestBody }, 400);
