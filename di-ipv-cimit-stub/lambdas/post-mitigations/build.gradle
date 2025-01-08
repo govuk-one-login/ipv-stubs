@@ -15,7 +15,7 @@ java {
 
 dependencies {
 	implementation "com.amazonaws:aws-lambda-java-core:1.2.3",
-			"com.fasterxml.jackson.core:jackson-databind:2.18.1",
+			"com.fasterxml.jackson.core:jackson-databind:2.18.2",
 			"com.nimbusds:oauth2-oidc-sdk:11.20.1",
 			"org.apache.logging.log4j:log4j-api:2.24.3",
 			"org.apache.logging.log4j:log4j-core:2.24.2",
