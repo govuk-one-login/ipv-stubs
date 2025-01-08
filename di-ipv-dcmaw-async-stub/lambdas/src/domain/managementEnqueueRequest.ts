@@ -26,4 +26,5 @@ export enum DocumentType {
 export enum EvidenceType {
   success = "success",
   fail = "fail",
+  failWithCi = "failWithCi"
 }

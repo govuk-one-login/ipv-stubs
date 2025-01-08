@@ -45,6 +45,20 @@ export async function buildMockVc(
 
 const testUserClaims = {
   [TestUser.kennethD]: {
+    name: [
+      {
+        nameParts: [
+          {
+            value: "Kenneth",
+            type: "GivenName"
+          },
+          {
+            value: "Decerqueira",
+            type: "FamilyName"
+          }
+        ]
+      }
+    ],
     birthDate: [
       {
         value: "1965-07-08",
@@ -87,6 +101,23 @@ const evidence = {
       type: "IdentityCheck",
       strengthScore: 4,
       validityScore: 0,
+      failedCheckDetails: [
+        {
+          checkMethod: "vcrypt",
+          identityCheckPolicy: "published",
+          activityFrom: null,
+        },
+        {
+          checkMethod: "bvr",
+          biometricVerificationProcessLevel: 3,
+        },
+      ],
+    },
+    [EvidenceType.failWithCi]: {
+      type: "IdentityCheck",
+      strengthScore: 4,
+      validityScore: 0,
+      ci: ["D15"],
       failedCheckDetails: [
         {
           checkMethod: "vcrypt",
