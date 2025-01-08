@@ -18,14 +18,15 @@ export async function handler(
     }
 
     if (!event.body.test_user) {
-      // Only for returning the oauth state
+      // Only for returning the oauth state. Returning the oauthState allows API tests to callback as the mobile app,
+      // which includes it in the callback endpoint as a query parameter.
       const state = await popState(event.body.user_id);
       return buildApiResponse(
-          {
-            result: "success",
-            oauthState: state
-          },
-          201,
+        {
+          result: "success",
+          oauthState: state,
+        },
+        201,
       );
     }
 
@@ -71,7 +72,8 @@ export async function handler(
     return buildApiResponse(
       {
         result: "success",
-        oauthState: state
+        // Returning state allows API tests to callback as the mobile app.
+        oauthState: state,
       },
       201,
     );

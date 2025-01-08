@@ -50,14 +50,14 @@ const testUserClaims = {
         nameParts: [
           {
             value: "Kenneth",
-            type: "GivenName"
+            type: "GivenName",
           },
           {
             value: "Decerqueira",
-            type: "FamilyName"
-          }
-        ]
-      }
+            type: "FamilyName",
+          },
+        ],
+      },
     ],
     birthDate: [
       {
