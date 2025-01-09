@@ -37,7 +37,7 @@ export async function persistState(
   await dynamoClient.updateItem(updateItemInput);
 }
 
-/** Gets state value and deletes record. */
+/** Gets state record. */
 export async function getState(userId: string): Promise<string | null> {
   const getItemInput: GetItemInput = {
     TableName: userStateTableName,
@@ -51,7 +51,7 @@ export async function getState(userId: string): Promise<string | null> {
   return userStateItem.state;
 }
 
-/** Gets state value and deletes record. */
+/** Deletes state record. */
 export async function deleteState(userId: string): Promise<void> {
   const getItemInput: GetItemInput = {
     TableName: userStateTableName,
