@@ -38,7 +38,7 @@ export async function persistState(
 }
 
 /** Gets state value and deletes record. */
-export async function popState(userId: string): Promise<string | null> {
+export async function getState(userId: string): Promise<string | null> {
   const getItemInput: GetItemInput = {
     TableName: userStateTableName,
     Key: marshall({ userId }),
@@ -48,6 +48,14 @@ export async function popState(userId: string): Promise<string | null> {
   if (userStateItem === null) {
     throw new Error(`No state record found for user id ${userId}`);
   }
-  await dynamoClient.deleteItem(getItemInput);
   return userStateItem.state;
+}
+
+/** Gets state value and deletes record. */
+export async function deleteState(userId: string): Promise<void> {
+  const getItemInput: GetItemInput = {
+    TableName: userStateTableName,
+    Key: marshall({ userId }),
+  };
+  await dynamoClient.deleteItem(getItemInput);
 }
