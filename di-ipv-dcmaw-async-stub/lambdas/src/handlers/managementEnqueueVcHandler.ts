@@ -4,7 +4,7 @@ import { buildApiResponse } from "../common/apiResponse";
 import getErrorMessage from "../common/errorReporting";
 import { buildMockVc } from "../domain/mockVc";
 import { ManagementEnqueueVcRequest } from "../domain/managementEnqueueRequest";
-import { popState } from "../services/userStateService";
+import { getState } from "../services/userStateService";
 import getConfig from "../common/config";
 
 export async function handler(
@@ -17,17 +17,33 @@ export async function handler(
       return buildApiResponse({ errorMessage: "No request body" }, 400);
     }
 
-    const requestBody = parseRequest(event);
-    if (typeof requestBody === "string") {
-      return buildApiResponse({ errorMessage: requestBody }, 400);
+    const requestBody = JSON.parse(event.body);
+
+    if (!requestBody.test_user) {
+      // We do not want to produce a VC, only to return the oauth state to allows API tests to callback as the mobile
+      // app, which includes it in the callback endpoint as a query parameter.
+      const state = await getState(requestBody.user_id);
+      return buildApiResponse(
+        {
+          result: "success",
+          oauthState: state,
+        },
+        201,
+      );
+    }
+
+    const parsedBody = parseRequest(event.body);
+
+    if (typeof parsedBody === "string") {
+      return buildApiResponse({ errorMessage: parsedBody }, 400);
     }
 
     const vc = await buildMockVc(
-      requestBody.user_id,
-      requestBody.test_user,
-      requestBody.document_type,
-      requestBody.evidence_type,
-      requestBody.ci,
+      parsedBody.user_id,
+      parsedBody.test_user,
+      parsedBody.document_type,
+      parsedBody.evidence_type,
+      parsedBody.ci,
     );
 
     const signingKey = await importPKCS8(
@@ -38,10 +54,10 @@ export async function handler(
       .setProtectedHeader({ alg: "ES256", typ: "JWT" })
       .sign(signingKey);
 
-    const state = await popState(requestBody.user_id);
+    const state = await getState(parsedBody.user_id);
 
     const queueMessage = {
-      sub: requestBody.user_id,
+      sub: parsedBody.user_id,
       state,
       "https://vocab.account.gov.uk/v1/credentialJWT": [signedJwt],
     };
@@ -50,16 +66,17 @@ export async function handler(
       method: "POST",
       headers: { "x-api-key": config.queueStubApiKey },
       body: JSON.stringify({
-        queueName: requestBody.queue_name ?? config.queueName,
+        queueName: parsedBody.queue_name ?? config.queueName,
         queueEvent: queueMessage,
-        delaySeconds: requestBody.delay_seconds ?? 0,
+        delaySeconds: parsedBody.delay_seconds ?? 0,
       }),
     });
 
     return buildApiResponse(
       {
         result: "success",
-        oauthState: state
+        // Returning state allows API tests to callback as the mobile app.
+        oauthState: state,
       },
       201,
     );
@@ -71,14 +88,8 @@ export async function handler(
   }
 }
 
-function parseRequest(
-  event: APIGatewayProxyEventV2,
-): string | ManagementEnqueueVcRequest {
-  if (event.body === undefined) {
-    return "No request body";
-  }
-
-  const requestBody = JSON.parse(event.body);
+function parseRequest(body: string): string | ManagementEnqueueVcRequest {
+  const requestBody = JSON.parse(body);
 
   const mandatoryFields = [
     "user_id",
