@@ -271,7 +271,7 @@ Resources:
     # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     # checkov:skip=CKV_AWS_173: doing it later
     DependsOn:
-      - "ManagementEnqueueVcFunctionLogGroup"
+      - "ManagementCleanupSessionFunctionLogGroup"
     Properties:
       FunctionName: !Sub "managementCleanupSession-${Environment}"
       CodeUri: "../lambdas"
@@ -466,6 +466,13 @@ Resources:
     Properties:
       RetentionInDays: 14
       LogGroupName: !Sub "/aws/lambda/ManagementEnqueueVc-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  ManagementCleanupSessionFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/ManagementCleanupSession-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   ManagementEnqueueErrorFunctionLogGroup:
