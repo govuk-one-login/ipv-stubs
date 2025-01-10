@@ -442,7 +442,28 @@ Resources:
   ManagementEnqueueVcFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref GetDcmawAsyncAccessTokenFunction
+      FunctionName: !Ref ManagementEnqueueVcFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
+
+  ManagementCleanupSessionFunctionCoreDev01InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ManagementCleanupSessionFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+
+  ManagementCleanupSessionFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ManagementCleanupSessionFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
+
+  ManagementCleanupSessionFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ManagementCleanupSessionFunction
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
