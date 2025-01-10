@@ -303,7 +303,7 @@ Resources:
             ParameterName: stubs/core/dcmaw-async/*
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
-        - DynamoDBDeletePolicy:
+        - DynamoDBCrudPolicy:
             TableName: !Ref DcmawAsyncStubUserStateTable
       AutoPublishAlias: live
       Events:
