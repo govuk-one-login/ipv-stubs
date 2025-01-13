@@ -34,10 +34,10 @@ RUN tar -xvf src.tar \
     && rm src.tar
 
 ENV DT_HOME="/opt/dynatrace/oneagent"
-RUN mkdir -p "$DT_HOME" && \
-    wget -O "$DT_HOME/oneagent.zip" "$DT_API_URL/v1/deployment/installer/agent/unix/paas/latest?Api-Token=$DT_API_TOKEN&$DT_ONEAGENT_OPTIONS" && \
-    unzip -d "$DT_HOME" "$DT_HOME/oneagent.zip" && \
-    rm "$DT_HOME/oneagent.zip" \
+RUN mkdir -p "$DT_HOME"
+RUN wget -O "$DT_HOME/oneagent.zip" "$DT_API_URL/v1/deployment/installer/agent/unix/paas/latest?Api-Token=$DT_API_TOKEN&$DT_ONEAGENT_OPTIONS"
+RUN unzip -d "$DT_HOME" "$DT_HOME/oneagent.zip"
+RUN rm "$DT_HOME/oneagent.zip"
 
 RUN chown -R appuser:appgroup /app/
 USER appuser
