@@ -22,7 +22,7 @@ ENV DEBUG_PORT 8087
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:$DEBUG_PORT
 RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser --gid 1001
 RUN mkdir /app
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl && apt-get install -y wget
 COPY --from=build \
     /home/gradle/src/build/distributions/src.tar \
     /app/
