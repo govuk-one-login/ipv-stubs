@@ -33,7 +33,8 @@ RUN tar -xvf src.tar \
 
 ENV DT_HOME="/opt/dynatrace/oneagent"
 RUN mkdir -p "$DT_HOME"
-RUN wget -O "$DT_HOME/oneagent.zip" $DT_API_URL&Api-Token=$DT_API_TOKEN
+RUN echo "DT_API_URL = $DT_API_URL"
+RUN wget -O "$DT_HOME/oneagent.zip" "$DT_API_URL&Api-Token=$DT_API_TOKEN"
 RUN unzip -d "$DT_HOME" "$DT_HOME/oneagent.zip"
 RUN rm "$DT_HOME/oneagent.zip"
 
