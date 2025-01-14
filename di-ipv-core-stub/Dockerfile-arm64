@@ -3,7 +3,7 @@ FROM --platform="linux/arm64" openjdk:17.0.1-jdk-slim@sha256:565d3643a78a657ca03
 
 ARG DT_API_URL="https://khw46367.live.dynatrace.com/api"
 ARG DT_API_TOKEN
-ARG DT_ONEAGENT_OPTIONS="flavor=default&include=AARch64"
+ARG DT_ONEAGENT_OPTIONS="flavor=default&include=java"
 
 
 WORKDIR /home/gradle/src
