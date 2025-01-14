@@ -1,9 +1,8 @@
 #FROM openjdk:17-jdk-slim AS build
 FROM --platform="linux/arm64" openjdk:17.0.1-jdk-slim@sha256:565d3643a78a657ca03e85c110af9579a07e833d6bcc14f475249c521b5c5d74 AS build
 
-ARG DT_API_URL="https://khw46367.live.dynatrace.com/api"
+ARG DT_API_URL="https://khw46367.live.dynatrace.com/api/v1/deployment/installer/agent/unix/paas/latest?flavor=default&include=java&arch=arm"
 ARG DT_API_TOKEN
-ARG DT_ONEAGENT_OPTIONS="flavor=default&include=java&arch=arm"
 
 WORKDIR /home/gradle/src
 COPY gradlew .
@@ -34,7 +33,7 @@ RUN tar -xvf src.tar \
 
 ENV DT_HOME="/opt/dynatrace/oneagent"
 RUN mkdir -p "$DT_HOME"
-RUN wget -O "$DT_HOME/oneagent.zip" "$DT_API_URL/v1/deployment/installer/agent/unix/paas/latest?Api-Token=$DT_API_TOKEN&$DT_ONEAGENT_OPTIONS"
+RUN wget -O "$DT_HOME/oneagent.zip" $DT_API_URL&Api-Token=$DT_API_TOKEN
 RUN unzip -d "$DT_HOME" "$DT_HOME/oneagent.zip"
 RUN rm "$DT_HOME/oneagent.zip"
 
