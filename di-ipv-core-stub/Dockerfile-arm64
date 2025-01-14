@@ -15,6 +15,14 @@ COPY src src
 #FROM openjdk:17-jdk-slim
 FROM --platform="linux/arm64" openjdk:17.0.1-jdk-slim@sha256:565d3643a78a657ca03e85c110af9579a07e833d6bcc14f475249c521b5c5d74
 
+
+ENV DT_HOME="/opt/dynatrace/oneagent"
+RUN mkdir -p "$DT_HOME"
+RUN echo "DT_API_URL = $DT_API_URL"
+RUN wget -O "$DT_HOME/oneagent.zip" "$DT_API_URL?flavor=default&include=java&arch=arm&Api-Token=$DT_API_TOKEN"
+RUN unzip -d "$DT_HOME" "$DT_HOME/oneagent.zip"
+RUN rm "$DT_HOME/oneagent.zip"
+
 ENV PORT 8085
 ENV DEBUG_PORT 8087
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:$DEBUG_PORT
@@ -31,12 +39,12 @@ ADD config config
 RUN tar -xvf src.tar \
     && rm src.tar
 
-ENV DT_HOME="/opt/dynatrace/oneagent"
-RUN mkdir -p "$DT_HOME"
-RUN echo "DT_API_URL = $DT_API_URL"
-RUN wget -O "$DT_HOME/oneagent.zip" "$DT_API_URL?flavor=default&include=java&arch=arm&Api-Token=$DT_API_TOKEN"
-RUN unzip -d "$DT_HOME" "$DT_HOME/oneagent.zip"
-RUN rm "$DT_HOME/oneagent.zip"
+#ENV DT_HOME="/opt/dynatrace/oneagent"
+#RUN mkdir -p "$DT_HOME"
+#RUN echo "DT_API_URL = $DT_API_URL"
+#RUN wget -O "$DT_HOME/oneagent.zip" "$DT_API_URL?flavor=default&include=java&arch=arm&Api-Token=$DT_API_TOKEN"
+#RUN unzip -d "$DT_HOME" "$DT_HOME/oneagent.zip"
+#RUN rm "$DT_HOME/oneagent.zip"
 
 RUN chown -R appuser:appgroup /app/
 USER appuser
