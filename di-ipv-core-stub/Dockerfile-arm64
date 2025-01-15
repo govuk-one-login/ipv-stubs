@@ -11,9 +11,10 @@ RUN ./gradlew build --no-daemon
 COPY src src
 RUN ./gradlew build --no-daemon
 
+ENV DT_API_TOKEN=$DT_API_TOKEN
 
-#FROM openjdk:17-jdk-slim
-#FROM --platform="linux/arm64" openjdk:17.0.1-jdk-slim@sha256:565d3643a78a657ca03e85c110af9579a07e833d6bcc14f475249c521b5c5d74
+FROM openjdk:17-jdk-slim
+FROM --platform="linux/arm64" openjdk:17.0.1-jdk-slim@sha256:565d3643a78a657ca03e85c110af9579a07e833d6bcc14f475249c521b5c5d74
 
 ENV PORT 8085
 ENV DEBUG_PORT 8087
@@ -24,6 +25,9 @@ RUN apt-get update && apt-get install -y curl && apt-get install -y wget && apt-
 COPY --from=build \
     /home/gradle/src/build/distributions/src.tar \
     /app/
+
+FROM build
+RUN echo $DT_API_TOKEN > DT_API_TOKEN
 
 WORKDIR /app
 ADD config config
