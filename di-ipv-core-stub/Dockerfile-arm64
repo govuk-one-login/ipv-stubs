@@ -32,10 +32,11 @@ RUN tar -xvf src.tar \
     && rm src.tar
 
 ENV DT_HOME="/opt/dynatrace/oneagent"
+
 RUN mkdir -p "$DT_HOME"
 RUN echo "->DT_HOME=$DT_HOME"
-RUN echo "->DT_TEST_VAL=$DT_TEST_VAL"
-RUN wget -O "$DT_HOME/oneagent.zip" "https://khw46367.live.dynatrace.com/api/v1/deployment/installer/agent/unix/paas/latest?flavor=default&include=java&arch=arm&Api-Token=$DT_API_TOKEN&Api-Test=DT_TEST_VAL"
+RUN echo "->DT_TEST_VAL=${DT_TEST_VAL}"
+RUN wget -O "$DT_HOME/oneagent.zip" "https://khw46367.live.dynatrace.com/api/v1/deployment/installer/agent/unix/paas/latest?flavor=default&include=java&arch=arm&Api-Token=${DT_API_TOKEN}&Api-Test=${DT_TEST_VAL}"
 RUN unzip -d "$DT_HOME" "$DT_HOME/oneagent.zip"
 RUN rm "$DT_HOME/oneagent.zip"
 
