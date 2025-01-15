@@ -3,6 +3,7 @@ FROM --platform="linux/arm64" openjdk:17.0.1-jdk-slim@sha256:565d3643a78a657ca03
 
 ARG DT_API_TOKEN
 ARG DT_TEST_VAL
+ARG DT_SYS_VAL
 
 WORKDIR /home/gradle/src
 COPY gradlew .
@@ -32,11 +33,14 @@ RUN tar -xvf src.tar \
     && rm src.tar
 
 ENV DT_HOME="/opt/dynatrace/oneagent"
-
+ENV DT_SYS_VAL=$DT_SYS_VAL
+ENV DT_TEST_VAL=$DT_TEST_VAL
 RUN mkdir -p "$DT_HOME"
+
+RUN echo "->DT_SYS_VAL=DT_SYS_VAL"
 RUN echo "->DT_HOME=$DT_HOME"
-RUN echo "->DT_TEST_VAL=${DT_TEST_VAL}"
-RUN wget -O "$DT_HOME/oneagent.zip" "https://khw46367.live.dynatrace.com/api/v1/deployment/installer/agent/unix/paas/latest?flavor=default&include=java&arch=arm&Api-Token=${DT_API_TOKEN}&Api-Test=${DT_TEST_VAL}"
+RUN echo "->DT_TEST_VAL=$DT_TEST_VAL"
+RUN wget -O "$DT_HOME/oneagent.zip" "https://khw46367.live.dynatrace.com/api/v1/deployment/installer/agent/unix/paas/latest?flavor=default&include=java&arch=arm&Api-Token=$DT_API_TOKEN&Api-Test=$DT_TEST_VAL&api-sys=$DT_SYS_VAL"
 RUN unzip -d "$DT_HOME" "$DT_HOME/oneagent.zip"
 RUN rm "$DT_HOME/oneagent.zip"
 
