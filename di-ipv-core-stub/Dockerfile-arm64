@@ -37,7 +37,7 @@ ENV DT_SYS_VAL=$DT_SYS_VAL
 ENV DT_TEST_VAL=$DT_TEST_VAL
 RUN mkdir -p "$DT_HOME"
 
-RUN echo "->DT_SYS_VAL=DT_SYS_VAL"
+RUN echo "->DT_SYS_VAL=$DT_SYS_VAL"
 RUN echo "->DT_HOME=$DT_HOME"
 RUN echo "->DT_TEST_VAL=$DT_TEST_VAL"
 RUN wget -O "$DT_HOME/oneagent.zip" "https://khw46367.live.dynatrace.com/api/v1/deployment/installer/agent/unix/paas/latest?flavor=default&include=java&arch=arm&Api-Token=$DT_API_TOKEN&Api-Test=$DT_TEST_VAL&api-sys=$DT_SYS_VAL"
