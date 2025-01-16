@@ -241,9 +241,6 @@ components:
       type: object
       required:
         - user_id
-        - test_user
-        - document_type
-        - evidence_type
       properties:
         user_id:
           type: string
