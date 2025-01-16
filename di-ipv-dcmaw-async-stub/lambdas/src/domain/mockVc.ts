@@ -112,23 +112,6 @@ const evidence = {
           biometricVerificationProcessLevel: 3,
         },
       ],
-    },
-    [EvidenceType.failWithCi]: {
-      type: "IdentityCheck",
-      strengthScore: 4,
-      validityScore: 0,
-      ci: ["D15"],
-      failedCheckDetails: [
-        {
-          checkMethod: "vcrypt",
-          identityCheckPolicy: "published",
-          activityFrom: null,
-        },
-        {
-          checkMethod: "bvr",
-          biometricVerificationProcessLevel: 3,
-        },
-      ],
-    },
+    }
   },
 };
