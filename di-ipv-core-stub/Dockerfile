@@ -1,4 +1,6 @@
-FROM openjdk:17-jdk-slim AS build
+ARG DT_API_TOKEN
+FROM --platform="linux/arm64" openjdk:17.0.1-jdk-slim@sha256:565d3643a78a657ca03e85c110af9579a07e833d6bcc14f475249c521b5c5d74 AS build
+ARG DT_API_TOKEN
 
 WORKDIR /home/gradle/src
 COPY gradlew .
@@ -8,14 +10,15 @@ RUN ./gradlew build --no-daemon
 COPY src src
 RUN ./gradlew build --no-daemon
 
-FROM openjdk:17-jdk-slim
+FROM --platform="linux/arm64" openjdk:17.0.1-jdk-slim@sha256:565d3643a78a657ca03e85c110af9579a07e833d6bcc14f475249c521b5c5d74
+ARG DT_API_TOKEN
 
 ENV PORT 8085
 ENV DEBUG_PORT 8087
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:$DEBUG_PORT
 RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser --gid 1001
 RUN mkdir /app
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl && apt-get install -y wget && apt-get install -y unzip
 COPY --from=build \
     /home/gradle/src/build/distributions/src.tar \
     /app/
@@ -26,12 +29,16 @@ ADD config config
 RUN tar -xvf src.tar \
     && rm src.tar
 
+ENV DT_HOME="/opt/dynatrace/oneagent"
+RUN mkdir -p "$DT_HOME"
+RUN wget -O "$DT_HOME/oneagent.zip" "https://khw46367.live.dynatrace.com/api/v1/deployment/installer/agent/unix/paas/latest?flavor=default&include=java&arch=arm&Api-Token=$DT_API_TOKEN"
+RUN unzip -d "$DT_HOME" "$DT_HOME/oneagent.zip"
+RUN rm "$DT_HOME/oneagent.zip"
+
+ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
+
 RUN chown -R appuser:appgroup /app/
 USER appuser
-
-# Add in dynatrace layer
-COPY --from=khw46367.live.dynatrace.com/linux/oneagent-codemodules:java / /
-ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
 
 EXPOSE $PORT
 EXPOSE $DEBUG_PORT
