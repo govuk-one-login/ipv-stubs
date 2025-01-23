@@ -34,6 +34,19 @@
       }
     },
     {
+      "criType": "Fraud Check (Stub)",
+      "label": "Failed fraud check (International) (M1C)",
+      "payload": {
+        "type": "IdentityCheck",
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data",
+            "fraudCheck": "applicable_authoritative_source"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "Passed verification (M1A) with checkDetails",
       "payload": {
@@ -254,6 +267,26 @@
             "biometricVerificationProcessLevel": 3
           }
         ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Passed DCMAW chipped passport check",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore" : 4,
+        "validityScore" : 3,
+        "activityHistoryScore": 1,
+        "ci": [],
+        "checkDetails" : [ 
+          {
+            "checkMethod" : "vcrypt",
+            "identityCheckPolicy" : "published",
+            "activityFrom" : null
+          }, {
+        "checkMethod" : "bvr",
+        "biometricVerificationProcessLevel" : 3
+      } ]
       }
     },
     {
