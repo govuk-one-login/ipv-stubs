@@ -231,6 +231,25 @@
       }
     },
     {
+      "criType": "Address (Stub)",
+      "label": "Kenneth Decerqueira (International) Address",
+      "payload": {
+        "address": [
+          {
+            "addressCountry" : "JP",
+            "buildingName" : "2000",
+            "streetName" : "00",
+            "postalCode" : "0",
+            "buildingNumber" : "",
+            "addressLocality" : "0",
+            "validFrom" : "2017-01-01",
+            "subBuildingName" : "",
+            "addressRegion" : "0"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Bank account verification (Stub)",
       "label": "Alice Parker BAV",
       "payload": {
@@ -1428,6 +1447,38 @@
         "birthDate": [
           {
             "value": "1991-12-12"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
+      "label": "Kenneth Decerqueira (International)",
+      "payload": {
+        "passport" : [ 
+          {
+            "documentNumber" : "321654987",
+            "expiryDate" : "2030-01-01",
+            "icaoIssuerCode" : "UTO"
+          } 
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "Kenneth"
+              },
+              {
+                "type": "FamilyName",
+                "value": "Decerqueira"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
           }
         ]
       }
@@ -3189,6 +3240,43 @@
             "postalCode": "LE9 3GJ",
             "addressLocality": "Leicester",
             "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Kenneth Decerqueira (International) Fraud",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Kenneth",
+                "type": "GivenName"
+              },
+              {
+                "value": "Decerqueira",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ],
+        "address": [
+          {
+            "poBoxNumber" : null,
+            "subBuildingName" : "",
+            "buildingNumber" : "",
+            "buildingName" : "2000",
+            "streetName" : "00",
+            "addressLocality" : "0",
+            "postalCode" : "0",
+            "addressCountry" : "JP"
           }
         ]
       }
