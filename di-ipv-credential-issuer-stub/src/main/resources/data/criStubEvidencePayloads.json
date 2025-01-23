@@ -35,7 +35,7 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Failed fraud check (M1C)",
+      "label": "Failed fraud check (International) (M1C)",
       "payload": {
         "type": "IdentityCheck",
         "failedCheckDetails": [

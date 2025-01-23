@@ -3269,14 +3269,15 @@
         ],
         "address": [
           {
-            "poBoxNumber" : null,
-            "subBuildingName" : "",
-            "buildingNumber" : "",
+            "addressCountry" : "JP",
             "buildingName" : "2000",
             "streetName" : "00",
-            "addressLocality" : "0",
             "postalCode" : "0",
-            "addressCountry" : "JP"
+            "buildingNumber" : "",
+            "addressLocality" : "0",
+            "validFrom" : "2017-01-01",
+            "subBuildingName" : "",
+            "addressRegion" : "0"
           }
         ]
       }
