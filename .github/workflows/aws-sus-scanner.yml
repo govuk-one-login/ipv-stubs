@@ -1,7 +1,9 @@
 name: Sustainability-Scanner 
 
 on:
-  pull_request:
+  push:
+    # branches: "main"
+  workflow_dispatch:
 
 jobs:
   scan:
@@ -13,4 +15,4 @@ jobs:
       - name: AWS Sustainability Scanner
         uses: aws-actions/sustainability-scanner@v1
         with:
-          stack_name: '*template*' # All stacks
+          stack_name: '*template*' 
