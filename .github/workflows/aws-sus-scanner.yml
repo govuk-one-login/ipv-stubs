@@ -1,0 +1,16 @@
+name: Sustainability-Scanner 
+
+on:
+  pull_request:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: AWS Sustainability Scanner
+        uses: aws-actions/sustainability-scanner@v1
+        with:
+          stack_name: '*template*' # All stacks
