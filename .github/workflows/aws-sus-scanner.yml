@@ -15,4 +15,5 @@ jobs:
       - name: AWS Sustainability Scanner
         uses: aws-actions/sustainability-scanner@v1
         with:
-          stack_name: '*template*' 
+          directory: di-ipv-core-stub/deploy
+          stack_name: '*/template.yaml' 
