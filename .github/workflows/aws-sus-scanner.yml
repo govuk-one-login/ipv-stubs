@@ -12,8 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: AWS Sustainability Scanner
+      - name: di-ipv-core-stub Scan
         uses: aws-actions/sustainability-scanner@v1
         with:
           directory: di-ipv-core-stub
-          # file: 'di-ipv-core-stub/deploy/passport/template.yaml' 
+
+      - name: di-ipv-credential-issuer-stub Scan
+        uses: aws-actions/sustainability-scanner@v1
+        with:
+          directory: di-ipv-credential-issuer-stub
+
