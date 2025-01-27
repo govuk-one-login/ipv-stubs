@@ -1,8 +1,9 @@
 name: Sustainability-Scanner 
 
 on:
+  # pull_request:
   push:
-    # branches: "main"
+  #   # branches: "main"
   workflow_dispatch:
 
 jobs:
@@ -12,13 +13,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: di-ipv-core-stub Scan
+      - name: core stubs Scan
         uses: aws-actions/sustainability-scanner@v1
         with:
-          directory: di-ipv-core-stub
+          directory: /
 
-      - name: di-ipv-credential-issuer-stub Scan
-        uses: aws-actions/sustainability-scanner@v1
-        with:
-          directory: di-ipv-credential-issuer-stub
+      # - name: core stubs Scan
+      #   uses: aws-actions/sustainability-scanner@v1
+      #   with:
+      #     directory: di-ipv-core-stub
+
+      # - name: cri stubs Scan
+      #   uses: aws-actions/sustainability-scanner@v1
+      #   with:
+      #     directory: di-ipv-credential-issuer-stub
+
+      # - name: orchestrator stub Scan
+      #   uses: aws-actions/sustainability-scanner@v1
+      #   with:
+      #     directory: di-ipv-orchestrator-stub
 
