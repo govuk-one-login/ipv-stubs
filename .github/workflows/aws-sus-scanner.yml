@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  scan:
+  sustainability-scan:
     runs-on: ubuntu-latest
     permissions: write-all
 
