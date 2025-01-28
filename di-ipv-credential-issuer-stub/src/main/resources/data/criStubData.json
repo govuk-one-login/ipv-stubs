@@ -724,19 +724,19 @@
           {
             "nameParts": [
               {
-                "value": "ALICE",
+                "value": "Alice",
                 "type": "GivenName"
               },
               {
-                "value": "JANE",
+                "value": "Jane",
                 "type": "GivenName"
               },
               {
-                "value": "LAURA",
+                "value": "Laura",
                 "type": "GivenName"
               },
               {
-                "value": "DOE",
+                "value": "Doe",
                 "type": "FamilyName"
               }
             ]
@@ -764,15 +764,15 @@
           {
             "nameParts": [
               {
-                "value": "ALICE",
+                "value": "Alice",
                 "type": "GivenName"
               },
               {
-                "value": "JANE",
+                "value": "Jane",
                 "type": "GivenName"
               },
               {
-                "value": "PARKER",
+                "value": "Parker",
                 "type": "FamilyName"
               }
             ]
@@ -801,15 +801,15 @@
           {
             "nameParts": [
               {
-                "value": "ALICE",
+                "value": "Alice",
                 "type": "GivenName"
               },
               {
-                "value": "JANE",
+                "value": "Jane",
                 "type": "GivenName"
               },
               {
-                "value": "PARKER",
+                "value": "Parker",
                 "type": "FamilyName"
               }
             ]
@@ -838,15 +838,15 @@
           {
             "nameParts": [
               {
-                "value": "ALICE",
+                "value": "Alice",
                 "type": "GivenName"
               },
               {
-                "value": "JANE",
+                "value": "Jane",
                 "type": "GivenName"
               },
               {
-                "value": "PARKER",
+                "value": "Parker",
                 "type": "FamilyName"
               }
             ]
@@ -875,15 +875,15 @@
           {
             "nameParts": [
               {
-                "value": "ALICE",
+                "value": "Alice",
                 "type": "GivenName"
               },
               {
-                "value": "JANE",
+                "value": "Jane",
                 "type": "GivenName"
               },
               {
-                "value": "PARKER",
+                "value": "Parker",
                 "type": "FamilyName"
               }
             ]
@@ -913,15 +913,15 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "ALISON"
+                "value": "Alison"
               },
               {
                 "type": "GivenName",
-                "value": "JANE"
+                "value": "Jane"
               },
               {
                 "type": "FamilyName",
-                "value": "PARKER"
+                "value": "Parker"
               }
             ]
           }
@@ -950,15 +950,15 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "ALICE"
+                "value": "Alice"
               },
               {
                 "type": "GivenName",
-                "value": "JANE"
+                "value": "Jane"
               },
               {
                 "type": "FamilyName",
-                "value": "SMITH"
+                "value": "Smith"
               }
             ]
           }
@@ -986,11 +986,11 @@
           {
             "nameParts": [
               {
-                "value": "JOE SHMOE",
+                "value": "Joe Shmoe",
                 "type": "GivenName"
               },
               {
-                "value": "DOE THE BALL",
+                "value": "Doe The Ball",
                 "type": "FamilyName"
               }
             ]
@@ -1026,11 +1026,11 @@
           {
             "nameParts": [
               {
-                "value": "KENNETH",
+                "value": "Kenneth",
                 "type": "GivenName"
               },
               {
-                "value": "DECERQUEIRA",
+                "value": "Decerqueira",
                 "type": "FamilyName"
               }
             ]
@@ -1066,11 +1066,11 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "MICHAEL"
+                "value": "Michael"
               },
               {
                 "type": "FamilyName",
-                "value": "DECERQUEIRA"
+                "value": "Decerqueira"
               }
             ]
           }
@@ -1098,11 +1098,11 @@
             "nameParts": [
               {
                 "type": "GivenName",
-                "value": "KENNETH"
+                "value": "Kenneth"
               },
               {
                 "type": "FamilyName",
-                "value": "JONES"
+                "value": "Jones"
               }
             ]
           }
@@ -1225,11 +1225,11 @@
           {
             "nameParts": [
               {
-                "value": "KABIR",
+                "value": "Kabir",
                 "type": "GivenName"
               },
               {
-                "value": "SINGH",
+                "value": "Singh",
                 "type": "FamilyName"
               }
             ]
@@ -1258,11 +1258,11 @@
           {
             "nameParts": [
               {
-                "value": "TOM",
+                "value": "Tom",
                 "type": "GivenName"
               },
               {
-                "value": "HARDY",
+                "value": "Hardy",
                 "type": "FamilyName"
               }
             ]
@@ -1291,11 +1291,11 @@
           {
             "nameParts": [
               {
-                "value": "NORA",
+                "value": "Nora",
                 "type": "GivenName"
               },
               {
-                "value": "PORTER",
+                "value": "Porter",
                 "type": "FamilyName"
               }
             ]
@@ -1324,11 +1324,11 @@
           {
             "nameParts": [
               {
-                "value": "CLAIRE",
+                "value": "Claire",
                 "type": "GivenName"
               },
               {
-                "value": "AARTS",
+                "value": "Aarts",
                 "type": "FamilyName"
               }
             ]
