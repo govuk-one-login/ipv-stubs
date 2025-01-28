@@ -1,0 +1,40 @@
+name: Sustainability-Scanner 
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  sustainability-scan:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: stubs Scan
+        uses: aws-actions/sustainability-scanner@v1
+        id: scanner
+        with:
+          directory: /
+
+      - name: Comment on pull request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            result=${{ (steps.scanner.outputs.results) }}
+            const score = result.sustainability_score
+            const number_failed_rules = result.failed_rules.length
+
+            if (score === 0) {
+              body = `✅ Your current sustainability score is **${score}**. Sustainability scanner did not find any improvements to apply to your template.`
+            } else {
+              body = `❌ Your current sustainability score is **${score}**. Sustainability scanner suggests **${number_failed_rules}** improvements to apply to your template.\nCheck out the details of the sustainability scanner here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            })
