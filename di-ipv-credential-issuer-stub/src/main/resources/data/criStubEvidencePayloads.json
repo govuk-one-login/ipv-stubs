@@ -47,6 +47,19 @@
       }
     },
     {
+      "criType": "Fraud Check (Stub)",
+      "label": "Failed fraud check (Unavailable) (M1C)",
+      "payload": {
+        "type": "IdentityCheck",
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data",
+            "fraudCheck": "available_authoritative_source"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "Passed verification (M1A) with checkDetails",
       "payload": {
