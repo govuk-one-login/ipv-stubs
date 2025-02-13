@@ -616,6 +616,7 @@ Resources:
     DependsOn:
       - GetDcmawAsyncVcFunction
       - GetDcmawAsyncAccessTokenFunction
+      - ManagementCleanupSessionFunction
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
       Name: !Sub DCMAW Async API Gateway ${Environment}
