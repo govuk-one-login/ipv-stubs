@@ -27,9 +27,6 @@ jobs:
         with:
           fetch-depth: '0'
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Checkout config repo
         uses: actions/checkout@v4
         with:
