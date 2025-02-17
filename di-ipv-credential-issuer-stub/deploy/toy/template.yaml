@@ -482,20 +482,20 @@ Resources:
           Image: CONTAINER-IMAGE-PLACEHOLDER
           Name: app
           Environment:
-          - Name: JBP_CONFIG_OPEN_JDK_JRE
-            Value: !Ref JbpConfigOpenJdkJre
-          - Name: JAVA_OPTS
-            Value: !Ref JavaOpts
-          - Name: CREDENTIAL_ISSUER_PORT
-            Value: !Ref CredentialIssuerPort
-          - Name: CREDENTIAL_ISSUER_NAME
-            Value: !Ref CredentialIssuerName
-          - Name: CREDENTIAL_ISSUER_TYPE
-            Value: !Ref CredentialIssuerType
-          - Name: CLIENT_AUDIENCE
-            Value: !Ref ClientAudience
-          - Name: VC_ISSUER
-            Value: !Ref VcIssuer
+            - Name: JBP_CONFIG_OPEN_JDK_JRE
+              Value: !Ref JbpConfigOpenJdkJre
+            - Name: JAVA_OPTS
+              Value: !Ref JavaOpts
+            - Name: CREDENTIAL_ISSUER_PORT
+              Value: !Ref CredentialIssuerPort
+            - Name: CREDENTIAL_ISSUER_NAME
+              Value: !Ref CredentialIssuerName
+            - Name: CREDENTIAL_ISSUER_TYPE
+              Value: !Ref CredentialIssuerType
+            - Name: CLIENT_AUDIENCE
+              Value: !Ref ClientAudience
+            - Name: VC_ISSUER
+              Value: !Ref VcIssuer
           Secrets:
             - Name: "VC_SIGNING_KEY"
               ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/toy/env/VC_SIGNING_KEY"
@@ -513,9 +513,9 @@ Resources:
                   - ':DT_TENANTTOKEN::'
             - Name: DT_CONNECTION_POINT
               ValueFrom: !Join
-              - ''
-              - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
-                - ':DT_CONNECTION_POINT::'
+                - ''
+                - - !FindInMap [ EnvironmentConfiguration, !Ref AWS::AccountId, dynatraceSecretArn ] #pragma: allowlist secret
+                  - ':DT_CONNECTION_POINT::'
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp
