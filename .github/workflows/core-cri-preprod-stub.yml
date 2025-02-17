@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - IPS-225-ubantu-22
     paths:
       - di-ipv-core-stub/deploy/cri-preprod/**
       - di-ipv-core-stub/gradle/**
