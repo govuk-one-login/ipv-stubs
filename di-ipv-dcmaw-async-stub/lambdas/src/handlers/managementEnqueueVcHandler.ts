@@ -1,11 +1,16 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
-import { importPKCS8, SignJWT } from "jose";
 import { buildApiResponse } from "../common/apiResponse";
 import getErrorMessage from "../common/errorReporting";
-import { buildMockVc } from "../domain/mockVc";
-import { ManagementEnqueueVcRequest } from "../domain/managementEnqueueRequest";
+import {buildMockVc, buildMockVcFromSubjectAndEvidence} from "../domain/mockVc";
+import {
+  isManagementEnqueueVcRequest,
+  isManagementEnqueueVcRequestEvidenceAndSubject,
+  isManagementEnqueueVcRequestIndividualDetails,
+} from "../domain/managementEnqueueRequest";
 import { getState } from "../services/userStateService";
 import getConfig from "../common/config";
+import {JWTPayload} from "jose/dist/types/types";
+import {vcToSignedJwt} from "../domain/signedJwt";
 
 export async function handler(
   event: APIGatewayProxyEventV2,
@@ -19,58 +24,72 @@ export async function handler(
 
     const requestBody = JSON.parse(event.body);
 
-    if (!requestBody.test_user) {
+    if (!isManagementEnqueueVcRequest(requestBody)) {
+      return buildApiResponse({ errorMessage: "Missing user_id field" }, 400);
+    }
+
+    const queueNameFromRequest = requestBody.queue_name;
+    const delaySeconds = requestBody.delay_seconds;
+    const state = await getState(requestBody.user_id);
+    let vc: JWTPayload;
+
+    if (isManagementEnqueueVcRequestIndividualDetails(requestBody)) {
+      vc = await buildMockVc(
+          requestBody.user_id,
+          requestBody.test_user,
+          requestBody.document_type,
+          requestBody.evidence_type,
+          requestBody.ci,
+      );
+    }
+    else if (isManagementEnqueueVcRequestEvidenceAndSubject(requestBody)) {
+      vc = await buildMockVcFromSubjectAndEvidence(
+          requestBody.user_id,
+          requestBody.credential_subject,
+          requestBody.evidence,
+          requestBody.nbf,
+      );
+    }
+    else {
       // We do not want to produce a VC, only to return the oauth state to allows API tests to callback as the mobile
-      // app, which includes it in the callback endpoint as a query parameter.
-      const state = await getState(requestBody.user_id);
+      // app, which includes the state in the callback endpoint as a query parameter.
       return buildApiResponse(
-        {
-          result: "success",
-          oauthState: state,
-        },
-        201,
+          {
+            result: "success",
+            oauthState: state,
+          },
+          201,
       );
     }
 
-    const parsedBody = parseRequest(event.body);
-
-    if (typeof parsedBody === "string") {
-      return buildApiResponse({ errorMessage: parsedBody }, 400);
-    }
-
-    const vc = await buildMockVc(
-      parsedBody.user_id,
-      parsedBody.test_user,
-      parsedBody.document_type,
-      parsedBody.evidence_type,
-      parsedBody.ci,
-    );
-
-    const signingKey = await importPKCS8(
-      `-----BEGIN PRIVATE KEY-----\n${config.vcSigningKey}\n-----END PRIVATE KEY-----`, // pragma: allowlist secret - the key is coming from config
-      "ES256",
-    );
-    const signedJwt = await new SignJWT(vc)
-      .setProtectedHeader({ alg: "ES256", typ: "JWT" })
-      .sign(signingKey);
-
-    const state = await getState(parsedBody.user_id);
+    const signedJwt = await vcToSignedJwt(vc, config.vcSigningKey);
 
     const queueMessage = {
-      sub: parsedBody.user_id,
+      sub: vc.sub,
       state,
       "https://vocab.account.gov.uk/v1/credentialJWT": [signedJwt],
     };
 
-    await fetch(config.queueStubUrl, {
+    const queueName = queueNameFromRequest ?? config.queueName;
+    console.log(`Posting to queue ${queueName} at ${config.queueStubUrl}`);
+
+    console.log(`stub config: ${JSON.stringify(config)}`);
+
+    const postResult = await fetch(config.queueStubUrl, {
       method: "POST",
       headers: { "x-api-key": config.queueStubApiKey },
       body: JSON.stringify({
-        queueName: parsedBody.queue_name ?? config.queueName,
+        queueName: queueName,
         queueEvent: queueMessage,
-        delaySeconds: parsedBody.delay_seconds ?? 0,
+        delaySeconds: delaySeconds ?? 0,
       }),
     });
+
+    console.log(`Result: ${await postResult.text()}`);
+
+    if (!postResult.ok) {
+      throw new Error(`Failed to enqueue VC: ${await postResult.text()}`);
+    }
 
     return buildApiResponse(
       {
@@ -86,24 +105,4 @@ export async function handler(
       500,
     );
   }
-}
-
-function parseRequest(body: string): string | ManagementEnqueueVcRequest {
-  const requestBody = JSON.parse(body);
-
-  const mandatoryFields = [
-    "user_id",
-    "test_user",
-    "document_type",
-    "evidence_type",
-  ];
-  const missingFields = mandatoryFields.filter(
-    (field) => requestBody[field] === undefined,
-  );
-
-  if (missingFields.length > 0) {
-    return "Request body is missing fields: " + missingFields.join(", ");
-  }
-
-  return requestBody as ManagementEnqueueVcRequest;
 }
