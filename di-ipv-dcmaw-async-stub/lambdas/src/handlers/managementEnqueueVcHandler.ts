@@ -71,9 +71,6 @@ export async function handler(
     };
 
     const queueName = queueNameFromRequest ?? config.queueName;
-    console.log(`Posting to queue ${queueName} at ${config.queueStubUrl}`);
-
-    console.log(`stub config: ${JSON.stringify(config)}`);
 
     const postResult = await fetch(config.queueStubUrl, {
       method: "POST",
@@ -84,8 +81,6 @@ export async function handler(
         delaySeconds: delaySeconds ?? 0,
       }),
     });
-
-    console.log(`Result: ${await postResult.text()}`);
 
     if (!postResult.ok) {
       throw new Error(`Failed to enqueue VC: ${await postResult.text()}`);

@@ -12,7 +12,6 @@ export async function handler(
   event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyResultV2> {
   try {
-    console.log("Generating VC")
     const config = await getConfig();
 
     if (event.body === undefined) {
