@@ -231,6 +231,128 @@ Resources:
         EntryPoints:
           - src/handlers/managementEnqueueVcHandler.ts
 
+
+  # lambda to stub management DCMAW Async - generateVc
+  ManagementGenerateVcFunction:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    # checkov:skip=CKV_AWS_173: doing it later
+    DependsOn:
+      - "ManagementGenerateVcFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "managementGenerateVc-${Environment}"
+      CodeUri: "../lambdas"
+      Handler: managementGenerateVcHandler.handler
+      Runtime: nodejs20.x
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          DCMAW_ASYNC_PARAM_BASE_PATH: "/stubs/core/dcmaw-async/"
+          DCMAW_ASYNC_STUB_USER_STATE_TABLE_NAME: !Ref DcmawAsyncStubUserStateTable
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt DcmawAsyncLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/dcmaw-async/*
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DcmawAsyncStubUserStateTable
+      AutoPublishAlias: live
+      Events:
+        GetDcmawAsyncVc:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /management/generateVc
+            Method: POST
+    Metadata:
+      # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - src/handlers/managementGenerateVcHandler.ts
+
+
+  # lambda to stub management DCMAW Async - cleanupDcmawState
+  ManagementCleanupSessionFunction:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    # checkov:skip=CKV_AWS_173: doing it later
+    DependsOn:
+      - "ManagementCleanupSessionFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "managementCleanupSession-${Environment}"
+      CodeUri: "../lambdas"
+      Handler: managementCleanupSessionHandler.handler
+      Runtime: nodejs20.x
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          DCMAW_ASYNC_PARAM_BASE_PATH: "/stubs/core/dcmaw-async/"
+          DCMAW_ASYNC_STUB_USER_STATE_TABLE_NAME: !Ref DcmawAsyncStubUserStateTable
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt DcmawAsyncLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/dcmaw-async/*
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DcmawAsyncStubUserStateTable
+      AutoPublishAlias: live
+      Events:
+        GetDcmawAsyncVc:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /management/cleanupDcmawState
+            Method: POST
+    Metadata:
+      # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - src/handlers/managementCleanupSessionHandler.ts
+
 # lambda to stub management DCMAW Async - enqueueError
   ManagementEnqueueErrorFunction:
     Type: AWS::Serverless::Function
@@ -350,7 +472,49 @@ Resources:
   ManagementEnqueueVcFunctionCoreBuildInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref GetDcmawAsyncAccessTokenFunction
+      FunctionName: !Ref ManagementEnqueueVcFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
+
+  ManagementGenerateVcFunctionCoreDev01InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ManagementGenerateVcFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+
+  ManagementGenerateVcFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ManagementGenerateVcFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
+
+  ManagementGenerateVcFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ManagementGenerateVcFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, build, accountId ]
+
+  ManagementCleanupSessionFunctionCoreDev01InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ManagementCleanupSessionFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev01, accountId ]
+
+  ManagementCleanupSessionFunctionCoreDev02InvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ManagementCleanupSessionFunction
+      Action: "lambda:InvokeFunction"
+      Principal: !FindInMap [ CoreAccounts, dev02, accountId ]
+
+  ManagementCleanupSessionFunctionCoreBuildInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ManagementCleanupSessionFunction
       Action: "lambda:InvokeFunction"
       Principal: !FindInMap [ CoreAccounts, build, accountId ]
 
@@ -373,6 +537,20 @@ Resources:
     Properties:
       RetentionInDays: 14
       LogGroupName: !Sub "/aws/lambda/ManagementEnqueueVc-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  ManagementGenerateVcFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/ManagementGenerateVc-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  ManagementCleanupSessionFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/ManagementCleanupSession-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   ManagementEnqueueErrorFunctionLogGroup:
@@ -495,6 +673,7 @@ Resources:
     DependsOn:
       - GetDcmawAsyncVcFunction
       - GetDcmawAsyncAccessTokenFunction
+      - ManagementCleanupSessionFunction
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
       Name: !Sub DCMAW Async API Gateway ${Environment}

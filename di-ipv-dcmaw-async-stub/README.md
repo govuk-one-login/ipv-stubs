@@ -41,6 +41,8 @@ HTTP/1.1 201 Created
 #### Additionally a management endpoint is exposed, which can be hit manually (for example via curl).
 The `management/enqueueVc` endpoint will build and sign a VC based on the inputs provided and push a VC message onto the CRI response queue (via the queue stub lambda).
 
+The `management/generateVc` endpoint will build and sign a VC based on the inputs provided and return it directly.
+
 The `management/enqueueError` endpoint will push an error message onto the CRI response queue, for example to simulate an "access-denied" error scenario.
 
 See `openAPI/dcmaw-async-external.yaml` for the shape of the requests and expected responses. The user id provided must be that of an already initialised DCMAW session (via the `async/credential` request). The oauth state value passed in the original `async/credential` request will have been stored against the user id so that it can be provided in the VC queue message.

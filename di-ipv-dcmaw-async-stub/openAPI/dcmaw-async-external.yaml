@@ -110,6 +110,34 @@ paths:
             responseTemplates:
               application/json: '{"result": "success"}'
 
+  /management/generateVc:
+    post:
+      description: Generates and returns a VC - for setting up test scenarios
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManagementGenerateVcRequestBody"
+      responses:
+        200:
+          description: "Success response"
+          content:
+            text/plain:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagementGenerateVcFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: '{"result": "success"}'
+
   /management/cleanupDcmawState:
     post:
       description: Cleans up DCMAW session state from stub given a user id.
@@ -245,6 +273,13 @@ components:
         user_id:
           type: string
           description: The id of a user that has an already-initialised session
+        delay_seconds:
+          type: number
+          description: Optional number of seconds to delay delivery of the message (default=0)
+        queue_name:
+          type: string
+          description: Optional queue name to override the stub's default.
+        # Properties for selecting pre-canned VC data
         test_user:
           type: string
           enum: [kennethD]
@@ -260,9 +295,34 @@ components:
         ci:
           type: array
           description: Optional array of CI codes
-        delay_seconds:
+        # Properties for just passing in the full data blocks for the VC
+        credential_subject:
+          type: object
+          description: The credential subject block for the VC
+        evidence:
+          type: object
+          description: The evidence block for the VC
+        nbf:
           type: number
-          description: Optional number of seconds to delay delivery of the message (default=0)
+          description: Optional value for nbf field
+    ManagementGenerateVcRequestBody:
+      description: Request body for generating a VC
+      type: object
+      required:
+        - user_id
+      properties:
+        user_id:
+          type: string
+          description: The id of a user that has an already-initialised session
+        credential_subject:
+          type: object
+          description: The credential subject block for the VC
+        evidence:
+          type: object
+          description: The evidence block for the VC
+        nbf:
+          type: number
+          description: Optional value for nbf field
     ManagementCleanupDCMAWStateRequestBody:
       description: Request body for cleaning up DCMAW state given a user id.
       type: object

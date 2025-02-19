@@ -12,3 +12,16 @@ export function buildApiResponse(
     },
   };
 }
+
+export function buildApiResponseFromString(
+    body: string,
+    statusCode: number = 200,
+): APIGatewayProxyResultV2 {
+  return {
+    statusCode,
+    body: body,
+    headers: {
+      "content-type": "text/plain",
+    },
+  };
+}

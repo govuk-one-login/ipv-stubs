@@ -43,6 +43,35 @@ export async function buildMockVc(
   };
 }
 
+export async function buildMockVcFromSubjectAndEvidence(
+    userId: string,
+    credentialSubject: object,
+    evidence: object,
+    nbf?: number,
+) {
+  const config = await getConfig();
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  return {
+    jti: crypto.randomUUID(),
+    iss: config.vcIssuer,
+    aud: config.vcAudience,
+    sub: userId,
+    iat: timestamp,
+    nbf: nbf || timestamp,
+    vc: {
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://vocab.account.gov.uk/contexts/identity-v1.jsonld",
+      ],
+      type: ["VerifiableCredential", "IdentityCheckCredential"],
+      credentialSubject: credentialSubject,
+      evidence: [
+        evidence
+      ],
+    },
+  };
+}
+
 const testUserClaims = {
   [TestUser.kennethD]: {
     name: [
