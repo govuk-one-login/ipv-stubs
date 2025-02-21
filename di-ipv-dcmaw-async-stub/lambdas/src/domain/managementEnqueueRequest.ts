@@ -39,6 +39,7 @@ export function isManagementEnqueueVcRequestEvidenceAndSubject(request: any): re
 
 export interface ManagementEnqueueErrorRequest {
   user_id: string;
+  queue_name?: string;
   error_code: string;
   error_description?: string;
   delay_seconds?: number;

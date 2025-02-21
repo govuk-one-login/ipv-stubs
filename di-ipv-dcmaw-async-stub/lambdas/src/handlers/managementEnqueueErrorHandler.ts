@@ -30,15 +30,22 @@ export async function handler(
         requestBody.error_description ?? "Error sent via DCMAW Async CRI stub",
     };
 
-    await fetch(config.queueStubUrl, {
+    const queueName = requestBody.queue_name ?? config.queueName;
+    const delaySeconds = requestBody.delay_seconds ?? 0;
+
+    const postResult = await fetch(config.queueStubUrl, {
       method: "POST",
       headers: { "x-api-key": config.queueStubApiKey },
       body: JSON.stringify({
-        queueName: config.queueName,
+        queueName: queueName,
         queueEvent: queueMessage,
-        delaySeconds: requestBody.delay_seconds ?? 0,
+        delaySeconds: delaySeconds,
       }),
     });
+
+    if (!postResult.ok) {
+      throw new Error(`Failed to enqueue VC: ${await postResult.text()}`);
+    }
 
     return buildApiResponse(
       {

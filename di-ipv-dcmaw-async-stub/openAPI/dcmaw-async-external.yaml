@@ -351,3 +351,6 @@ components:
         delay_seconds:
           type: number
           description: Optional number of seconds to delay delivery of the message (default=0)
+        queue_name:
+          type: string
+          description: Optional queue name to override the stub's default.
