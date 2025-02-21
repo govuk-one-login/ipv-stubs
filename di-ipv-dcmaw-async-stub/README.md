@@ -1,4 +1,6 @@
-### DCMAW Async CRI Stub
+# DCMAW Async CRI Stub
+
+## Overview
 This will set up an API gateway in front of a lambda and return access tokens and interim DCMAW cri VCs.
 The async/token POST request to the API gateway should look like
 ```
@@ -38,7 +40,7 @@ HTTP/1.1 201 Created
 }
 ```
 
-#### Additionally a management endpoint is exposed, which can be hit manually (for example via curl).
+### Additionally a management endpoint is exposed, which can be hit manually (for example via curl).
 The `management/enqueueVc` endpoint will build and sign a VC based on the inputs provided and push a VC message onto the CRI response queue (via the queue stub lambda).
 
 The `management/generateVc` endpoint will build and sign a VC based on the inputs provided and return it directly.
@@ -47,9 +49,18 @@ The `management/enqueueError` endpoint will push an error message onto the CRI r
 
 See `openAPI/dcmaw-async-external.yaml` for the shape of the requests and expected responses. The user id provided must be that of an already initialised DCMAW session (via the `async/credential` request). The oauth state value passed in the original `async/credential` request will have been stored against the user id so that it can be provided in the VC queue message.
 
-#### Currently, following SSM parameters are used to control VC structure.
+### Currently, following SSM parameters are used to control VC structure.
 To save hits to SSM we have a single config value in the form of a JSON string
 ```
 /stubs/core/dcmawAsync/config
 ```
 The interface `SsmConfig` can be found in `/lambdas/src/common/config.ts`
+
+## Developing the stub
+
+If you want to run a dev version of the stub and have your dev core-back talk to it:
+- Deploy your dev stub `dev-deploy deploy -u <user> -s dcmaw-async-stub`
+- In config find the `/core/credentialIssuers/dcmawAsync/activeConnection` value in the relevant dev01 or dev02 file
+- Update the value to `dev`
+  - You shouldn't have to, but you may also need to manually replace the `${dev-name}`s
+- Update your config `dev-deploy params -u <user> -dev0X`
