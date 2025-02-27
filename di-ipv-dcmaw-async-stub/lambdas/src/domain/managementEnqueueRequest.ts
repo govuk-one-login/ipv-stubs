@@ -28,6 +28,11 @@ export interface ManagementEnqueueVcRequestEvidenceAndSubject extends Management
   credential_subject: object;
   evidence: object;
   nbf?: number;
+  mitigated_cis: {
+    mitigatedCis: string[];
+    cimitStubUrl: string;
+    cimitStubApiKey: string;
+  }
 }
 
 export function isManagementEnqueueVcRequestEvidenceAndSubject(request: any): request is ManagementEnqueueVcRequestEvidenceAndSubject {

@@ -49,6 +49,10 @@ export async function handler(
           requestBody.evidence,
           requestBody.nbf,
       );
+
+      if (!!requestBody.mitigated_cis) {
+        await mitigateCis(requestBody.mitigated_cis.mitigatedCis, requestBody.mitigated_cis.cimitStubUrl, requestBody.mitigated_cis.cimitStubApiKey, requestBody.user_id, vc.jti);
+      }
     }
     else {
       // We do not want to produce a VC, only to return the oauth state to allows API tests to callback as the mobile
@@ -99,5 +103,37 @@ export async function handler(
       { errorMessage: "Unexpected error: " + getErrorMessage(error) },
       500,
     );
+  }
+}
+
+async function mitigateCis(
+  mitigatedCis: string[],
+  cimitStubUrl: string,
+  cimitStubApiKey: string,
+  userId: string,
+  jwtId: string | undefined) {
+
+  if (mitigatedCis.length === 0) {
+    return;
+  }
+  if (!jwtId) {
+    throw  new Error('Missing JWT ID');
+  }
+
+  for (const ciToMitigate of mitigatedCis) {
+    const cimitUrl = `${cimitStubUrl}/user/${encodeURIComponent(userId)}/mitigations/${encodeURIComponent(ciToMitigate)}`;
+
+    const postResult = await fetch(cimitUrl, {
+      method: "POST",
+      headers: { "x-api-key": cimitStubApiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mitigations: ["M01"],
+        vcJti: jwtId,
+      }),
+    });
+
+    if (!postResult.ok) {
+      throw new Error(`Failed to mitigate CI ${ciToMitigate}: ${await postResult.text()}`);
+    }
   }
 }
