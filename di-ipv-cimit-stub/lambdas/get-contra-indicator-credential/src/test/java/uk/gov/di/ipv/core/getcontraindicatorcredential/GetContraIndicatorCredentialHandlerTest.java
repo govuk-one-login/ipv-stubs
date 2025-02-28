@@ -648,12 +648,13 @@ class GetContraIndicatorCredentialHandlerTest {
 
     private GetCiCredentialErrorResponse makeErrorRequest() throws IOException {
         try (var inputStream =
-                     new ByteArrayInputStream(
-                             objectMapper.writeValueAsBytes(GET_CI_CREDENTIAL_REQUEST));
-             var outputStream = new ByteArrayOutputStream()) {
+                        new ByteArrayInputStream(
+                                objectMapper.writeValueAsBytes(GET_CI_CREDENTIAL_REQUEST));
+                var outputStream = new ByteArrayOutputStream()) {
             getContraIndicatorCredentialHandler.handleRequest(
                     inputStream, outputStream, mockContext);
-            return objectMapper.readValue(outputStream.toString(), GetCiCredentialErrorResponse.class);
+            return objectMapper.readValue(
+                    outputStream.toString(), GetCiCredentialErrorResponse.class);
         }
     }
 }

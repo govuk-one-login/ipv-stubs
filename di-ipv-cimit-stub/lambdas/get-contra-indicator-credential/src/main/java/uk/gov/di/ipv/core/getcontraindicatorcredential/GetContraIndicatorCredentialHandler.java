@@ -80,7 +80,10 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         } catch (Exception e) {
             LOGGER.error(
                     new StringMapMessage().with("Unable to parse input request", e.getMessage()));
-            var errorResponse = new GetCiCredentialErrorResponse(INTERNAL_ERROR_TYPE, "Unable to parse input request. Error message: " + e.getMessage());
+            var errorResponse =
+                    new GetCiCredentialErrorResponse(
+                            INTERNAL_ERROR_TYPE,
+                            "Unable to parse input request. Error message: " + e.getMessage());
             OBJECT_MAPPER.writeValue(output, errorResponse);
             return;
         }
@@ -95,7 +98,11 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                                     "errorDescription",
                                     "Failed at stub during creation of signedJwt. Error message:"
                                             + ex.getMessage()));
-            var errorResponse = new GetCiCredentialErrorResponse(INTERNAL_ERROR_TYPE, "Failed at stub during creation of signedJwt. Error message: " + ex.getMessage());
+            var errorResponse =
+                    new GetCiCredentialErrorResponse(
+                            INTERNAL_ERROR_TYPE,
+                            "Failed at stub during creation of signedJwt. Error message: "
+                                    + ex.getMessage());
             OBJECT_MAPPER.writeValue(output, errorResponse);
             return;
         }
