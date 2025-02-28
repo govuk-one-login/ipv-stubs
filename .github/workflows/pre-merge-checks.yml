@@ -56,3 +56,19 @@ jobs:
       - name: Test
         working-directory: ./di-ipv-ticf-stub/lambdas
         run: npm run test
+  build-dcmaw-async-stub:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install
+        working-directory: ./di-ipv-dcmaw-async-stub/lambdas
+        run: npm ci
+      - name: Lint
+        working-directory: ./di-ipv-dcmaw-async-stub/lambdas
+        run: npm run check
+      - name: Test
+        working-directory: ./di-ipv-dcmaw-async-stub/lambdas
+        run: npm run test

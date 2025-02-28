@@ -1,7 +1,10 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { buildApiResponse } from "../common/apiResponse";
 import getErrorMessage from "../common/errorReporting";
-import {buildMockVc, buildMockVcFromSubjectAndEvidence} from "../domain/mockVc";
+import {
+  buildMockVc,
+  buildMockVcFromSubjectAndEvidence,
+} from "../domain/mockVc";
 import {
   isManagementEnqueueVcRequest,
   isManagementEnqueueVcRequestEvidenceAndSubject,
@@ -9,8 +12,8 @@ import {
 } from "../domain/managementEnqueueRequest";
 import { getState } from "../services/userStateService";
 import getConfig from "../common/config";
-import {JWTPayload} from "jose/dist/types/types";
-import {vcToSignedJwt} from "../domain/signedJwt";
+import { JWTPayload } from "jose/dist/types/types";
+import { vcToSignedJwt } from "../domain/signedJwt";
 
 export async function handler(
   event: APIGatewayProxyEventV2,
@@ -35,30 +38,38 @@ export async function handler(
 
     if (isManagementEnqueueVcRequestIndividualDetails(requestBody)) {
       vc = await buildMockVc(
-          requestBody.user_id,
-          requestBody.test_user,
-          requestBody.document_type,
-          requestBody.evidence_type,
-          requestBody.ci,
+        requestBody.user_id,
+        requestBody.test_user,
+        requestBody.document_type,
+        requestBody.evidence_type,
+        requestBody.ci,
       );
-    }
-    else if (isManagementEnqueueVcRequestEvidenceAndSubject(requestBody)) {
+    } else if (isManagementEnqueueVcRequestEvidenceAndSubject(requestBody)) {
       vc = await buildMockVcFromSubjectAndEvidence(
-          requestBody.user_id,
-          requestBody.credential_subject,
-          requestBody.evidence,
-          requestBody.nbf,
+        requestBody.user_id,
+        requestBody.credential_subject,
+        requestBody.evidence,
+        requestBody.nbf,
       );
-    }
-    else {
+
+      if (requestBody.mitigated_cis) {
+        await mitigateCis(
+          requestBody.mitigated_cis.mitigatedCis,
+          requestBody.mitigated_cis.cimitStubUrl,
+          requestBody.mitigated_cis.cimitStubApiKey,
+          requestBody.user_id,
+          vc.jti,
+        );
+      }
+    } else {
       // We do not want to produce a VC, only to return the oauth state to allows API tests to callback as the mobile
       // app, which includes the state in the callback endpoint as a query parameter.
       return buildApiResponse(
-          {
-            result: "success",
-            oauthState: state,
-          },
-          201,
+        {
+          result: "success",
+          oauthState: state,
+        },
+        201,
       );
     }
 
@@ -99,5 +110,42 @@ export async function handler(
       { errorMessage: "Unexpected error: " + getErrorMessage(error) },
       500,
     );
+  }
+}
+
+async function mitigateCis(
+  mitigatedCis: string[],
+  cimitStubUrl: string,
+  cimitStubApiKey: string,
+  userId: string,
+  jwtId: string | undefined,
+) {
+  if (mitigatedCis.length === 0) {
+    return;
+  }
+  if (!jwtId) {
+    throw new Error("Missing JWT ID");
+  }
+
+  for (const ciToMitigate of mitigatedCis) {
+    const cimitUrl = `${cimitStubUrl}/user/${encodeURIComponent(userId)}/mitigations/${encodeURIComponent(ciToMitigate)}`;
+
+    const postResult = await fetch(cimitUrl, {
+      method: "POST",
+      headers: {
+        "x-api-key": cimitStubApiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mitigations: ["M01"],
+        vcJti: jwtId,
+      }),
+    });
+
+    if (!postResult.ok) {
+      throw new Error(
+        `Failed to mitigate CI ${ciToMitigate}: ${await postResult.text()}`,
+      );
+    }
   }
 }

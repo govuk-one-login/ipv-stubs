@@ -14,8 +14,8 @@ export function buildApiResponse(
 }
 
 export function buildApiResponseFromString(
-    body: string,
-    statusCode: number = 200,
+  body: string,
+  statusCode: number = 200,
 ): APIGatewayProxyResultV2 {
   return {
     statusCode,

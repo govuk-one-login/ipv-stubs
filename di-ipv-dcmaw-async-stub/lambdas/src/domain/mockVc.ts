@@ -44,10 +44,10 @@ export async function buildMockVc(
 }
 
 export async function buildMockVcFromSubjectAndEvidence(
-    userId: string,
-    credentialSubject: object,
-    evidence: object,
-    nbf?: number,
+  userId: string,
+  credentialSubject: object,
+  evidence: object,
+  nbf?: number,
 ) {
   const config = await getConfig();
   const timestamp = Math.round(new Date().getTime() / 1000);
@@ -65,9 +65,7 @@ export async function buildMockVcFromSubjectAndEvidence(
       ],
       type: ["VerifiableCredential", "IdentityCheckCredential"],
       credentialSubject: credentialSubject,
-      evidence: [
-        evidence
-      ],
+      evidence: [evidence],
     },
   };
 }
@@ -141,6 +139,6 @@ const evidence = {
           biometricVerificationProcessLevel: 3,
         },
       ],
-    }
+    },
   },
 };
