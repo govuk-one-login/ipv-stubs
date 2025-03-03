@@ -30,6 +30,8 @@ import uk.gov.di.ipv.core.library.service.ConfigService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
@@ -98,6 +100,21 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
                                     "errorDescription",
                                     "Failed at stub during creation of signedJwt. Error message:"
                                             + ex.getMessage()));
+
+            // It is possible to catch an exception here with a null message. Log the stack trace so
+            // that we can see what is going on.
+            StringWriter writer = new StringWriter();
+            PrintWriter printWriter = new PrintWriter(writer);
+            ex.printStackTrace(printWriter);
+            printWriter.flush();
+
+            LOGGER.error(
+                    new StringMapMessage()
+                            .with(
+                                    "errorDescription",
+                                    "Failed at stub during creation of signedJwt. Error trace:"
+                                            + writer));
+
             var errorResponse =
                     new GetCiCredentialErrorResponse(
                             INTERNAL_ERROR_TYPE,
