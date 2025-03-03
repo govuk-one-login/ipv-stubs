@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.security.InvalidParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
@@ -188,6 +189,12 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
     }
 
     private ContraIndicator createContraIndicator(CimitStubItem item) {
+        if (item.getIssuer() == null) {
+            throw new InvalidParameterException("Stub item has null issuer");
+        }
+        if (item.getTxn() == null) {
+            throw new InvalidParameterException("Stub item has null txn");
+        }
         return new ContraIndicator(
                 item.getContraIndicatorCode(),
                 item.getDocument(),
