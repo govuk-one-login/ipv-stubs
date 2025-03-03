@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialErrorResponse;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialRequest;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialResponse;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.ContraIndicator;
@@ -627,11 +628,11 @@ class GetContraIndicatorCredentialHandlerTest {
     void shouldFailForWrongCimitKey() throws IOException {
         when(mockConfigService.getCimitSigningKey()).thenReturn("Invalid_cimit_key");
 
-        var response = makeRequest();
+        var response = makeErrorRequest();
 
         verify(mockConfigService).getCimitSigningKey();
 
-        assertEquals("Failure", response.getVc());
+        assertEquals("INTERNAL_ERROR", response.getErrorType());
     }
 
     private GetCiCredentialResponse makeRequest() throws IOException {
@@ -642,6 +643,18 @@ class GetContraIndicatorCredentialHandlerTest {
             getContraIndicatorCredentialHandler.handleRequest(
                     inputStream, outputStream, mockContext);
             return objectMapper.readValue(outputStream.toString(), GetCiCredentialResponse.class);
+        }
+    }
+
+    private GetCiCredentialErrorResponse makeErrorRequest() throws IOException {
+        try (var inputStream =
+                        new ByteArrayInputStream(
+                                objectMapper.writeValueAsBytes(GET_CI_CREDENTIAL_REQUEST));
+                var outputStream = new ByteArrayOutputStream()) {
+            getContraIndicatorCredentialHandler.handleRequest(
+                    inputStream, outputStream, mockContext);
+            return objectMapper.readValue(
+                    outputStream.toString(), GetCiCredentialErrorResponse.class);
         }
     }
 }

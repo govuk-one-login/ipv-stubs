@@ -14,6 +14,7 @@ import com.nimbusds.jwt.SignedJWT;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.StringMapMessage;
+import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialErrorResponse;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialRequest;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.GetCiCredentialResponse;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.ContraIndicator;
@@ -43,7 +44,7 @@ import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLA
 
 public class GetContraIndicatorCredentialHandler implements RequestStreamHandler {
 
-    private static final String FAILURE_RESPONSE = "Failure";
+    private static final String INTERNAL_ERROR_TYPE = "INTERNAL_ERROR";
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final JWSHeader JWT_HEADER =
@@ -73,31 +74,40 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
         LOGGER.info(
                 new StringMapMessage().with("Function invoked:", "GetContraIndicatorCredential"));
         GetCiCredentialRequest event = null;
-        String response = null;
+        GetCiCredentialResponse response = null;
         try {
             event = OBJECT_MAPPER.readValue(input, GetCiCredentialRequest.class);
         } catch (Exception e) {
             LOGGER.error(
                     new StringMapMessage().with("Unable to parse input request", e.getMessage()));
-            response = FAILURE_RESPONSE;
+            var errorResponse =
+                    new GetCiCredentialErrorResponse(
+                            INTERNAL_ERROR_TYPE,
+                            "Unable to parse input request. Error message: " + e.getMessage());
+            OBJECT_MAPPER.writeValue(output, errorResponse);
+            return;
         }
 
-        if (response == null) {
-            SignedJWT signedJWT;
-            try {
-                signedJWT = generateJWT(event.getUserId());
-                response = signedJWT.serialize();
-            } catch (Exception ex) {
-                LOGGER.error(
-                        new StringMapMessage()
-                                .with(
-                                        "errorDescription",
-                                        "Failed at stub during creation of signedJwt. Error message:"
-                                                + ex.getMessage()));
-                response = FAILURE_RESPONSE;
-            }
+        try {
+            SignedJWT signedJWT = generateJWT(event.getUserId());
+            response = new GetCiCredentialResponse(signedJWT.serialize());
+        } catch (Exception ex) {
+            LOGGER.error(
+                    new StringMapMessage()
+                            .with(
+                                    "errorDescription",
+                                    "Failed at stub during creation of signedJwt. Error message:"
+                                            + ex.getMessage()));
+            var errorResponse =
+                    new GetCiCredentialErrorResponse(
+                            INTERNAL_ERROR_TYPE,
+                            "Failed at stub during creation of signedJwt. Error message: "
+                                    + ex.getMessage());
+            OBJECT_MAPPER.writeValue(output, errorResponse);
+            return;
         }
-        OBJECT_MAPPER.writeValue(output, new GetCiCredentialResponse(response));
+
+        OBJECT_MAPPER.writeValue(output, response);
     }
 
     private SignedJWT generateJWT(String userId)
