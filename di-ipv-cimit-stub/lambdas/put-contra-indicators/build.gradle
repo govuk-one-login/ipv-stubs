@@ -16,13 +16,13 @@ java {
 dependencies {
 	implementation "com.amazonaws:aws-lambda-java-core:1.2.3",
 			"com.amazonaws:aws-lambda-java-events:3.14.0",
-			"software.amazon.awssdk:dynamodb-enhanced:2.30.5",
+			"software.amazon.awssdk:dynamodb-enhanced:2.30.31",
 			"com.fasterxml.jackson.core:jackson-annotations:2.18.2",
 			"com.fasterxml.jackson.core:jackson-databind:2.18.2",
 			"org.apache.logging.log4j:log4j-api:2.24.3",
 			"org.apache.logging.log4j:log4j-core:2.24.3",
 			"org.apache.logging.log4j:log4j-layout-template-json:2.24.3",
-			"com.nimbusds:oauth2-oidc-sdk:11.21.2",
+			"com.nimbusds:oauth2-oidc-sdk:11.23.1",
 			project(":di-ipv-cimit-stub:lib")
 
 	compileOnly "org.projectlombok:lombok:1.18.36"

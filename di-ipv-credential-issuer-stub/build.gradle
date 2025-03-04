@@ -18,7 +18,7 @@ dependencies {
 	implementation "io.javalin:javalin:6.3.0",
 			"io.javalin:javalin-rendering:6.3.0",
 			"com.github.spullara.mustache.java:compiler:0.9.14",
-			"com.nimbusds:oauth2-oidc-sdk:11.21.2",
+			"com.nimbusds:oauth2-oidc-sdk:11.23.1",
 			"com.fasterxml.jackson.core:jackson-core:2.18.2",
 			"com.fasterxml.jackson.core:jackson-databind:2.18.2",
 			"com.fasterxml.jackson.core:jackson-annotations:2.18.2",
