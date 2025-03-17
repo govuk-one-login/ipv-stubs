@@ -85,8 +85,11 @@ public class JwtBuilder {
             Scope scope,
             String clientId,
             String evcsAccessToken)
-            throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
-                    JsonProcessingException, ParseException {
+            throws NoSuchAlgorithmException,
+                    InvalidKeySpecException,
+                    JOSEException,
+                    JsonProcessingException,
+                    ParseException {
         String audience = getIpvCoreAudience(environment);
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
@@ -182,8 +185,8 @@ public class JwtBuilder {
                     ("DEV_THEAB") -> RSAKey.parse(ORCHESTRATOR_DEV02_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("BUILD") -> RSAKey.parse(ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("STAGING") -> RSAKey.parse(ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK);
-            case ("INTEGRATION") -> RSAKey.parse(
-                    ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_JWK);
+            case ("INTEGRATION") ->
+                    RSAKey.parse(ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_JWK);
             default -> RSAKey.parse(ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK);
         };
     }
