@@ -5,6 +5,8 @@ import java.net.URI;
 public record CredentialIssuer(
         String id,
         String name,
+        URI jwksEndpoint,
+        boolean useKeyRotation,
         URI authorizeUrl,
         URI tokenUrl,
         URI credentialUrl,

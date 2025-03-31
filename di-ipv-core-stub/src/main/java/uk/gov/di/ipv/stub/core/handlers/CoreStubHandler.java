@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -290,7 +291,7 @@ public class CoreStubHandler {
 
     private <T> void sendAuthorizationRequest(
             Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims)
-            throws ParseException, JOSEException, JsonProcessingException {
+            throws ParseException, JOSEException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
         EvidenceRequestClaims evidenceRequest = request.session().attribute("evidence_request");
@@ -340,7 +341,7 @@ public class CoreStubHandler {
 
     private AuthorizationRequest createBackendAuthorizationRequest(
             CredentialIssuer credentialIssuer, JWTClaimsSet claimsSet)
-            throws JOSEException, java.text.ParseException {
+            throws JOSEException, java.text.ParseException, MalformedURLException {
         AuthorizationRequest authRequest =
                 handlerHelper.createBackEndAuthorizationJAR(credentialIssuer, claimsSet);
         LOGGER.info("🚀 Created AuthorizationRequest for state {}", claimsSet.getClaim("state"));
