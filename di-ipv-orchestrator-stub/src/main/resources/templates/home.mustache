@@ -80,7 +80,7 @@
             <div class="govuk-form-group">
                 <label class="govuk-label" for="targetEnvironment">Choose a target environment (optional):</label>
                 <select class="govuk-select" name="targetEnvironment" id="targetEnvironment">
-                    <option value="DEFAULT">default</option>
+                    <option value="{{defaultEnvironmentValue}}" selected>default</option>
                     <option value="DEV">dev</option>
                     <option value="BUILD">build</option>
                     <option value="STAGING">staging</option>
