@@ -24,9 +24,10 @@ public class HomeHandler {
         //
         // Dev stub deployments have to be associated to users (due to the way dev-deploy works).
         // This means we must use the main orch stub. Selenium tests with the @Build tag use the
-        // "default" environment option - but since we are on the main orch stub, it defaults as
-        // build. We use the orch stub url defaultEnvironment query parameter to override the
-        // default, since we set this url for each environment's tests config.
+        // "default" environment option - but since we are on the main orch stub, it defaults to
+        // the build environment. So for the shared dev environment we use the orch stub url
+        // defaultEnvironment query parameter to override the default, since we set this url for
+        // each environment's tests config.
         String defaultEnvironment = ctx.queryParam("defaultEnvironment");
         if (defaultEnvironment == null || defaultEnvironment.isBlank()) {
             defaultEnvironment = "DEFAULT";
