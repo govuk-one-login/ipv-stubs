@@ -170,7 +170,7 @@ public class JwtBuilder {
 
     private static RSAKey getEncryptionKey(String targetEnvironment) throws ParseException {
         return switch (targetEnvironment) {
-            case ("BUILD") -> RSAKey.parse(ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK);
+            case ("DEV"), ("BUILD") -> RSAKey.parse(ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("STAGING") -> RSAKey.parse(ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("INTEGRATION") -> RSAKey.parse(
                     ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_JWK);
@@ -180,6 +180,7 @@ public class JwtBuilder {
 
     private static String getIpvCoreAudience(String targetEnvironment) {
         return switch (targetEnvironment) {
+            case ("DEV") -> "https://dev.01.dev.identity.account.gov.uk/";
             case ("BUILD") -> "https://identity.build.account.gov.uk";
             case ("STAGING") -> "https://identity.staging.account.gov.uk";
             case ("INTEGRATION") -> "https://identity.integration.account.gov.uk";

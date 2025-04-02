@@ -20,8 +20,14 @@ public class HomeHandler {
         String journeyId = UUID.randomUUID().toString();
         String userId = NON_APP_JOURNEY_USER_ID_PREFIX + UUID.randomUUID();
 
+        String defaultEnvironment = ctx.queryParam("defaultEnvironment");
+        if (defaultEnvironment == null || defaultEnvironment.isBlank()) {
+            defaultEnvironment = "DEFAULT";
+        }
+
         moustacheDataModel.put("signInJourneyId", journeyId);
         moustacheDataModel.put("uuid", userId);
+        moustacheDataModel.put("defaultEnvironment", defaultEnvironment);
         moustacheDataModel.put(
                 "credentialSubjects", getData("/data/inheritedJWTCredentialSubjects.json"));
         moustacheDataModel.put("evidences", getData("/data/inheritedJWTEvidences.json"));
