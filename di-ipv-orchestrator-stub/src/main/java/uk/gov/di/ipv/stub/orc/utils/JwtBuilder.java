@@ -170,7 +170,7 @@ public class JwtBuilder {
 
     private static RSAKey getEncryptionKey(String targetEnvironment) throws ParseException {
         return switch (targetEnvironment) {
-            case ("DEV"), ("BUILD") -> RSAKey.parse(ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK);
+            case ("BUILD") -> RSAKey.parse(ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("STAGING") -> RSAKey.parse(ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("INTEGRATION") -> RSAKey.parse(
                     ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_JWK);
