@@ -20,6 +20,10 @@ public class HomeHandler {
         String journeyId = UUID.randomUUID().toString();
         String userId = NON_APP_JOURNEY_USER_ID_PREFIX + UUID.randomUUID();
 
+        // Dev stub deployments have to be associated to users (due to the way dev-deploy works). This means we must
+        // use the main orch stub. Selenium tests with the @Build tag use the "default" environment option - but since
+        // we are on the main orch stub, it defaults as build. We use the orch stub url defaultEnvironment query
+        // parameter to override the default, since we set this url for each environment's tests config.
         String defaultEnvironment = ctx.queryParam("defaultEnvironment");
         if (defaultEnvironment == null || defaultEnvironment.isBlank()) {
             defaultEnvironment = "DEFAULT";
