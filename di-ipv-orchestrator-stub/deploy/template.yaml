@@ -473,6 +473,8 @@ Resources:
               Value: '{{resolve:ssm:/stubs/orch/env/AUTH_SIGNING_JWK}}'
             - Name: ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK}}'
+            - Name: ORCHESTRATOR_DEV_JAR_ENCRYPTION_PUBLIC_JWK
+              Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_DEV_JAR_ENCRYPTION_PUBLIC_JWK}}'
             - Name: ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK}}'
             - Name: ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK
