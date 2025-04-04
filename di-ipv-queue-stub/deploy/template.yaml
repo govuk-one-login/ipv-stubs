@@ -68,7 +68,7 @@ Resources:
     Properties:
       CodeUri: "../enqueue-event/src/handlers"
       Handler: enqueueEvent.handler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       Architectures:
         - arm64
       KmsKeyArn: !GetAtt LambdaKmsKey.Arn
@@ -148,7 +148,7 @@ Resources:
     Properties:
       CodeUri: "../enqueue-event/src/handlers"
       Handler: dequeueEvent.handler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       Architectures:
         - arm64
       KmsKeyArn: !GetAtt LambdaKmsKey.Arn
@@ -346,7 +346,7 @@ Resources:
     Properties:
       CodeUri: "../enqueue-event/src/handlers"
       Handler: cleanQueues.handler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       Architectures:
         - arm64
       KmsKeyArn: !GetAtt LambdaKmsKey.Arn

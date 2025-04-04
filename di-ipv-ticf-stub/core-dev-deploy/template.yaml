@@ -73,7 +73,7 @@ Resources:
       FunctionName: !Sub "getTicfVC-${Environment}"
       CodeUri: "../lambdas"
       Handler: ticfHandler.handler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -135,7 +135,7 @@ Resources:
       FunctionName: !Sub "manageUserEvidence-${Environment}"
       CodeUri: "../lambdas"
       Handler: managementHandler.handler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
         - arm64

@@ -100,7 +100,7 @@ Resources:
       FunctionName: !Sub "evcsCreateUserVCs-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsHandler.createHandler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -163,7 +163,7 @@ Resources:
       FunctionName: !Sub "evcsUpdateUserVCs-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsHandler.updateHandler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -226,7 +226,7 @@ Resources:
       FunctionName: !Sub "evcsGetUserVCs-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsHandler.getHandler
-      Runtime: nodejs20.x
+      Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
         - arm64
