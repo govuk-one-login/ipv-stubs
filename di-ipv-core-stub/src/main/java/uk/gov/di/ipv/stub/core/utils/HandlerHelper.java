@@ -2,6 +2,7 @@ package uk.gov.di.ipv.stub.core.utils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nimbusds.jose.EncryptionMethod;
@@ -51,9 +52,13 @@ import uk.gov.di.ipv.stub.core.config.CoreStubConfig;
 import uk.gov.di.ipv.stub.core.config.credentialissuer.CredentialIssuer;
 import uk.gov.di.ipv.stub.core.config.uatuser.EvidenceRequestClaims;
 import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
+import uk.gov.di.ipv.stub.core.dto.WellKnownJwk;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -61,6 +66,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -184,8 +190,7 @@ public class HandlerHelper {
                         this.ecSigningKey.getKeyID(),
                         null);
 
-        TokenRequest tokenRequest = new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
-        return tokenRequest;
+        return new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
     }
 
     public TokenResponse parseTokenResponse(HTTPResponse httpResponse) {
@@ -259,7 +264,7 @@ public class HandlerHelper {
             T sharedClaims,
             EvidenceRequestClaims evidenceRequest,
             String context)
-            throws JOSEException, java.text.ParseException, JsonProcessingException {
+            throws JOSEException, java.text.ParseException {
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
 
         JWTClaimsSet claimsSet =
@@ -453,26 +458,113 @@ public class HandlerHelper {
 
     public EncryptedJWT encryptJWT(SignedJWT signedJWT, CredentialIssuer credentialIssuer) {
         try {
-            JWEObject jweObject =
-                    new JWEObject(
-                            new JWEHeader.Builder(
-                                            JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM)
-                                    .contentType("JWT")
-                                    .build(),
-                            new Payload(signedJWT));
-            jweObject.encrypt(new RSAEncrypter(getEncryptionPublicKey(credentialIssuer)));
+            JWEHeader.Builder headerBuilder =
+                    new JWEHeader.Builder(JWEAlgorithm.RSA_OAEP_256, EncryptionMethod.A256GCM)
+                            .contentType("JWT");
+
+            List<WellKnownJwk> jwkList;
+            String hashedKeyID = "";
+            RSAKey rsaKey;
+            boolean useKeyRotation = credentialIssuer.useKeyRotation();
+            LOGGER.info("useKeyRotation is set to {}", useKeyRotation);
+            if (useKeyRotation) {
+                // automated key rotation path
+
+                jwkList = getWellKnownJwks(credentialIssuer);
+
+                int jwkListLast = jwkList.size() - 1;
+                // Gets current public encryption key
+                WellKnownJwk wellKnownJwk = jwkList.get(jwkListLast);
+                rsaKey = new RSAKey.Builder(wellKnownJwk.getN(), wellKnownJwk.getE()).build();
+                String encryptionKeyId = wellKnownJwk.getKid();
+
+                hashedKeyID = getHashedKeyId(encryptionKeyId);
+                // passes hashed current encryption key ID in JWE header
+                headerBuilder.keyID(hashedKeyID);
+
+            } else {
+
+                String keyValueFromFile = credentialIssuer.publicEncryptionJwkBase64();
+                rsaKey = getEncryptionPublicKey(keyValueFromFile);
+            }
+
+            JWEObject jweObject = new JWEObject(headerBuilder.build(), new Payload(signedJWT));
+
+            encryptJWEObject(jweObject, rsaKey);
 
             return EncryptedJWT.parse(jweObject.serialize());
-        } catch (JOSEException | java.text.ParseException e) {
-            throw new RuntimeException("JWT encryption failed", e);
+        } catch (java.text.ParseException e) {
+            LOGGER.error("Error parsing JWT");
+            throw new RuntimeException(e);
         }
     }
 
-    private RSAKey getEncryptionPublicKey(CredentialIssuer credentialIssuer)
-            throws java.text.ParseException {
-        return RSAKey.parse(
-                new String(
-                        Base64.getDecoder().decode(credentialIssuer.publicEncryptionJwkBase64())));
+    private String getHashedKeyId(String encryptionKeyId) {
+        String hashedKeyID;
+        try {
+            hashedKeyID = createHashedKeyId(encryptionKeyId);
+            LOGGER.info("Key ID successfully hashed");
+        } catch (NoSuchAlgorithmException e) {
+            LOGGER.error("Error: Required key hashing algorithm not found");
+            throw new RuntimeException(e);
+        }
+        return hashedKeyID;
+    }
+
+    // creates hashed key ID from current encryption key ID obtained from JWKS Endpoint
+    private String createHashedKeyId(String keyId) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(keyId.getBytes(StandardCharsets.UTF_8));
+        return HexFormat.of().formatHex(hash);
+    }
+
+    // Gets CRI public encryption keys from JWKS endpoint
+    private List<WellKnownJwk> getWellKnownJwks(CredentialIssuer credentialIssuer) {
+        List<WellKnownJwk> jwkList;
+        try {
+            String jsonStringWithKey = getJWKs(credentialIssuer);
+
+            jwkList = objectMapper.readValue(jsonStringWithKey, new TypeReference<>() {});
+        } catch (IOException e) {
+            LOGGER.error("Error mapping JWKS JSON to list");
+            throw new RuntimeException(e);
+        }
+        return jwkList;
+    }
+
+    private static void encryptJWEObject(JWEObject jweObject, RSAKey rsaKey) {
+        try {
+            jweObject.encrypt(new RSAEncrypter(rsaKey));
+        } catch (JOSEException e) {
+            LOGGER.error("Error during JWE encryption");
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Gets CRI JWKS
+    public String getJWKs(CredentialIssuer credentialIssuer) {
+        HTTPRequest jwksEndpointRequest =
+                new HTTPRequest(HTTPRequest.Method.GET, credentialIssuer.jwksEndpoint());
+
+        String apiKey =
+                CoreStubConfig.getConfigValue(credentialIssuer.apiKeyEnvVar(), UNKNOWN_ENV_VAR);
+        if (!apiKey.equals(UNKNOWN_ENV_VAR)) {
+            LOGGER.info(
+                    "Found api key and sending it in JWKS request to cri: {}",
+                    credentialIssuer.id());
+            jwksEndpointRequest.setHeader(API_KEY_HEADER, apiKey);
+        } else {
+            LOGGER.warn(
+                    "Did not find api key for env var {}, not setting api key header {} in JWKS request",
+                    credentialIssuer.apiKeyEnvVar(),
+                    API_KEY_HEADER);
+        }
+        HTTPResponse jwksEndpointHttpResponse = sendHttpRequest(jwksEndpointRequest);
+        return jwksEndpointHttpResponse.getBody();
+    }
+
+    private RSAKey getEncryptionPublicKey(String key) throws java.text.ParseException {
+        return RSAKey.parse(new String(Base64.getDecoder().decode(key)));
     }
 
     public boolean checkES256SignatureFormat(SignedJWT signedJWT) throws JOSEException {
