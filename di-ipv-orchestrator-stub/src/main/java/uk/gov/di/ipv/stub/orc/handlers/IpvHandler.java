@@ -18,7 +18,6 @@ import com.nimbusds.oauth2.sdk.SerializeException;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
-import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.PrivateKeyJWT;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
@@ -227,7 +226,7 @@ public class IpvHandler {
     private URI getIpvBackchannelEndpoint(String environment) throws URISyntaxException {
         String url =
                 switch (environment) {
-                    case ("DEV") -> "https://dev.01.dev.identity.account.gov.uk/";
+                    case ("DEV") -> "https://api.dev.01.dev.identity.account.gov.uk/";
                     case ("BUILD") -> "https://api.identity.build.account.gov.uk/";
                     case ("STAGING") -> "https://api.identity.staging.account.gov.uk/";
                     case ("INTEGRATION") -> "https://api.identity.integration.account.gov.uk/";
@@ -318,11 +317,10 @@ public class IpvHandler {
     private AccessToken exchangeCodeForToken(
             AuthorizationCode authorizationCode, String targetEnvironment, boolean isAuthStub)
             throws OrchestratorStubException, URISyntaxException {
-        URI resolve = getIpvBackchannelEndpoint(targetEnvironment).resolve(TOKEN_PATH);
-        LOGGER.debug("token url is " + resolve);
+        var tokenUri = getIpvBackchannelEndpoint(targetEnvironment).resolve(TOKEN_PATH);
+        LOGGER.debug("token url is " + tokenUri);
 
         SignedJWT signedClientJwt;
-
         try {
             JWTClaimsSet claims = buildClientAuthenticationClaims(targetEnvironment);
             signedClientJwt = JwtBuilder.createSignedJwt(claims, isAuthStub);
@@ -331,12 +329,10 @@ public class IpvHandler {
             throw new OrchestratorStubException("Failed to generate orch client JWT");
         }
 
-        ClientAuthentication clientAuthentication = new PrivateKeyJWT(signedClientJwt);
-
         TokenRequest tokenRequest =
                 new TokenRequest(
-                        resolve,
-                        clientAuthentication,
+                        tokenUri,
+                        new PrivateKeyJWT(signedClientJwt),
                         new AuthorizationCodeGrant(
                                 authorizationCode, URI.create(ORCHESTRATOR_REDIRECT_URL)));
 
