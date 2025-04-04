@@ -182,7 +182,7 @@ public class JwtBuilder {
 
     private static String getIpvCoreAudience(String targetEnvironment) {
         return switch (targetEnvironment) {
-            case ("DEV") -> "https://dev.01.dev.identity.account.gov.uk/";
+            case ("DEV") -> "https://dev.01.dev.identity.account.gov.uk";
             case ("BUILD") -> "https://identity.build.account.gov.uk";
             case ("STAGING") -> "https://identity.staging.account.gov.uk";
             case ("INTEGRATION") -> "https://identity.integration.account.gov.uk";
