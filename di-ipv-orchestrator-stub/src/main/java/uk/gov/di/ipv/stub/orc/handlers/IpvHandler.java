@@ -226,7 +226,7 @@ public class IpvHandler {
     private URI getIpvBackchannelEndpoint(String environment) throws URISyntaxException {
         String url =
                 switch (environment) {
-                    case ("DEV") -> "https://api.dev.01.dev.identity.account.gov.uk/";
+                    case ("DEV") -> "https://api-dev.01.dev.identity.account.gov.uk/";
                     case ("BUILD") -> "https://api.identity.build.account.gov.uk/";
                     case ("STAGING") -> "https://api.identity.staging.account.gov.uk/";
                     case ("INTEGRATION") -> "https://api.identity.integration.account.gov.uk/";
