@@ -8,6 +8,8 @@ public class CredentialIssuerMapper {
     public CredentialIssuer map(Map<String, Object> map) {
         String id = (String) map.get("id");
         String name = (String) map.get("name");
+        URI jwksEndpoint = URI.create((String) map.get("jwksEndpoint"));
+        boolean useKeyRotation = Boolean.parseBoolean(map.get("useKeyRotation").toString());
         URI authorizeUrl = URI.create((String) map.get("authorizeUrl"));
         URI tokenUrl = URI.create((String) map.get("tokenUrl"));
         URI credentialUrl = URI.create((String) map.get("credentialUrl"));
@@ -21,6 +23,8 @@ public class CredentialIssuerMapper {
         return new CredentialIssuer(
                 id,
                 name,
+                jwksEndpoint,
+                useKeyRotation,
                 authorizeUrl,
                 tokenUrl,
                 credentialUrl,
