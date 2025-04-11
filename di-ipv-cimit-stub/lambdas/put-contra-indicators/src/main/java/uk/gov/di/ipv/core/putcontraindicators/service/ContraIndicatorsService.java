@@ -158,6 +158,9 @@ public class ContraIndicatorsService {
             if (!CollectionUtils.isNullOrEmpty(credentialSubject.residencePermit())) {
                 return credentialSubject.residencePermit().get(0).toIdentifier();
             }
+            if (!CollectionUtils.isNullOrEmpty(credentialSubject.socialSecurityRecord())) {
+                return credentialSubject.socialSecurityRecord().get(0).toIdentifier();
+            }
         }
         return null;
     }

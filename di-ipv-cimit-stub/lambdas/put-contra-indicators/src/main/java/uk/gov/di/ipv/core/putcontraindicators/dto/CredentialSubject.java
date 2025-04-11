@@ -8,4 +8,5 @@ import java.util.List;
 public record CredentialSubject(
         List<DrivingPermit> drivingPermit,
         List<Passport> passport,
-        List<ResidencePermit> residencePermit) {}
+        List<ResidencePermit> residencePermit,
+        List<SocialSecurityRecord> socialSecurityRecord) {}
