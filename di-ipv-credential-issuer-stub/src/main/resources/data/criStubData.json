@@ -3914,35 +3914,39 @@
       }
     },
     {
-      "name": [
-        {
-          "nameParts": [
-            {
-              "value": "Claire",
-              "type": "GivenName"
-            },
-            {
-              "value": "Aarts",
-              "type": "FamilyName"
-            }
-          ]
-        }
-      ],
-      "birthDate": [
-        {
-          "value": "1997-06-29"
-        }
-      ],
-      "address": [
-        {
-          "addressCountry": "GB",
-          "buildingName": "1",
-          "streetName": "Hudswell Road",
-          "postalCode": "LS10 1AG",
-          "addressLocality": "Leeds",
-          "validFrom": "1996-01-01"
-        }
-      ]
+      "criType": "DWP KBV (Stub)",
+      "label": "Claire Aarts (Valid) DWP KBV (Thin file)",
+      "payload": {
+        "name": [
+          {
+            "nameParts": [
+              {
+                "value": "Claire",
+                "type": "GivenName"
+              },
+              {
+                "value": "Aarts",
+                "type": "FamilyName"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1997-06-29"
+          }
+        ],
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "1",
+            "streetName": "Hudswell Road",
+            "postalCode": "LS10 1AG",
+            "addressLocality": "Leeds",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
     },
     {
       "criType": "UK Passport (Stub)",
