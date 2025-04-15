@@ -3879,6 +3879,41 @@
       }
     },
     {
+      "criType": "DWP KBV (Stub)",
+      "label": "Tom Hardy (Valid) DWP KBV",
+      "payload": {
+        "name": [
+        {
+          "nameParts": [
+            {
+              "value": "Tom",
+              "type": "GivenName"
+            },
+            {
+              "value": "Hardy",
+              "type": "FamilyName"
+            }
+          ]
+        }
+        ],
+        "birthDate": [
+            {
+              "value": "1980-03-15"
+            }
+        ],
+        "address": [
+          {
+            "addressCountry": "GB",
+            "buildingName": "34",
+            "streetName": "Diamond Street",
+            "postalCode": "NE28 8RL",
+            "addressLocality": "Wallsend",
+            "validFrom": "1996-01-01"
+          }
+        ]
+      }
+    },
+    {
       "criType": "UK Passport (Stub)",
       "label": "Alice Parker (Valid) Passport",
       "payload": {
