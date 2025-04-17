@@ -54,6 +54,9 @@ import uk.gov.di.ipv.stub.core.config.uatuser.Identity;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -291,8 +294,10 @@ public class HandlerHelper {
             throws JOSEException {
         JWSAlgorithm signingAlgorithm = JWSAlgorithm.parse(credentialIssuer.expectedAlgo());
         JWTSigner jwtSigner = new JWTSigner();
-        JWSHeader header =
-                new JWSHeader.Builder(signingAlgorithm).keyID(jwtSigner.getKeyId()).build();
+        String hashedKid = getHashedKeyId(jwtSigner.getKeyId());
+        LOGGER.info("Hashed KID: {}", hashedKid);
+
+        JWSHeader header = new JWSHeader.Builder(signingAlgorithm).keyID(hashedKid).build();
 
         SignedJWT signedJWT = new SignedJWT(header, claimSets);
 
@@ -486,6 +491,24 @@ public class HandlerHelper {
                         ECKey.parse(
                                 base64Decode(
                                         credentialIssuer.publicVCSigningVerificationJwkBase64()))));
+    }
+
+    private String getHashedKeyId(String keyId) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(keyId.getBytes(StandardCharsets.UTF_8));
+            return bytesToHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        }
+    }
+
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder hex = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            hex.append(String.format("%02x", b));
+        }
+        return hex.toString();
     }
 
     private String base64Decode(String value) {
