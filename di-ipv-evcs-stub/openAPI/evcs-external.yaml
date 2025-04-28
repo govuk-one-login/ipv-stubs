@@ -162,6 +162,49 @@ paths:
             statusCode: 200
             responseTemplates:
               application/json: '{"result": "success"}'
+
+  /vcs:
+    put:
+      summary: Creates & Updates (Replaces) a batch of unique VCs and optionally a Stored Identity (SI) Object into EVCS.
+      description: |-
+        Save a batch of VCs and optionally a Stored Identity Object into EVCS.
+        A Stored Identity Object is the signed JWT that IPV Core creates and updates that is stored in the `content` field of an EVCS row.
+
+
+        **Note:**
+        - All VC updates are updated in *a single transactional operation*, hence:
+        - If any VCs are duplicated but with different `state` values → reject all with HTTP400.
+      requestBody:
+        required: true
+        content:
+          applicatoin/json:
+            schema:
+              $ref: "#/components/schemas/PersistVCsWithStoredIdentity"
+      responses:
+        202:
+          description: VCs Accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersistResponse"
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+      x-amazon-apigateway-request-validator: ALL
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsPutUserVCsFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          default:
+            statusCode: 202
+            responseTemplates:
+              application/json: '{"result": "success"}'
   /migration/{userId}:
     get:
       description: "Returns a list of user verifiable credentials"
@@ -233,6 +276,12 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
     PostUserVCRequestBody:
       description: Request body for EVCS post user VCs request
@@ -272,6 +321,69 @@ components:
         required:
           - signature
           - state
+    PersistVCsWithStoredIdentity:
+      description: The request body passed to the /vcs PUT endpoint which allows VCS to be saved with or without a corresponding Stored Identity object.
+      type: object
+      properties:
+        userId:
+          type: string
+          description: The user ID associated with the VCs
+        vcs:
+          $ref: "#/components/schemas/PersistVCsArray"
+        si:
+          $ref: "#/components/schemas/StoredIdentityDetails"
+      required:
+        - userId
+        - vcs
+    StoredIdentityDetails:
+      type: object
+      properties:
+        jwt:
+          $ref: "#/components/schemas/VC"
+        vot:
+          $ref: "#/components/schemas/VectorOfTrust"
+        metadata:
+          $ref: "#/components/schemas/VCMetadata"
+      required:
+        - jwt
+        - vot
+    PersistVCsArray:
+      description: An array of VCs to be persisted in EVCS with state and, optionally, metadata and provenance information.
+      type: array
+      minItems: 1
+      uniqueItems: true
+      items:
+        type: object
+        properties:
+          vc:
+            $ref: "#/components/schemas/VC"
+          state:
+            anyOf:
+              - $ref: "#/components/schemas/CreateStates"
+              - $ref: "#/components/schemas/UpdateStates"
+          metadata:
+            $ref: "#/components/schemas/VCMetadata"
+          provenance:
+            $ref: "#/components/schemas/VCProvenance"
+        required:
+          - vc
+          - state
+    VectorOfTrust:
+      title: Vector of Trust
+      description: |-
+        The highest Level of Confidence that has been attained by the VC bundle.
+        This is used to determine the type of SI that should be checked, either a GPG45 or an Operational Profile
+        provided by another org.
+      type: string
+      default: P2
+      example: P2
+      enum:
+        - P1     # gpg45 profile
+        - P2     # gpg45 profile
+        - P3     # gpg45 profile
+        - P4     # gpg45 profile
+        - PCL200 # hmrc op profile
+        - PCL250 # hmrc op profile
     VC:
       title: Verifiable Credential (Signed JWT)
       description: A JWT formatted Verifiable Credential.
