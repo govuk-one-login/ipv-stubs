@@ -8,7 +8,7 @@ public class OrchestratorConfig {
             getConfigValue("IPV_BACKCHANNEL_ENDPOINT", "http://localhost:4502");
     public static final String AUTH_CLIENT_ID = getConfigValue("AUTH_CLIENT_ID", "stubAuth");
     public static final String ORCHESTRATOR_CLIENT_ID =
-            getConfigValue("ORCHESTRATOR_CLIENT_ID", "orchestrator");
+            getConfigValue("ORCHESTRATOR_CLIENT_ID", "orchStub");
     public static final String ORCHESTRATOR_REDIRECT_URL =
             getConfigValue("ORCHESTRATOR_REDIRECT_URL", "http://localhost:4500/callback");
     public static final String ORCHESTRATOR_SIGNING_JWK =
