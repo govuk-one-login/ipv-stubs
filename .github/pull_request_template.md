@@ -30,6 +30,3 @@
 
 <!-- Delete if changes don't apply -->
 - [ ] Tests have been written/updated
-
-<!-- Delete if changes don't apply -->
-- [ ] Production changes appropriately staged out
