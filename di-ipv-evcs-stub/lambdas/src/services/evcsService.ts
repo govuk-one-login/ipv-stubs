@@ -19,6 +19,10 @@ import { getSsmParameter } from "../common/ssmParameter";
 import { v4 as uuid } from "uuid";
 import PatchRequest from "../domain/patchRequest";
 import VCProvenance from "../domain/enums/vcProvenance";
+import PutRequest from "../domain/putRequest";
+import { VcDetails } from "../domain/sharedTypes";
+import { StatusCodes } from "../domain/enums/statusCodes";
+import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 
 const dynamoClient = config.isLocalDev
   ? new DynamoDB({
@@ -42,7 +46,7 @@ export async function processPostUserVCsRequest(
       const vcItem: EvcsVcItem = {
         userId,
         vc: postRequestItem.vc,
-        vcSignature: postRequestItem.vc.split(".")[2],
+        vcSignature: getSignatureFromJwt(postRequestItem.vc),
         state: postRequestItem.state,
         metadata:
           postRequestItem.metadata != undefined ? postRequestItem.metadata : {},
@@ -52,7 +56,7 @@ export async function processPostUserVCsRequest(
             : VCProvenance.ONLINE,
         ttl,
       };
-      allPromises.push(saveUserVC(vcItem));
+      allPromises.push(saveUserEvcsItem(vcItem));
     }
 
     console.info(`Saving all user VC's.`);
@@ -61,7 +65,7 @@ export async function processPostUserVCsRequest(
       response: {
         messageId: uuid(),
       },
-      statusCode: 202,
+      statusCode: StatusCodes.Accepted,
     };
   } catch (error) {
     console.error(error);
@@ -69,10 +73,57 @@ export async function processPostUserVCsRequest(
       response: {
         messageId: "",
       },
-      statusCode: 500,
+      statusCode: StatusCodes.InternalServerError,
     };
   }
   return response;
+}
+
+export async function processPutUserVCsRequest(
+  putRequest: PutRequest,
+): Promise<ServiceResponse> {
+  console.info("Put user record");
+
+  try {
+    const ttl = await getTtl();
+    // Save each vc to EvcsStubUserVcsStoreTable
+    await Promise.all(
+      putRequest.vcs.map(({ vc, state, metadata, provenance }: VcDetails) => {
+        const vcItemForStorage: EvcsVcItem = {
+          userId: putRequest.userId,
+          vcSignature: getSignatureFromJwt(vc),
+          state,
+          provenance: provenance || VCProvenance.ONLINE,
+          metadata,
+          ttl,
+        };
+        return saveUserEvcsItem(vcItemForStorage);
+      }),
+    );
+
+    // Save stored identity object if present
+    if (putRequest.si) {
+      const storedIdentityItem: EvcsStoredIdentityItem = {
+        userId: putRequest.userId,
+        jwtSignature: getSignatureFromJwt(putRequest.si.jwt),
+        storedIdentity: putRequest.si.jwt,
+        levelOfConfidence: putRequest.si.vot,
+        metadata: putRequest.si.metadata,
+        isValid: true,
+      };
+      await saveUserEvcsItem(storedIdentityItem);
+    }
+
+    return {
+      response: { messageId: uuid() },
+      statusCode: StatusCodes.Accepted,
+    };
+  } catch (error) {
+    return {
+      response: { messageId: "" },
+      statusCode: StatusCodes.InternalServerError,
+    };
+  }
 }
 
 export async function processGetUserVCsRequest(
@@ -114,7 +165,7 @@ export async function processGetUserVCsRequest(
     response: {
       vcs: vcItems,
     },
-    statusCode: 200,
+    statusCode: StatusCodes.Success,
   };
 }
 
@@ -140,21 +191,25 @@ export async function processPatchUserVCsRequest(
     console.info(`Updating user VC's.`);
     await Promise.all(allPromises);
     return {
-      statusCode: 204,
+      statusCode: StatusCodes.NoContent,
     };
   } catch (error) {
     console.error(error);
     return {
       response: { message: "Unable to update VCs" },
-      statusCode: 500,
+      statusCode: StatusCodes.InternalServerError,
     };
   }
 }
 
-async function saveUserVC(evcsVcItem: EvcsVcItem) {
+async function saveUserEvcsItem(
+  evcsItem: EvcsVcItem | EvcsStoredIdentityItem,
+): Promise<PutItemCommandOutput> {
   const putItemInput: PutItemInput = {
-    TableName: config.evcsStubUserVCsTableName,
-    Item: marshall(evcsVcItem, {
+    TableName: isEvcsVcItem(evcsItem)
+      ? config.evcsStubUserVCsTableName
+      : config.evcsStoredIdentityObjectTableName,
+    Item: marshall(evcsItem, {
       removeUndefinedValues: true,
     }),
   };
@@ -190,4 +245,14 @@ async function getTtl(): Promise<number> {
     await getSsmParameter(config.evcsParamBasePath + "evcsStubTtl"),
   );
   return Math.floor(Date.now() / 1000) + evcsTtlSeconds;
+}
+
+function getSignatureFromJwt(jwt: string): string {
+  return jwt.split(".")[2];
+}
+
+function isEvcsVcItem(
+  evcsSaveItem: EvcsVcItem | EvcsStoredIdentityItem,
+): evcsSaveItem is EvcsVcItem {
+  return (evcsSaveItem as EvcsVcItem).vcSignature !== undefined;
 }

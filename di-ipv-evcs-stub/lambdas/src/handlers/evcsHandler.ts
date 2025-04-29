@@ -9,11 +9,16 @@ import {
   UpdateVcStates,
   VcState,
 } from "../domain/enums/vcState";
-import { processPostUserVCsRequest } from "../services/evcsService";
+import {
+  processPostUserVCsRequest,
+  processPutUserVCsRequest,
+} from "../services/evcsService";
 import { processGetUserVCsRequest } from "../services/evcsService";
 import { processPatchUserVCsRequest } from "../services/evcsService";
 import { verifyTokenAndReturnPayload } from "../services/jwtService";
 import { getErrorMessage } from "../common/utils";
+import PutRequest from "../domain/putRequest";
+import { VcDetails } from "../domain/sharedTypes";
 
 export async function createHandler(
   event: APIGatewayProxyEvent,
@@ -59,6 +64,24 @@ export async function updateHandler(
     decodeURIComponent(userId),
     request,
   );
+
+  return buildApiResponse(res.response, res.statusCode);
+}
+
+export async function putHandler(
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResultV2> {
+  console.info(`---Put request received----`);
+
+  let parsedPutRequest;
+  try {
+    parsedPutRequest = parsePutRequest(event);
+  } catch (error) {
+    console.error(error);
+    return buildApiResponse({ message: getErrorMessage(error) }, 400);
+  }
+
+  const res = await processPutUserVCsRequest(parsedPutRequest);
 
   return buildApiResponse(res.response, res.statusCode);
 }
@@ -109,6 +132,41 @@ export async function getHandler(
     console.error(error);
     return buildApiResponse({ message: getErrorMessage(error) }, 500);
   }
+}
+
+function parsePutRequest(event: APIGatewayProxyEvent): PutRequest {
+  console.info(`---Parsing put request----`);
+
+  if (!event.body) {
+    throw new Error("Missing request body");
+  }
+
+  const parsedPutRequest = JSON.parse(event.body);
+
+  // Validate top-level request attributes
+  if (
+    !parsedPutRequest.userId ||
+    !parsedPutRequest.vcs ||
+    parsedPutRequest.vcs.length === 0
+  ) {
+    throw new Error("Invalid request");
+  }
+
+  // Validate vcs
+  parsedPutRequest.vcs.forEach((vc: VcDetails) => {
+    if (!vc.state || !vc.vc) {
+      throw new Error("Invalid vc details");
+    }
+  });
+
+  // Validate stored identity object
+  if (parsedPutRequest.si) {
+    if (!parsedPutRequest.si.jwt || !parsedPutRequest.si.vot) {
+      throw new Error("Invalid stored identity object");
+    }
+  }
+
+  return parsedPutRequest;
 }
 
 function parsePostRequest(event: APIGatewayProxyEvent): PostRequest[] {
