@@ -367,7 +367,7 @@ describe("evcs handlers", () => {
   describe("get handler", () => {
     it("should return 200 for a valid request with encoded state values", async () => {
       // arrange
-      const testResult = {vcs: []};
+      const testResult = { vcs: [] };
       jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
         statusCode: 200,
         response: testResult,
@@ -393,7 +393,7 @@ describe("evcs handlers", () => {
 
     it("should return 200 for a valid request with not encoded state values", async () => {
       // arrange
-      const testResult = {vcs: []};
+      const testResult = { vcs: [] };
       jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
         statusCode: 200,
         response: testResult,
@@ -419,7 +419,7 @@ describe("evcs handlers", () => {
 
     it("should return 200 for a valid request with all states", async () => {
       // arrange
-      const testResult = {vcs: []};
+      const testResult = { vcs: [] };
       jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
         statusCode: 200,
         response: testResult,
@@ -450,7 +450,7 @@ describe("evcs handlers", () => {
 
     it("should return 200 for a migration request with no access token", async () => {
       // arrange
-      const testResult = {vcs: []};
+      const testResult = { vcs: [] };
       jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
         statusCode: 200,
         response: testResult,

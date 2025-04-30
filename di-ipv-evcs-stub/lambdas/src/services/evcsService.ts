@@ -90,6 +90,7 @@ export async function processPutUserVCsRequest(
 
   try {
     const ttl = await getTtl();
+
     // Read user's existing VCs
     const getResponse = await processGetUserVCsRequest(userId, [
       VcState.CURRENT,
@@ -111,8 +112,14 @@ export async function processPutUserVCsRequest(
     // Update existing user VCs in EVCS with new states
     const existingUserVcs = getResponse.response.vcs;
     const newVcSignatures = newUserVcs.map(({ vc }) => getSignatureFromJwt(vc));
-    const updateExistingVcsRequests = existingUserVcs.map(
-      ({ vc, state: currentState, metadata }) => {
+
+    // We skip creating an update request for an existing VC that is in the
+    // put request as TransactWriteItems cannot perform multiple operations
+    // on the same item. The put method will replace the existing vc anyway
+    // so we get to save an operation
+    const updateExistingVcsRequests = existingUserVcs
+      .filter(({ vc }) => !newVcSignatures.includes(getSignatureFromJwt(vc)))
+      .map(({ vc, state: currentState, metadata }) => {
         const vcSignature = getSignatureFromJwt(vc);
 
         const mappedVcToUpdateItem = createUpdateItemInput({
@@ -124,8 +131,7 @@ export async function processPutUserVCsRequest(
         }) as Update;
 
         return { Update: mappedVcToUpdateItem };
-      },
-    );
+      });
 
     // Write new VCs with new state using PUT
     const putNewUserVsRequests = newUserVcs.map(
@@ -171,6 +177,7 @@ export async function processPutUserVCsRequest(
       statusCode: StatusCodes.Accepted,
     };
   } catch (error) {
+    console.error("Failed to complete transaction.", error);
     return {
       response: { messageId: "" },
       statusCode: StatusCodes.InternalServerError,
