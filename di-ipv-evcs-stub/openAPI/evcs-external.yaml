@@ -177,7 +177,7 @@ paths:
       requestBody:
         required: true
         content:
-          applicatoin/json:
+          application/json:
             schema:
               $ref: "#/components/schemas/PersistVCsWithStoredIdentity"
       responses:
@@ -186,7 +186,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PersistResponse"
+                type: object
+                properties:
+                  messageId:
+                    type: string
+                    description: The SQS message ID.
+                    example: "bd8359d9-d559-47dd-9467-2a31e88a9e2d"
         400:
           $ref: '#/components/responses/BadRequest'
         403:
@@ -205,6 +210,7 @@ paths:
             statusCode: 202
             responseTemplates:
               application/json: '{"result": "success"}'
+
   /migration/{userId}:
     get:
       description: "Returns a list of user verifiable credentials"
