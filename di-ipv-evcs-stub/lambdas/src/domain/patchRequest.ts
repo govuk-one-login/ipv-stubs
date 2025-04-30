@@ -5,4 +5,3 @@ export default interface PatchRequest {
   state: VcState;
   metadata?: object;
 }
-[];
