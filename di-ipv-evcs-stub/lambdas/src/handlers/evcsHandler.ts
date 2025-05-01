@@ -1,23 +1,22 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
 import { JWTPayload } from "jose";
 import { buildApiResponse } from "../common/apiResponses";
-import PostRequest from "../domain/postRequest";
-import PatchRequest from "../domain/patchRequest";
+import { PostRequest, PatchRequest, PutRequest } from "../domain/requests";
 import ServiceResponse from "../domain/serviceResponse";
 import {
   CreateVcStates,
+  StatusCodes,
   UpdateVcStates,
   VcState,
-} from "../domain/enums/vcState";
+} from "../domain/enums";
 import {
   processPostUserVCsRequest,
   processPutUserVCsRequest,
+  processGetUserVCsRequest,
+  processPatchUserVCsRequest,
 } from "../services/evcsService";
-import { processGetUserVCsRequest } from "../services/evcsService";
-import { processPatchUserVCsRequest } from "../services/evcsService";
 import { verifyTokenAndReturnPayload } from "../services/jwtService";
 import { getErrorMessage } from "../common/utils";
-import PutRequest from "../domain/putRequest";
 import { VcDetails } from "../domain/sharedTypes";
 
 export async function createHandler(
@@ -26,7 +25,10 @@ export async function createHandler(
   console.info(`---Create Request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse({ message: "Missing userId." }, 400);
+    return buildApiResponse(
+      { message: "Missing userId." },
+      StatusCodes.BadRequest,
+    );
   }
 
   let request;
@@ -34,7 +36,10 @@ export async function createHandler(
     request = parsePostRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ message: getErrorMessage(error) }, 400);
+    return buildApiResponse(
+      { message: getErrorMessage(error) },
+      StatusCodes.BadRequest,
+    );
   }
   const res = await processPostUserVCsRequest(
     decodeURIComponent(userId),
@@ -50,7 +55,10 @@ export async function updateHandler(
   console.info(`---Update request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse({ message: "Missing userId." }, 400);
+    return buildApiResponse(
+      { message: "Missing userId." },
+      StatusCodes.BadRequest,
+    );
   }
 
   let request;
@@ -58,7 +66,10 @@ export async function updateHandler(
     request = parsePatchRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ message: getErrorMessage(error) }, 400);
+    return buildApiResponse(
+      { message: getErrorMessage(error) },
+      StatusCodes.BadRequest,
+    );
   }
   const res = await processPatchUserVCsRequest(
     decodeURIComponent(userId),
@@ -78,7 +89,10 @@ export async function putHandler(
     parsedPutRequest = parsePutRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ message: getErrorMessage(error) }, 400);
+    return buildApiResponse(
+      { message: getErrorMessage(error) },
+      StatusCodes.BadRequest,
+    );
   }
 
   const res = await processPutUserVCsRequest(parsedPutRequest);
@@ -92,7 +106,10 @@ export async function getHandler(
   console.info(`---Get request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse({ message: "Missing userId." }, 400);
+    return buildApiResponse(
+      { message: "Missing userId." },
+      StatusCodes.BadRequest,
+    );
   }
   const decodedUserId = decodeURIComponent(userId);
 
@@ -118,7 +135,10 @@ export async function getHandler(
           );
     } catch (error) {
       console.error(error);
-      return buildApiResponse({ message: getErrorMessage(error) }, 400);
+      return buildApiResponse(
+        { message: getErrorMessage(error) },
+        StatusCodes.BadRequest,
+      );
     }
 
     let res: ServiceResponse = {
@@ -130,7 +150,10 @@ export async function getHandler(
     return buildApiResponse(res.response, res.statusCode);
   } catch (error) {
     console.error(error);
-    return buildApiResponse({ message: getErrorMessage(error) }, 500);
+    return buildApiResponse(
+      { message: getErrorMessage(error) },
+      StatusCodes.InternalServerError,
+    );
   }
 }
 

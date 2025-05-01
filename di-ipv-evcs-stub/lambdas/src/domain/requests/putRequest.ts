@@ -1,4 +1,4 @@
-import { VcDetails } from "./sharedTypes";
+import { VcDetails } from "../sharedTypes";
 
 interface StoredIdentityDetails {
   jwt: string;
@@ -6,7 +6,7 @@ interface StoredIdentityDetails {
   metadata?: object;
 }
 
-export default interface PutRequest {
+export interface PutRequest {
   userId: string;
   vcs: VcDetails[];
   si?: StoredIdentityDetails;

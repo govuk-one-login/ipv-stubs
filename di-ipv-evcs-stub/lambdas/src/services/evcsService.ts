@@ -11,19 +11,20 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
-import PostRequest from "../domain/postRequest";
 import ServiceResponse, { GetResponse } from "../domain/serviceResponse";
-import { VcState } from "../domain/enums/vcState";
+import { VcState, StatusCodes, VCProvenance } from "../domain/enums";
 import EvcsVcItem from "../model/evcsVcItem";
 
 import { config } from "../common/config";
 import { getSsmParameter } from "../common/ssmParameter";
 import { v4 as uuid } from "uuid";
-import PatchRequest from "../domain/patchRequest";
-import VCProvenance from "../domain/enums/vcProvenance";
-import PutRequest from "../domain/putRequest";
+import {
+  PatchRequest,
+  EvcsItemForUpdate,
+  PutRequest,
+  PostRequest,
+} from "../domain/requests";
 import { VcDetails } from "../domain/sharedTypes";
-import { StatusCodes } from "../domain/enums/statusCodes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 
 const dynamoClient = config.isLocalDev
@@ -102,10 +103,12 @@ export async function processPutUserVCsRequest(
       !getResponse.response ||
       (!!getResponse.response && !("vcs" in getResponse.response))
     ) {
-      console.error("Failed to read existing user VCs from EVCS");
+      console.error(
+        `Failed to read existing user VCs from EVCS with ${getResponse.statusCode}`,
+      );
       return {
         response: { messageId: "" },
-        statusCode: getResponse.statusCode,
+        statusCode: StatusCodes.InternalServerError,
       };
     }
 
@@ -237,7 +240,7 @@ export async function processPatchUserVCsRequest(
     const allPromises: Promise<UpdateItemCommandOutput>[] = [];
     const ttl = await getTtl();
     for (const patchRequestItem of patchRequest) {
-      const vcItem: Omit<EvcsVcItem, "vc"> = {
+      const vcItem: EvcsItemForUpdate = {
         userId,
         vcSignature: patchRequestItem.signature,
         state: patchRequestItem.state,
@@ -279,7 +282,7 @@ async function saveUserEvcsItem(
   return dynamoClient.putItem(putItemInput);
 }
 
-function createUpdateItemInput(evcsVcItem: Omit<EvcsVcItem, "vc">) {
+function createUpdateItemInput(evcsVcItem: EvcsItemForUpdate) {
   return {
     TableName: config.evcsStubUserVCsTableName,
     Key: {
@@ -304,7 +307,7 @@ function createUpdateItemInput(evcsVcItem: Omit<EvcsVcItem, "vc">) {
   };
 }
 
-async function updateUserVC(evcsVcItem: Omit<EvcsVcItem, "vc">) {
+async function updateUserVC(evcsVcItem: EvcsItemForUpdate) {
   const updateItemInput: UpdateItemInput = createUpdateItemInput(evcsVcItem);
   updateItemInput.ReturnValues = "ALL_NEW";
   return dynamoClient.updateItem(updateItemInput);

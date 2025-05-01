@@ -1,5 +1,4 @@
-import { VcState } from "./enums/vcState";
-import VCProvenance from "./enums/vcProvenance";
+import { VcState, VCProvenance } from "./enums";
 
 export interface VcDetails {
   vc: string;

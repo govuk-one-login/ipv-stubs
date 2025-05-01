@@ -16,11 +16,10 @@ import {
   processPostUserVCsRequest,
   processPutUserVCsRequest,
 } from "../src/services/evcsService";
-import { VcState } from "../src/domain/enums/vcState";
-import VCProvenance from "../src/domain/enums/vcProvenance";
+import { VcState, VCProvenance } from "../src/domain/enums";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda/trigger/api-gateway-proxy";
-import PutRequest from "../src/domain/putRequest";
+import { PutRequest } from "../src/domain/requests";
 
 jest.mock("../src/services/evcsService", () => ({
   processGetUserVCsRequest: jest.fn(),
