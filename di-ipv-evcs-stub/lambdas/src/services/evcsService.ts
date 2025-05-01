@@ -4,7 +4,6 @@ import {
   PutItemCommandOutput,
   QueryInput,
   TransactWriteItem,
-  TransactWriteItemsCommand,
   Update,
   UpdateItemCommandOutput,
   UpdateItemInput,
@@ -170,10 +169,9 @@ export async function processPutUserVCsRequest(
       transactItems.push({ Put: createPutItem(storedIdentityItem) });
     }
 
-    const transactionCommand = new TransactWriteItemsCommand({
+    await dynamoClient.transactWriteItems({
       TransactItems: transactItems,
     });
-    await dynamoClient.send(transactionCommand);
 
     return {
       response: { messageId: uuid() },
