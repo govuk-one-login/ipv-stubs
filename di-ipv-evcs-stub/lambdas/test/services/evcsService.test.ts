@@ -376,7 +376,7 @@ function createUserVcUpdateItem(updateVcDetails: {
       },
       ExpressionAttributeValues: {
         ":stateValue": marshall(updateVcDetails.state),
-        ":metadata": {
+        ":metadataValue": {
           M: marshall(TEST_METADATA),
         },
       },

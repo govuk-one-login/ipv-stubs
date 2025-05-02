@@ -296,7 +296,7 @@ function createUpdateItemInput(evcsVcItem: EvcsItemForUpdate) {
       ":stateValue": marshall(evcsVcItem.state),
       ...(evcsVcItem.metadata
         ? {
-            ":metadata": {
+            ":metadataValue": {
               M: marshall(evcsVcItem.metadata, { removeUndefinedValues: true }),
             },
           }
