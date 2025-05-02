@@ -429,12 +429,11 @@ public class HandlerHelper {
 
         JWTSigner jwtSigner = new JWTSigner();
 
-        String hashedKid = getHashedKeyId(jwtSigner.getKeyId());
-        LOGGER.info("Hashed KID: {}", hashedKid);
-
         SignedJWT signedJWT =
                 new SignedJWT(
-                        new JWSHeader.Builder(jwsSigningAlgorithm).keyID(hashedKid).build(),
+                        new JWSHeader.Builder(jwsSigningAlgorithm)
+                                .keyID(jwtSigner.getKeyId())
+                                .build(),
                         new JWTClaimsSet.Builder()
                                 .subject(getSubject())
                                 .audience(credentialIssuer.audience().toString())
