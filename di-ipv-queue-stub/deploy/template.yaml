@@ -18,7 +18,7 @@ Parameters:
     Type: String
     Description: >
       The ARN of the Code Signing Config to use, provided by the deployment pipeline
-    Default: ""
+    Default: "none"
   Environment:
     Description: The name of the environment to deploy to.
     Type: String
@@ -65,6 +65,8 @@ Resources:
   EnqueueEventLambda:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     Properties:
       CodeUri: "../enqueue-event/src/handlers"
       Handler: enqueueEvent.handler
@@ -145,6 +147,8 @@ Resources:
   DequeueEventLambda:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     Properties:
       CodeUri: "../enqueue-event/src/handlers"
       Handler: dequeueEvent.handler
@@ -343,6 +347,8 @@ Resources:
   CleanQueuesLambda:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: not valid for this lambda
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     Properties:
       CodeUri: "../enqueue-event/src/handlers"
       Handler: cleanQueues.handler
