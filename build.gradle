@@ -10,7 +10,7 @@ repositories {
 spotless {
 	java {
 		target "**/src/**/*.java"
-		googleJavaFormat("1.14.0").aosp()
+		googleJavaFormat("1.25.2").aosp()
 		importOrder "", "javax", "java", "\\#"
 		endWithNewline()
 	}
