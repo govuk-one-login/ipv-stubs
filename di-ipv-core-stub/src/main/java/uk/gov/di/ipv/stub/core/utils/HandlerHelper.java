@@ -181,13 +181,16 @@ public class HandlerHelper {
                 new AuthorizationCodeGrant(
                         authorizationCode, CoreStubConfig.CORE_STUB_REDIRECT_URL);
 
+        String hashedKid = getHashedKeyId(this.ecSigningKey.getKeyID());
+        LOGGER.info("hashed KID is {}", hashedKid);
+
         PrivateKeyJWT privateKeyJWT =
                 new PrivateKeyJWT(
                         new JWTAuthenticationClaimsSet(
                                 clientID, new Audience(credentialIssuer.audience())),
                         JWSAlgorithm.ES256,
                         this.ecSigningKey.toECPrivateKey(),
-                        this.ecSigningKey.getKeyID(),
+                        hashedKid,
                         null);
 
         return new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
