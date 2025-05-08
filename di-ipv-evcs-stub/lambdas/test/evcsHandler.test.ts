@@ -348,6 +348,15 @@ describe("evcs handlers", () => {
         case: "si.vot is missing",
       },
       {
+        request: buildPutRequest({
+          vcs: [
+            {vc: "some.vc.sig", state: VcState.CURRENT},
+            {vc: "some.vc.sig", state: VcState.HISTORIC}
+          ]
+        }),
+        case: "duplicate vcs"
+      },
+      {
         request: buildPutRequest({ si: { jwt: undefined, vot: "P2" } }),
         case: "si.jwt is missing",
       },
