@@ -95,7 +95,10 @@ public class CredentialIssuer {
         } else {
             app.post("/credentials/issue", credentialHandler::getResource);
         }
-        app.post("/credentials/generate", generateCredentialHandler::generateCredential);
+        app.post(
+                "/credentials/generate",
+                generateCredentialHandler
+                        ::generateCredential); // Make this able to take pending record as well?
         app.get("/.well-known/jwks.json", jwksHandler::getResource);
     }
 
