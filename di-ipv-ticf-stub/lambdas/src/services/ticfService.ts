@@ -18,25 +18,17 @@ export async function processGetVCRequest(
   const ticfComponentId = await getSsmParameter(
     config.ticfParamBasePath + "componentId",
   );
-  const timeoutVc =
-    (
-      await getSsmParameter(config.ticfParamBasePath + "timeoutVC")
-    ).toLowerCase() === "true";
-  const includeCi =
-    (
-      await getSsmParameter(config.ticfParamBasePath + "includeCIToVC")
-    ).toLowerCase() === "true";
 
   const timestamp = Math.floor(new Date().getTime() / 1000);
   const userEvidenceItem = await getUserEvidenceFromDb(ticfRequest.sub);
+  if (userEvidenceItem) {
+    console.info("Returning pre-configured response");
+  }
 
-  const responseDelay = userEvidenceItem?.responseDelay;
-  if (responseDelay && responseDelay > 0) {
-    console.info(
-      `response delay configured for ticf request - sleeping for ${responseDelay} seconds`,
-    );
-    await new Promise((r) => setTimeout(r, 1000 * responseDelay));
-    console.info("woken up");
+  const responseDelay = await getResponseDelay(userEvidenceItem);
+  if (responseDelay > 0) {
+    console.info(`Response delay configured for ${responseDelay}ms`);
+    await new Promise((r) => setTimeout(r, responseDelay));
   }
 
   const ticfEvidenceItem = userEvidenceItem?.evidence;
@@ -50,7 +42,7 @@ export async function processGetVCRequest(
     iat: timestamp,
     vc: {
       evidence: [
-        ticfEvidenceItem || getDefaultEvidenceItem(timeoutVc, includeCi),
+        ticfEvidenceItem || getDefaultEvidenceItem(),
       ],
       type: ["VerifiableCredential", "RiskAssessmentCredential"],
     },
@@ -71,17 +63,9 @@ export async function processGetVCRequest(
   };
 }
 
-function getDefaultEvidenceItem(
-  timeoutVc: boolean,
-  includeCi: boolean,
-): TicfEvidenceItem {
-  if (timeoutVc) {
-    return { type: "RiskAssessment" };
-  }
-
+function getDefaultEvidenceItem(): TicfEvidenceItem {
   return {
     type: "RiskAssessment",
-    ...(includeCi ? { ci: ["V03"] } : {}),
     txn: uuid(),
   };
 }
@@ -92,6 +76,14 @@ async function getUserEvidenceFromDb(
   const userEvidenceItem: UserEvidenceItem | null =
     await getUserEvidence(userId);
   return userEvidenceItem ?? undefined;
+}
+
+async function getResponseDelay(userEvidenceItem: UserEvidenceItem | undefined): Promise<number> {
+  if (userEvidenceItem?.responseDelay) {
+    return userEvidenceItem.responseDelay * 1000;
+  }
+  const param = await getSsmParameter("defaultResponseDelay");
+  return parseInt(param);
 }
 
 export default processGetVCRequest;
