@@ -354,7 +354,16 @@ describe("evcs handlers", () => {
             {vc: "some.vc.sig", state: VcState.HISTORIC}
           ]
         }),
-        case: "duplicate vcs"
+        case: "duplicate vcs with different states"
+      },
+      {
+        request: buildPutRequest({
+          vcs: [
+            {vc: "some.vc.sig", state: VcState.CURRENT},
+            {vc: "some.vc.sig", state: VcState.CURRENT}
+          ]
+        }),
+        case: "duplicate vcs with the same states"
       },
       {
         request: buildPutRequest({ si: { jwt: undefined, vot: "P2" } }),
