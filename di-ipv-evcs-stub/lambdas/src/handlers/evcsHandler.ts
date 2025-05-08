@@ -167,25 +167,40 @@ function parsePutRequest(event: APIGatewayProxyEvent): PutRequest {
   const parsedPutRequest = JSON.parse(event.body);
 
   // Validate top-level request attributes
-  if (
-    !parsedPutRequest.userId ||
-    !parsedPutRequest.vcs ||
-    parsedPutRequest.vcs.length === 0
-  ) {
-    throw new Error("Invalid request");
+  if (!parsedPutRequest.userId) {
+    throw new Error("Invalid request: missing userId");
+  }
+
+  if (!parsedPutRequest.vcs || parsedPutRequest.vcs.length === 0) {
+    throw new Error("Invalid request: missing or empty vcs");
   }
 
   // Validate vcs
   parsedPutRequest.vcs.forEach((vc: VcDetails) => {
-    if (!vc.state || !vc.vc) {
-      throw new Error("Invalid vc details");
+    if (!vc.vc) {
+      throw new Error("Invalid vc details: missing vc");
+    }
+
+    if (!vc.state) {
+      throw new Error("Invalid vc details: missing state");
     }
   });
 
+  const uniqueVcs = new Set(
+    parsedPutRequest.vcs.map((vc: VcDetails) => vc.vc),
+  );
+  if (uniqueVcs.size !== parsedPutRequest.vcs.length) {
+    throw new Error("Invalid vcs: cannot have duplicate VCs in request");
+  }
+
   // Validate stored identity object
   if (parsedPutRequest.si) {
-    if (!parsedPutRequest.si.jwt || !parsedPutRequest.si.vot) {
-      throw new Error("Invalid stored identity object");
+    if (!parsedPutRequest.si.jwt) {
+      throw new Error("Invalid stored identity object: missing jwt");
+    }
+
+    if (!parsedPutRequest.si.vot) {
+      throw new Error("Invalid stored identity object: missing vot");
     }
   }
 
