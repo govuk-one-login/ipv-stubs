@@ -1295,6 +1295,41 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
+      "label": "Kenneth Decerqueira (Valid) DVLA Licence 2",
+      "payload": {
+        "drivingPermit": [
+          {
+            "personalNumber": "DECER607085K99AE",
+            "expiryDate": "2035-05-01",
+            "issueDate": "2025-05-02",
+            "issueNumber": "17",
+            "issuedBy": "DVLA",
+            "fullAddress": "8 HADLEY ROAD BATH BA2 5AA"
+          }
+        ],
+        "name": [
+          {
+            "nameParts": [
+              {
+                "type": "GivenName",
+                "value": "KENNETH"
+              },
+              {
+                "type": "FamilyName",
+                "value": "DECERQUEIRA"
+              }
+            ]
+          }
+        ],
+        "birthDate": [
+          {
+            "value": "1965-07-08"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "DOC Checking App (Stub)",
       "label": "Kenneth Decerqueira (Valid) DVA Licence",
       "payload": {
         "drivingPermit": [
