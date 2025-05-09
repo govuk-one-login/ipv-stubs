@@ -53,14 +53,13 @@ async function parseTicfVc(jwt: string): Promise<TicfVc> {
 }
 
 describe("TICF handler", function () {
-  it("returns a successful VC response", async () => {
+  it("returns a successful default VC response", async () => {
     // arrange
     jest
       .mocked(getParameter)
       .mockResolvedValueOnce(EC_PRIVATE_KEY)
       .mockResolvedValueOnce(TEST_COMPONENT_ID)
-      .mockResolvedValueOnce("false")
-      .mockResolvedValueOnce("false");
+      .mockResolvedValueOnce("10");
 
     // act
     const result = (await handler(
@@ -98,14 +97,13 @@ describe("TICF handler", function () {
     expect(ticfVc.vc.evidence[0].txn).toBeTruthy();
   });
 
-  it("returns a VC (with evidence from db) when includeCIToVC is true", async () => {
+  it("returns a VC with evidence from DB", async () => {
     // arrange
     jest
       .mocked(getParameter)
       .mockResolvedValueOnce(EC_PRIVATE_KEY)
       .mockResolvedValueOnce(TEST_COMPONENT_ID)
-      .mockResolvedValueOnce("false")
-      .mockResolvedValueOnce("true");
+      .mockResolvedValueOnce("10");
 
     const userEvidence: UserEvidenceItem = {
       userId:
@@ -136,59 +134,6 @@ describe("TICF handler", function () {
     expect(ticfVc.vc.evidence[0].type).toEqual("RiskAssessment");
     expect(ticfVc.vc.evidence[0].txn).toEqual("uuid");
     expect(ticfVc.vc.evidence[0].ci).toEqual(["V03", "D03"]);
-  });
-
-  it("returns a VC with CI when includeCIToVC is true", async () => {
-    // arrange
-    jest
-      .mocked(getParameter)
-      .mockResolvedValueOnce(EC_PRIVATE_KEY)
-      .mockResolvedValueOnce(TEST_COMPONENT_ID)
-      .mockResolvedValueOnce("false")
-      .mockResolvedValueOnce("true");
-    jest.mocked(getUserEvidence).mockResolvedValue(null);
-    // act
-    const result = (await handler(
-      TEST_EVENT,
-    )) as APIGatewayProxyStructuredResultV2;
-
-    // assert
-    expect(result.statusCode).toEqual(200);
-
-    const response = JSON.parse(result.body!) as TicfResponse;
-    const ticfVc = await parseTicfVc(
-      response["https://vocab.account.gov.uk/v1/credentialJWT"][0],
-    );
-    expect(ticfVc.vc.evidence).toHaveLength(1);
-    expect(ticfVc.vc.evidence[0].type).toEqual("RiskAssessment");
-    expect(ticfVc.vc.evidence[0].txn).toBeDefined();
-    expect(ticfVc.vc.evidence[0].ci).toEqual(["V03"]);
-  });
-
-  it("returns an empty timeout VC when timeoutVC is true", async () => {
-    // arrange
-    jest
-      .mocked(getParameter)
-      .mockResolvedValueOnce(EC_PRIVATE_KEY)
-      .mockResolvedValueOnce(TEST_COMPONENT_ID)
-      .mockResolvedValueOnce("true")
-      .mockResolvedValueOnce("false");
-    jest.mocked(getUserEvidence).mockResolvedValue(null);
-    // act
-    const result = (await handler(
-      TEST_EVENT,
-    )) as APIGatewayProxyStructuredResultV2;
-
-    // assert
-    expect(result.statusCode).toEqual(200);
-
-    const response = JSON.parse(result.body!) as TicfResponse;
-    const ticfVc = await parseTicfVc(
-      response["https://vocab.account.gov.uk/v1/credentialJWT"][0],
-    );
-    expect(ticfVc.vc.evidence).toHaveLength(1);
-    expect(ticfVc.vc.evidence[0].type).toEqual("RiskAssessment");
-    expect(ticfVc.vc.evidence[0].txn).toBeUndefined();
   });
 
   it("returns a 400 for an empty request", async () => {
