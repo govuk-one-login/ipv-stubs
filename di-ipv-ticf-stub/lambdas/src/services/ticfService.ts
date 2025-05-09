@@ -82,7 +82,7 @@ async function getResponseDelay(userEvidenceItem: UserEvidenceItem | undefined):
   if (userEvidenceItem?.responseDelay) {
     return userEvidenceItem.responseDelay * 1000;
   }
-  const param = await getSsmParameter("defaultResponseDelay");
+  const param = await getSsmParameter(config.ticfParamBasePath + "defaultResponseDelay");
   return parseInt(param);
 }
 
