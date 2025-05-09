@@ -11,16 +11,10 @@ export async function handler(
     const ticfRequest = parseRequest(event);
     const { response, statusCode } = await processGetVCRequest(ticfRequest);
 
-    console.info(`Returning ${JSON.stringify(response)}`);
     return buildApiResponse(response, statusCode);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } catch (error: any) {
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     console.error(error);
-    return buildApiResponse(
-      { errorMessage: error.message },
-      error.statusCode || 500,
-    );
+    return buildApiResponse({ errorMessage: error.message }, error.statusCode || 500);
   }
 }
 
