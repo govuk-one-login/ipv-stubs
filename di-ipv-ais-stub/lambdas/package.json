@@ -1,6 +1,6 @@
 {
   "name": "ais-stub",
-  "description": "AIS CRI stub",
+  "description": "AIS stub",
   "version": "1.0.0",
   "private": true,
   "author": "IPVCore",

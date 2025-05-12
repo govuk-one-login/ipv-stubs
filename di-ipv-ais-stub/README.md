@@ -1,4 +1,4 @@
-# AIS CRI Stub
+# AIS Stub
 ## Summary
 
 This will set up an API gateway in front of a lambda to return account interventions for users.
@@ -22,6 +22,6 @@ This endpoint takes a request body which references the intervention description
 
 ## AIS Endpoint
 
-`GET /ais/{userId}` fetches the account interventions for that user.
+`GET /management/user/{userId}` fetches the account interventions for that user.
 
 It returns a response with code and body primed by the management endpoint after a delay period.

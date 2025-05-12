@@ -296,13 +296,12 @@ components:
           example: "error message"
 
     AisManagementRequestBody:
-      description: Request body for Ais management
+      description: Request body for AIS management
       type: object
       properties:
-        state:
-          $ref: "#/components/schemas/AccountState"
-        history:
-          $ref: "#/components/schemas/History"
+        intervention:
+          type: "string"
+          example: "AIS_NO_INTERVENTION"
 
   parameters:
     UserId:
