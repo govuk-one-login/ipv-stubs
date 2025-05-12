@@ -5,7 +5,7 @@ This will set up an API gateway in front of a lambda to return account intervent
 
 ## Management Endpoint
 
-`POST /ais/{userId}` artificially primes a user with an account intervention response.
+`POST /management/user/{userId}` artificially primes a user with an account intervention response.
 
 This endpoint takes a request body which references the intervention description. E.g.:
 ```json
@@ -22,6 +22,6 @@ This endpoint takes a request body which references the intervention description
 
 ## AIS Endpoint
 
-`GET /management/user/{userId}` fetches the account interventions for that user.
+`GET /ais/{userId}` fetches the account interventions for that user.
 
 It returns a response with code and body primed by the management endpoint after a delay period.
