@@ -20,7 +20,7 @@ import { VcState, VCProvenance } from "../src/domain/enums";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda/trigger/api-gateway-proxy";
 import { PutRequest } from "../src/domain/requests";
-import {Vot} from "../src/domain/enums/vot";
+import { Vot } from "../src/domain/enums/vot";
 
 jest.mock("../src/services/evcsService", () => ({
   processGetUserVCsRequest: jest.fn(),
