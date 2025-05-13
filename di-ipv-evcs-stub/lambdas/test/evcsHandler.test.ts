@@ -350,20 +350,20 @@ describe("evcs handlers", () => {
       {
         request: buildPutRequest({
           vcs: [
-            {vc: "some.vc.sig", state: VcState.CURRENT},
-            {vc: "some.vc.sig", state: VcState.HISTORIC}
-          ]
+            { vc: "some.vc.sig", state: VcState.CURRENT },
+            { vc: "some.vc.sig", state: VcState.HISTORIC },
+          ],
         }),
-        case: "duplicate vcs with different states"
+        case: "duplicate vcs with different states",
       },
       {
         request: buildPutRequest({
           vcs: [
-            {vc: "some.vc.sig", state: VcState.CURRENT},
-            {vc: "some.vc.sig", state: VcState.CURRENT}
-          ]
+            { vc: "some.vc.sig", state: VcState.CURRENT },
+            { vc: "some.vc.sig", state: VcState.CURRENT },
+          ],
         }),
-        case: "duplicate vcs with the same states"
+        case: "duplicate vcs with the same states",
       },
       {
         request: buildPutRequest({ si: { jwt: undefined, vot: "P2" } }),

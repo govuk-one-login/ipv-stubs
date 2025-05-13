@@ -11,20 +11,22 @@ import {
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import ServiceResponse, { GetResponse } from "../domain/serviceResponse";
-import { VcState, StatusCodes, VCProvenance } from "../domain/enums";
+import { StatusCodes, VCProvenance, VcState } from "../domain/enums";
 import EvcsVcItem from "../model/evcsVcItem";
 
 import { config } from "../common/config";
 import { getSsmParameter } from "../common/ssmParameter";
 import { v4 as uuid } from "uuid";
 import {
-  PatchRequest,
   EvcsItemForUpdate,
-  PutRequest,
+  PatchRequest,
   PostRequest,
+  PutRequest,
 } from "../domain/requests";
 import { VcDetails } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
+import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
+import { GPG45_VOTS, HMRC_VOTS, Vot } from "../domain/enums/vot";
 
 const dynamoClient = config.isLocalDev
   ? new DynamoDB({
@@ -160,7 +162,7 @@ export async function processPutUserVCsRequest(
     if (putRequest.si) {
       const storedIdentityItem: EvcsStoredIdentityItem = {
         userId: putRequest.userId,
-        jwtSignature: getSignatureFromJwt(putRequest.si.jwt),
+        recordType: getRecordTypeFromString(putRequest.si.vot),
         storedIdentity: putRequest.si.jwt,
         levelOfConfidence: putRequest.si.vot,
         metadata: putRequest.si.metadata,
@@ -344,4 +346,16 @@ function getUpdatedState(
     }
   }
   return currentVcState;
+}
+
+function getRecordTypeFromString(vot: Vot): StoredIdentityRecordType {
+  if (GPG45_VOTS.includes(vot)) {
+    return StoredIdentityRecordType.GPG45;
+  }
+
+  if (HMRC_VOTS.includes(vot)) {
+    return StoredIdentityRecordType.HMRC;
+  }
+
+  throw new Error(`Vot "${vot}" does not have an associated record type`);
 }

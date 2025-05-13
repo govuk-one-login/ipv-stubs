@@ -12,6 +12,8 @@ import { PutRequest } from "../../src/domain/requests";
 import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
 import "aws-sdk-client-mock-jest";
 import { config } from "../../src/common/config";
+import { Vot } from "../../src/domain/enums/vot";
+import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-01"));
 
@@ -70,7 +72,7 @@ describe("processPutUserVCsRequest", () => {
       ],
       si: {
         jwt: TEST_VC2,
-        vot: "P2",
+        vot: Vot.P2,
       },
     };
 
@@ -89,7 +91,7 @@ describe("processPutUserVCsRequest", () => {
           state: VcState.CURRENT,
         }),
         createStoredIdentityPutItem({
-          jwtSignature: TEST_VC2_SIGNATURE,
+          recordType: StoredIdentityRecordType.GPG45,
           storedIdentity: TEST_VC2,
           levelOfConfidence: "P2",
         }),
@@ -120,7 +122,7 @@ describe("processPutUserVCsRequest", () => {
       ],
       si: {
         jwt: TEST_VC2,
-        vot: "P2",
+        vot: Vot.P2,
         metadata: TEST_METADATA,
       },
     };
@@ -142,9 +144,9 @@ describe("processPutUserVCsRequest", () => {
           provenance: VCProvenance.EXTERNAL,
         }),
         createStoredIdentityPutItem({
-          jwtSignature: TEST_VC2_SIGNATURE,
+          recordType: TEST_VC2_SIGNATURE,
           storedIdentity: TEST_VC2,
-          levelOfConfidence: "P2",
+          levelOfConfidence: Vot.P2,
           metadata: TEST_METADATA,
         }),
       ],
@@ -202,7 +204,7 @@ describe("processPutUserVCsRequest", () => {
       ],
       si: {
         jwt: TEST_VC2,
-        vot: "P2",
+        vot: Vot.P2,
       },
     };
 
@@ -230,7 +232,7 @@ describe("processPutUserVCsRequest", () => {
           provenance: VCProvenance.ONLINE,
         }),
         createStoredIdentityPutItem({
-          jwtSignature: TEST_VC2_SIGNATURE,
+          recordType: StoredIdentityRecordType.GPG45,
           storedIdentity: TEST_VC2,
           levelOfConfidence: "P2",
         }),
@@ -335,7 +337,7 @@ function createStubUserVcPutItem(putVcDetails: {
 }
 
 function createStoredIdentityPutItem(putSiDetails: {
-  jwtSignature: string;
+  recordType: string;
   storedIdentity: string;
   levelOfConfidence: string;
   metadata?: object;
@@ -346,7 +348,7 @@ function createStoredIdentityPutItem(putSiDetails: {
       Item: marshall(
         {
           userId: TEST_USER_ID,
-          jwtSignature: putSiDetails.jwtSignature,
+          recordType: putSiDetails.recordType,
           storedIdentity: putSiDetails.storedIdentity,
           levelOfConfidence: putSiDetails.levelOfConfidence,
           isValid: true,

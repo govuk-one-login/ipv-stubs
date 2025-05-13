@@ -1,6 +1,6 @@
 export default interface EvcsStoredIdentityItem {
   userId: string;
-  jwtSignature: string;
+  recordType: string;
   storedIdentity: string;
   levelOfConfidence: string;
   isValid: boolean;
