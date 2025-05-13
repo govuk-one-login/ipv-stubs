@@ -15,7 +15,7 @@ export async function getUserStoredIdentityHandler(
         {
           message: "Missing userId",
         },
-        StatusCodes.InternalServerError,
+        StatusCodes.BadRequest,
       );
     }
 
@@ -23,12 +23,14 @@ export async function getUserStoredIdentityHandler(
 
     const res = await processGetStoredIdentity(decodedUserId);
 
-    return buildApiResponse(
-      res.statusCode === StatusCodes.NotFound
-        ? { message: "No stored identity found for user" }
-        : res.response,
-      res.statusCode,
-    );
+    if (res.vcs.length === 0) {
+      return buildApiResponse(
+        { message: "No stored identity found for user" },
+        StatusCodes.NotFound,
+      );
+    }
+
+    return buildApiResponse(res.vcs, StatusCodes.Success);
   } catch (error) {
     console.error(error);
     return buildApiResponse(

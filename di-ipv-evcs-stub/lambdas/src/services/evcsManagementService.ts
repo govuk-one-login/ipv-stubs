@@ -2,7 +2,6 @@ import { QueryInput } from "@aws-sdk/client-dynamodb";
 import { config } from "../common/config";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { GetStoredIdentity } from "../domain/serviceResponse";
-import { StatusCodes } from "../domain/enums";
 import { dynamoClient } from "../clients/dynamodbClient";
 
 export async function processGetStoredIdentity(
@@ -15,16 +14,14 @@ export async function processGetStoredIdentity(
     KeyConditionExpression: "userId = :userIdValue",
     ExpressionAttributeValues: {
       ":userIdValue": marshall(userId),
-      ":isValidValue": marshall(true),
     },
-    FilterExpression: `isValid = :isValidValue`,
   };
 
   const response = await dynamoClient.query(getItemInput);
 
   if (!response.Items || response.Items.length === 0) {
     return {
-      statusCode: StatusCodes.NotFound,
+      vcs: [],
     };
   }
 
@@ -41,7 +38,6 @@ export async function processGetStoredIdentity(
   });
 
   return {
-    response: parsedResponse,
-    statusCode: StatusCodes.Success,
+    vcs: parsedResponse,
   };
 }
