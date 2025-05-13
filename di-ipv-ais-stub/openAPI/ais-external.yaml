@@ -52,7 +52,7 @@ paths:
         httpMethod: "POST"
         type: aws_proxy
         uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StatusRetrieverFunction.Arn}:live/invocations"
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetAccountInterventionsFunction.Arn}:live/invocations"
 
   /management/user/{userId}:
     post:
@@ -101,7 +101,7 @@ paths:
         type: "aws_proxy"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageUserEvidenceFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageAccountInterventionsFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
           default:

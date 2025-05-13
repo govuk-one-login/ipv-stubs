@@ -1,9 +1,8 @@
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import { readFile } from "fs/promises";
-import path from "path";
 import { config, getSsmParameter } from "./config";
 import { Response, UserManagementRequest } from "./types";
 import dynamoClient from "./dynamoDbClient";
+import cases from "../cases";
 
 // Store the AIS response we want to return for a user.
 export default async function persistFutureAisResponse(
@@ -18,7 +17,7 @@ export default async function persistFutureAisResponse(
     statusCode: statusCode || 200,
     ttl: await getTtl(),
     responseDelay: responseDelay || 0,
-    responseBody: await getResponseBodyForIntervention(intervention),
+    responseBody: cases[intervention],
   };
 
   console.info("Store response.");
@@ -44,12 +43,6 @@ export async function getAisResponse(userId: string): Promise<Response | null> {
   }
 
   return unmarshall(Item) as Response;
-}
-
-async function getResponseBodyForIntervention(intervention: string) {
-  const filePath = path.resolve(__dirname, `../data/${intervention}.json`);
-  const fileContents = await readFile(filePath, "utf-8");
-  return JSON.parse(fileContents);
 }
 
 async function getTtl(): Promise<number> {

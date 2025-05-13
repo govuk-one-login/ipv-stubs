@@ -1,3 +1,5 @@
+import cases from "../cases";
+
 export interface Response {
   userId: string;
   statusCode: number;
@@ -43,5 +45,5 @@ export type UserManagementRequest = Pick<
   Response,
   "statusCode" | "responseDelay"
 > & {
-  intervention: Intervention["description"];
+  intervention: keyof typeof cases;
 };

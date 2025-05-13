@@ -206,7 +206,7 @@ Resources:
         Target: "es2022"
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
-          - src/management/handlers/managementHandler.ts
+          - src/handlers/managementHandler.ts
 
   GetAccountInterventionsFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
@@ -420,12 +420,6 @@ Resources:
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/ais-external.yaml"
-      ApiKeySourceType: HEADER #pragma: allowlist secret
-      Auth:
-        ApiKeyRequired: true #pragma: allowlist secret
-        UsagePlan:
-          CreateUsagePlan: PER_API
-          UsagePlanName: "AIS Usage Plan"
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiLogGroup.Arn
         Format: >-

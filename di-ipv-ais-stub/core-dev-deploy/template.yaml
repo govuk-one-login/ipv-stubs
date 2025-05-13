@@ -3,25 +3,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Globals:
   Function:
-    Environment:
-      Variables:
-        AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
-        DT_CONNECTION_AUTH_TOKEN: !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}'  #pragma: allowlist secret
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
-        DT_CONNECTION_BASE_URL: !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}'   #pragma: allowlist secret
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
-        DT_CLUSTER_ID: !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}'   #pragma: allowlist secret
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
-        DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}'  #pragma: allowlist secret
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
-        DT_TENANT: !Sub
-          - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}'   #pragma: allowlist secret
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]   #pragma: allowlist secret
-        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
     Timeout: 30
     PermissionsBoundary: !If
       - UsePermissionsBoundary
@@ -31,10 +12,6 @@ Globals:
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
-    Layers:
-      - !Sub
-        - '{{resolve:secretsmanager:${SecretArn}:SecretString:JAVA_LAYER}}' # or NODEJS_LAYER or PYTHON_LAYER  #pragma: allowlist secret
-        - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
 
 Description: >-
   This creates the infrastructure for AIS stub .
@@ -60,8 +37,8 @@ Parameters:
     Default: "none"
 
 Conditions:
-  IsProduction: !Equals [ !Ref Environment, "production" ]
-  IsNonProd: !Not [!Condition IsProduction ]
+  IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670" ]
+  IsDev02: !Equals [ !Ref AWS::AccountId, "175872367215" ]
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
@@ -74,11 +51,6 @@ Conditions:
           - "none"
 
 Mappings:
-  EnvironmentConfiguration:
-    build:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
-    production:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
   CoreAccounts:
     dev01:
       accountId: "130355686670"
@@ -138,7 +110,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
-            Path: /user/{userId}
+            Path: /ais/{userId}
             Method: GET
     Metadata:
       # Manage esbuild properties
@@ -206,7 +178,7 @@ Resources:
         Target: "es2022"
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
-          - src/management/handlers/managementHandler.ts
+          - src/handlers/managementHandler.ts
 
   GetAccountInterventionsFunctionCoreDev01InvokePermission:
     Type: AWS::Lambda::Permission
@@ -343,18 +315,19 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !If
-        - IsNonProd
-        - !Sub "ais.${Environment}.stubs.account.gov.uk"
-        - ais.stubs.account.gov.uk
+        - IsDev01
+        - !Sub "ais-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
       DomainValidationOptions:
         - DomainName: !If
-            - IsNonProd
-            - !Sub "ais.${Environment}.stubs.account.gov.uk"
-            - ais.stubs.account.gov.uk
+            - IsDev01
+            - !Sub "ais-${Environment}.01.core.dev.stubs.account.gov.uk"
+            - !If [ IsDev02, !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
           HostedZoneId: !If
-            - IsNonProd
-            - !ImportValue BuildPublicHostedZoneId
-            - !ImportValue RootPublicHostedZoneId
+            - IsDev01
+            - !ImportValue Dev01StubsHostedZoneId
+            - !If [ IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId ]
+
       ValidationMethod: DNS
 
   # api domain entries / mapping
@@ -363,9 +336,9 @@ Resources:
     # checkov:skip=CKV_AWS_120: doing it later
     Properties:
       DomainName: !If
-        - IsNonProd
-        - !Sub "ais.${Environment}.stubs.account.gov.uk"
-        - ais.stubs.account.gov.uk
+        - IsDev01
+        - !Sub "ais-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
       RegionalCertificateArn: !Ref AisStubSSLCert
       EndpointConfiguration:
         Types:
@@ -377,9 +350,9 @@ Resources:
     # checkov:skip=CKV_AWS_120: doing it later
     Properties:
       DomainName: !If
-        - IsNonProd
-        - !Sub "ais.${Environment}.stubs.account.gov.uk"
-        - ais.stubs.account.gov.uk
+        - IsDev01
+        - !Sub "ais-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
       RestApiId: !Ref RestApiGateway
       Stage: !Ref RestApiGateway.Stage
     DependsOn:
@@ -392,13 +365,13 @@ Resources:
     Properties:
       Type: A
       Name: !If
-        - IsNonProd
-        - !Sub "ais.${Environment}.stubs.account.gov.uk"
-        - ais.stubs.account.gov.uk
+        - IsDev01
+        - !Sub "ais-${Environment}.01.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
       HostedZoneId: !If
-        - IsNonProd
-        - !ImportValue BuildPublicHostedZoneId
-        - !ImportValue RootPublicHostedZoneId
+        - IsDev01
+        - !ImportValue Dev01StubsHostedZoneId
+        - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
       AliasTarget:
         DNSName: !GetAtt AisStubRestApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt AisStubRestApiDomain.RegionalHostedZoneId
@@ -420,12 +393,6 @@ Resources:
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/ais-external.yaml"
-      ApiKeySourceType: HEADER #pragma: allowlist secret
-      Auth:
-        ApiKeyRequired: true #pragma: allowlist secret
-        UsagePlan:
-          CreateUsagePlan: PER_API
-          UsagePlanName: "AIS Usage Plan"
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiLogGroup.Arn
         Format: >-

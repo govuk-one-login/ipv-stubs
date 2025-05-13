@@ -1,0 +1,154 @@
+export default {
+    AIS_ACCOUNT_BLOCKED: {
+        intervention: {
+            updatedAt: 1696969322935,
+            appliedAt: 1696869005821,
+            sentAt: 1696869003456,
+            description: "AIS_ACCOUNT_BLOCKED",
+            reprovedIdentityAt: 1696969322935,
+            resetPasswordAt: 1696875903456,
+            accountDeletedAt: 1696969359935
+        },
+        state: {
+            blocked: true,
+            suspended: false,
+            reproveIdentity: false,
+            resetPassword: false
+        },
+        auditLevel: "standard",
+        history: []
+    },
+    AIS_ACCOUNT_SUSPENDED: {
+        intervention: {
+            updatedAt: 1696969322935,
+            appliedAt: 1696869005821,
+            sentAt: 1696869003456,
+            description: "AIS_ACCOUNT_SUSPENDED",
+            reprovedIdentityAt: 1696969322935,
+            resetPasswordAt: 1696875903456,
+            accountDeletedAt: 1696969359935
+        },
+        state: {
+            blocked: false,
+            suspended: true,
+            reproveIdentity: false,
+            resetPassword: false
+        },
+        auditLevel: "standard",
+        history: []
+    },
+    AIS_ACCOUNT_UNBLOCKED: {
+        intervention: {
+            updatedAt: 1696969322935,
+            appliedAt: 1696869005821,
+            sentAt: 1696869003456,
+            description: "AIS_ACCOUNT_UNBLOCKED",
+            reprovedIdentityAt: 1696969322935,
+            resetPasswordAt: 1696875903456,
+            accountDeletedAt: 1696969359935
+        },
+        state: {
+            blocked: false,
+            suspended: false,
+            reproveIdentity: false,
+            resetPassword: false
+        },
+        auditLevel: "standard",
+        history: []
+    },
+    AIS_ACCOUNT_UNSUSPENDED: {
+        intervention: {
+            updatedAt: 1696969322935,
+            appliedAt: 1696869005821,
+            sentAt: 1696869003456,
+            description: "AIS_ACCOUNT_UNSUSPENDED",
+            reprovedIdentityAt: 1696969322935,
+            resetPasswordAt: 1696875903456,
+            accountDeletedAt: 1696969359935
+        },
+        state: {
+            blocked: false,
+            suspended: false,
+            reproveIdentity: false,
+            resetPassword: false
+        },
+        auditLevel: "standard",
+        history: []
+    },
+    AIS_FORCED_USER_IDENTITY_VERIFY: {
+        intervention: {
+            updatedAt: 1696969322935,
+            appliedAt: 1696869005821,
+            sentAt: 1696869003456,
+            description: "AIS_FORCED_USER_IDENTITY_VERIFY",
+            reprovedIdentityAt: 1696969322935,
+            resetPasswordAt: 1696875903456,
+            accountDeletedAt: 1696969359935
+        },
+        state: {
+            blocked: false,
+            suspended: true,
+            reproveIdentity: true,
+            resetPassword: false
+        },
+        auditLevel: "standard",
+        history: []
+    },
+    AIS_FORCED_USER_PASSWORD_RESET: {
+        intervention: {
+            updatedAt: 1696969322935,
+            appliedAt: 1696869005821,
+            sentAt: 1696869003456,
+            description: "AIS_FORCED_USER_PASSWORD_RESET",
+            reprovedIdentityAt: 1696969322935,
+            resetPasswordAt: 1696875903456,
+            accountDeletedAt: 1696969359935
+        },
+        state: {
+            blocked: false,
+            suspended: true,
+            reproveIdentity: false,
+            resetPassword: true
+        },
+        auditLevel: "standard",
+        history: []
+    },
+    AIS_FORCED_USER_PASSWORD_RESET_AND_IDENTITY_VERIFY: {
+        intervention: {
+            updatedAt: 1696969322935,
+            appliedAt: 1696869005821,
+            sentAt: 1696869003456,
+            description: "AIS_FORCED_USER_PASSWORD_RESET_AND_IDENTITY_VERIFY",
+            reprovedIdentityAt: 1696969322935,
+            resetPasswordAt: 1696875903456,
+            accountDeletedAt: 1696969359935
+        },
+        state: {
+            blocked: false,
+            suspended: true,
+            reproveIdentity: true,
+            resetPassword: true
+        },
+        auditLevel: "standard",
+        history: []
+    },
+    AIS_NO_INTERVENTION: {
+        intervention: {
+            updatedAt: 1696969322935,
+            appliedAt: 1696869005821,
+            sentAt: 1696869003456,
+            description: "AIS_NO_INTERVENTION",
+            reprovedIdentityAt: 1696969322935,
+            resetPasswordAt: 1696875903456,
+            accountDeletedAt: 1696969359935
+        },
+        state: {
+            blocked: false,
+            suspended: false,
+            reproveIdentity: false,
+            resetPassword: false
+        },
+        auditLevel: "standard",
+        history: []
+    }
+}
