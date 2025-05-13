@@ -20,6 +20,7 @@ import { VcState, VCProvenance } from "../src/domain/enums";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda/trigger/api-gateway-proxy";
 import { PutRequest } from "../src/domain/requests";
+import {Vot} from "../src/domain/enums/vot";
 
 jest.mock("../src/services/evcsService", () => ({
   processGetUserVCsRequest: jest.fn(),
@@ -121,7 +122,7 @@ const buildPutRequest = (putRequest?: RecursivePartial<PutRequest>) => {
     ],
     si: {
       jwt: TEST_VC_STRING,
-      vot: "P2",
+      vot: Vot.P2,
       metadata: TEST_METADATA,
     },
     ...(putRequest ? putRequest : {}),
@@ -366,7 +367,7 @@ describe("evcs handlers", () => {
         case: "duplicate vcs with the same states",
       },
       {
-        request: buildPutRequest({ si: { jwt: undefined, vot: "P2" } }),
+        request: buildPutRequest({ si: { jwt: undefined, vot: Vot.P2 } }),
         case: "si.jwt is missing",
       },
     ])("should return a 400 if $case", async ({ request }) => {
