@@ -1,6 +1,5 @@
 import {
   AttributeValue,
-  DynamoDB,
   PutItemCommandOutput,
   QueryInput,
   TransactWriteItem,
@@ -25,15 +24,9 @@ import {
 } from "../domain/requests";
 import { VcDetails } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
-import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
+import { StoredIdentityRecordType} from "../domain/enums/storedIdentityRecordType";
 import { GPG45_VOTS, HMRC_VOTS, Vot } from "../domain/enums/vot";
-
-const dynamoClient = config.isLocalDev
-  ? new DynamoDB({
-      endpoint: config.localDynamoDbEndpoint,
-      region: config.region,
-    })
-  : new DynamoDB({ region: config.region });
+import {dynamoClient} from "../clients/dynamodbClient";
 
 export async function processPostUserVCsRequest(
   userId: string,
@@ -162,7 +155,7 @@ export async function processPutUserVCsRequest(
     if (putRequest.si) {
       const storedIdentityItem: EvcsStoredIdentityItem = {
         userId: putRequest.userId,
-        recordType: getRecordTypeFromString(putRequest.si.vot),
+        recordType: getRecordType(putRequest.si.vot),
         storedIdentity: putRequest.si.jwt,
         levelOfConfidence: putRequest.si.vot,
         metadata: putRequest.si.metadata,
@@ -348,7 +341,7 @@ function getUpdatedState(
   return currentVcState;
 }
 
-function getRecordTypeFromString(vot: Vot): StoredIdentityRecordType {
+function getRecordType(vot: Vot): StoredIdentityRecordType {
   if (GPG45_VOTS.includes(vot)) {
     return StoredIdentityRecordType.GPG45;
   }
@@ -357,5 +350,5 @@ function getRecordTypeFromString(vot: Vot): StoredIdentityRecordType {
     return StoredIdentityRecordType.HMRC;
   }
 
-  throw new Error(`Vot "${vot}" does not have an associated record type`);
+  throw new Error(`Vot "${vot}" does not have associated record type`);
 }

@@ -16,6 +16,6 @@ export interface GetResponse {
 }
 
 export interface GetStoredIdentity {
-  response?: Omit<EvcsStoredIdentityItem, "metadata">;
+  response?: Omit<EvcsStoredIdentityItem, "metadata">[];
   statusCode: number;
 }

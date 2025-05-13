@@ -268,6 +268,43 @@ paths:
             statusCode: 200
             responseTemplates:
               application/json: '{"result": "success"}'
+
+  /managememt/stored-identity/{userId}:
+    get:
+      description: Management endpoint to allow testing the stored identity object we store to EVCS
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Successful GET response for stored identity"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvcsManagementGetStoredIdentity"
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+      x-amazon-apigateway-request-validator: ALL
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsManagementGetStoredIdentityFunction.Arn}:live/invocations
+        passthroughBehavior: "when_no_match"
+        responses:
+          default:
+            statusCode: 200
+            responseTemplates:
+              application/json: '{"result": "success"}'
 components:
   responses:
     BadRequest:
@@ -284,6 +321,12 @@ components:
             $ref: '#/components/schemas/Error'
     Forbidden:
       description: Forbidden Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not Found Error
       content:
         application/json:
           schema:
@@ -353,6 +396,26 @@ components:
       required:
         - jwt
         - vot
+    EvcsManagementGetStoredIdentity:
+      type: array
+      items:
+        type: object
+        uniqueItems: true
+        properties:
+          response:
+            type: object
+            properties:
+              userId:
+                description: the user ID associated with the stored identity
+                type: string
+              jwtSignature:
+                $ref: "#/components/schemas/VCSignature"
+              isValid:
+                description: Indicates the validity of the stored identity record.
+                type: boolean
+              levelOfConfidence:
+                $ref: "#/components/schemas/VectorOfTrust"
+
     PersistVCsArray:
       description: An array of VCs to be persisted in EVCS with state and, optionally, metadata and provenance information.
       type: array

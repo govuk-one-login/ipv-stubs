@@ -1,16 +1,9 @@
-import EvcsStoredIdentityItem from "../model/storedIdentityItem";
-import { DynamoDB, QueryInput } from "@aws-sdk/client-dynamodb";
+import { QueryInput } from "@aws-sdk/client-dynamodb";
 import { config } from "../common/config";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { GetStoredIdentity } from "../domain/serviceResponse";
 import { StatusCodes } from "../domain/enums";
-
-const dynamoClient = config.isLocalDev
-  ? new DynamoDB({
-      endpoint: config.localDynamoDbEndpoint,
-      region: config.region,
-    })
-  : new DynamoDB({ region: config.region });
+import { dynamoClient } from "../clients/dynamodbClient";
 
 export async function processGetStoredIdentity(
   userId: string,
@@ -19,10 +12,12 @@ export async function processGetStoredIdentity(
 
   const getItemInput: QueryInput = {
     TableName: config.evcsStoredIdentityObjectTableName,
-    KeyConditionExpression: "#userId = :userIdValue",
+    KeyConditionExpression: "userId = :userIdValue",
     ExpressionAttributeValues: {
       ":userIdValue": marshall(userId),
+      ":isValidValue": marshall(true),
     },
+    FilterExpression: `isValid = :isValidValue`,
   };
 
   const response = await dynamoClient.query(getItemInput);
@@ -33,17 +28,20 @@ export async function processGetStoredIdentity(
     };
   }
 
-  const { jwtSignature, storedIdentity, levelOfConfidence, isValid } =
-    unmarshall(response.Items[0]) as EvcsStoredIdentityItem;
-
-  return {
-    response: {
+  const parsedResponse = response.Items.map((siItem) => {
+    const { recordType, storedIdentity, levelOfConfidence, isValid } =
+      unmarshall(siItem);
+    return {
       userId,
-      jwtSignature,
+      recordType,
       storedIdentity,
       levelOfConfidence,
       isValid,
-    },
+    };
+  });
+
+  return {
+    response: parsedResponse,
     statusCode: StatusCodes.Success,
   };
 }
