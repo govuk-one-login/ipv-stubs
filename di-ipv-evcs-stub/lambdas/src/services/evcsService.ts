@@ -155,7 +155,7 @@ export async function processPutUserVCsRequest(
     if (putRequest.si) {
       const storedIdentityItem: EvcsStoredIdentityItem = {
         userId: putRequest.userId,
-        recordType: getRecordType(putRequest.si.vot),
+        recordType: getRecordTypeFromVot(putRequest.si.vot),
         storedIdentity: putRequest.si.jwt,
         levelOfConfidence: putRequest.si.vot,
         metadata: putRequest.si.metadata,
@@ -341,7 +341,7 @@ function getUpdatedState(
   return currentVcState;
 }
 
-function getRecordType(vot: Vot): StoredIdentityRecordType {
+function getRecordTypeFromVot(vot: Vot): StoredIdentityRecordType {
   if (GPG45_VOTS.includes(vot)) {
     return StoredIdentityRecordType.GPG45;
   }
@@ -350,5 +350,5 @@ function getRecordType(vot: Vot): StoredIdentityRecordType {
     return StoredIdentityRecordType.HMRC;
   }
 
-  throw new Error(`Vot "${vot}" does not have associated record type`);
+  throw new Error(`Vot "${vot}" does not have an associated record type`);
 }
