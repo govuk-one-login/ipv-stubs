@@ -5,7 +5,7 @@ import {
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
 import { processGetStoredIdentity } from "../src/services/evcsManagementService";
-import { StoredIdentityRecordType } from "../src/domain/enums/storedIdentityRecordType";
+import { StoredIdentityRecordType } from "../src/domain/enums/StoredIdentityRecordType";
 import { Vot } from "../src/domain/enums/vot";
 import { StatusCodes } from "../src/domain/enums";
 
@@ -68,7 +68,7 @@ describe("evcs management handlers", () => {
       // Arrange
       const getRequest = generateGetStoredIdentityRequest(TEST_USER_ID);
       jest.mocked(processGetStoredIdentity).mockResolvedValue({
-        vcs: []
+        vcs: [],
       });
 
       // Act

@@ -13,7 +13,7 @@ import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
 import "aws-sdk-client-mock-jest";
 import { config } from "../../src/common/config";
 import { Vot } from "../../src/domain/enums/vot";
-import { StoredIdentityRecordType } from "../../src/domain/enums/storedIdentityRecordType";
+import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-01"));
 

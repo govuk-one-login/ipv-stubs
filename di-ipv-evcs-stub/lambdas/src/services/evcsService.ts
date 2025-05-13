@@ -24,7 +24,7 @@ import {
 } from "../domain/requests";
 import { VcDetails } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
-import { StoredIdentityRecordType } from "../domain/enums/storedIdentityRecordType";
+import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
 import { GPG45_VOTS, HMRC_VOTS, Vot } from "../domain/enums/vot";
 import { dynamoClient } from "../clients/dynamodbClient";
 

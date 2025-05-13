@@ -408,8 +408,10 @@ components:
               userId:
                 description: the user ID associated with the stored identity
                 type: string
-              jwtSignature:
+              recordType:
                 $ref: "#/components/schemas/VCSignature"
+              storedIdentity:
+                $ref: "#/components/schemas/VC"
               isValid:
                 description: Indicates the validity of the stored identity record.
                 type: boolean

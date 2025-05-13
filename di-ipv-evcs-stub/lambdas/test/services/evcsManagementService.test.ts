@@ -4,7 +4,7 @@ import { beforeEach } from "@jest/globals";
 import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { Vot } from "../../src/domain/enums/vot";
-import { StoredIdentityRecordType } from "../../src/domain/enums/storedIdentityRecordType";
+import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
 import { processGetStoredIdentity } from "../../src/services/evcsManagementService";
 import "aws-sdk-client-mock-jest";
 
