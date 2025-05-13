@@ -162,7 +162,7 @@ export async function processPutUserVCsRequest(
     if (putRequest.si) {
       const storedIdentityItem: EvcsStoredIdentityItem = {
         userId: putRequest.userId,
-        recordType: getRecordTypeFromString(putRequest.si.vot),
+        recordType: getRecordTypeFromVot(putRequest.si.vot),
         storedIdentity: putRequest.si.jwt,
         levelOfConfidence: putRequest.si.vot,
         metadata: putRequest.si.metadata,
@@ -348,7 +348,7 @@ function getUpdatedState(
   return currentVcState;
 }
 
-function getRecordTypeFromString(vot: Vot): StoredIdentityRecordType {
+function getRecordTypeFromVot(vot: Vot): StoredIdentityRecordType {
   if (GPG45_VOTS.includes(vot)) {
     return StoredIdentityRecordType.GPG45;
   }
