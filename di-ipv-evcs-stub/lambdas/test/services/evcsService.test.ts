@@ -144,7 +144,7 @@ describe("processPutUserVCsRequest", () => {
           provenance: VCProvenance.EXTERNAL,
         }),
         createStoredIdentityPutItem({
-          recordType: TEST_VC2_SIGNATURE,
+          recordType: StoredIdentityRecordType.GPG45,
           storedIdentity: TEST_VC2,
           levelOfConfidence: Vot.P2,
           metadata: TEST_METADATA,
