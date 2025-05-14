@@ -1,5 +1,4 @@
 export enum Vot {
-  P0 = "P0",
   P1 = "P1",
   P2 = "P2",
   P3 = "P3",
@@ -8,5 +7,5 @@ export enum Vot {
   PCL250 = "PCL250",
 }
 
-export const GPG45_VOTS = [Vot.P0, Vot.P1, Vot.P2, Vot.P3, Vot.P4];
+export const GPG45_VOTS = [Vot.P1, Vot.P2, Vot.P3, Vot.P4];
 export const HMRC_VOTS = [Vot.PCL200, Vot.PCL250];
