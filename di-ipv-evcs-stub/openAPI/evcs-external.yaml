@@ -449,6 +449,7 @@ components:
       default: P2
       example: P2
       enum:
+        - P0     # gpg45 profile
         - P1     # gpg45 profile
         - P2     # gpg45 profile
         - P3     # gpg45 profile
