@@ -214,6 +214,7 @@ public class IpvHandler {
         String url =
                 switch (environment) {
                     case ("DEV") -> "https://dev.01.dev.identity.account.gov.uk/";
+                    case ("PERF") -> "https://dev-perf.02.dev.identity.account.gov.uk/";
                     case ("BUILD") -> "https://identity.build.account.gov.uk/";
                     case ("STAGING") -> "https://identity.staging.account.gov.uk/";
                     case ("INTEGRATION") -> "https://identity.integration.account.gov.uk/";
@@ -227,6 +228,7 @@ public class IpvHandler {
         String url =
                 switch (environment) {
                     case ("DEV") -> "https://api-dev.01.dev.identity.account.gov.uk/";
+                    case ("PERF") -> "https://api-dev-perf.02.dev.identity.account.gov.uk/";
                     case ("BUILD") -> "https://api.identity.build.account.gov.uk/";
                     case ("STAGING") -> "https://api.identity.staging.account.gov.uk/";
                     case ("INTEGRATION") -> "https://api.identity.integration.account.gov.uk/";
