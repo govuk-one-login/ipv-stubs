@@ -50,7 +50,7 @@ describe("processGetStoredIdentity", () => {
         ":userIdValue": marshall(TEST_USER_ID),
       },
     });
-    expect(res.vcs).toEqual(expectedResponse);
+    expect(res.storedIdentities).toEqual(expectedResponse);
   });
 
   it("should return empty vcs list if no stored identities are found for user", async () => {
@@ -67,7 +67,7 @@ describe("processGetStoredIdentity", () => {
         ":userIdValue": marshall(TEST_USER_ID),
       },
     });
-    expect(res.vcs).toEqual([]);
+    expect(res.storedIdentities).toEqual([]);
   });
 });
 

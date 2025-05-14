@@ -21,7 +21,7 @@ export async function processGetStoredIdentity(
 
   if (!response.Items || response.Items.length === 0) {
     return {
-      vcs: [],
+      storedIdentities: [],
     };
   }
 
@@ -38,6 +38,6 @@ export async function processGetStoredIdentity(
   });
 
   return {
-    vcs: parsedResponse,
+    storedIdentities: parsedResponse,
   };
 }

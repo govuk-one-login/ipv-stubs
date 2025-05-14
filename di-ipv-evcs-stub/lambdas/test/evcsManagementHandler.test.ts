@@ -36,7 +36,7 @@ describe("evcs management handlers", () => {
         levelOfConfidence: Vot.PCL250,
       };
       jest.mocked(processGetStoredIdentity).mockResolvedValue({
-        vcs: [expectedGpg45Si, expectedHmrcSi],
+        storedIdentities: [expectedGpg45Si, expectedHmrcSi],
       });
       const getRequest = generateGetStoredIdentityRequest(TEST_USER_ID);
 
@@ -68,7 +68,7 @@ describe("evcs management handlers", () => {
       // Arrange
       const getRequest = generateGetStoredIdentityRequest(TEST_USER_ID);
       jest.mocked(processGetStoredIdentity).mockResolvedValue({
-        vcs: [],
+        storedIdentities: [],
       });
 
       // Act

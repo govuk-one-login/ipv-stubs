@@ -23,14 +23,14 @@ export async function getUserStoredIdentityHandler(
 
     const res = await processGetStoredIdentity(decodedUserId);
 
-    if (res.vcs.length === 0) {
+    if (res.storedIdentities.length === 0) {
       return buildApiResponse(
         { message: "No stored identity found for user" },
         StatusCodes.NotFound,
       );
     }
 
-    return buildApiResponse(res.vcs, StatusCodes.Success);
+    return buildApiResponse(res.storedIdentities, StatusCodes.Success);
   } catch (error) {
     console.error(error);
     return buildApiResponse(
