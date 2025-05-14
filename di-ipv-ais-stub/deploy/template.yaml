@@ -138,7 +138,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
-            Path: /user/{userId}
+            Path: /ais/{userId}
             Method: GET
     Metadata:
       # Manage esbuild properties
