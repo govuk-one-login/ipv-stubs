@@ -4,6 +4,7 @@ import {
 } from "aws-lambda";
 import { PutItemCommandInput } from "@aws-sdk/client-dynamodb";
 import { UserManagementRequest, Response } from "../src/utils/types";
+import cases from "../src/cases";
 
 const TEST_USER_ID = "test-user-id";
 const TEST_USER_PATH_PARAM = {
@@ -257,7 +258,7 @@ describe("Management handler primes AIS endpoint responses", () => {
       // arrange
       const managementRequest = getManagementRequest({
         statusCode: expectedStatusCode,
-        intervention,
+        intervention: intervention as keyof typeof cases,
         responseDelay: 0,
       });
 
@@ -270,6 +271,33 @@ describe("Management handler primes AIS endpoint responses", () => {
       expect(JSON.parse(result.body)).toStrictEqual(expectedResponseBody);
     },
   );
+
+  it("Return no interventions as default", async () => {
+    // act
+    const result = await handler(TEST_AIS_REQUEST_EVENT);
+
+    // assert
+    expect(result.statusCode).toStrictEqual(200);
+    expect(JSON.parse(result.body)).toStrictEqual({
+      intervention: {
+        updatedAt: 1696969322935,
+        appliedAt: 1696869005821,
+        sentAt: 1696869003456,
+        description: "AIS_NO_INTERVENTION",
+        reprovedIdentityAt: 1696969322935,
+        resetPasswordAt: 1696875903456,
+        accountDeletedAt: 1696969359935,
+      },
+      state: {
+        blocked: false,
+        suspended: false,
+        reproveIdentity: false,
+        resetPassword: false,
+      },
+      auditLevel: "standard",
+      history: []
+    })
+  })
 });
 
 function getManagementRequest(

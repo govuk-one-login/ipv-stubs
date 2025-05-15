@@ -18,13 +18,20 @@ export async function handler(
     // Get response from DynamoDB
     const response = await getAisResponse(decodeURIComponent(userId));
 
+    if (!response) {
+      return buildApiResponse(
+          cases["AIS_NO_INTERVENTION"],
+          200,
+      );
+    }
+
     // Artificially delay the response
     await delayResponse(response?.responseDelay);
 
     // Non-200 responses do not have bodies
     if (response?.statusCode === 200) {
       return buildApiResponse(
-        response?.responseBody ?? cases["AIS_NO_INTERVENTION"],
+        response?.responseBody ?? {},
         200,
       );
     }
