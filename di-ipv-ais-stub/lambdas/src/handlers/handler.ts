@@ -1,6 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from "aws-lambda";
 import { buildApiResponse } from "../utils/response";
 import { getAisResponse } from "../utils/dataLayer";
+import cases from "../cases";
 
 export async function handler(
   event: APIGatewayProxyEventV2,
@@ -22,7 +23,10 @@ export async function handler(
 
     // Non-200 responses do not have bodies
     if (response?.statusCode === 200) {
-      return buildApiResponse(response?.responseBody ?? {}, 200);
+      return buildApiResponse(
+        response?.responseBody ?? cases["AIS_NO_INTERVENTION"],
+        200,
+      );
     }
 
     return buildApiResponse({}, response?.statusCode);
