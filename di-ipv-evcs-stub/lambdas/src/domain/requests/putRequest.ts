@@ -1,8 +1,9 @@
 import { VcDetails } from "../sharedTypes";
+import { Vot } from "../enums/vot";
 
 interface StoredIdentityDetails {
   jwt: string;
-  vot: string;
+  vot: Vot;
   metadata?: object;
 }
 

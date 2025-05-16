@@ -186,9 +186,7 @@ function parsePutRequest(event: APIGatewayProxyEvent): PutRequest {
     }
   });
 
-  const uniqueVcs = new Set(
-    parsedPutRequest.vcs.map((vc: VcDetails) => vc.vc),
-  );
+  const uniqueVcs = new Set(parsedPutRequest.vcs.map((vc: VcDetails) => vc.vc));
   if (uniqueVcs.size !== parsedPutRequest.vcs.length) {
     throw new Error("Invalid vcs: cannot have duplicate VCs in request");
   }
