@@ -30,6 +30,9 @@ public class OrchestratorConfig {
     public static final String ORCHESTRATOR_DEV_JAR_ENCRYPTION_PUBLIC_JWK =
             getConfigValue(
                     "ORCHESTRATOR_DEV_JAR_ENCRYPTION_PUBLIC_JWK", "missing-dev-encryption-key");
+    public static final String ORCHESTRATOR_PERF_JAR_ENCRYPTION_PUBLIC_JWK =
+            getConfigValue(
+                    "ORCHESTRATOR_PERF_JAR_ENCRYPTION_PUBLIC_JWK", "missing-perf-encryption-key");
     public static final String ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK =
             getConfigValue(
                     "ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK", "missing-build-encryption-key");
