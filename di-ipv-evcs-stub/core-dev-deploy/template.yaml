@@ -384,7 +384,7 @@ Resources:
     Type: AWS::DynamoDB::Table
     # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
     Properties:
-      TableName: !Sub "evcs-stored-identity-store-${Environment}-temp"
+      TableName: !Sub "evcs-stored-identity-store-${Environment}"
       BillingMode: "PAY_PER_REQUEST"
       AttributeDefinitions:
         - AttributeName: "userId"
