@@ -1,4 +1,5 @@
 import { VcDetails } from "./sharedTypes";
+import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 
 export default interface ServiceResponse {
   response?: object;
@@ -12,4 +13,8 @@ export interface GetResponse {
     vcs: VcFromGetResponse[];
   };
   statusCode: number;
+}
+
+export interface GetStoredIdentity {
+  storedIdentities: Omit<EvcsStoredIdentityItem, "metadata">[];
 }
