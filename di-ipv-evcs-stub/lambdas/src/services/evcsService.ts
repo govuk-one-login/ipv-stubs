@@ -1,6 +1,5 @@
 import {
   AttributeValue,
-  DynamoDB,
   PutItemCommandOutput,
   QueryInput,
   TransactWriteItem,
@@ -27,13 +26,7 @@ import { VcDetails } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
 import { GPG45_VOTS, HMRC_VOTS, Vot } from "../domain/enums/vot";
-
-const dynamoClient = config.isLocalDev
-  ? new DynamoDB({
-      endpoint: config.localDynamoDbEndpoint,
-      region: config.region,
-    })
-  : new DynamoDB({ region: config.region });
+import { dynamoClient } from "../clients/dynamodbClient";
 
 export async function processPostUserVCsRequest(
   userId: string,
