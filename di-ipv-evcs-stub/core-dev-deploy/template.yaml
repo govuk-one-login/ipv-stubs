@@ -366,7 +366,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
-            Path: /managememt/stored-identity/{userId}
+            Path: /management/stored-identity/{userId}
             Method: GET
     Metadata:
       # Manage esbuild properties

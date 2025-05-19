@@ -269,7 +269,7 @@ paths:
             responseTemplates:
               application/json: '{"result": "success"}'
 
-  /managememt/stored-identity/{userId}:
+  /management/stored-identity/{userId}:
     get:
       description: Management endpoint to allow testing the stored identity object we store to EVCS
       parameters:
