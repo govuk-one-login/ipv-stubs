@@ -45,6 +45,7 @@ public class CoreStub {
         Spark.post("/edit-user", coreStubHandler.updateUser);
         Spark.get("/callback", coreStubHandler.doCallback);
         Spark.get("/answers", coreStubHandler.answers);
+        Spark.get("/.well-known/jwks.json", coreStubHandler.wellKnownJwksStub);
         setupBackendRoutes(coreStubHandler);
         Spark.exception(Exception.class, exceptionHandler());
     }

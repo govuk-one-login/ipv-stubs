@@ -55,11 +55,40 @@ public class CoreStubHandler {
     private HandlerHelper handlerHelper;
     private Map<String, String> questionsMap = new HashMap<>();
     private ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private String jwksResponse;
 
     public CoreStubHandler(HandlerHelper handlerHelper) {
         this.handlerHelper = handlerHelper;
 
         setQuestions();
+        constructWellKnownJwksSet();
+    }
+
+    private void constructWellKnownJwksSet() {
+        // Public signing key - not a secret
+        String y = "8F8LnQ7wG9hxsT4ax0Aty7iMGIyiY_YGp3_qIZzKo1A"; // pragma: allowlist-secret
+        String x = "k39uKacSukQBrMZrHDTBUZslivpXKDNZTg6inCHwrLc"; // pragma: allowlist-secret
+        StringBuilder sb =
+                new StringBuilder()
+                        .append("{\n")
+                        .append("  \"keys\": [\n")
+                        .append("    {\n")
+                        .append("      \"kty\": \"EC\",\n")
+                        .append("      \"use\": \"sig\",\n")
+                        .append("      \"crv\": \"P-256\",\n")
+                        .append("      \"x\": ")
+                        .append(x)
+                        .append(",\n")
+                        .append("      \"y\": ")
+                        .append(y)
+                        .append(",\n")
+                        .append(
+                                "      \"kid\": \"0020c60a8796188b88dab4540a918cf7c8d33c9dbe5642b231aad12f2ebffcf6\",\n")
+                        .append("      \"alg\": \"ES256\"\n")
+                        .append("    }\n")
+                        .append("  ]\n")
+                        .append("}");
+        jwksResponse = sb.toString();
     }
 
     private void setQuestions() {
@@ -454,6 +483,15 @@ public class CoreStubHandler {
         }
         return null;
     }
+
+    public Route wellKnownJwksStub =
+            (Request request, Response response) -> {
+                if (LOGGER.isInfoEnabled()) {
+                    LOGGER.info("Received request for JWKS endpoint: {}", request.url());
+                }
+                response.type("application/json");
+                return jwksResponse;
+            };
 
     public Route backendGenerateInitialClaimsSetPostCode =
             (Request request, Response response) -> {
