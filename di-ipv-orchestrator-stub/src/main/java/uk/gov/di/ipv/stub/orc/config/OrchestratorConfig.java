@@ -27,12 +27,12 @@ public class OrchestratorConfig {
                     // This is a test key used for local development - it's from the core build
                     // environment
                     "{\"kty\":\"RSA\",\"kid\":\"1b5d35fb351ad12f1d34cf10d2a7c080990d3ac39bae6dcec3e2ff2ee45d6550\",\"use\":\"enc\",\"e\":\"AQAB\",\"n\":\"nel7ibmSTaXWhwEAdqKTiEVcxsYgv6CdXaz90aVN7IorlaCeNj0j06OsA4zdmWEjj21wEZULsxPoZo5N_tsQ7NtOnOkcnDc-g_Nbpt0jelzJSbFRkx3kwXy8YIYKR_myNbiHNTTc7S6GkQRg0N1MPWtzoEKYJs41AN4onrsvUzgpCypWwPy2-ppsaDvms_11YA7A7x3zHj9oKCPJ_uk_0MV3vZAxCxbiPb9ABGWcoGQ5QKGfv40ylBsEdOhE3w-3SAAQIrrHyMRGGiPxcNO161XVL-lOnYt93FgEe16LgpfE22UdENfHnG0UQaTgph1Dm24oqn7qpPTY2DfER5HCKQ\"}"); // pragma: allowlist secret
-    public static final String ORCHESTRATOR_DEV_JAR_ENCRYPTION_PUBLIC_JWK =
+    public static final String ORCHESTRATOR_DEV01_JAR_ENCRYPTION_PUBLIC_JWK =
             getConfigValue(
-                    "ORCHESTRATOR_DEV_JAR_ENCRYPTION_PUBLIC_JWK", "missing-dev-encryption-key");
-    public static final String ORCHESTRATOR_PERF_JAR_ENCRYPTION_PUBLIC_JWK =
+                    "ORCHESTRATOR_DEV01_JAR_ENCRYPTION_PUBLIC_JWK", "missing-dev01-encryption-key");
+    public static final String ORCHESTRATOR_DEV02_JAR_ENCRYPTION_PUBLIC_JWK =
             getConfigValue(
-                    "ORCHESTRATOR_PERF_JAR_ENCRYPTION_PUBLIC_JWK", "missing-perf-encryption-key");
+                    "ORCHESTRATOR_DEV02_JAR_ENCRYPTION_PUBLIC_JWK", "missing-dev02-encryption-key");
     public static final String ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK =
             getConfigValue(
                     "ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK", "missing-build-encryption-key");
