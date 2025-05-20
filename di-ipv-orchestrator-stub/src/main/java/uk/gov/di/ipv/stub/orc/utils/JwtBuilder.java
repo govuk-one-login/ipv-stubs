@@ -43,9 +43,9 @@ import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_BUIL
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_ID;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_CLIENT_JWT_TTL;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_DEFAULT_JAR_ENCRYPTION_PUBLIC_JWK;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_DEV_JAR_ENCRYPTION_PUBLIC_JWK;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_DEV01_JAR_ENCRYPTION_PUBLIC_JWK;
+import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_DEV02_JAR_ENCRYPTION_PUBLIC_JWK;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_INTEGRATION_JAR_ENCRYPTION_PUBLIC_JWK;
-import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_PERF_JAR_ENCRYPTION_PUBLIC_JWK;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_REDIRECT_URL;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_SIGNING_JWK;
 import static uk.gov.di.ipv.stub.orc.config.OrchestratorConfig.ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK;
@@ -172,8 +172,14 @@ public class JwtBuilder {
 
     private static RSAKey getEncryptionKey(String targetEnvironment) throws ParseException {
         return switch (targetEnvironment) {
-            case ("DEV") -> RSAKey.parse(ORCHESTRATOR_DEV_JAR_ENCRYPTION_PUBLIC_JWK);
-            case ("PERF") -> RSAKey.parse(ORCHESTRATOR_PERF_JAR_ENCRYPTION_PUBLIC_JWK);
+            case ("DEV"), ("DEV_AMRITS"), ("DEV_ALIR"), ("DEV_PATRICKB") -> RSAKey.parse(
+                    ORCHESTRATOR_DEV01_JAR_ENCRYPTION_PUBLIC_JWK);
+            case ("PERF"),
+                    ("DEV_DANC"),
+                    ("DEV_JOEE"),
+                    ("DEV_MIKEC"),
+                    ("DEV_DOMINIKT"),
+                    ("DEV_THEAB") -> RSAKey.parse(ORCHESTRATOR_DEV02_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("BUILD") -> RSAKey.parse(ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("STAGING") -> RSAKey.parse(ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("INTEGRATION") -> RSAKey.parse(
@@ -184,8 +190,21 @@ public class JwtBuilder {
 
     private static String getIpvCoreAudience(String targetEnvironment) {
         return switch (targetEnvironment) {
+                // dev01
             case ("DEV") -> "https://dev.01.dev.identity.account.gov.uk";
+            case ("DEV_AMRITS") -> "https://dev-amrits.01.dev.identity.account.gov.uk";
+            case ("DEV_ALIR") -> "https://dev-alir.01.dev.identity.account.gov.uk";
+            case ("DEV_PATRICKB") -> "https://dev-patrickb.01.dev.identity.account.gov.uk";
+
+                // dev02
             case ("PERF") -> "https://dev-perf.02.dev.identity.account.gov.uk";
+            case ("DEV_DANC") -> "https://dev-danc.02.dev.identity.account.gov.uk";
+            case ("DEV_JOEE") -> "https://dev-joee.02.dev.identity.account.gov.uk";
+            case ("DEV_MIKEC") -> "https://dev-mikec.02.dev.identity.account.gov.uk";
+            case ("DEV_DOMINIKT") -> "https://dev-dominikt.02.dev.identity.account.gov.uk";
+            case ("DEV_THEAB") -> "https://dev-theab.02.dev.identity.account.gov.uk";
+
+                // higher
             case ("BUILD") -> "https://identity.build.account.gov.uk";
             case ("STAGING") -> "https://identity.staging.account.gov.uk";
             case ("INTEGRATION") -> "https://identity.integration.account.gov.uk";
