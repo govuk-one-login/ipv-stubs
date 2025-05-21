@@ -1,15 +1,15 @@
-FROM openjdk:17-jdk-slim AS build
+FROM amazoncorretto:21.0.6-al2@sha256:c0643148d077b3917bf6c085aaa1ac35ff1f202344ab8691cc0f5953f9b97f8e AS build
 COPY . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN ./gradlew build --no-daemon
 
-FROM openjdk:17-jdk-slim
+FROM amazoncorretto:21.0.6-al2@sha256:c0643148d077b3917bf6c085aaa1ac35ff1f202344ab8691cc0f5953f9b97f8e
 
 ENV PORT 8084
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
-RUN addgroup --system --gid 1001 appgroup && adduser --system --uid 1001 appuser --gid 1001
+RUN yum update && yum install -y shadow-utils curl tar
+RUN groupadd --system --gid 1001 appgroup && useradd --system --uid 1001 appuser --gid 1001
 RUN mkdir /app
-RUN apt-get update && apt-get install -y curl
 COPY --from=build \
     /home/gradle/src/build/distributions/di-ipv-credential-issuer-stub.tar \
     /app/
