@@ -27,7 +27,7 @@ dependencies {
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.12.2",
 			"org.mockito:mockito-junit-jupiter:5.17.0",
-			'uk.org.webcompere:system-stubs-jupiter:2.1.7'
+			'uk.org.webcompere:system-stubs-jupiter:2.1.8'
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
