@@ -19,7 +19,7 @@ dependencies {
 			"io.javalin:javalin-rendering:6.6.0",
 			"com.github.spullara.mustache.java:compiler:0.9.14",
 			"com.nimbusds:oauth2-oidc-sdk:11.24",
-			"com.fasterxml.jackson.core:jackson-databind:2.18.3",
+			"com.fasterxml.jackson.core:jackson-databind:2.19.0",
 			"org.slf4j:slf4j-simple:2.0.17"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.12.2"
