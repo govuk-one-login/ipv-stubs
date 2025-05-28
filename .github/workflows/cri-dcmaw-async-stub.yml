@@ -24,7 +24,7 @@ jobs:
           fetch-depth: '0'
 
       - name: Set up AWS creds
-        uses: aws-actions/configure-aws-credentials@v4.2.0
+        uses: aws-actions/configure-aws-credentials@v4.2.1
         with:
           role-to-assume: ${{ secrets.DCMAW_ASYNC_STUB_BUILD_GH_ROLE }}
           aws-region: eu-west-2
