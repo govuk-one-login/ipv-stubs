@@ -1,27 +1,27 @@
 plugins {
-	id "java"
-	id "com.diffplug.spotless" version "7.0.4"
+    id "java"
+    id "com.diffplug.spotless" version "7.0.4"
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 spotless {
-	java {
-		target "**/src/**/*.java"
-		googleJavaFormat("1.14.0").aosp()
-		importOrder "", "javax", "java", "\\#"
-		endWithNewline()
-	}
-	groovyGradle {
-		target '**/*.gradle'
-		greclipse()
-		trimTrailingWhitespace()
-		endWithNewline()
-	}
+    java {
+        target "**/src/**/*.java"
+        googleJavaFormat("1.14.0").aosp()
+        importOrder "", "javax", "java", "\\#"
+        endWithNewline()
+    }
+    groovyGradle {
+        target '**/*.gradle'
+        greclipse()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 
 subprojects {
-	task allDeps(type: DependencyReportTask) {}
+    task allDeps(type: DependencyReportTask) {}
 }
