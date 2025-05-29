@@ -27,6 +27,7 @@ repos:
     rev: v1.5.5
     hooks:
       - id: remove-tabs
+        exclude: ^([\w\/-]+)?build\.gradle$
       - id: remove-crlf
 
   - repo: https://github.com/mattlqx/pre-commit-search-and-replace
