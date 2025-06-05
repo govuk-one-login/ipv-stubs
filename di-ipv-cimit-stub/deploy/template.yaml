@@ -111,7 +111,7 @@ Resources:
       FunctionName: !Sub "postMitigations-${Environment}"
       CodeUri: "../lambdas/post-mitigations"
       Handler: uk.gov.di.ipv.core.postmitigations.PostMitigationsHandler::handleRequest
-      Runtime: java17
+      Runtime: java21
       PackageType: Zip
       Architectures:
         - arm64
@@ -161,7 +161,7 @@ Resources:
       FunctionName: !Sub "putContraIndicators-${Environment}"
       CodeUri: "../lambdas/put-contra-indicators"
       Handler: uk.gov.di.ipv.core.putcontraindicators.PutContraIndicatorsHandler::handleRequest
-      Runtime: java17
+      Runtime: java21
       PackageType: Zip
       Architectures:
         - arm64
@@ -210,7 +210,7 @@ Resources:
       FunctionName: !Sub "getContraIndicatorCredential-${Environment}"
       CodeUri: "../lambdas/get-contra-indicator-credential"
       Handler: uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler::handleRequest
-      Runtime: java17
+      Runtime: java21
       PackageType: Zip
       Architectures:
         - arm64
@@ -258,7 +258,7 @@ Resources:
       FunctionName: !Sub "stubManagement-${Environment}"
       CodeUri: "../lambdas/stub-management"
       Handler: uk.gov.di.ipv.core.stubmanagement.StubManagementHandler::handleRequest
-      Runtime: java17
+      Runtime: java21
       PackageType: Zip
       Architectures:
         - arm64
