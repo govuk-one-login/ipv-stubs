@@ -8,7 +8,7 @@ FROM amazoncorretto:21.0.6-al2@sha256:c0643148d077b3917bf6c085aaa1ac35ff1f202344
 
 ENV PORT 8083
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5007
-RUN yum update && yum install -y shadow-utils curl tar
+RUN yum update -y && yum install -y shadow-utils curl tar
 RUN groupadd --system --gid 1001 appgroup && useradd --system --uid 1001 appuser --gid 1001
 RUN mkdir /app
 COPY --from=build \
