@@ -32,9 +32,11 @@ Globals:
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
     Layers:
-      - !Sub
-        - '{{resolve:secretsmanager:${SecretArn}:SecretString:JAVA_LAYER}}' # or NODEJS_LAYER or PYTHON_LAYER  #pragma: allowlist secret
-        - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
+      - !FindInMap [
+        EnvironmentConfiguration,
+        !Ref Environment,
+        dynatraceLayerArn,
+      ]
 
 Description: >-
   This creates the lambda functions to stub CIMIT lambdas for getContraIndicatorCredential,
@@ -88,15 +90,10 @@ Mappings:
   EnvironmentConfiguration:
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
+      dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_277_157_20231019-162516_with_collector_java:2
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
-  CoreAccounts:
-    dev01:
-      accountId: "130355686670"
-    dev02:
-      accountId: "175872367215"
-    build:
-      accountId: "457601271792"
+      dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_277_157_20231019-162516_with_collector_java:2
 
 Resources:
   # lambda to stub cimit postMitigations
