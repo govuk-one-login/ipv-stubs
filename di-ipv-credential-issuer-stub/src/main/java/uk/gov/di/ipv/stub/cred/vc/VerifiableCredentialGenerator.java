@@ -80,8 +80,8 @@ public class VerifiableCredentialGenerator {
 
     private List<String> getVcType() {
         return switch (getCriType()) {
-            case USER_ASSERTED_CRI_TYPE ->
-                    List.of(VERIFIABLE_CREDENTIAL_TYPE, IDENTITY_ASSERTION_CREDENTIAL_TYPE);
+            case USER_ASSERTED_CRI_TYPE -> List.of(
+                    VERIFIABLE_CREDENTIAL_TYPE, IDENTITY_ASSERTION_CREDENTIAL_TYPE);
             case ADDRESS_CRI_TYPE -> List.of(VERIFIABLE_CREDENTIAL_TYPE, ADDRESS_CREDENTIAL_TYPE);
             default -> List.of(VERIFIABLE_CREDENTIAL_TYPE, IDENTITY_CHECK_CREDENTIAL_TYPE);
         };
