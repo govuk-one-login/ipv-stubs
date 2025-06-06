@@ -52,11 +52,8 @@ public class InheritedIdentityJwtBuilder {
 
     public static SignedJWT generate(
             String userId, String vot, String credentialSubject, String evidence)
-            throws NoSuchAlgorithmException,
-                    InvalidKeySpecException,
-                    JOSEException,
-                    JsonProcessingException,
-                    ParseException {
+            throws NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
+                    JsonProcessingException, ParseException {
 
         Map<String, Object> vc = new LinkedHashMap<>();
         vc.put(VC_TYPE, new String[] {VERIFIABLE_CREDENTIAL_TYPE, IDENTITY_CHECK_CREDENTIAL_TYPE});

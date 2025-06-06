@@ -255,10 +255,7 @@ public class AuthorizeHandler {
     }
 
     private String generateResponseRedirect(AuthRequest authRequest, JWTClaimsSet claimsSet)
-            throws IOException,
-                    NoSuchAlgorithmException,
-                    InvalidKeySpecException,
-                    JOSEException,
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException, JOSEException,
                     ParseException {
         AuthorizationErrorResponse requestedAuthErrorResponse = handleRequestedError(authRequest);
         if (requestedAuthErrorResponse != null) {
@@ -487,9 +484,8 @@ public class AuthorizeHandler {
                 gpg45Score.put(STRENGTH, Integer.parseInt(gpg45Scores.strength()));
                 gpg45Score.put(VALIDITY, Integer.parseInt(gpg45Scores.validity()));
             }
-            case ACTIVITY_CRI_TYPE ->
-                    gpg45Score.put(
-                            ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
+            case ACTIVITY_CRI_TYPE -> gpg45Score.put(
+                    ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
             case FRAUD_CRI_TYPE -> {
                 gpg45Score.put(FRAUD, Integer.parseInt(gpg45Scores.fraud()));
                 if (StringUtils.isNotBlank(gpg45Scores.activityHistory())) {
@@ -497,8 +493,8 @@ public class AuthorizeHandler {
                             ACTIVITY_HISTORY, Integer.parseInt(gpg45Scores.activityHistory()));
                 }
             }
-            case VERIFICATION_CRI_TYPE ->
-                    gpg45Score.put(VERIFICATION, Integer.parseInt(gpg45Scores.verification()));
+            case VERIFICATION_CRI_TYPE -> gpg45Score.put(
+                    VERIFICATION, Integer.parseInt(gpg45Scores.verification()));
             case DOC_CHECK_APP_CRI_TYPE -> {
                 int strengthNum =
                         StringUtils.isNotBlank(gpg45Scores.validity())
