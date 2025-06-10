@@ -4,7 +4,6 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
@@ -14,7 +13,6 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jwt.JWTClaimNames;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.nimbusds.oauth2.sdk.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.message.StringMapMessage;
@@ -26,11 +24,11 @@ import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.Ev
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.MitigatingCredential;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.Mitigation;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.VcClaim;
-import uk.gov.di.ipv.core.getcontraindicatorcredential.exceptions.FailedToParseRequestException;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.factory.ECDSASignerFactory;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
+import uk.gov.di.ipv.core.library.exceptions.FailedToParseRequestException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -39,13 +37,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeSet;
 
 import static java.util.Comparator.comparing;
+import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.generateAPIGatewayProxyResponseEvent;
+import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getRequiredHeaderByKey;
+import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getRequiredQueryParamByKey;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
 
 public class GetContraIndicatorCredentialHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -127,61 +127,13 @@ public class GetContraIndicatorCredentialHandler implements RequestHandler<APIGa
         }
     }
 
-    private APIGatewayProxyResponseEvent generateAPIGatewayProxyResponseEvent(Integer statusCode, Object body) {
-        var response = new APIGatewayProxyResponseEvent();
-        response.setStatusCode(statusCode);
-
-        try {
-            response.setBody(OBJECT_MAPPER.writeValueAsString(body));
-        } catch (JsonProcessingException e) {
-            LOGGER.error("Unable to generate error response");
-            response.setStatusCode(500);
-            response.setBody("Internal server error");
-            response.setHeaders(Collections.emptyMap());
-        }
-        return response;
-    }
-
     private GetCiCredentialRequest getParsedRequest (APIGatewayProxyRequestEvent input)
             throws FailedToParseRequestException {
         return GetCiCredentialRequest.builder()
-                .userId(getQueryParamByKey(USER_ID_QUERY_PARAM, input))
-                .govukSigninJourneyId(getHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID, input))
-                .ipAddress(getHeaderByKey(IP_ADDRESS_HEADER, input))
+                .userId(getRequiredQueryParamByKey(USER_ID_QUERY_PARAM, input))
+                .govukSigninJourneyId(getRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID, input))
+                .ipAddress(getRequiredHeaderByKey(IP_ADDRESS_HEADER, input))
                 .build();
-    }
-
-    private String getHeaderByKey(String key, APIGatewayProxyRequestEvent input)
-            throws FailedToParseRequestException {
-        var headers = input.getHeaders();
-        if (Objects.isNull(headers)) {
-            throw new FailedToParseRequestException("No headers present in request");
-        }
-
-        var headerValue = headers.get(key);
-
-        if (StringUtils.isBlank(headerValue)) {
-            throw new FailedToParseRequestException(String.format("%s in request headers is empty", key));
-        }
-
-        return headerValue;
-    }
-
-    private String getQueryParamByKey(String key, APIGatewayProxyRequestEvent input)
-            throws FailedToParseRequestException {
-        var queryParams = input.getQueryStringParameters();
-
-        if (Objects.isNull(queryParams)) {
-            throw new FailedToParseRequestException("No query params present in request");
-        }
-
-        var queryParamValue = queryParams.get(key);
-
-        if (StringUtils.isBlank(queryParamValue)) {
-            throw new FailedToParseRequestException(String.format("%s in request query params is empty", key));
-        }
-
-        return queryParamValue;
     }
 
     private SignedJWT generateJWT(String userId)
