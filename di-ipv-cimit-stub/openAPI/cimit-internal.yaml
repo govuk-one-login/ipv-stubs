@@ -169,38 +169,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/FailResponse"
       x-amazon-apigateway-integration:
-        type: "aws"
+        type: "aws_proxy"
         httpMethod: "POST"
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostMitigationsFunction.Arn}:live/invocations
-        requestTemplates:
-          application/json:
-            Fn::Sub: >
-              {
-                "govuk_signin_journey_id": "$util.escapeJavaScript($input.params('govuk-signin-journey-id'))",
-                "ip_address": "$util.escapeJavaScript($input.params('ip-address'))",
-                "signed_jwts": $input.json('$.signed_jwts')
-              }
-        responses:
-          default:
-            statusCode: 200
-            responseTemplates:
-              application/json: |
-                #set($message = $input.path('$'))
-                #if($message.errorType != "")
-                #if($message.errorType == "INTERNAL_ERROR")
-                #set($context.responseOverride.status = 500)
-                #else
-                #set($context.responseOverride.status = 400)
-                #end
-                {
-                  "result":"fail",
-                  "reason":"$message.errorType",
-                  "errorMessage":"$util.escapeJavaScript($message.errorMessage)"
-                }
-                #else
-                $input.json('$')
-                #end
 
   /contra-indicators/healthcheck:
     get:
