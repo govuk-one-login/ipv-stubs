@@ -1,25 +1,28 @@
 package uk.gov.di.ipv.core.putcontraindicators;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsRequest;
+import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsRequestBody;
 import uk.gov.di.ipv.core.putcontraindicators.domain.PutContraIndicatorsResponse;
 import uk.gov.di.ipv.core.putcontraindicators.exceptions.CiPutException;
 import uk.gov.di.ipv.core.putcontraindicators.service.ContraIndicatorsService;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 
@@ -31,84 +34,69 @@ class PutContraIndicatorsHandlerTest {
 
     @Mock private ContraIndicatorsService mockCimitService;
 
-    @InjectMocks private PutContraIndicatorsHandler classToTest;
+    @InjectMocks private PutContraIndicatorsHandler putContraIndicatorsHandler;
 
     @Test
-    void shouldReturnSuccessForValidRequest() throws IOException, CiPutException {
-        PutContraIndicatorsRequest putContraIndicatorsRequest =
-                PutContraIndicatorsRequest.builder()
-                        .govukSigninJourneyId("govuk_signin_journey_id")
-                        .ipAddress("ip_address")
-                        .signedJwt("signed_jwt")
-                        .build();
+    void shouldReturnSuccessForValidRequest() throws Exception {
+        var request = new APIGatewayProxyRequestEvent();
+        request.setHeaders(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address"));
+        request.setBody(objectMapper.writeValueAsString(
+                PutContraIndicatorsRequestBody.builder().signedJwt("signed_jwt").build()));
 
-        String expectedResponse =
-                objectMapper.writeValueAsString(
-                        PutContraIndicatorsResponse.builder().result("success").build());
+        doNothing().when(mockCimitService).addUserCis(any());
 
-        doNothing().when(mockCimitService).addUserCis(putContraIndicatorsRequest);
+        var response = putContraIndicatorsHandler.handleRequest(request, mockContext);
 
-        var response =
-                makeRequest(
-                        classToTest,
-                        objectMapper.writeValueAsString(putContraIndicatorsRequest),
-                        mockContext,
-                        PutContraIndicatorsResponse.class);
-
-        assertNotNull(response);
-        assertEquals(expectedResponse, objectMapper.writeValueAsString(response));
+        assertEquals(200, response.getStatusCode());
+        var parsedResponse = objectMapper.readValue(response.getBody(), PutContraIndicatorsResponse.class);
+        assertEquals("success", parsedResponse.getResult());
     }
 
-    @Test
-    void shouldThrowExceptionForInvalidRequest() throws CiPutException {
-        assertThrows(
-                IOException.class,
-                () -> {
-                    makeRequest(
-                            classToTest,
-                            objectMapper.writeValueAsString(""),
-                            mockContext,
-                            PutContraIndicatorsResponse.class);
-                });
+    private static Stream<Arguments> provideInvalidRequests() {
+        return Stream.of(
+                Arguments.of(Map.of("ip-address", "ip-address"),
+                        PutContraIndicatorsRequestBody.builder().signedJwt("signed_jwt").build()),
+                Arguments.of(Map.of("govuk-signin-journey-id", "journeyId"),
+                        PutContraIndicatorsRequestBody.builder().signedJwt("signed_jwt").build()),
+                Arguments.of(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address"),
+                        PutContraIndicatorsRequestBody.builder().build()),
+                Arguments.of(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address"), null)
+        );
+    }
+
+    @MethodSource("provideInvalidRequests")
+    @ParameterizedTest
+    void shouldReturn400GivenAnInvalidRequest(
+            Map<String, String> requestHeaders, PutContraIndicatorsRequestBody requestBody) throws Exception {
+        var request = new APIGatewayProxyRequestEvent();
+        request.setHeaders(requestHeaders);
+
+        if (!Objects.isNull(requestBody)) {
+            request.setBody(objectMapper.writeValueAsString(requestBody));
+        }
+
+        var response = putContraIndicatorsHandler.handleRequest(request, mockContext);
+
+        assertEquals(400, response.getStatusCode());
+        var parsedResponse = objectMapper.readValue(response.getBody(), PutContraIndicatorsResponse.class);
+        assertEquals("fail", parsedResponse.getResult());
     }
 
     @Test
     void shouldReturnExceptionWhenCimitServiceThrowsException() throws IOException {
-        PutContraIndicatorsRequest putContraIndicatorsRequest =
-                PutContraIndicatorsRequest.builder()
-                        .govukSigninJourneyId("govuk_signin_journey_id")
-                        .ipAddress("ip_address")
-                        .signedJwt("signed_jwt")
-                        .build();
-
-        String expectedResponse =
-                objectMapper.writeValueAsString(
-                        PutContraIndicatorsResponse.builder().result("fail").build());
+        var request = new APIGatewayProxyRequestEvent();
+        request.setHeaders(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address"));
+        request.setBody(objectMapper.writeValueAsString(
+                PutContraIndicatorsRequestBody.builder().signedJwt("signed_jwt").build()));
 
         doThrow(new CiPutException("Failed to the CIs to the Cimit Stub Table"))
                 .when(mockCimitService)
-                .addUserCis(putContraIndicatorsRequest);
+                .addUserCis(any());
 
-        var response =
-                makeRequest(
-                        classToTest,
-                        objectMapper.writeValueAsString(putContraIndicatorsRequest),
-                        mockContext,
-                        PutContraIndicatorsResponse.class);
+        var response = putContraIndicatorsHandler.handleRequest(request, mockContext);
 
-        assertNotNull(response);
-        assertEquals(expectedResponse, objectMapper.writeValueAsString(response));
-    }
-
-    private <T extends PutContraIndicatorsResponse> T makeRequest(
-            RequestStreamHandler handler, String request, Context context, Class<T> classType)
-            throws IOException {
-        try (var inputStream = new ByteArrayInputStream(request.getBytes());
-                var outputStream = new ByteArrayOutputStream()) {
-            handler.handleRequest(inputStream, outputStream, context);
-            return objectMapper.readValue(outputStream.toString(), classType);
-        } catch (Exception ex) {
-            throw ex;
-        }
+        assertEquals(500, response.getStatusCode());
+        var parsedResponse = objectMapper.readValue(response.getBody(), PutContraIndicatorsResponse.class);
+        assertEquals("fail", parsedResponse.getResult());
     }
 }
