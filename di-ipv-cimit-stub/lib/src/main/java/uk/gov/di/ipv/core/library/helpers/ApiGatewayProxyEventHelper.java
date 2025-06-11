@@ -35,18 +35,31 @@ public class ApiGatewayProxyEventHelper {
 
     public static String getRequiredHeaderByKey(String key, APIGatewayProxyRequestEvent input)
             throws FailedToParseRequestException {
+        return getHeaderByKey(key, input, true);
+    }
+
+    public static String getNonRequiredHeaderByKey(String key, APIGatewayProxyRequestEvent input)
+            throws FailedToParseRequestException {
+        return getHeaderByKey(key, input, false);
+    }
+
+    private static String getHeaderByKey(String key, APIGatewayProxyRequestEvent input, boolean isRequired)
+            throws FailedToParseRequestException {
         var headers = input.getHeaders();
         if (Objects.isNull(headers)) {
-            throw new FailedToParseRequestException("No headers present in request");
+            if (isRequired) {
+                throw new FailedToParseRequestException("No headers present in request");
+            }
+            return null;
         }
 
         var headerValue = headers.get(key);
 
-        if (StringUtils.isBlank(headerValue)) {
+        if (isRequired && StringUtils.isBlank(headerValue)) {
             throw new FailedToParseRequestException(String.format("%s in request headers is empty", key));
         }
 
-        return headerValue;
+        return  headerValue;
     }
 
     public static String getRequiredQueryParamByKey(String key, APIGatewayProxyRequestEvent input)

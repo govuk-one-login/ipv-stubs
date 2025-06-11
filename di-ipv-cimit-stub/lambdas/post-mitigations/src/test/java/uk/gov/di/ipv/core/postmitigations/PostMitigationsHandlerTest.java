@@ -55,12 +55,34 @@ class PostMitigationsHandlerTest {
         assertEquals(500, response.getStatusCode());
     }
 
-    private static Stream<Arguments> provideInvalidRequests() {
-        var validBody = PostMitigationsRequestBody.builder().signedJwts(List.of(VALID_JWT)).build();
-
+    private static Stream<Arguments> provideValidRequests() {
         return Stream.of(
-                Arguments.of(Map.of("ip-address", "ip-address"), validBody),
-                Arguments.of(Map.of("govuk-signin-journey-id", "journeyId"), validBody),
+                Arguments.of(Map.of("ip-address", "ip-address")),
+                Arguments.of(Map.of("govuk-signin-journey-id", "journeyId")),
+                Arguments.of(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address")),
+                Arguments.of(Map.of())
+        );
+    }
+
+    @MethodSource("provideValidRequests")
+    @ParameterizedTest
+    void shouldPostMitigationsGivenValidRequest(Map<String, String> requestHeaders) throws Exception {
+        var request = new APIGatewayProxyRequestEvent();
+        request.setHeaders(requestHeaders);
+        request.setBody(mapper.writeValueAsString(
+                PostMitigationsRequestBody.builder().signedJwts(
+                        List.of(VALID_JWT)).build()));
+
+        var response = postMitigationsHandler.handleRequest(request, mockContext);
+
+        PostMitigationsResponse parsedResponse = mapper.readValue(response.getBody(), new TypeReference<>() {});
+
+        assertEquals(SUCCESS_RESPONSE, parsedResponse.result());
+        assertEquals(200, response.getStatusCode());
+    }
+
+    private static Stream<Arguments> provideInvalidRequests() {
+        return Stream.of(
                 Arguments.of(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address"),
                         PostMitigationsRequestBody.builder().build()),
                 Arguments.of(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address"),

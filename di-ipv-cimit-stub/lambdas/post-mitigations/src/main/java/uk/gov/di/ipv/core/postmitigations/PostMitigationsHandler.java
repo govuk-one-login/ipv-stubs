@@ -23,7 +23,7 @@ import java.text.ParseException;
 import java.util.Objects;
 
 import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.generateAPIGatewayProxyResponseEvent;
-import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getRequiredHeaderByKey;
+import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getNonRequiredHeaderByKey;
 
 public class PostMitigationsHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
@@ -104,8 +104,8 @@ public class PostMitigationsHandler implements RequestHandler<APIGatewayProxyReq
             }
 
             return PostMitigationsRequest.builder()
-                    .govukSigninJourneyId(getRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID_HEADER, input))
-                    .ipAddress(getRequiredHeaderByKey(IP_ADDRESS_HEADER, input))
+                    .govukSigninJourneyId(getNonRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID_HEADER, input))
+                    .ipAddress(getNonRequiredHeaderByKey(IP_ADDRESS_HEADER, input))
                     .signedJwtVCs(signedJwts)
                     .build();
         } catch (JsonProcessingException e) {

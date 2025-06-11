@@ -36,10 +36,20 @@ class PutContraIndicatorsHandlerTest {
 
     @InjectMocks private PutContraIndicatorsHandler putContraIndicatorsHandler;
 
-    @Test
-    void shouldReturnSuccessForValidRequest() throws Exception {
+    private static Stream<Arguments> provideValidRequests() {
+        return Stream.of(
+                Arguments.of(Map.of("ip-address", "ip-address")),
+                Arguments.of(Map.of("govuk-signin-journey-id", "journeyId")),
+                Arguments.of(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address")),
+                Arguments.of(Map.of())
+        );
+    }
+
+    @MethodSource("provideValidRequests")
+    @ParameterizedTest
+    void shouldReturnSuccessForValidRequest(Map<String, String> requestHeaders) throws Exception {
         var request = new APIGatewayProxyRequestEvent();
-        request.setHeaders(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address"));
+        request.setHeaders(requestHeaders);
         request.setBody(objectMapper.writeValueAsString(
                 PutContraIndicatorsRequestBody.builder().signedJwt("signed_jwt").build()));
 
@@ -54,10 +64,6 @@ class PutContraIndicatorsHandlerTest {
 
     private static Stream<Arguments> provideInvalidRequests() {
         return Stream.of(
-                Arguments.of(Map.of("ip-address", "ip-address"),
-                        PutContraIndicatorsRequestBody.builder().signedJwt("signed_jwt").build()),
-                Arguments.of(Map.of("govuk-signin-journey-id", "journeyId"),
-                        PutContraIndicatorsRequestBody.builder().signedJwt("signed_jwt").build()),
                 Arguments.of(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address"),
                         PutContraIndicatorsRequestBody.builder().build()),
                 Arguments.of(Map.of("govuk-signin-journey-id", "journeyId", "ip-address", "ip-address"), null)

@@ -57,13 +57,11 @@ paths:
       parameters:
         - name: govuk-signin-journey-id
           in: header
-          required: true
           schema:
             type: string
           description: The GOV.UK Journey ID for the individuals web-journey.
         - name: ip-address
           in: header
-          required: true
           schema:
             type: string
           description: The source IP address of the journeys request.
@@ -104,13 +102,11 @@ paths:
       parameters:
         - name: govuk-signin-journey-id
           in: header
-          required: true
           schema:
             type: string
           description: The GOV.UK Journey ID for the individuals web-journey.
         - name: ip-address
           in: header
-          required: true
           schema:
             type: string
           description: The source IP address of the journeys request.

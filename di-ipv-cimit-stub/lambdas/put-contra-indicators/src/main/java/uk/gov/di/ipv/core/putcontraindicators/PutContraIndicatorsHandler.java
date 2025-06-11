@@ -20,7 +20,7 @@ import uk.gov.di.ipv.core.putcontraindicators.service.ContraIndicatorsService;
 import java.util.Objects;
 
 import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.generateAPIGatewayProxyResponseEvent;
-import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getRequiredHeaderByKey;
+import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getNonRequiredHeaderByKey;
 
 public class PutContraIndicatorsHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
@@ -115,8 +115,8 @@ public class PutContraIndicatorsHandler implements RequestHandler<APIGatewayProx
             }
 
             return PutContraIndicatorsRequest.builder()
-                    .govukSigninJourneyId(getRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID_HEADER, input))
-                    .ipAddress(getRequiredHeaderByKey(IP_ADDRESS_HEADER, input))
+                    .govukSigninJourneyId(getNonRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID_HEADER, input))
+                    .ipAddress(getNonRequiredHeaderByKey(IP_ADDRESS_HEADER, input))
                     .signedJwt(signedJwt)
                     .build();
 
