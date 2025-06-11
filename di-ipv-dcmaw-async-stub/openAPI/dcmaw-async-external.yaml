@@ -46,7 +46,7 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetDcmawAsyncAccessTokenFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
-          default:
+          200:
             statusCode: 200
             responseTemplates:
               application/json: '{"result": "success"}'
@@ -74,7 +74,7 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetDcmawAsyncVcFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
-          default:
+          201:
             statusCode: 201
             responseTemplates:
               application/json: '{"result": "success"}'
@@ -105,7 +105,7 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagementEnqueueVcFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
-          default:
+          201:
             statusCode: 201
             responseTemplates:
               application/json: '{"result": "success"}'
@@ -133,7 +133,7 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagementGenerateVcFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
-          default:
+          200:
             statusCode: 200
             responseTemplates:
               application/json: '{"result": "success"}'
@@ -164,7 +164,7 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagementCleanupSessionFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
-          default:
+          201:
             statusCode: 201
             responseTemplates:
               application/json: '{"result": "success"}'
@@ -195,7 +195,7 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManagementEnqueueErrorFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
-          default:
+          201:
             statusCode: 201
             responseTemplates:
               application/json: '{"result": "success"}'
