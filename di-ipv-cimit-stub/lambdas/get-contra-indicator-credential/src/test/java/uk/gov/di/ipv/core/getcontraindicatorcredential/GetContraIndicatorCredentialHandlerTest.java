@@ -102,9 +102,11 @@ class GetContraIndicatorCredentialHandlerTest {
                     CIMIT_COMPONENT_ID, signedJWT.getJWTClaimsSet().getClaim(JWTClaimNames.ISSUER));
 
             var vcClaim =
-                    objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+                    objectMapper.convertValue(
+                            claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
 
-            assertEquals(List.of("VerifiableCredential", "SecurityCheckCredential"), vcClaim.type());
+            assertEquals(
+                    List.of("VerifiableCredential", "SecurityCheckCredential"), vcClaim.type());
 
             var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
             assertEquals(1, contraIndicators.size());
@@ -152,7 +154,8 @@ class GetContraIndicatorCredentialHandlerTest {
 
             var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
             var vcClaim =
-                    objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+                    objectMapper.convertValue(
+                            claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
             var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
             var expectedCi =
@@ -190,7 +193,8 @@ class GetContraIndicatorCredentialHandlerTest {
 
             var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
             var vcClaim =
-                    objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+                    objectMapper.convertValue(
+                            claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
             var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
             var expectedCi =
@@ -241,7 +245,8 @@ class GetContraIndicatorCredentialHandlerTest {
 
             var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
             var vcClaim =
-                    objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+                    objectMapper.convertValue(
+                            claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
             var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
             var expectedCi =
@@ -297,7 +302,8 @@ class GetContraIndicatorCredentialHandlerTest {
 
             var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
             var vcClaim =
-                    objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+                    objectMapper.convertValue(
+                            claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
             var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
             var expectedCi =
@@ -357,7 +363,8 @@ class GetContraIndicatorCredentialHandlerTest {
 
             var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
             var vcClaim =
-                    objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+                    objectMapper.convertValue(
+                            claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
             var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
             var expectedCi =
@@ -421,7 +428,8 @@ class GetContraIndicatorCredentialHandlerTest {
 
             var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
             var vcClaim =
-                    objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+                    objectMapper.convertValue(
+                            claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
             var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
             var expectedCi =
@@ -468,7 +476,8 @@ class GetContraIndicatorCredentialHandlerTest {
 
             var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
             var vcClaim =
-                    objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+                    objectMapper.convertValue(
+                            claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
             var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
             var expectedCi =
@@ -515,7 +524,8 @@ class GetContraIndicatorCredentialHandlerTest {
 
             var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
             var vcClaim =
-                    objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+                    objectMapper.convertValue(
+                            claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
             var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
             var expectedCi =
@@ -584,7 +594,8 @@ class GetContraIndicatorCredentialHandlerTest {
 
             var claimsSet = SignedJWT.parse(response.getVc()).getJWTClaimsSet();
             var vcClaim =
-                    objectMapper.convertValue(claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
+                    objectMapper.convertValue(
+                            claimsSet.getJSONObjectClaim(VC_CLAIM), VcClaim.class);
             var contraIndicators = vcClaim.evidence().get(0).contraIndicator();
 
             var expectedCi =
@@ -624,13 +635,14 @@ class GetContraIndicatorCredentialHandlerTest {
         void shouldFailForWrongCimitKey() throws IOException {
             when(mockConfigService.getCimitSigningKey()).thenReturn("Invalid_cimit_key");
 
-            var response = getContraIndicatorCredentialHandler.handleRequest(
-                    generateValidRequest(), mockContext);
+            var response =
+                    getContraIndicatorCredentialHandler.handleRequest(
+                            generateValidRequest(), mockContext);
 
             assertEquals(500, response.getStatusCode());
 
-            var body = objectMapper.readValue(
-                    response.getBody(), GetCiCredentialErrorResponse.class);
+            var body =
+                    objectMapper.readValue(response.getBody(), GetCiCredentialErrorResponse.class);
 
             assertEquals("fail", body.getResult());
         }
@@ -639,19 +651,18 @@ class GetContraIndicatorCredentialHandlerTest {
     @Test
     void shouldFailWhenMissingUserId() throws Exception {
         var request = new APIGatewayProxyRequestEvent();
-        request.setHeaders(Map.of(
-                "govuk-signin-journey-id",
-                "govuk_signin_journey_id",
-                "ip-address",
-                "ip_address"));
+        request.setHeaders(
+                Map.of(
+                        "govuk-signin-journey-id",
+                        "govuk_signin_journey_id",
+                        "ip-address",
+                        "ip_address"));
 
-        var response = getContraIndicatorCredentialHandler.handleRequest(
-                request, mockContext);
+        var response = getContraIndicatorCredentialHandler.handleRequest(request, mockContext);
 
         assertEquals(400, response.getStatusCode());
 
-        var body = objectMapper.readValue(
-                response.getBody(), GetCiCredentialErrorResponse.class);
+        var body = objectMapper.readValue(response.getBody(), GetCiCredentialErrorResponse.class);
 
         assertEquals("fail", body.getResult());
         assertEquals("FailedToParseRequestException", body.getReason());
@@ -660,18 +671,14 @@ class GetContraIndicatorCredentialHandlerTest {
     @Test
     void shouldFailWhenMissingJourneyId() throws Exception {
         var request = new APIGatewayProxyRequestEvent();
-        request.setHeaders(Map.of(
-                "ip-address",
-                "ip_address"));
+        request.setHeaders(Map.of("ip-address", "ip_address"));
         request.setQueryStringParameters(Map.of("user_id", USER_ID));
 
-        var response = getContraIndicatorCredentialHandler.handleRequest(
-                request, mockContext);
+        var response = getContraIndicatorCredentialHandler.handleRequest(request, mockContext);
 
         assertEquals(400, response.getStatusCode());
 
-        var body = objectMapper.readValue(
-                response.getBody(), GetCiCredentialErrorResponse.class);
+        var body = objectMapper.readValue(response.getBody(), GetCiCredentialErrorResponse.class);
 
         assertEquals("fail", body.getResult());
         assertEquals("FailedToParseRequestException", body.getReason());
@@ -680,36 +687,34 @@ class GetContraIndicatorCredentialHandlerTest {
     @Test
     void shouldFailWhenMissingIpAddress() throws Exception {
         var request = new APIGatewayProxyRequestEvent();
-        request.setHeaders(Map.of(
-                "govuk-signin-journey-id",
-                "govuk_signin_journey_id"));
+        request.setHeaders(Map.of("govuk-signin-journey-id", "govuk_signin_journey_id"));
         request.setQueryStringParameters(Map.of("user_id", USER_ID));
 
-        var response = getContraIndicatorCredentialHandler.handleRequest(
-                request, mockContext);
+        var response = getContraIndicatorCredentialHandler.handleRequest(request, mockContext);
 
         assertEquals(400, response.getStatusCode());
 
-        var body = objectMapper.readValue(
-                response.getBody(), GetCiCredentialErrorResponse.class);
+        var body = objectMapper.readValue(response.getBody(), GetCiCredentialErrorResponse.class);
 
         assertEquals("fail", body.getResult());
         assertEquals("FailedToParseRequestException", body.getReason());
     }
 
     private GetCiCredentialResponse makeRequest() throws IOException {
-        var response = getContraIndicatorCredentialHandler.handleRequest(
-                generateValidRequest(), mockContext);
+        var response =
+                getContraIndicatorCredentialHandler.handleRequest(
+                        generateValidRequest(), mockContext);
         return objectMapper.readValue(response.getBody(), GetCiCredentialResponse.class);
     }
 
     private APIGatewayProxyRequestEvent generateValidRequest() {
         var request = new APIGatewayProxyRequestEvent();
-        request.setHeaders(Map.of(
-                "govuk-signin-journey-id",
-                "govuk_signin_journey_id",
-                "ip-address",
-                "ip_address"));
+        request.setHeaders(
+                Map.of(
+                        "govuk-signin-journey-id",
+                        "govuk_signin_journey_id",
+                        "ip-address",
+                        "ip_address"));
         request.setQueryStringParameters(Map.of("user_id", USER_ID));
         return request;
     }

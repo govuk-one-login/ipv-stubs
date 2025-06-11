@@ -25,10 +25,10 @@ import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.Mi
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.Mitigation;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.VcClaim;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.factory.ECDSASignerFactory;
+import uk.gov.di.ipv.core.library.exceptions.FailedToParseRequestException;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
-import uk.gov.di.ipv.core.library.exceptions.FailedToParseRequestException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -48,7 +48,8 @@ import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getR
 import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getRequiredQueryParamByKey;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
 
-public class GetContraIndicatorCredentialHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+public class GetContraIndicatorCredentialHandler
+        implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private static final String IP_ADDRESS_HEADER = "ip-address";
     private static final String GOVUK_SIGNIN_JOURNEY_ID = "govuk-signin-journey-id";
@@ -78,10 +79,12 @@ public class GetContraIndicatorCredentialHandler implements RequestHandler<APIGa
     }
 
     @Override
-    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+    public APIGatewayProxyResponseEvent handleRequest(
+            APIGatewayProxyRequestEvent input, Context context) {
         try {
             LOGGER.info(
-                    new StringMapMessage().with("Function invoked:", "GetContraIndicatorCredential"));
+                    new StringMapMessage()
+                            .with("Function invoked:", "GetContraIndicatorCredential"));
 
             var parsedRequest = getParsedRequest(input);
             SignedJWT signedJWT = generateJWT(parsedRequest.getUserId());
@@ -91,14 +94,16 @@ public class GetContraIndicatorCredentialHandler implements RequestHandler<APIGa
         } catch (FailedToParseRequestException e) {
             LOGGER.error(
                     new StringMapMessage()
-                        .with(
-                                ERROR_DESCRIPTION_LOG_KEY,
-                            "Failed tp parse request. Error message:"
-                                    + e.getMessage()));
+                            .with(
+                                    ERROR_DESCRIPTION_LOG_KEY,
+                                    "Failed tp parse request. Error message:" + e.getMessage()));
             return generateAPIGatewayProxyResponseEvent(
                     400,
                     new GetCiCredentialErrorResponse(e.getClass().getSimpleName(), e.getMessage()));
-        } catch (JOSEException | NoSuchAlgorithmException | InvalidKeySpecException | IllegalArgumentException e) {
+        } catch (JOSEException
+                | NoSuchAlgorithmException
+                | InvalidKeySpecException
+                | IllegalArgumentException e) {
             LOGGER.error(
                     new StringMapMessage()
                             .with(
@@ -120,14 +125,16 @@ public class GetContraIndicatorCredentialHandler implements RequestHandler<APIGa
                                     "Failed at stub during creation of signedJwt. Error trace:"
                                             + writer));
 
-            return generateAPIGatewayProxyResponseEvent(500, new GetCiCredentialErrorResponse(
-                    e.getClass().getSimpleName(),
-                    "Failed at stub during creation of signedJwt. Error message: "
-                            + e.getMessage()));
+            return generateAPIGatewayProxyResponseEvent(
+                    500,
+                    new GetCiCredentialErrorResponse(
+                            e.getClass().getSimpleName(),
+                            "Failed at stub during creation of signedJwt. Error message: "
+                                    + e.getMessage()));
         }
     }
 
-    private GetCiCredentialRequest getParsedRequest (APIGatewayProxyRequestEvent input)
+    private GetCiCredentialRequest getParsedRequest(APIGatewayProxyRequestEvent input)
             throws FailedToParseRequestException {
         return GetCiCredentialRequest.builder()
                 .userId(getRequiredQueryParamByKey(USER_ID_QUERY_PARAM, input))

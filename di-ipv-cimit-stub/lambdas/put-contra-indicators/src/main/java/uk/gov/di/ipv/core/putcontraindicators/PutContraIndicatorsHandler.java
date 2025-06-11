@@ -22,7 +22,8 @@ import java.util.Objects;
 import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.generateAPIGatewayProxyResponseEvent;
 import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getNonRequiredHeaderByKey;
 
-public class PutContraIndicatorsHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+public class PutContraIndicatorsHandler
+        implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -43,7 +44,8 @@ public class PutContraIndicatorsHandler implements RequestHandler<APIGatewayProx
     }
 
     @Override
-    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+    public APIGatewayProxyResponseEvent handleRequest(
+            APIGatewayProxyRequestEvent input, Context context) {
         LOGGER.info(new StringMapMessage().with("Function invoked:", "PutContraIndicators"));
 
         try {
@@ -84,9 +86,7 @@ public class PutContraIndicatorsHandler implements RequestHandler<APIGatewayProx
         } catch (Exception e) {
             LOGGER.error(
                     new StringMapMessage()
-                            .with(
-                                    "Failed to insert CI due to unexpected error.",
-                                    e.getMessage()));
+                            .with("Failed to insert CI due to unexpected error.", e.getMessage()));
 
             return generateAPIGatewayProxyResponseEvent(
                     500,
@@ -107,7 +107,8 @@ public class PutContraIndicatorsHandler implements RequestHandler<APIGatewayProx
                 throw new FailedToParseRequestException("Missing request body");
             }
 
-            var parsedBody = OBJECT_MAPPER.readValue(requestBody, PutContraIndicatorsRequestBody.class);
+            var parsedBody =
+                    OBJECT_MAPPER.readValue(requestBody, PutContraIndicatorsRequestBody.class);
             var signedJwt = parsedBody.getSignedJwt();
 
             if (StringUtils.isBlank(signedJwt)) {
@@ -115,7 +116,8 @@ public class PutContraIndicatorsHandler implements RequestHandler<APIGatewayProx
             }
 
             return PutContraIndicatorsRequest.builder()
-                    .govukSigninJourneyId(getNonRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID_HEADER, input))
+                    .govukSigninJourneyId(
+                            getNonRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID_HEADER, input))
                     .ipAddress(getNonRequiredHeaderByKey(IP_ADDRESS_HEADER, input))
                     .signedJwt(signedJwt)
                     .build();

@@ -25,7 +25,8 @@ import java.util.Objects;
 import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.generateAPIGatewayProxyResponseEvent;
 import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getNonRequiredHeaderByKey;
 
-public class PostMitigationsHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+public class PostMitigationsHandler
+        implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private static final String GOVUK_SIGNIN_JOURNEY_ID_HEADER = "govuk-signin-journey-id";
     private static final String IP_ADDRESS_HEADER = "ip-address";
@@ -50,8 +51,8 @@ public class PostMitigationsHandler implements RequestHandler<APIGatewayProxyReq
     }
 
     @Override
-    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context)
-             {
+    public APIGatewayProxyResponseEvent handleRequest(
+            APIGatewayProxyRequestEvent input, Context context) {
         LOGGER.info(new StringMapMessage().with("Function invoked:", "PostMitigations"));
 
         String response;
@@ -64,32 +65,35 @@ public class PostMitigationsHandler implements RequestHandler<APIGatewayProxyReq
             }
             response = SUCCESS_RESPONSE;
             return generateAPIGatewayProxyResponseEvent(
-                    200,
-                    new PostMitigationsResponse(response, null, null));
+                    200, new PostMitigationsResponse(response, null, null));
         } catch (FailedToParseRequestException e) {
             LOGGER.error(
                     new StringMapMessage().with("Unable to parse input request", e.getMessage()));
             response = FAILURE_RESPONSE;
             return generateAPIGatewayProxyResponseEvent(
                     400,
-                    new PostMitigationsResponse(response, e.getClass().getSimpleName(), e.getMessage()));
+                    new PostMitigationsResponse(
+                            response, e.getClass().getSimpleName(), e.getMessage()));
         } catch (ParseException e) {
-            LOGGER.error(
-                    new StringMapMessage().with("Unable to parse vcs", e.getMessage()));
+            LOGGER.error(new StringMapMessage().with("Unable to parse vcs", e.getMessage()));
             response = FAILURE_RESPONSE;
             return generateAPIGatewayProxyResponseEvent(
                     500,
-                    new PostMitigationsResponse(response, e.getClass().getSimpleName(), e.getMessage()));
+                    new PostMitigationsResponse(
+                            response, e.getClass().getSimpleName(), e.getMessage()));
         } catch (Exception e) {
-            LOGGER.error(new StringMapMessage().with("Unexpected error from lambda", e.getMessage()));
+            LOGGER.error(
+                    new StringMapMessage().with("Unexpected error from lambda", e.getMessage()));
             response = FAILURE_RESPONSE;
             return generateAPIGatewayProxyResponseEvent(
                     500,
-                    new PostMitigationsResponse(response, e.getClass().getSimpleName(), e.getMessage()));
+                    new PostMitigationsResponse(
+                            response, e.getClass().getSimpleName(), e.getMessage()));
         }
     }
 
-    private PostMitigationsRequest getParsedRequest(APIGatewayProxyRequestEvent input) throws FailedToParseRequestException {
+    private PostMitigationsRequest getParsedRequest(APIGatewayProxyRequestEvent input)
+            throws FailedToParseRequestException {
         try {
             var requestBody = input.getBody();
 
@@ -104,7 +108,8 @@ public class PostMitigationsHandler implements RequestHandler<APIGatewayProxyReq
             }
 
             return PostMitigationsRequest.builder()
-                    .govukSigninJourneyId(getNonRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID_HEADER, input))
+                    .govukSigninJourneyId(
+                            getNonRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID_HEADER, input))
                     .ipAddress(getNonRequiredHeaderByKey(IP_ADDRESS_HEADER, input))
                     .signedJwtVCs(signedJwts)
                     .build();
@@ -113,5 +118,4 @@ public class PostMitigationsHandler implements RequestHandler<APIGatewayProxyReq
                     String.format("Failed to parse request body: %s", e.getMessage()));
         }
     }
-
 }

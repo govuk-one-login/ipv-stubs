@@ -12,6 +12,10 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PutContraIndicatorsResponse {
     private String result;
-    @JsonInclude(JsonInclude.Include.NON_NULL) private String reason;
-    @JsonInclude(JsonInclude.Include.NON_NULL) private String errorMessage;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String reason;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String errorMessage;
 }
