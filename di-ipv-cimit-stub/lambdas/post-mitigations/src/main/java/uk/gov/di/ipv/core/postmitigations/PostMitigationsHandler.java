@@ -16,7 +16,7 @@ import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 import uk.gov.di.ipv.core.library.service.PendingMitigationService;
 import uk.gov.di.ipv.core.postmitigations.domain.PostMitigationsRequest;
-import uk.gov.di.ipv.core.postmitigations.domain.PostMitigationsRequestBodyDto;
+import uk.gov.di.ipv.core.postmitigations.domain.PostMitigationsRequestBody;
 import uk.gov.di.ipv.core.postmitigations.domain.PostMitigationsResponse;
 
 import java.text.ParseException;
@@ -66,12 +66,19 @@ public class PostMitigationsHandler implements RequestHandler<APIGatewayProxyReq
             return generateAPIGatewayProxyResponseEvent(
                     200,
                     new PostMitigationsResponse(response, null, null));
-        } catch (ParseException | FailedToParseRequestException e) {
+        } catch (FailedToParseRequestException e) {
             LOGGER.error(
                     new StringMapMessage().with("Unable to parse input request", e.getMessage()));
             response = FAILURE_RESPONSE;
             return generateAPIGatewayProxyResponseEvent(
                     400,
+                    new PostMitigationsResponse(response, e.getClass().getSimpleName(), e.getMessage()));
+        } catch (ParseException e) {
+            LOGGER.error(
+                    new StringMapMessage().with("Unable to parse vcs", e.getMessage()));
+            response = FAILURE_RESPONSE;
+            return generateAPIGatewayProxyResponseEvent(
+                    500,
                     new PostMitigationsResponse(response, e.getClass().getSimpleName(), e.getMessage()));
         } catch (Exception e) {
             LOGGER.error(new StringMapMessage().with("Unexpected error from lambda", e.getMessage()));
@@ -90,15 +97,20 @@ public class PostMitigationsHandler implements RequestHandler<APIGatewayProxyReq
                 throw new FailedToParseRequestException("Missing request body");
             }
 
-            var parsedBody = MAPPER.readValue(requestBody, PostMitigationsRequestBodyDto.class);
+            var parsedBody = MAPPER.readValue(requestBody, PostMitigationsRequestBody.class);
+            var signedJwts = parsedBody.getSignedJwts();
+            if (signedJwts == null || signedJwts.isEmpty()) {
+                throw new FailedToParseRequestException("signed_jwts is empty");
+            }
 
             return PostMitigationsRequest.builder()
                     .govukSigninJourneyId(getRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID_HEADER, input))
                     .ipAddress(getRequiredHeaderByKey(IP_ADDRESS_HEADER, input))
-                    .signedJwtVCs(parsedBody.getSignedJwtVcs())
+                    .signedJwtVCs(signedJwts)
                     .build();
         } catch (JsonProcessingException e) {
-            throw new FailedToParseRequestException("Failed to parse request body");
+            throw new FailedToParseRequestException(
+                    String.format("Failed to parse request body: %s", e.getMessage()));
         }
     }
 

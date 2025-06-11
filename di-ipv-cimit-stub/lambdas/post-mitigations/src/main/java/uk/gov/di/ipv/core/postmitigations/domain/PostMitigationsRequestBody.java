@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Builder
-public class PostMitigationsRequestBodyDto {
+public class PostMitigationsRequestBody {
     @JsonProperty("signed_jwts")
-    private List<String> signedJwtVcs;
+    private List<String> signedJwts;
 }
