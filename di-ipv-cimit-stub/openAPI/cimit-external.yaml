@@ -61,11 +61,6 @@ paths:
               {
                 "input": “{ \"userId\": \"$input.params('userId')\", \"code\": \"$input.body('code')\", \"issuanceDate\": \"$input.body('issuanceDate')\", \"mitigations\": \"$input.body('mitigations')\ "}"
               }
-        responses:
-          default:
-            statusCode: 200
-            responseTemplates:
-              application/json: '{"result": "success"}'
 
     put:
       description: Update CIs to the Cimit Stub DynamoDB Table
@@ -94,11 +89,6 @@ paths:
               {
                 "input": “{ \"userId\": \"$input.params('userId')\", \"code\": \"$input.body('code')\", \"issuanceDate\": \"$input.body('issuanceDate')\", \"mitigations\": \"$input.body('mitigations')\ "}"
               }
-        responses:
-          default:
-            statusCode: 200
-            responseTemplates:
-              application/json: '{"result": "success"}'
 
   /user/{userId}/mitigations/{ci}:
     post:
@@ -141,11 +131,7 @@ paths:
               {
                 "input": “{\"userId\": \"$input.params('userId')\", \"ci\": \"$input.params('ci')\", \"mitigations\": \"$input.body\"}"
               }
-        responses:
-          default:
-            statusCode: 200
-            responseTemplates:
-              application/json: '"success"'
+
     put:
       description: Update mitigations to the Cimit Stub DynamoDB Table
       parameters:
@@ -186,11 +172,7 @@ paths:
               {
                 "input": “{\"userId\": \"$input.params('userId')\", \"ci\": \"$input.params('ci')\", \"mitigations\": \"$input.body\"}"
               }
-        responses:
-          default:
-            statusCode: 200
-            responseTemplates:
-              application/json: '"success"'
+
 components:
   schemas:
     CisRequestBody:
