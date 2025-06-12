@@ -1,7 +1,9 @@
 package uk.gov.di.ipv.core.getcontraindicatorcredential;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
@@ -23,13 +25,11 @@ import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.Mi
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.Mitigation;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.domain.cimitcredential.VcClaim;
 import uk.gov.di.ipv.core.getcontraindicatorcredential.factory.ECDSASignerFactory;
+import uk.gov.di.ipv.core.library.exceptions.FailedToParseRequestException;
 import uk.gov.di.ipv.core.library.persistence.items.CimitStubItem;
 import uk.gov.di.ipv.core.library.service.CimitStubItemService;
 import uk.gov.di.ipv.core.library.service.ConfigService;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.InvalidParameterException;
@@ -43,11 +43,18 @@ import java.util.Objects;
 import java.util.TreeSet;
 
 import static java.util.Comparator.comparing;
+import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.generateAPIGatewayProxyResponseEvent;
+import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getRequiredHeaderByKey;
+import static uk.gov.di.ipv.core.library.helpers.ApiGatewayProxyEventHelper.getRequiredQueryParamByKey;
 import static uk.gov.di.ipv.core.library.vc.VerifiableCredentialConstants.VC_CLAIM;
 
-public class GetContraIndicatorCredentialHandler implements RequestStreamHandler {
+public class GetContraIndicatorCredentialHandler
+        implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    private static final String INTERNAL_ERROR_TYPE = "INTERNAL_ERROR";
+    private static final String IP_ADDRESS_HEADER = "ip-address";
+    private static final String GOVUK_SIGNIN_JOURNEY_ID = "govuk-signin-journey-id";
+    private static final String USER_ID_QUERY_PARAM = "user_id";
+    private static final String ERROR_DESCRIPTION_LOG_KEY = "errorDescription";
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final JWSHeader JWT_HEADER =
@@ -72,60 +79,68 @@ public class GetContraIndicatorCredentialHandler implements RequestStreamHandler
     }
 
     @Override
-    public void handleRequest(InputStream input, OutputStream output, Context context)
-            throws IOException {
-        LOGGER.info(
-                new StringMapMessage().with("Function invoked:", "GetContraIndicatorCredential"));
-        GetCiCredentialRequest event = null;
-        GetCiCredentialResponse response = null;
+    public APIGatewayProxyResponseEvent handleRequest(
+            APIGatewayProxyRequestEvent input, Context context) {
         try {
-            event = OBJECT_MAPPER.readValue(input, GetCiCredentialRequest.class);
-        } catch (Exception e) {
-            LOGGER.error(
-                    new StringMapMessage().with("Unable to parse input request", e.getMessage()));
-            var errorResponse =
-                    new GetCiCredentialErrorResponse(
-                            INTERNAL_ERROR_TYPE,
-                            "Unable to parse input request. Error message: " + e.getMessage());
-            OBJECT_MAPPER.writeValue(output, errorResponse);
-            return;
-        }
+            LOGGER.info(
+                    new StringMapMessage()
+                            .with("Function invoked:", "GetContraIndicatorCredential"));
 
-        try {
-            SignedJWT signedJWT = generateJWT(event.getUserId());
-            response = new GetCiCredentialResponse(signedJWT.serialize());
-        } catch (Exception ex) {
+            var parsedRequest = getParsedRequest(input);
+            SignedJWT signedJWT = generateJWT(parsedRequest.getUserId());
+            var ciCredential = new GetCiCredentialResponse(signedJWT.serialize());
+
+            return generateAPIGatewayProxyResponseEvent(200, ciCredential);
+        } catch (FailedToParseRequestException e) {
             LOGGER.error(
                     new StringMapMessage()
                             .with(
-                                    "errorDescription",
+                                    ERROR_DESCRIPTION_LOG_KEY,
+                                    "Failed tp parse request. Error message:" + e.getMessage()));
+            return generateAPIGatewayProxyResponseEvent(
+                    400,
+                    new GetCiCredentialErrorResponse(e.getClass().getSimpleName(), e.getMessage()));
+        } catch (JOSEException
+                | NoSuchAlgorithmException
+                | InvalidKeySpecException
+                | IllegalArgumentException e) {
+            LOGGER.error(
+                    new StringMapMessage()
+                            .with(
+                                    ERROR_DESCRIPTION_LOG_KEY,
                                     "Failed at stub during creation of signedJwt. Error message:"
-                                            + ex.getMessage()));
+                                            + e.getMessage()));
 
             // It is possible to catch an exception here with a null message. Log the stack trace so
             // that we can see what is going on.
             StringWriter writer = new StringWriter();
             PrintWriter printWriter = new PrintWriter(writer);
-            ex.printStackTrace(printWriter);
+            e.printStackTrace(printWriter);
             printWriter.flush();
 
             LOGGER.error(
                     new StringMapMessage()
                             .with(
-                                    "errorDescription",
+                                    ERROR_DESCRIPTION_LOG_KEY,
                                     "Failed at stub during creation of signedJwt. Error trace:"
                                             + writer));
 
-            var errorResponse =
+            return generateAPIGatewayProxyResponseEvent(
+                    500,
                     new GetCiCredentialErrorResponse(
-                            INTERNAL_ERROR_TYPE,
+                            e.getClass().getSimpleName(),
                             "Failed at stub during creation of signedJwt. Error message: "
-                                    + ex.getMessage());
-            OBJECT_MAPPER.writeValue(output, errorResponse);
-            return;
+                                    + e.getMessage()));
         }
+    }
 
-        OBJECT_MAPPER.writeValue(output, response);
+    private GetCiCredentialRequest getParsedRequest(APIGatewayProxyRequestEvent input)
+            throws FailedToParseRequestException {
+        return GetCiCredentialRequest.builder()
+                .userId(getRequiredQueryParamByKey(USER_ID_QUERY_PARAM, input))
+                .govukSigninJourneyId(getRequiredHeaderByKey(GOVUK_SIGNIN_JOURNEY_ID, input))
+                .ipAddress(getRequiredHeaderByKey(IP_ADDRESS_HEADER, input))
+                .build();
     }
 
     private SignedJWT generateJWT(String userId)

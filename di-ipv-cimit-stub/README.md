@@ -4,26 +4,38 @@ putContraIndicators, postMitigations and stubManagement.
 
 Sample postMitigations POST request should look like
 ```
+headers:
 {
-	"govuk_signin_journey_id": "value1",
-	"ip_address": "value2",
-	"signed_jwts": ["value3"]
+    "govuk_signin_journey_id": "value1",
+    "ip_address": "value2",
+    "x-api-key": "apiKey"
+}
+body:
+{
+    "signed_jwts": ["value3"]
 }
 ```
 Sample putContraIndicators PUT request should look like
 ```
+headers:
 {
-  "govuk_signin_journey_id": "value1",
-  "ip_address": "value2",
-  "signed_jwt": "value3"
+    "govuk_signin_journey_id": "value1",
+    "ip_address": "value2",
+    "x-api-key": "apiKey"
+}
+body:
+{
+    "signed_jwt": "value3"
 }
 ```
 Sample getContraIndicatorCredential GET request should look like
 ```
+query params: user_id
+headers:
 {
   "govuk_signin_journey_id": "value1",
   "ip_address": "value2",
-  "user_id": "value3"
+  "x-api-key": "apiKey"
 }
 ```
 
