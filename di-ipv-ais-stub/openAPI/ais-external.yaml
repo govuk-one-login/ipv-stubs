@@ -104,7 +104,7 @@ paths:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ManageAccountInterventionsFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
-          default:
+          200:
             statusCode: 200
             responseTemplates:
               application/json: '{"message": "Success!!"}'
