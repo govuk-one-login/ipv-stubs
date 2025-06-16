@@ -202,11 +202,16 @@ public class CoreStubHandler {
                 var strengthScore = request.queryParams("score");
                 var scoringPolicy = request.queryParams("evidence_request");
                 var verificationScore = request.queryParams("verification_score");
+                var identityFraudScore = request.queryParams("identityFraudScore");
 
                 if (credentialIssuer.sendIdentityClaims()
                         && Objects.isNull(request.queryParams("postcode"))) {
                     saveEvidenceRequestToSessionIfPresent(
-                            request, strengthScore, scoringPolicy, verificationScore);
+                            request,
+                            strengthScore,
+                            scoringPolicy,
+                            verificationScore,
+                            identityFraudScore);
                     return ViewHelper.render(
                             Map.of(
                                     "cri",
@@ -441,6 +446,7 @@ public class CoreStubHandler {
         String scoringPolicy = request.queryParams("scoringPolicy");
         String strengthScore = request.queryParams("strengthScore");
         String verificationScore = request.queryParams("verificationScore");
+        String identityFraudScore = request.queryParams("identityFraudScore");
 
         if (Objects.nonNull(strengthScore)
                 || Objects.nonNull(scoringPolicy)
@@ -449,7 +455,10 @@ public class CoreStubHandler {
             return new EvidenceRequestClaims(
                     scoringPolicy,
                     Objects.isNull(strengthScore) ? null : Integer.parseInt(strengthScore),
-                    Objects.isNull(verificationScore) ? null : Integer.parseInt(verificationScore));
+                    Objects.isNull(verificationScore) ? null : Integer.parseInt(verificationScore),
+                    Objects.isNull(identityFraudScore)
+                            ? null
+                            : Integer.parseInt(identityFraudScore));
         }
         return null;
     }
@@ -604,7 +613,11 @@ public class CoreStubHandler {
     }
 
     private static void saveEvidenceRequestToSessionIfPresent(
-            Request request, String strengthScore, String scoringPolicy, String verificationScore) {
+            Request request,
+            String strengthScore,
+            String scoringPolicy,
+            String verificationScore,
+            String identityFraudScore) {
         if (Objects.nonNull(strengthScore)
                 && Objects.nonNull(scoringPolicy)
                 && Objects.nonNull(verificationScore)) {
@@ -612,7 +625,8 @@ public class CoreStubHandler {
                     new EvidenceRequestClaims(
                             scoringPolicy,
                             Integer.parseInt(strengthScore),
-                            Integer.parseInt(verificationScore));
+                            Integer.parseInt(verificationScore),
+                            Integer.parseInt(identityFraudScore));
             LOGGER.info("✅  Saving evidence request to session to {}", evidenceRequest);
             request.session().attribute("evidence_request", evidenceRequest);
         }
