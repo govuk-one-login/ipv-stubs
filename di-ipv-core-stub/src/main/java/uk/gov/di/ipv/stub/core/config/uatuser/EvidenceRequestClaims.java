@@ -16,13 +16,20 @@ public class EvidenceRequestClaims {
     @JsonProperty("verificationScore")
     private Integer verificationScore;
 
+    @JsonProperty("identityFraudScore")
+    private Integer identityFraudScore;
+
     public EvidenceRequestClaims() {}
 
     public EvidenceRequestClaims(
-            String scoringPolicy, Integer strengthScore, Integer verificationScore) {
+            String scoringPolicy,
+            Integer strengthScore,
+            Integer verificationScore,
+            Integer identityFraudScore) {
         this.scoringPolicy = scoringPolicy;
         this.strengthScore = strengthScore;
         this.verificationScore = verificationScore;
+        this.identityFraudScore = identityFraudScore;
     }
 
     @JsonProperty("scoringPolicy")
@@ -38,5 +45,10 @@ public class EvidenceRequestClaims {
     @JsonProperty("verificationScore")
     public Integer getVerificationScore() {
         return verificationScore;
+    }
+
+    @JsonProperty("identityFraudScore")
+    public Integer getIdentityFraudScore() {
+        return identityFraudScore;
     }
 }
