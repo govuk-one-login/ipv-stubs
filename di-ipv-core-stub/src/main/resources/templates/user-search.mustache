@@ -86,17 +86,18 @@
             </div>
         </form>
 
-                <form action="/user-search" method="post">
-                    <input type="hidden" name="cri" value="{{cri}}">
-                    <div class="govuk-form-group">
-                        <legend class="govuk-fieldset__legend govuk-label">Input context value as a string (e.g. check_details) </legend>
-                            <input class="govuk-input govuk-input--width-20" id="context" name="context" type="text">
-                        <legend class="govuk-fieldset__legend govuk-label" style="padding:5px,0,0,0,">Input shared claims raw JSON</legend>
-                            <input class="govuk-input govuk-input--width-20" id="claimsText" name="claimsText" type="text">
-                        <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
-                    </div>
-                </form>
-
+        <form action="/user-search" method="post">
+            <input type="hidden" name="cri" value="{{cri}}">
+            <div class="govuk-form-group">
+                <legend class="govuk-fieldset__legend govuk-label">Input context value as a string (e.g. check_details) </legend>
+                <input class="govuk-input govuk-input--width-20" id="context" name="context" type="text">
+                <legend class="govuk-fieldset__legend govuk-label" style="padding:5px,0,0,0,">Input shared claims raw JSON</legend>
+                <textarea class="govuk-textarea" id="claimsText" name="claimsText" type="textarea" rows="6"></textarea>
+                <legend class="govuk-fieldset__legend govuk-label" style="padding:5px,0,0,0,">Input evidence request claims raw JSON</legend>
+                <textarea class="govuk-textarea" id="evidenceRequestClaimsText" name="evidenceRequestClaimsText" type="textarea" rows="6"></textarea>
+                <button class="govuk-button" data-module="govuk-button">Go to {{criName}}</button>
+            </div>
+        </form>
     </main>
 </div>
 

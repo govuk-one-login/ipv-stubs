@@ -173,7 +173,10 @@ public class CoreStubHandler {
                 String queryString = request.queryParams("claimsText");
                 SharedClaims sharedClaims;
                 try {
-                    sharedClaims = objectMapper.readValue(queryString, SharedClaims.class);
+                    sharedClaims =
+                            (queryString == null || queryString.isEmpty())
+                                    ? null
+                                    : objectMapper.readValue(queryString, SharedClaims.class);
                     LOGGER.info("Raw JSON in form input mapped to shared claims");
                 } catch (Exception e) {
                     LOGGER.error("Unable to map raw JSON in form input mapped to shared claims");
@@ -232,11 +235,16 @@ public class CoreStubHandler {
                 var strengthScore = request.queryParams("score");
                 var scoringPolicy = request.queryParams("evidence_request");
                 var verificationScore = request.queryParams("verification_score");
+                var identityFraudScore = request.queryParams("identity_fraud_score");
 
                 if (credentialIssuer.sendIdentityClaims()
                         && Objects.isNull(request.queryParams("postcode"))) {
                     saveEvidenceRequestToSessionIfPresent(
-                            request, strengthScore, scoringPolicy, verificationScore);
+                            request,
+                            strengthScore,
+                            scoringPolicy,
+                            verificationScore,
+                            identityFraudScore);
                     return ViewHelper.render(
                             Map.of(
                                     "cri",
@@ -320,24 +328,41 @@ public class CoreStubHandler {
 
     private <T> void sendAuthorizationRequest(
             Request request, Response response, CredentialIssuer credentialIssuer, T sharedClaims)
-            throws ParseException, JOSEException {
+            throws ParseException, JOSEException, JsonProcessingException {
         State state = createNewState(credentialIssuer);
         request.session().attribute("state", state);
-        EvidenceRequestClaims evidenceRequest = request.session().attribute("evidence_request");
+        EvidenceRequestClaims sessionEvidenceRequest =
+                request.session().attribute("evidence_request");
 
-        if (!Objects.isNull(evidenceRequest)) {
-            LOGGER.info("✅  Retrieved evidence request from session to {}", evidenceRequest);
+        if (!Objects.isNull(sessionEvidenceRequest)) {
+            LOGGER.info("✅  Removed evidence request from session to {}", sessionEvidenceRequest);
             request.session().removeAttribute("evidence_request");
         }
 
-        var context = request.queryParams("context");
+        String context = request.queryParams("context");
+        String evidenceRequestClaimsText = request.queryParams("evidenceRequestClaimsText");
+
+        EvidenceRequestClaims evidenceRequestClaims = null;
+        try {
+            evidenceRequestClaims =
+                    (evidenceRequestClaimsText == null || evidenceRequestClaimsText.isEmpty())
+                            ? null
+                            : objectMapper.readValue(
+                                    evidenceRequestClaimsText, EvidenceRequestClaims.class);
+            LOGGER.info(
+                    "Raw JSON {} in form input mapped to evidence request claims, ",
+                    evidenceRequestClaimsText);
+        } catch (Exception e) {
+            LOGGER.error("Unable to map raw JSON in form input mapped to evidence request claims");
+            throw e;
+        }
 
         AuthorizationRequest authRequest;
 
         try {
             authRequest =
                     handlerHelper.createAuthorizationJAR(
-                            state, credentialIssuer, sharedClaims, evidenceRequest, context);
+                            state, credentialIssuer, sharedClaims, evidenceRequestClaims, context);
         } catch (JOSEException joseException) {
             LOGGER.error("JOSEException occurred," + joseException.getMessage());
             throw joseException;
@@ -471,15 +496,20 @@ public class CoreStubHandler {
         String scoringPolicy = request.queryParams("scoringPolicy");
         String strengthScore = request.queryParams("strengthScore");
         String verificationScore = request.queryParams("verificationScore");
+        String identityFraudScore = request.queryParams("identityFraudScore");
 
         if (Objects.nonNull(strengthScore)
                 || Objects.nonNull(scoringPolicy)
-                || Objects.nonNull(verificationScore)) {
+                || Objects.nonNull(verificationScore)
+                || Objects.nonNull(identityFraudScore)) {
 
             return new EvidenceRequestClaims(
                     scoringPolicy,
                     Objects.isNull(strengthScore) ? null : Integer.parseInt(strengthScore),
-                    Objects.isNull(verificationScore) ? null : Integer.parseInt(verificationScore));
+                    Objects.isNull(verificationScore) ? null : Integer.parseInt(verificationScore),
+                    Objects.isNull(identityFraudScore)
+                            ? null
+                            : Integer.parseInt(identityFraudScore));
         }
         return null;
     }
@@ -643,17 +673,18 @@ public class CoreStubHandler {
     }
 
     private static void saveEvidenceRequestToSessionIfPresent(
-            Request request, String strengthScore, String scoringPolicy, String verificationScore) {
-        if (Objects.nonNull(strengthScore)
-                && Objects.nonNull(scoringPolicy)
-                && Objects.nonNull(verificationScore)) {
-            EvidenceRequestClaims evidenceRequest =
-                    new EvidenceRequestClaims(
-                            scoringPolicy,
-                            Integer.parseInt(strengthScore),
-                            Integer.parseInt(verificationScore));
-            LOGGER.info("✅  Saving evidence request to session to {}", evidenceRequest);
-            request.session().attribute("evidence_request", evidenceRequest);
-        }
+            Request request,
+            String strengthScore,
+            String scoringPolicy,
+            String verificationScore,
+            String identityFraudScore) {
+        EvidenceRequestClaims evidenceRequest =
+                new EvidenceRequestClaims(
+                        scoringPolicy,
+                        strengthScore == null ? null : Integer.parseInt(strengthScore),
+                        verificationScore == null ? null : Integer.parseInt(verificationScore),
+                        identityFraudScore == null ? null : Integer.parseInt(identityFraudScore));
+        LOGGER.info("✅  Saving evidence request to session to {}", evidenceRequest);
+        request.session().attribute("evidence_request", evidenceRequest);
     }
 }
