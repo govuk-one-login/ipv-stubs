@@ -82,11 +82,13 @@ public class PendingMitigationService {
 
         switch (pendingMitigationItem.getRequestMethod()) {
             case "PUT" -> itemToMitigate.setMitigations(pendingMitigationItem.getMitigationCodes());
-            case "POST" -> itemToMitigate.addMitigations(
-                    pendingMitigationItem.getMitigationCodes());
-            default -> throw new IllegalArgumentException(
-                    String.format(
-                            "Method not supported: %s", pendingMitigationItem.getRequestMethod()));
+            case "POST" ->
+                    itemToMitigate.addMitigations(pendingMitigationItem.getMitigationCodes());
+            default ->
+                    throw new IllegalArgumentException(
+                            String.format(
+                                    "Method not supported: %s",
+                                    pendingMitigationItem.getRequestMethod()));
         }
 
         cimitService.updateCimitStubItem(itemToMitigate);

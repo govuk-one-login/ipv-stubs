@@ -213,13 +213,13 @@ public class IpvHandler {
     private URI getIpvEndpoint(String environment) throws URISyntaxException {
         String url =
                 switch (environment) {
-                        // dev01
+                    // dev01
                     case ("DEV") -> "https://dev.01.dev.identity.account.gov.uk/";
                     case ("DEV_AMRITS") -> "https://dev-amrits.01.dev.identity.account.gov.uk/";
                     case ("DEV_ALIR") -> "https://dev-alir.01.dev.identity.account.gov.uk/";
                     case ("DEV_PATRICKB") -> "https://dev-patrickb.01.dev.identity.account.gov.uk/";
 
-                        // dev02
+                    // dev02
                     case ("PERF") -> "https://dev-perf.02.dev.identity.account.gov.uk/";
                     case ("DEV_DANC") -> "https://dev-danc.02.dev.identity.account.gov.uk/";
                     case ("DEV_JOEE") -> "https://dev-joee.02.dev.identity.account.gov.uk/";
@@ -227,7 +227,7 @@ public class IpvHandler {
                     case ("DEV_DOMINIKT") -> "https://dev-dominikt.02.dev.identity.account.gov.uk/";
                     case ("DEV_THEAB") -> "https://dev-theab.02.dev.identity.account.gov.uk/";
 
-                        // higher
+                    // higher
                     case ("BUILD") -> "https://identity.build.account.gov.uk/";
                     case ("STAGING") -> "https://identity.staging.account.gov.uk/";
                     case ("INTEGRATION") -> "https://identity.integration.account.gov.uk/";
@@ -240,21 +240,23 @@ public class IpvHandler {
     private URI getIpvBackchannelEndpoint(String environment) throws URISyntaxException {
         String url =
                 switch (environment) {
-                        // dev01
+                    // dev01
                     case ("DEV") -> "https://api-dev.01.dev.identity.account.gov.uk/";
                     case ("DEV_AMRITS") -> "https://api-dev-amrits.01.dev.identity.account.gov.uk/";
                     case ("DEV_ALIR") -> "https://api-dev-alir.01.dev.identity.account.gov.uk/";
-                    case ("DEV_PATRICKB") -> "https://api-dev-patrickb.01.dev.identity.account.gov.uk/";
+                    case ("DEV_PATRICKB") ->
+                            "https://api-dev-patrickb.01.dev.identity.account.gov.uk/";
 
-                        // dev02
+                    // dev02
                     case ("PERF") -> "https://api-dev-perf.02.dev.identity.account.gov.uk/";
                     case ("DEV_DANC") -> "https://api-dev-danc.02.dev.identity.account.gov.uk/";
                     case ("DEV_JOEE") -> "https://api-dev-joee.02.dev.identity.account.gov.uk/";
                     case ("DEV_MIKEC") -> "https://api-dev-mikec.02.dev.identity.account.gov.uk/";
-                    case ("DEV_DOMINIKT") -> "https://api-dev-dominikt.02.dev.identity.account.gov.uk/";
+                    case ("DEV_DOMINIKT") ->
+                            "https://api-dev-dominikt.02.dev.identity.account.gov.uk/";
                     case ("DEV_THEAB") -> "https://api-dev-theab.02.dev.identity.account.gov.uk/";
 
-                        // higher
+                    // higher
                     case ("BUILD") -> "https://api.identity.build.account.gov.uk/";
                     case ("STAGING") -> "https://api.identity.staging.account.gov.uk/";
                     case ("INTEGRATION") -> "https://api.identity.integration.account.gov.uk/";
