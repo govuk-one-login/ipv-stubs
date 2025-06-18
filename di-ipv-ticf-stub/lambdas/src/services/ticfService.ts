@@ -41,9 +41,7 @@ export async function processGetVCRequest(
     nbf: timestamp,
     iat: timestamp,
     vc: {
-      evidence: [
-        ticfEvidenceItem || getDefaultEvidenceItem(),
-      ],
+      evidence: [ticfEvidenceItem || getDefaultEvidenceItem()],
       type: ["VerifiableCredential", "RiskAssessmentCredential"],
     },
   };
@@ -78,11 +76,15 @@ async function getUserEvidenceFromDb(
   return userEvidenceItem ?? undefined;
 }
 
-async function getResponseDelay(userEvidenceItem: UserEvidenceItem | undefined): Promise<number> {
+async function getResponseDelay(
+  userEvidenceItem: UserEvidenceItem | undefined,
+): Promise<number> {
   if (userEvidenceItem?.responseDelay) {
     return userEvidenceItem.responseDelay * 1000;
   }
-  const param = await getSsmParameter(config.ticfParamBasePath + "defaultResponseDelay");
+  const param = await getSsmParameter(
+    config.ticfParamBasePath + "defaultResponseDelay",
+  );
   return parseInt(param);
 }
 

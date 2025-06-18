@@ -95,6 +95,9 @@ The format of the POST request to the API gateway should look like
         "V03",
         "D03"
     ],
+    "intervention: {
+        "interventionCode": "00"
+    },
     "txn": "uuid"
 }
 ```

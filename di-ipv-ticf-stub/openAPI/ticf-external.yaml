@@ -152,6 +152,12 @@ components:
               items:
                 type: string
               description: The array of ci codes data
+            intervention:
+              type: object
+              properties:
+                interventionCode:
+                  type: string
+                  description: The code for the intervention
             txn:
               type: string
               description: The txn code (riskEngineAssessmentId) data
@@ -161,4 +167,3 @@ components:
         statusCode:
           type: number
           description: The expected statusCode from TICF when a request is made for this user
-
