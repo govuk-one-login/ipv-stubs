@@ -12,9 +12,13 @@ export async function handler(
     const { response, statusCode } = await processGetVCRequest(ticfRequest);
 
     return buildApiResponse(response, statusCode);
-  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     console.error(error);
-    return buildApiResponse({ errorMessage: error.message }, error.statusCode || 500);
+    return buildApiResponse(
+      { errorMessage: error.message },
+      error.statusCode || 500,
+    );
   }
 }
 

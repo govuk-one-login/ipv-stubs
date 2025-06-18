@@ -112,6 +112,10 @@ describe("TICF handler", function () {
         type: "RiskAssessment",
         ci: ["V03", "D03"],
         txn: "uuid",
+        intervention: {
+          interventionCode: "01",
+          interventionReason: "007",
+        },
       },
       statusCode: 200,
       ttl: 3123123,
@@ -134,6 +138,10 @@ describe("TICF handler", function () {
     expect(ticfVc.vc.evidence[0].type).toEqual("RiskAssessment");
     expect(ticfVc.vc.evidence[0].txn).toEqual("uuid");
     expect(ticfVc.vc.evidence[0].ci).toEqual(["V03", "D03"]);
+    expect(ticfVc.vc.evidence[0].intervention).toEqual({
+      interventionCode: "01",
+      interventionReason: "007",
+    });
   });
 
   it("returns a 400 for an empty request", async () => {

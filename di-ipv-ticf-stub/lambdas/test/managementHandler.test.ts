@@ -15,6 +15,10 @@ const TEST_REQUEST = {
     type: "RiskAssessment",
     ci: ["V03", "D03"],
     txn: "uuid",
+    intervention: {
+      interventionCode: "01",
+      interventionReason: "007",
+    },
   },
 };
 
