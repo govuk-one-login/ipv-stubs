@@ -346,7 +346,7 @@ public class CoreStubHandler {
         try {
             evidenceRequestClaims =
                     (evidenceRequestClaimsText == null || evidenceRequestClaimsText.isEmpty())
-                            ? null
+                            ? sessionEvidenceRequest
                             : objectMapper.readValue(
                                     evidenceRequestClaimsText, EvidenceRequestClaims.class);
             LOGGER.info(
@@ -684,6 +684,11 @@ public class CoreStubHandler {
                         verificationScore == null ? null : Integer.parseInt(verificationScore),
                         identityFraudScore == null ? null : Integer.parseInt(identityFraudScore));
         LOGGER.info("✅  Saving evidence request to session to {}", evidenceRequest);
-        request.session().attribute("evidence_request", evidenceRequest);
+        if (evidenceRequest.getScoringPolicy() != null
+                || evidenceRequest.getStrengthScore() != null
+                || evidenceRequest.getVerificationScore() != null
+                || evidenceRequest.getIdentityFraudScore() != null) {
+            request.session().attribute("evidence_request", evidenceRequest);
+        }
     }
 }
