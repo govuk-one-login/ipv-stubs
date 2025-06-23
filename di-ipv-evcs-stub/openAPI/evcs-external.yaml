@@ -163,54 +163,6 @@ paths:
             responseTemplates:
               application/json: '{"result": "success"}'
 
-  /vcs:
-    put:
-      summary: Creates & Updates (Replaces) a batch of unique VCs and optionally a Stored Identity (SI) Object into EVCS.
-      description: |-
-        Save a batch of VCs and optionally a Stored Identity Object into EVCS.
-        A Stored Identity Object is the signed JWT that IPV Core creates and updates that is stored in the `content` field of an EVCS row.
-
-
-        **Note:**
-        - All VC updates are updated in *a single transactional operation*, hence:
-        - If any VCs are duplicated but with different `state` values → reject all with HTTP400.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PersistVCsWithStoredIdentity"
-      responses:
-        202:
-          description: VCs Accepted
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  messageId:
-                    type: string
-                    description: The SQS message ID.
-                    example: "bd8359d9-d559-47dd-9467-2a31e88a9e2d"
-        400:
-          $ref: '#/components/responses/BadRequest'
-        403:
-          $ref: '#/components/responses/Forbidden'
-        500:
-          $ref: '#/components/responses/ServerError'
-      x-amazon-apigateway-request-validator: ALL
-      x-amazon-apigateway-integration:
-        type: "aws_proxy"
-        httpMethod: "POST"
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsPutUserVCsFunction.Arn}:live/invocations
-        passthroughBehavior: "WHEN_NO_TEMPLATES"
-        responses:
-          202:
-            statusCode: 202
-            responseTemplates:
-              application/json: '{"result": "success"}'
-
   /identity:
     post:
       description: "Saves the stored identity record for a given user into EVCS"
