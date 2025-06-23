@@ -362,20 +362,6 @@ components:
         required:
           - signature
           - state
-    PersistVCsWithStoredIdentity:
-      description: The request body passed to the /vcs PUT endpoint which allows VCS to be saved with or without a corresponding Stored Identity object.
-      type: object
-      properties:
-        userId:
-          type: string
-          description: The user ID associated with the VCs
-        vcs:
-          $ref: "#/components/schemas/PersistVCsArray"
-        si:
-          $ref: "#/components/schemas/StoredIdentityDetails"
-      required:
-        - userId
-        - vcs
     PersistStoredIdentity:
       description: The request body for the /identity POST endpoint to store a user's stored identity record
       type: object
