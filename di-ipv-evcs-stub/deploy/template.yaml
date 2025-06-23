@@ -333,7 +333,7 @@ Resources:
             TableName: !Ref EvcsStoredIdentityStoreTable
       AutoPublishAlias: live
       Events:
-        PutUserVCs:
+        PostIdentity:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
