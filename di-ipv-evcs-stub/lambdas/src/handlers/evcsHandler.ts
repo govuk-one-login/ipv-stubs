@@ -1,7 +1,12 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
 import { JWTPayload } from "jose";
 import { buildApiResponse } from "../common/apiResponses";
-import { PostRequest, PatchRequest, PutRequest } from "../domain/requests";
+import {
+  PostRequest,
+  PatchRequest,
+  PutRequest,
+  PostIdentityRequest,
+} from "../domain/requests";
 import ServiceResponse from "../domain/serviceResponse";
 import {
   CreateVcStates,
@@ -11,13 +16,33 @@ import {
 } from "../domain/enums";
 import {
   processPostUserVCsRequest,
-  processPutUserVCsRequest,
+  processPostIdentityRequest,
   processGetUserVCsRequest,
   processPatchUserVCsRequest,
 } from "../services/evcsService";
 import { verifyTokenAndReturnPayload } from "../services/jwtService";
 import { getErrorMessage } from "../common/utils";
 import { VcDetails } from "../domain/sharedTypes";
+
+export async function postIdentityHandler(
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResultV2> {
+  console.info(`---POST identity request received----`);
+  let parsedPostIdentityRequest;
+  try {
+    parsedPostIdentityRequest = parsePostIdentityRequest(event);
+  } catch (error) {
+    console.error(error);
+    return buildApiResponse(
+      { message: getErrorMessage(error) },
+      StatusCodes.BadRequest,
+    );
+  }
+
+  const res = await processPostIdentityRequest(parsedPostIdentityRequest);
+
+  return buildApiResponse(res.response, res.statusCode);
+}
 
 export async function createHandler(
   event: APIGatewayProxyEvent,
@@ -95,7 +120,7 @@ export async function putHandler(
     );
   }
 
-  const res = await processPutUserVCsRequest(parsedPutRequest);
+  const res = await processPostIdentityRequest(parsedPutRequest);
 
   return buildApiResponse(res.response, res.statusCode);
 }
@@ -203,6 +228,38 @@ function parsePutRequest(event: APIGatewayProxyEvent): PutRequest {
   }
 
   return parsedPutRequest;
+}
+
+function parsePostIdentityRequest(
+  event: APIGatewayProxyEvent,
+): PostIdentityRequest {
+  // Validate stored identity object
+  console.info(`---Parsing post identity request----`);
+
+  if (!event.body) {
+    throw new Error("Missing request body");
+  }
+
+  const parsedPostIdentityRequest = JSON.parse(event.body);
+
+  // Validate top-level request attributes
+  if (!parsedPostIdentityRequest.userId) {
+    throw new Error("Invalid request: missing userId");
+  }
+
+  if (!parsedPostIdentityRequest.si) {
+    throw new Error("Invalid request: missing si");
+  }
+
+  if (!parsedPostIdentityRequest.si.jwt) {
+    throw new Error("Invalid stored identity object: missing jwt");
+  }
+
+  if (!parsedPostIdentityRequest.si.vot) {
+    throw new Error("Invalid stored identity object: missing vot");
+  }
+
+  return parsedPostIdentityRequest;
 }
 
 function parsePostRequest(event: APIGatewayProxyEvent): PostRequest[] {

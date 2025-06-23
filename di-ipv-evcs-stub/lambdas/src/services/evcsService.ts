@@ -19,6 +19,7 @@ import { v4 as uuid } from "uuid";
 import {
   EvcsItemForUpdate,
   PatchRequest,
+  PostIdentityRequest,
   PostRequest,
   PutRequest,
 } from "../domain/requests";
@@ -76,89 +77,92 @@ export async function processPostUserVCsRequest(
   return response;
 }
 
-export async function processPutUserVCsRequest(
-  putRequest: PutRequest,
+export async function processPostIdentityRequest(
+  request: PutRequest | PostIdentityRequest,
 ): Promise<ServiceResponse> {
   console.info("Put user record");
-  const userId = putRequest.userId;
-  const newUserVcs = putRequest.vcs;
+  const userId = request.userId;
 
   try {
-    const ttl = await getTtl();
+    const transactItems: TransactWriteItem[] = [];
 
-    // Read user's existing VCs
-    const getResponse = await processGetUserVCsRequest(userId, [
-      VcState.CURRENT,
-      VcState.PENDING_RETURN,
-    ]);
+    if ("vcs" in request) {
+      const newUserVcs = request.vcs;
+      const ttl = await getTtl();
 
-    if (
-      getResponse.statusCode !== StatusCodes.Success ||
-      !getResponse.response ||
-      (!!getResponse.response && !("vcs" in getResponse.response))
-    ) {
-      console.error(
-        `Failed to read existing user VCs from EVCS with ${getResponse.statusCode}`,
+      // Read user's existing VCs
+      const getResponse = await processGetUserVCsRequest(userId, [
+        VcState.CURRENT,
+        VcState.PENDING_RETURN,
+      ]);
+
+      if (
+        getResponse.statusCode !== StatusCodes.Success ||
+        !getResponse.response ||
+        (!!getResponse.response && !("vcs" in getResponse.response))
+      ) {
+        console.error(
+          `Failed to read existing user VCs from EVCS with ${getResponse.statusCode}`,
+        );
+        return {
+          response: { messageId: "" },
+          statusCode: StatusCodes.InternalServerError,
+        };
+      }
+
+      // Update existing user VCs in EVCS with new states
+      const existingUserVcs = getResponse.response.vcs;
+      const newVcSignatures = newUserVcs.map(({ vc }) =>
+        getSignatureFromJwt(vc),
       );
-      return {
-        response: { messageId: "" },
-        statusCode: StatusCodes.InternalServerError,
-      };
+
+      // We skip creating an update request for an existing VC that is in the
+      // put request as TransactWriteItems cannot perform multiple operations
+      // on the same item. The put method will replace the existing vc anyway
+      // so we get to save an operation
+      const updateExistingVcsRequests = existingUserVcs
+        .filter(({ vc }) => !newVcSignatures.includes(getSignatureFromJwt(vc)))
+        .map(({ vc, state: currentState, metadata }) => {
+          const vcSignature = getSignatureFromJwt(vc);
+
+          const mappedVcToUpdateItem = createUpdateItemInput({
+            vcSignature,
+            state: getUpdatedState(vcSignature, newVcSignatures, currentState),
+            metadata,
+            userId,
+            ttl,
+          }) as Update;
+
+          return { Update: mappedVcToUpdateItem };
+        });
+
+      // Write new VCs with new state using PUT
+      const putNewUserVsRequests = newUserVcs.map(
+        ({ vc, state, metadata, provenance }: VcDetails) => {
+          const vcItemForStorage: EvcsVcItem = {
+            userId,
+            vcSignature: getSignatureFromJwt(vc),
+            vc,
+            state,
+            provenance: provenance || VCProvenance.ONLINE,
+            metadata,
+            ttl,
+          };
+          return { Put: createPutItem(vcItemForStorage) };
+        },
+      );
+
+      transactItems.push(...updateExistingVcsRequests, ...putNewUserVsRequests);
     }
 
-    // Update existing user VCs in EVCS with new states
-    const existingUserVcs = getResponse.response.vcs;
-    const newVcSignatures = newUserVcs.map(({ vc }) => getSignatureFromJwt(vc));
-
-    // We skip creating an update request for an existing VC that is in the
-    // put request as TransactWriteItems cannot perform multiple operations
-    // on the same item. The put method will replace the existing vc anyway
-    // so we get to save an operation
-    const updateExistingVcsRequests = existingUserVcs
-      .filter(({ vc }) => !newVcSignatures.includes(getSignatureFromJwt(vc)))
-      .map(({ vc, state: currentState, metadata }) => {
-        const vcSignature = getSignatureFromJwt(vc);
-
-        const mappedVcToUpdateItem = createUpdateItemInput({
-          vcSignature,
-          state: getUpdatedState(vcSignature, newVcSignatures, currentState),
-          metadata,
-          userId,
-          ttl,
-        }) as Update;
-
-        return { Update: mappedVcToUpdateItem };
-      });
-
-    // Write new VCs with new state using PUT
-    const putNewUserVsRequests = newUserVcs.map(
-      ({ vc, state, metadata, provenance }: VcDetails) => {
-        const vcItemForStorage: EvcsVcItem = {
-          userId,
-          vcSignature: getSignatureFromJwt(vc),
-          vc,
-          state,
-          provenance: provenance || VCProvenance.ONLINE,
-          metadata,
-          ttl,
-        };
-        return { Put: createPutItem(vcItemForStorage) };
-      },
-    );
-
-    const transactItems: TransactWriteItem[] = [
-      ...updateExistingVcsRequests,
-      ...putNewUserVsRequests,
-    ];
-
     // Save stored identity object if present
-    if (putRequest.si) {
+    if (request.si) {
       const storedIdentityItem: EvcsStoredIdentityItem = {
-        userId: putRequest.userId,
-        recordType: getRecordTypeFromVot(putRequest.si.vot),
-        storedIdentity: putRequest.si.jwt,
-        levelOfConfidence: putRequest.si.vot,
-        metadata: putRequest.si.metadata,
+        userId: request.userId,
+        recordType: getRecordTypeFromVot(request.si.vot),
+        storedIdentity: request.si.jwt,
+        levelOfConfidence: request.si.vot,
+        metadata: request.si.metadata,
         isValid: true,
       };
       transactItems.push({ Put: createPutItem(storedIdentityItem) });
