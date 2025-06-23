@@ -211,6 +211,46 @@ paths:
             responseTemplates:
               application/json: '{"result": "success"}'
 
+  /identity:
+    post:
+      description: "Saves the stored identity record for a given user into EVCS"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PersistStoredIdentity"
+      responses:
+        202:
+          description: Stored identity record accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messageId:
+                    type: string
+                    description: The SQS message ID.
+                    example: "bd8359d9-d559-47dd-9467-2a31e88a9e2d"
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+      x-amazon-apigateway-request-validator: ALL
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsPostIdentityFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          202:
+            statusCode: 202
+            responseTemplates:
+              application/json: '{"result": "success"}'
+
   /migration/{userId}:
     get:
       description: "Returns a list of user verifiable credentials"
@@ -384,6 +424,17 @@ components:
       required:
         - userId
         - vcs
+    PersistStoredIdentity:
+      description: The request body for the /identity POST endpoint to store a user's stored identity record
+      type: object
+      properties:
+        userId:
+          type: string
+        si:
+          $ref: "#/components/schemas/StoredIdentityDetails"
+      required:
+        - userId
+        - si
     StoredIdentityDetails:
       type: object
       properties:
