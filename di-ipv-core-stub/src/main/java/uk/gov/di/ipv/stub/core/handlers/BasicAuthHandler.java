@@ -12,6 +12,7 @@ public class BasicAuthHandler {
     private static final int NUMBER_OF_AUTHENTICATION_FIELDS = 2;
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String AUTHORIZATION_TYPE = "Basic";
+    private static final String JWKS_PATH = "/.well-known/jwks.json";
 
     public BasicAuthHandler() {
         CoreStubConfig.getUserAuth();
@@ -19,6 +20,11 @@ public class BasicAuthHandler {
 
     public Filter authFilter =
             (Request request, Response response) -> {
+                if (request.pathInfo().equals(JWKS_PATH)) {
+                    // basic auth not required on the jwks endpoint
+                    return;
+                }
+
                 if (!request.headers().contains(AUTHORIZATION_HEADER) || !authenticated(request)) {
                     response.header("WWW-Authenticate", AUTHORIZATION_TYPE);
                     Spark.halt(401, "Not Authenticated");
