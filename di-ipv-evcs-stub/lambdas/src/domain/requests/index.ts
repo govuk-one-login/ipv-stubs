@@ -1,3 +1,3 @@
 export * from "./postRequest";
 export * from "./patchRequest";
-export * from "./putRequest";
+export * from "./postIdentityRequest";

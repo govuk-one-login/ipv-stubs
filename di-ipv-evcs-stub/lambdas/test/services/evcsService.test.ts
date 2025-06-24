@@ -7,8 +7,8 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { getSsmParameter } from "../../src/common/ssmParameter";
-import { processPutUserVCsRequest } from "../../src/services/evcsService";
-import { PutRequest } from "../../src/domain/requests";
+import { processPostIdentityRequest } from "../../src/services/evcsService";
+import { PostIdentityRequest, PutRequest } from "../../src/domain/requests";
 import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
 import "aws-sdk-client-mock-jest";
 import { config } from "../../src/common/config";
@@ -52,10 +52,38 @@ const TEST_METADATA = {
 
 const MOCK_TTL = "3600";
 
-describe("processPutUserVCsRequest", () => {
+describe("processPostIdentityRequest", () => {
   beforeEach(() => {
     dbMock.reset();
     jest.mocked(getSsmParameter).mockResolvedValue(MOCK_TTL);
+  });
+
+  it("should return 200 response when provided just an SI object", async () => {
+    // Arrange
+    const postIdentityRequest: PostIdentityRequest = {
+      userId: TEST_USER_ID,
+      si: {
+        jwt: TEST_VC2,
+        vot: Vot.P2,
+      },
+    };
+
+    // Act
+    const response = await processPostIdentityRequest(postIdentityRequest);
+
+    // Assert
+    expect(response.statusCode).toBe(StatusCodes.Accepted);
+    expect(dbMock).not.toHaveReceivedCommand(QueryCommand);
+
+    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+      TransactItems: [
+        createStoredIdentityPutItem({
+          recordType: StoredIdentityRecordType.GPG45,
+          storedIdentity: TEST_VC2,
+          levelOfConfidence: "P2",
+        }),
+      ],
+    });
   });
 
   it("should return 200 response with new vc if successful transaction", async () => {
@@ -77,7 +105,7 @@ describe("processPutUserVCsRequest", () => {
     };
 
     // Act
-    const response = await processPutUserVCsRequest(putRequest);
+    const response = await processPostIdentityRequest(putRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -128,7 +156,7 @@ describe("processPutUserVCsRequest", () => {
     };
 
     // Act
-    const response = await processPutUserVCsRequest(putRequest);
+    const response = await processPostIdentityRequest(putRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -168,7 +196,7 @@ describe("processPutUserVCsRequest", () => {
     };
 
     // Act
-    const response = await processPutUserVCsRequest(putRequest);
+    const response = await processPostIdentityRequest(putRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -209,7 +237,7 @@ describe("processPutUserVCsRequest", () => {
     };
 
     // Act
-    const response = await processPutUserVCsRequest(putRequest);
+    const response = await processPostIdentityRequest(putRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -255,7 +283,7 @@ describe("processPutUserVCsRequest", () => {
     };
 
     // Act
-    const response = await processPutUserVCsRequest(putRequest);
+    const response = await processPostIdentityRequest(putRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.InternalServerError);
@@ -280,7 +308,7 @@ describe("processPutUserVCsRequest", () => {
     };
 
     // Act
-    const response = await processPutUserVCsRequest(putRequest);
+    const response = await processPostIdentityRequest(putRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.InternalServerError);

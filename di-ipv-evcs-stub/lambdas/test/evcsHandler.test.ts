@@ -7,6 +7,7 @@ import {
 import {
   createHandler,
   getHandler,
+  postIdentityHandler,
   putHandler,
   updateHandler,
 } from "../src/handlers/evcsHandler";
@@ -14,19 +15,19 @@ import {
   processGetUserVCsRequest,
   processPatchUserVCsRequest,
   processPostUserVCsRequest,
-  processPutUserVCsRequest,
+  processPostIdentityRequest,
 } from "../src/services/evcsService";
 import { VcState, VCProvenance } from "../src/domain/enums";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda/trigger/api-gateway-proxy";
-import { PutRequest } from "../src/domain/requests";
+import { PostIdentityRequest, PutRequest } from "../src/domain/requests";
 import { Vot } from "../src/domain/enums/vot";
 
 jest.mock("../src/services/evcsService", () => ({
   processGetUserVCsRequest: jest.fn(),
   processPatchUserVCsRequest: jest.fn(),
   processPostUserVCsRequest: jest.fn(),
-  processPutUserVCsRequest: jest.fn(),
+  processPostIdentityRequest: jest.fn(),
 }));
 
 jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
@@ -108,6 +109,20 @@ type RecursivePartial<T> = {
   [P in keyof T]?: RecursivePartial<T[P]>;
 };
 
+const buildPostIdentityRequest = (
+  postIdentityRequest?: RecursivePartial<PostIdentityRequest>,
+) => {
+  return {
+    userId: TEST_USER_ID,
+    si: {
+      jwt: TEST_VC_STRING,
+      vot: Vot.P2,
+      metadata: TEST_METADATA,
+    },
+    ...(postIdentityRequest ? postIdentityRequest : {}),
+  };
+};
+
 const buildPutRequest = (putRequest?: RecursivePartial<PutRequest>) => {
   return {
     userId: TEST_USER_ID,
@@ -153,6 +168,13 @@ const TEST_GET_EVENT = {
 } as APIGatewayProxyEvent;
 
 const createPutEvent = (requestBody: RecursivePartial<PutRequest>) =>
+  ({
+    body: JSON.stringify(requestBody),
+  }) as APIGatewayProxyEvent;
+
+const createPostIdentityEvent = (
+  requestBody: RecursivePartial<PostIdentityRequest>,
+) =>
   ({
     body: JSON.stringify(requestBody),
   }) as APIGatewayProxyEvent;
@@ -277,7 +299,7 @@ describe("evcs handlers", () => {
   describe("put handler", () => {
     it("should return a 202 for a valid request", async () => {
       // arrange
-      jest.mocked(processPutUserVCsRequest).mockResolvedValue({
+      jest.mocked(processPostIdentityRequest).mockResolvedValue({
         statusCode: 202,
         response: {},
       });
@@ -290,12 +312,12 @@ describe("evcs handlers", () => {
 
       // assert
       expect(response.statusCode).toBe(202);
-      expect(processPutUserVCsRequest).toHaveBeenCalledWith(testRequest);
+      expect(processPostIdentityRequest).toHaveBeenCalledWith(testRequest);
     });
 
     it("should return a 202 for a request with no si", async () => {
       // arrange
-      jest.mocked(processPutUserVCsRequest).mockResolvedValue({
+      jest.mocked(processPostIdentityRequest).mockResolvedValue({
         statusCode: 202,
         response: {},
       });
@@ -308,12 +330,12 @@ describe("evcs handlers", () => {
 
       // assert
       expect(response.statusCode).toBe(202);
-      expect(processPutUserVCsRequest).toHaveBeenCalledWith(testRequest);
+      expect(processPostIdentityRequest).toHaveBeenCalledWith(testRequest);
     });
 
     it("should return a 500 if saving to EVCS fails", async () => {
       // arrange
-      jest.mocked(processPutUserVCsRequest).mockResolvedValue({
+      jest.mocked(processPostIdentityRequest).mockResolvedValue({
         statusCode: 500,
         response: {},
       });
@@ -326,7 +348,7 @@ describe("evcs handlers", () => {
 
       // assert
       expect(response.statusCode).toBe(500);
-      expect(processPutUserVCsRequest).toHaveBeenCalledWith(testRequest);
+      expect(processPostIdentityRequest).toHaveBeenCalledWith(testRequest);
     });
 
     it.each([
@@ -378,7 +400,77 @@ describe("evcs handlers", () => {
 
       // assert
       expect(response.statusCode).toBe(400);
-      expect(processPutUserVCsRequest).not.toHaveBeenCalled();
+      expect(processPostIdentityRequest).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("post identity handler", () => {
+    it("should return 202 for a valid request", async () => {
+      // arrange
+      jest.mocked(processPostIdentityRequest).mockResolvedValue({
+        statusCode: 202,
+        response: {},
+      });
+      const testRequest = buildPostIdentityRequest();
+
+      // act
+      const response = (await postIdentityHandler(
+        createPostIdentityEvent(testRequest),
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // assert
+      expect(response.statusCode).toBe(202);
+      expect(processPostIdentityRequest).toHaveBeenCalledWith(testRequest);
+    });
+
+    it("should return a 500 if saving to EVCS fails", async () => {
+      // arrange
+      jest.mocked(processPostIdentityRequest).mockResolvedValue({
+        statusCode: 500,
+        response: {},
+      });
+      const testRequest = buildPostIdentityRequest();
+
+      // act
+      const response = (await postIdentityHandler(
+        createPostIdentityEvent(testRequest),
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // assert
+      expect(response.statusCode).toBe(500);
+      expect(processPostIdentityRequest).toHaveBeenCalledWith(testRequest);
+    });
+
+    it.each([
+      {
+        request: buildPostIdentityRequest({ userId: undefined }),
+        case: "userId is missing",
+      },
+      {
+        request: buildPostIdentityRequest({ si: undefined }),
+        case: "si is missing",
+      },
+      {
+        request: buildPostIdentityRequest({
+          si: { vot: undefined, jwt: TEST_VC_STRING },
+        }),
+        case: "si.vot is missing",
+      },
+      {
+        request: buildPostIdentityRequest({
+          si: { jwt: undefined, vot: Vot.P2 },
+        }),
+        case: "si.jwt is missing",
+      },
+    ])("should return a 400 if $case", async ({ request }) => {
+      // act
+      const response = (await postIdentityHandler(
+        createPostIdentityEvent(request),
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // assert
+      expect(response.statusCode).toBe(400);
+      expect(processPostIdentityRequest).not.toHaveBeenCalled();
     });
   });
 

@@ -7,6 +7,10 @@ interface StoredIdentityDetails {
   metadata?: object;
 }
 
+export type PostIdentityRequest = Omit<PutRequest, "vcs" | "si"> & {
+  si: StoredIdentityDetails;
+};
+
 export interface PutRequest {
   userId: string;
   vcs: VcDetails[];
