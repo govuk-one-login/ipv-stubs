@@ -372,7 +372,7 @@ components:
           $ref: "#/components/schemas/StoredIdentityDetails"
       required:
         - userId
-        - si
+        - si # TODO PYIC-8458: mark this as non-required when updating this endpoint with vcs list
     StoredIdentityDetails:
       type: object
       properties:
