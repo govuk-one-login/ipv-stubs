@@ -19,9 +19,9 @@ dependencies {
 			"software.amazon.awssdk:dynamodb-enhanced:2.31.69",
 			"com.fasterxml.jackson.core:jackson-annotations:2.19.1",
 			"com.fasterxml.jackson.core:jackson-databind:2.19.1",
-			"org.apache.logging.log4j:log4j-api:2.24.3",
-			"org.apache.logging.log4j:log4j-core:2.24.3",
-			"org.apache.logging.log4j:log4j-layout-template-json:2.24.3",
+			"org.apache.logging.log4j:log4j-api:2.25.0",
+			"org.apache.logging.log4j:log4j-core:2.25.0",
+			"org.apache.logging.log4j:log4j-layout-template-json:2.25.0",
 			"com.nimbusds:oauth2-oidc-sdk:11.25",
 			project(":di-ipv-cimit-stub:lib")
 
