@@ -83,7 +83,7 @@ public class CoreStubHandler {
                         .append(y)
                         .append("\",\n")
                         .append(
-                                "      \"kid\": \"0020c60a8796188b88dab4540a918cf7c8d33c9dbe5642b231aad12f2ebffcf6\",\n")
+                                "      \"kid\": \"74c5b00d698a18178a738f5305ee67f9d50fc620f8be6b89d94638fa16a4c828\",\n")
                         .append("      \"alg\": \"ES256\"\n")
                         .append("    }\n")
                         .append("  ]\n")
@@ -519,6 +519,7 @@ public class CoreStubHandler {
                     LOGGER.info("Received request for JWKS endpoint: {}", request.url());
                 }
                 response.type("application/json");
+                response.header("Cache-Control", "max-age=300");
                 return jwksResponse;
             };
 
