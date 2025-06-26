@@ -8,7 +8,6 @@ import {
   createHandler,
   getHandler,
   postIdentityHandler,
-  putHandler,
   updateHandler,
 } from "../src/handlers/evcsHandler";
 import {
@@ -20,7 +19,7 @@ import {
 import { VcState, VCProvenance } from "../src/domain/enums";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda/trigger/api-gateway-proxy";
-import { PostIdentityRequest, PutRequest } from "../src/domain/requests";
+import { PostIdentityRequest } from "../src/domain/requests";
 import { Vot } from "../src/domain/enums/vot";
 
 jest.mock("../src/services/evcsService", () => ({
@@ -123,27 +122,6 @@ const buildPostIdentityRequest = (
   };
 };
 
-const buildPutRequest = (putRequest?: RecursivePartial<PutRequest>) => {
-  return {
-    userId: TEST_USER_ID,
-    vcs: [
-      {
-        vc: TEST_VC_STRING,
-        state: VcState.CURRENT,
-        metadata: TEST_METADATA,
-        provenance: VCProvenance.ONLINE,
-      },
-      ...(putRequest?.vcs ? putRequest.vcs : []),
-    ],
-    si: {
-      jwt: TEST_VC_STRING,
-      vot: Vot.P2,
-      metadata: TEST_METADATA,
-    },
-    ...(putRequest ? putRequest : {}),
-  };
-};
-
 const TEST_PATH_PARAM = {
   userId: TEST_USER_ID,
 } as APIGatewayProxyEventPathParameters;
@@ -166,11 +144,6 @@ const TEST_GET_EVENT = {
   pathParameters: TEST_PATH_PARAM,
   headers: TEST_HEADERS,
 } as APIGatewayProxyEvent;
-
-const createPutEvent = (requestBody: RecursivePartial<PutRequest>) =>
-  ({
-    body: JSON.stringify(requestBody),
-  }) as APIGatewayProxyEvent;
 
 const createPostIdentityEvent = (
   requestBody: RecursivePartial<PostIdentityRequest>,
@@ -296,114 +269,6 @@ describe("evcs handlers", () => {
     });
   });
 
-  describe("put handler", () => {
-    it("should return a 202 for a valid request", async () => {
-      // arrange
-      jest.mocked(processPostIdentityRequest).mockResolvedValue({
-        statusCode: 202,
-        response: {},
-      });
-      const testRequest = buildPutRequest();
-
-      // act
-      const response = (await putHandler(
-        createPutEvent(testRequest),
-      )) as APIGatewayProxyStructuredResultV2;
-
-      // assert
-      expect(response.statusCode).toBe(202);
-      expect(processPostIdentityRequest).toHaveBeenCalledWith(testRequest);
-    });
-
-    it("should return a 202 for a request with no si", async () => {
-      // arrange
-      jest.mocked(processPostIdentityRequest).mockResolvedValue({
-        statusCode: 202,
-        response: {},
-      });
-      const testRequest = buildPutRequest({ si: undefined });
-
-      // act
-      const response = (await putHandler(
-        createPutEvent(testRequest),
-      )) as APIGatewayProxyStructuredResultV2;
-
-      // assert
-      expect(response.statusCode).toBe(202);
-      expect(processPostIdentityRequest).toHaveBeenCalledWith(testRequest);
-    });
-
-    it("should return a 500 if saving to EVCS fails", async () => {
-      // arrange
-      jest.mocked(processPostIdentityRequest).mockResolvedValue({
-        statusCode: 500,
-        response: {},
-      });
-      const testRequest = buildPutRequest();
-
-      // act
-      const response = (await putHandler(
-        createPutEvent(testRequest),
-      )) as APIGatewayProxyStructuredResultV2;
-
-      // assert
-      expect(response.statusCode).toBe(500);
-      expect(processPostIdentityRequest).toHaveBeenCalledWith(testRequest);
-    });
-
-    it.each([
-      {
-        request: buildPutRequest({ userId: undefined }),
-        case: "userId is missing",
-      },
-      {
-        request: buildPutRequest({ vcs: undefined }),
-        case: "vcs is missing",
-      },
-      {
-        request: buildPutRequest({ vcs: [] }),
-        case: "vcs is empty",
-      },
-      {
-        request: buildPutRequest({
-          si: { vot: undefined, jwt: TEST_VC_STRING },
-        }),
-        case: "si.vot is missing",
-      },
-      {
-        request: buildPutRequest({
-          vcs: [
-            { vc: "some.vc.sig", state: VcState.CURRENT },
-            { vc: "some.vc.sig", state: VcState.HISTORIC },
-          ],
-        }),
-        case: "duplicate vcs with different states",
-      },
-      {
-        request: buildPutRequest({
-          vcs: [
-            { vc: "some.vc.sig", state: VcState.CURRENT },
-            { vc: "some.vc.sig", state: VcState.CURRENT },
-          ],
-        }),
-        case: "duplicate vcs with the same states",
-      },
-      {
-        request: buildPutRequest({ si: { jwt: undefined, vot: Vot.P2 } }),
-        case: "si.jwt is missing",
-      },
-    ])("should return a 400 if $case", async ({ request }) => {
-      // act
-      const response = (await putHandler(
-        createPutEvent(request),
-      )) as APIGatewayProxyStructuredResultV2;
-
-      // assert
-      expect(response.statusCode).toBe(400);
-      expect(processPostIdentityRequest).not.toHaveBeenCalled();
-    });
-  });
-
   describe("post identity handler", () => {
     it("should return 202 for a valid request", async () => {
       // arrange
@@ -462,6 +327,26 @@ describe("evcs handlers", () => {
         }),
         case: "si.jwt is missing",
       },
+      // TODO PYIC-8458: These tests should be uncommented in phase 2 when the
+      //  /identity endpoint accepts a vcs list as the request parsing should
+      // handle these criteria
+      // {
+      //   request: buildPutRequest({ vcs: undefined }),
+      //   case: "vcs is missing",
+      // },
+      // {
+      //   request: buildPutRequest({ vcs: [] }),
+      //   case: "vcs is empty",
+      // },
+      // {
+      //   request: buildPutRequest({
+      //     vcs: [
+      //       { vc: "some.vc.sig", state: VcState.CURRENT },
+      //       { vc: "some.vc.sig", state: VcState.HISTORIC },
+      //     ],
+      //   }),
+      //   case: "duplicate vcs with different states",
+      // },
     ])("should return a 400 if $case", async ({ request }) => {
       // act
       const response = (await postIdentityHandler(

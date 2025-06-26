@@ -177,72 +177,6 @@ Resources:
         EntryPoints:
           - src/handlers/evcsHandler.ts
 
-  # lambda to stub EVCS - evcsPutUserVCs
-  EvcsPutUserVCsFunction:
-    Type: AWS::Serverless::Function
-    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
-    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
-    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
-    # checkov:skip=CKV_AWS_173: doing it later
-    DependsOn:
-      - "EvcsPutUserVCsFunctionLogGroup"
-    Properties:
-      FunctionName: !Sub "evcsPutUserVCs-${Environment}"
-      CodeUri: "../lambdas"
-      Handler: evcsHandler.putHandler
-      Runtime: nodejs22.x
-      PackageType: Zip
-      Architectures:
-        - arm64
-      MemorySize: 2048
-      Tracing: Active
-      CodeSigningConfigArn: !If
-        - UseCodeSigning
-        - !Ref CodeSigningConfigArn
-        - !Ref AWS::NoValue
-      Environment:
-        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
-        Variables:
-          ENVIRONMENT: !Sub "${Environment}"
-          EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
-          ISSUER: "https://evcs-cri.stubs.account.gov.uk"
-          EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
-          EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
-          NODE_OPTIONS: --enable-source-maps
-      VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-        SecurityGroupIds:
-          - !GetAtt EvcsLambdaSecurityGroup.GroupId
-      Policies:
-        - VPCAccessPolicy: { }
-        - SSMParameterReadPolicy:
-            ParameterName: stubs/core/evcs/*
-        - KMSDecryptPolicy:
-            KeyId: !Ref DynamoDBKmsKey
-        - DynamoDBCrudPolicy:
-            TableName: !Ref EvcsStubUserVcsStoreTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref EvcsStoredIdentityStoreTable
-      AutoPublishAlias: live
-      Events:
-        CreateUserVCs:
-          Type: Api
-          Properties:
-            RestApiId: !Ref RestApiGateway
-            Path: /vcs
-            Method: PUT
-    Metadata:
-      # Manage esbuild properties
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Target: "es2022"
-        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
-        EntryPoints:
-          - src/handlers/evcsHandler.ts
-
   # lambda to stub EVCS - evcsPostIdentity
   EvcsPostIdentityFunction:
     Type: AWS::Serverless::Function
@@ -457,13 +391,6 @@ Resources:
     Properties:
       RetentionInDays: 14
       LogGroupName: !Sub "/aws/lambda/updateEvcsUserVCs-${Environment}"
-      KmsKeyId: !GetAtt LoggingKmsKey.Arn
-  EvcsPutUserVCsFunctionLogGroup:
-    Type: AWS::Logs::LogGroup
-    # checkov:skip=CKV_AWS_158: No need for customer managed keys for short lived logs
-    Properties:
-      RetentionInDays: 14
-      LogGroupName: !Sub "/aws/lambda/putEvcsUserVCs-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
   EvcsPostIdentityFunctionLogGroup:
     Type: AWS::Logs::LogGroup

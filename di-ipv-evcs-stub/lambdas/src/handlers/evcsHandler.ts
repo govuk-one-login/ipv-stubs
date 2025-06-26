@@ -4,7 +4,6 @@ import { buildApiResponse } from "../common/apiResponses";
 import {
   PostRequest,
   PatchRequest,
-  PutRequest,
   PostIdentityRequest,
 } from "../domain/requests";
 import ServiceResponse from "../domain/serviceResponse";
@@ -22,7 +21,6 @@ import {
 } from "../services/evcsService";
 import { verifyTokenAndReturnPayload } from "../services/jwtService";
 import { getErrorMessage } from "../common/utils";
-import { VcDetails } from "../domain/sharedTypes";
 
 export async function postIdentityHandler(
   event: APIGatewayProxyEvent,
@@ -104,27 +102,6 @@ export async function updateHandler(
   return buildApiResponse(res.response, res.statusCode);
 }
 
-export async function putHandler(
-  event: APIGatewayProxyEvent,
-): Promise<APIGatewayProxyResultV2> {
-  console.info(`---Put request received----`);
-
-  let parsedPutRequest;
-  try {
-    parsedPutRequest = parsePutRequest(event);
-  } catch (error) {
-    console.error(error);
-    return buildApiResponse(
-      { message: getErrorMessage(error) },
-      StatusCodes.BadRequest,
-    );
-  }
-
-  const res = await processPostIdentityRequest(parsedPutRequest);
-
-  return buildApiResponse(res.response, res.statusCode);
-}
-
 export async function getHandler(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResultV2> {
@@ -180,54 +157,6 @@ export async function getHandler(
       StatusCodes.InternalServerError,
     );
   }
-}
-
-function parsePutRequest(event: APIGatewayProxyEvent): PutRequest {
-  console.info(`---Parsing put request----`);
-
-  if (!event.body) {
-    throw new Error("Missing request body");
-  }
-
-  const parsedPutRequest = JSON.parse(event.body);
-
-  // Validate top-level request attributes
-  if (!parsedPutRequest.userId) {
-    throw new Error("Invalid request: missing userId");
-  }
-
-  if (!parsedPutRequest.vcs || parsedPutRequest.vcs.length === 0) {
-    throw new Error("Invalid request: missing or empty vcs");
-  }
-
-  // Validate vcs
-  parsedPutRequest.vcs.forEach((vc: VcDetails) => {
-    if (!vc.vc) {
-      throw new Error("Invalid vc details: missing vc");
-    }
-
-    if (!vc.state) {
-      throw new Error("Invalid vc details: missing state");
-    }
-  });
-
-  const uniqueVcs = new Set(parsedPutRequest.vcs.map((vc: VcDetails) => vc.vc));
-  if (uniqueVcs.size !== parsedPutRequest.vcs.length) {
-    throw new Error("Invalid vcs: cannot have duplicate VCs in request");
-  }
-
-  // Validate stored identity object
-  if (parsedPutRequest.si) {
-    if (!parsedPutRequest.si.jwt) {
-      throw new Error("Invalid stored identity object: missing jwt");
-    }
-
-    if (!parsedPutRequest.si.vot) {
-      throw new Error("Invalid stored identity object: missing vot");
-    }
-  }
-
-  return parsedPutRequest;
 }
 
 function parsePostIdentityRequest(
