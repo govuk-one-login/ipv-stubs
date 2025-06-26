@@ -8,6 +8,7 @@ export async function handler(
   event: APIGatewayProxyEventV2,
 ): Promise<APIGatewayProxyResultV2> {
   try {
+    console.info("Received request body: " + event.body);
     const ticfRequest = parseRequest(event);
     const { response, statusCode } = await processGetVCRequest(ticfRequest);
 
