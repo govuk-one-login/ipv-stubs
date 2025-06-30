@@ -78,6 +78,7 @@ export async function handler(
     const queueMessage = {
       sub: vc.sub,
       state,
+      govuk_signin_journey_id: "stub-journey-id",
       "https://vocab.account.gov.uk/v1/credentialJWT": [signedJwt],
     };
 
