@@ -42,6 +42,15 @@ HTTP/1.1 201 Created
 
 ### Additionally a management endpoint is exposed, which can be hit manually (for example via curl).
 The `management/enqueueVc` endpoint will build and sign a VC based on the inputs provided and push a VC message onto the CRI response queue (via the queue stub lambda).
+The message will look something like this:
+```
+{
+  "sub": "<user id>",
+  "state": "<oauth state>",
+  "govuk_signin_journey_id": "<journey id>",
+  "https://vocab.account.gov.uk/v1/credentialJWT": ["<signed jwt>"]
+}
+```
 
 The `management/generateVc` endpoint will build and sign a VC based on the inputs provided and return it directly.
 
