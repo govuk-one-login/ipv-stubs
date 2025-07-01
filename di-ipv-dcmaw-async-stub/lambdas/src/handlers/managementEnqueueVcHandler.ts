@@ -10,7 +10,7 @@ import {
   isManagementEnqueueVcRequestEvidenceAndSubject,
   isManagementEnqueueVcRequestIndividualDetails,
 } from "../domain/managementEnqueueRequest";
-import { getState } from "../services/userStateService";
+import { getUserStateItem } from "../services/userStateService";
 import getConfig from "../common/config";
 import { JWTPayload } from "jose/dist/types/types";
 import { vcToSignedJwt } from "../domain/signedJwt";
@@ -33,7 +33,7 @@ export async function handler(
 
     const queueNameFromRequest = requestBody.queue_name;
     const delaySeconds = requestBody.delay_seconds;
-    const state = await getState(requestBody.user_id);
+    const { state, journeyId } = await getUserStateItem(requestBody.user_id);
     let vc: JWTPayload;
 
     if (isManagementEnqueueVcRequestIndividualDetails(requestBody)) {
@@ -78,7 +78,7 @@ export async function handler(
     const queueMessage = {
       sub: vc.sub,
       state,
-      govuk_signin_journey_id: "stub-journey-id",
+      govuk_signin_journey_id: journeyId,
       "https://vocab.account.gov.uk/v1/credentialJWT": [signedJwt],
     };
 

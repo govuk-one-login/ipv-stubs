@@ -14,31 +14,35 @@ const userStateTableName = getEnvironmentVariable(
 type UserStateItem = {
   userId: string;
   state: string;
+  journeyId: string;
 };
 
 /** Overrides existing state value if record already exists for user. */
 export async function persistState(
   userId: string,
   state: string,
+  journeyId: string,
 ): Promise<void> {
   const updateItemInput: UpdateItemInput = {
     TableName: userStateTableName,
     Key: marshall({ userId }),
-    UpdateExpression: "set #state = :state, #ttl = :ttl",
+    UpdateExpression: "set #state = :state, #ttl = :ttl, #journeyId = :journeyId",
     ExpressionAttributeNames: {
       "#state": "state",
       "#ttl": "ttl",
+      "#journeyId": "journeyId"
     },
     ExpressionAttributeValues: marshall({
       ":state": state,
       ":ttl": Math.floor(Date.now() / 1000) + 3600, // epoch timestamp in seconds
+      ":journeyId": journeyId
     }),
   };
   await dynamoClient.updateItem(updateItemInput);
 }
 
 /** Gets state record. */
-export async function getState(userId: string): Promise<string | null> {
+export async function getUserStateItem(userId: string) {
   const getItemInput: GetItemInput = {
     TableName: userStateTableName,
     Key: marshall({ userId }),
@@ -48,7 +52,7 @@ export async function getState(userId: string): Promise<string | null> {
   if (userStateItem === null) {
     throw new Error(`No state record found for user id ${userId}`);
   }
-  return userStateItem.state;
+  return {state: userStateItem.state, journeyId: userStateItem.journeyId};
 }
 
 /** Deletes state record. */
