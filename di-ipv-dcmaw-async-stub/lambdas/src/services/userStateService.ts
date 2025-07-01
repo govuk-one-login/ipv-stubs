@@ -26,16 +26,17 @@ export async function persistState(
   const updateItemInput: UpdateItemInput = {
     TableName: userStateTableName,
     Key: marshall({ userId }),
-    UpdateExpression: "set #state = :state, #ttl = :ttl, #journeyId = :journeyId",
+    UpdateExpression:
+      "set #state = :state, #ttl = :ttl, #journeyId = :journeyId",
     ExpressionAttributeNames: {
       "#state": "state",
       "#ttl": "ttl",
-      "#journeyId": "journeyId"
+      "#journeyId": "journeyId",
     },
     ExpressionAttributeValues: marshall({
       ":state": state,
       ":ttl": Math.floor(Date.now() / 1000) + 3600, // epoch timestamp in seconds
-      ":journeyId": journeyId
+      ":journeyId": journeyId,
     }),
   };
   await dynamoClient.updateItem(updateItemInput);
@@ -52,7 +53,7 @@ export async function getUserStateItem(userId: string) {
   if (userStateItem === null) {
     throw new Error(`No state record found for user id ${userId}`);
   }
-  return {state: userStateItem.state, journeyId: userStateItem.journeyId};
+  return { state: userStateItem.state, journeyId: userStateItem.journeyId };
 }
 
 /** Deletes state record. */

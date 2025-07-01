@@ -31,7 +31,11 @@ export async function handler(
     }
 
     // We need to store the state value so we can provide it in the async VC response
-    await persistState(requestBody.sub, requestBody.state, requestBody.govuk_signin_journey_id);
+    await persistState(
+      requestBody.sub,
+      requestBody.state,
+      requestBody.govuk_signin_journey_id,
+    );
 
     return buildApiResponse(
       {

@@ -18,7 +18,8 @@ public class CriResponseQueueErrorEvent {
     private String error;
     private String error_description;
 
-    public CriResponseQueueErrorEvent(String sub, String state, String error, String error_description) {
+    public CriResponseQueueErrorEvent(
+            String sub, String state, String error, String error_description) {
         this.sub = sub;
         this.state = state;
         this.error = error;

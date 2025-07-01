@@ -20,7 +20,7 @@ export async function handler(
       return buildApiResponse({ errorMessage: requestBody }, 400);
     }
 
-    const {state, journeyId} = await getUserStateItem(requestBody.user_id);
+    const { state, journeyId } = await getUserStateItem(requestBody.user_id);
 
     const queueMessage = {
       sub: requestBody.user_id,
