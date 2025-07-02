@@ -3,7 +3,7 @@ import { buildApiResponse } from "../common/apiResponse";
 import getErrorMessage from "../common/errorReporting";
 import { ManagementEnqueueErrorRequest } from "../domain/managementEnqueueRequest";
 import getConfig from "../common/config";
-import { getState } from "../services/userStateService";
+import { getUserStateItem } from "../services/userStateService";
 
 export async function handler(
   event: APIGatewayProxyEventV2,
@@ -20,11 +20,12 @@ export async function handler(
       return buildApiResponse({ errorMessage: requestBody }, 400);
     }
 
-    const state = await getState(requestBody.user_id);
+    const { state, journeyId } = await getUserStateItem(requestBody.user_id);
 
     const queueMessage = {
       sub: requestBody.user_id,
       state,
+      govuk_signin_journey_id: journeyId,
       error: requestBody.error_code,
       error_description:
         requestBody.error_description ?? "Error sent via DCMAW Async CRI stub",

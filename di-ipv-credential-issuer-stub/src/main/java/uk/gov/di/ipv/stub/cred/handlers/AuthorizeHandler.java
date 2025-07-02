@@ -826,6 +826,7 @@ public class AuthorizeHandler {
             return;
         }
         if (f2fDetails.sendVcToQueue() && !f2fDetails.sendErrorToQueue()) {
+            LOGGER.info("Sending VC to queue");
             F2FEnqueueLambdaRequest enqueueLambdaRequest =
                     new F2FEnqueueLambdaRequest(
                             f2fDetails.queueName(),
