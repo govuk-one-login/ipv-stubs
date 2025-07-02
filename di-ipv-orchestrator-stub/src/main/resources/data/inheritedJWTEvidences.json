@@ -8,7 +8,7 @@
     },
     {
       "scenario": "Cohort2",
-      "label": "Users with VoT PCL250, where evidence shows identity verification via a photo driver's license.",
+      "label": "Users with VoT PCL250, where evidence shows identity verification via a photo driver's licence.",
       "payload": {
         "type": "IdentityCheck",
         "txn": "d22f8cb1",
