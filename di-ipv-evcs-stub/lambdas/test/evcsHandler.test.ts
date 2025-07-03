@@ -370,7 +370,6 @@ describe("evcs handlers", () => {
       // Arrange
       jest.mocked(invalidateUserSi).mockResolvedValue({
         statusCode: 204,
-        response: { result: "Success" },
       });
 
       // Act
@@ -406,7 +405,6 @@ describe("evcs handlers", () => {
       // Arrange
       jest.mocked(invalidateUserSi).mockResolvedValue({
         statusCode: 500,
-        response: { result: "Failed" },
       });
 
       // Act
