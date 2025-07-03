@@ -5,6 +5,7 @@ import {
   PostRequest,
   PatchRequest,
   PostIdentityRequest,
+  InvalidateIdentityRequest,
 } from "../domain/requests";
 import ServiceResponse from "../domain/serviceResponse";
 import {
@@ -18,6 +19,7 @@ import {
   processPostIdentityRequest,
   processGetUserVCsRequest,
   processPatchUserVCsRequest,
+  invalidateUserSi,
 } from "../services/evcsService";
 import { verifyTokenAndReturnPayload } from "../services/jwtService";
 import { getErrorMessage } from "../common/utils";
@@ -38,6 +40,27 @@ export async function postIdentityHandler(
   }
 
   const res = await processPostIdentityRequest(parsedPostIdentityRequest);
+
+  return buildApiResponse(res.response, res.statusCode);
+}
+
+export async function invalidateStoredIdentityHandler(
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResultV2> {
+  console.info(`---POST invalidate stored identity request received----`);
+
+  let parsedInvalidateSiRequest;
+  try {
+    parsedInvalidateSiRequest = parseInvalidateIdentityRequest(event);
+  } catch (error) {
+    console.error(error);
+    return buildApiResponse(
+      { message: getErrorMessage(error) },
+      StatusCodes.BadRequest,
+    );
+  }
+
+  const res = await invalidateUserSi(parsedInvalidateSiRequest.userId);
 
   return buildApiResponse(res.response, res.statusCode);
 }
@@ -189,6 +212,23 @@ function parsePostIdentityRequest(
   }
 
   return parsedPostIdentityRequest;
+}
+
+function parseInvalidateIdentityRequest(
+  event: APIGatewayProxyEvent,
+): InvalidateIdentityRequest {
+  console.info("--- Parsing invalidate stored identity request ---");
+
+  if (!event.body) {
+    throw new Error("Missing request body");
+  }
+
+  const invalidateSi = JSON.parse(event.body);
+  if (!invalidateSi.userId) {
+    throw new Error("Invalid request: Missing userId");
+  }
+
+  return invalidateSi;
 }
 
 function parsePostRequest(event: APIGatewayProxyEvent): PostRequest[] {

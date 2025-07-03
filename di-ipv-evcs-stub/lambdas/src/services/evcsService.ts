@@ -185,6 +185,68 @@ export async function processPostIdentityRequest(
   }
 }
 
+export async function invalidateUserSi(userId: string) {
+  try {
+    const queryInput: QueryInput = {
+      TableName: config.evcsStoredIdentityObjectTableName,
+      KeyConditionExpression: "#userId = :userId",
+      ExpressionAttributeNames: {
+        "#userId": "userId",
+      },
+      ExpressionAttributeValues: {
+        ":userId": marshall(userId),
+      },
+    };
+
+    const storedIdentities = (await dynamoClient.query(queryInput)).Items ?? [];
+
+    if (storedIdentities.length === 0) {
+      console.info("No stored identity found for user");
+      return {
+        response: { result: "Success" },
+        statusCode: StatusCodes.NoContent,
+      };
+    }
+
+    const updateTransactItems: TransactWriteItem[] = storedIdentities
+      .map((si) => unmarshall(si) as EvcsStoredIdentityItem)
+      .map((parsedSi) => ({
+        Update: {
+          TableName: config.evcsStoredIdentityObjectTableName,
+          Key: {
+            userId: marshall(userId),
+            recordType: marshall(parsedSi.recordType),
+          },
+          UpdateExpression: `set #isValid = :isValid`,
+          ExpressionAttributeNames: {
+            "#isValid": "isValid",
+          },
+          ExpressionAttributeValues: {
+            ":isValid": marshall(false),
+          },
+        },
+      }));
+
+    await dynamoClient.transactWriteItems({
+      TransactItems: updateTransactItems,
+    });
+
+    return {
+      response: { result: "Success" },
+      statusCode: StatusCodes.NoContent,
+    };
+  } catch (error) {
+    console.error(
+      "Transaction failed. Failed to invalidate stored identity",
+      error,
+    );
+    return {
+      response: { result: "Failed" },
+      statusCode: StatusCodes.InternalServerError,
+    };
+  }
+}
+
 export async function processGetUserVCsRequest(
   userId: string,
   requestedStates: string[],

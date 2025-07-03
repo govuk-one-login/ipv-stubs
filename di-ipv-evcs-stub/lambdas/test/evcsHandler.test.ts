@@ -7,6 +7,7 @@ import {
 import {
   createHandler,
   getHandler,
+  invalidateStoredIdentityHandler,
   postIdentityHandler,
   updateHandler,
 } from "../src/handlers/evcsHandler";
@@ -15,11 +16,15 @@ import {
   processPatchUserVCsRequest,
   processPostUserVCsRequest,
   processPostIdentityRequest,
+  invalidateUserSi,
 } from "../src/services/evcsService";
 import { VcState, VCProvenance } from "../src/domain/enums";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda/trigger/api-gateway-proxy";
-import { PostIdentityRequest } from "../src/domain/requests";
+import {
+  InvalidateIdentityRequest,
+  PostIdentityRequest,
+} from "../src/domain/requests";
 import { Vot } from "../src/domain/enums/vot";
 
 jest.mock("../src/services/evcsService", () => ({
@@ -27,6 +32,7 @@ jest.mock("../src/services/evcsService", () => ({
   processPatchUserVCsRequest: jest.fn(),
   processPostUserVCsRequest: jest.fn(),
   processPostIdentityRequest: jest.fn(),
+  invalidateUserSi: jest.fn(),
 }));
 
 jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
@@ -145,9 +151,9 @@ const TEST_GET_EVENT = {
   headers: TEST_HEADERS,
 } as APIGatewayProxyEvent;
 
-const createPostIdentityEvent = (
-  requestBody: RecursivePartial<PostIdentityRequest>,
-) =>
+const createEvent = <T>(
+  requestBody: RecursivePartial<T>,
+): APIGatewayProxyEvent =>
   ({
     body: JSON.stringify(requestBody),
   }) as APIGatewayProxyEvent;
@@ -280,7 +286,7 @@ describe("evcs handlers", () => {
 
       // act
       const response = (await postIdentityHandler(
-        createPostIdentityEvent(testRequest),
+        createEvent<PostIdentityRequest>(testRequest),
       )) as APIGatewayProxyStructuredResultV2;
 
       // assert
@@ -298,7 +304,7 @@ describe("evcs handlers", () => {
 
       // act
       const response = (await postIdentityHandler(
-        createPostIdentityEvent(testRequest),
+        createEvent<PostIdentityRequest>(testRequest),
       )) as APIGatewayProxyStructuredResultV2;
 
       // assert
@@ -350,12 +356,66 @@ describe("evcs handlers", () => {
     ])("should return a 400 if $case", async ({ request }) => {
       // act
       const response = (await postIdentityHandler(
-        createPostIdentityEvent(request),
+        createEvent<PostIdentityRequest>(request),
       )) as APIGatewayProxyStructuredResultV2;
 
       // assert
       expect(response.statusCode).toBe(400);
       expect(processPostIdentityRequest).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("invalidate stored identity handler", () => {
+    it("should return 204 for valid request", async () => {
+      // Arrange
+      jest.mocked(invalidateUserSi).mockResolvedValue({
+        statusCode: 204,
+        response: { result: "Success" },
+      });
+
+      // Act
+      const res = (await invalidateStoredIdentityHandler(
+        createEvent<InvalidateIdentityRequest>({ userId: TEST_USER_ID }),
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // Assert
+      expect(res.statusCode).toEqual(204);
+    });
+
+    it("should return 400 if missing userId", async () => {
+      // Arrange/Act
+      const res = (await invalidateStoredIdentityHandler(
+        createEvent<InvalidateIdentityRequest>({}),
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // Assert
+      expect(res.statusCode).toEqual(400);
+    });
+
+    it("should return 400 if missing request body", async () => {
+      // Arrange/Act
+      const res = (await invalidateStoredIdentityHandler(
+        {} as APIGatewayProxyEvent,
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // Assert
+      expect(res.statusCode).toEqual(400);
+    });
+
+    it("should return 500 if processing fails", async () => {
+      // Arrange
+      jest.mocked(invalidateUserSi).mockResolvedValue({
+        statusCode: 500,
+        response: { result: "Failed" },
+      });
+
+      // Act
+      const res = (await invalidateStoredIdentityHandler(
+        createEvent<InvalidateIdentityRequest>({ userId: TEST_USER_ID }),
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // Assert
+      expect(res.statusCode).toEqual(500);
     });
   });
 
