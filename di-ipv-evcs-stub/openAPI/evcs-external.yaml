@@ -214,14 +214,7 @@ paths:
               $ref: "#/components/schemas/UserIdRequestBody"
       responses:
         204:
-          description: "Successfully invalidated user SI"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
+          description: "Successfully invalidated user stored identity record"
         400:
           $ref: '#/components/responses/BadRequest'
         500:

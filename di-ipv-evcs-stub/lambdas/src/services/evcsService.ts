@@ -203,7 +203,6 @@ export async function invalidateUserSi(userId: string) {
     if (storedIdentities.length === 0) {
       console.info("No stored identity found for user");
       return {
-        response: { result: "Success" },
         statusCode: StatusCodes.NoContent,
       };
     }
@@ -232,7 +231,6 @@ export async function invalidateUserSi(userId: string) {
     });
 
     return {
-      response: { result: "Success" },
       statusCode: StatusCodes.NoContent,
     };
   } catch (error) {
@@ -241,7 +239,6 @@ export async function invalidateUserSi(userId: string) {
       error,
     );
     return {
-      response: { result: "Failed" },
       statusCode: StatusCodes.InternalServerError,
     };
   }

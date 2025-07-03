@@ -33,15 +33,14 @@ export async function postIdentityHandler(
     parsedPostIdentityRequest = parsePostIdentityRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse(
-      { message: getErrorMessage(error) },
-      StatusCodes.BadRequest,
-    );
+    return buildApiResponse(StatusCodes.BadRequest, {
+      message: getErrorMessage(error),
+    });
   }
 
   const res = await processPostIdentityRequest(parsedPostIdentityRequest);
 
-  return buildApiResponse(res.response, res.statusCode);
+  return buildApiResponse(res.statusCode, res.response);
 }
 
 export async function invalidateStoredIdentityHandler(
@@ -54,15 +53,14 @@ export async function invalidateStoredIdentityHandler(
     parsedInvalidateSiRequest = parseInvalidateIdentityRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse(
-      { message: getErrorMessage(error) },
-      StatusCodes.BadRequest,
-    );
+    return buildApiResponse(StatusCodes.BadRequest, {
+      message: getErrorMessage(error),
+    });
   }
 
   const res = await invalidateUserSi(parsedInvalidateSiRequest.userId);
 
-  return buildApiResponse(res.response, res.statusCode);
+  return buildApiResponse(res.statusCode);
 }
 
 export async function createHandler(
@@ -71,10 +69,9 @@ export async function createHandler(
   console.info(`---Create Request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse(
-      { message: "Missing userId." },
-      StatusCodes.BadRequest,
-    );
+    return buildApiResponse(StatusCodes.BadRequest, {
+      message: "Missing userId.",
+    });
   }
 
   let request;
@@ -82,17 +79,16 @@ export async function createHandler(
     request = parsePostRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse(
-      { message: getErrorMessage(error) },
-      StatusCodes.BadRequest,
-    );
+    return buildApiResponse(StatusCodes.BadRequest, {
+      message: getErrorMessage(error),
+    });
   }
   const res = await processPostUserVCsRequest(
     decodeURIComponent(userId),
     request,
   );
 
-  return buildApiResponse(res.response, res.statusCode);
+  return buildApiResponse(res.statusCode, res.response);
 }
 
 export async function updateHandler(
@@ -101,10 +97,9 @@ export async function updateHandler(
   console.info(`---Update request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse(
-      { message: "Missing userId." },
-      StatusCodes.BadRequest,
-    );
+    return buildApiResponse(StatusCodes.BadRequest, {
+      message: "Missing userId.",
+    });
   }
 
   let request;
@@ -112,17 +107,16 @@ export async function updateHandler(
     request = parsePatchRequest(event);
   } catch (error) {
     console.error(error);
-    return buildApiResponse(
-      { message: getErrorMessage(error) },
-      StatusCodes.BadRequest,
-    );
+    return buildApiResponse(StatusCodes.BadRequest, {
+      message: getErrorMessage(error),
+    });
   }
   const res = await processPatchUserVCsRequest(
     decodeURIComponent(userId),
     request,
   );
 
-  return buildApiResponse(res.response, res.statusCode);
+  return buildApiResponse(res.statusCode, res.response);
 }
 
 export async function getHandler(
@@ -131,10 +125,9 @@ export async function getHandler(
   console.info(`---Get request received----`);
   const userId = event.pathParameters?.userId;
   if (!userId) {
-    return buildApiResponse(
-      { message: "Missing userId." },
-      StatusCodes.BadRequest,
-    );
+    return buildApiResponse(StatusCodes.BadRequest, {
+      message: "Missing userId.",
+    });
   }
   const decodedUserId = decodeURIComponent(userId);
 
@@ -160,10 +153,9 @@ export async function getHandler(
           );
     } catch (error) {
       console.error(error);
-      return buildApiResponse(
-        { message: getErrorMessage(error) },
-        StatusCodes.BadRequest,
-      );
+      return buildApiResponse(StatusCodes.BadRequest, {
+        message: getErrorMessage(error),
+      });
     }
 
     let res: ServiceResponse = {
@@ -172,13 +164,12 @@ export async function getHandler(
     if (accessTokenVerified)
       res = await processGetUserVCsRequest(decodedUserId, requestedStates);
 
-    return buildApiResponse(res.response, res.statusCode);
+    return buildApiResponse(res.statusCode, res.response);
   } catch (error) {
     console.error(error);
-    return buildApiResponse(
-      { message: getErrorMessage(error) },
-      StatusCodes.InternalServerError,
-    );
+    return buildApiResponse(StatusCodes.InternalServerError, {
+      message: getErrorMessage(error),
+    });
   }
 }
 
