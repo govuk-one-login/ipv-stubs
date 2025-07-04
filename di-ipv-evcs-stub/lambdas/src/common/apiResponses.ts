@@ -1,8 +1,8 @@
 import { APIGatewayProxyResultV2 } from "aws-lambda";
 
 export function buildApiResponse(
-  body?: object,
   statusCode: number = 200,
+  body?: object,
 ): APIGatewayProxyResultV2 {
   return {
     statusCode,

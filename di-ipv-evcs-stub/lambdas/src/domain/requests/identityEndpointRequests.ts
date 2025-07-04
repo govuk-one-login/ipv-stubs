@@ -16,3 +16,7 @@ export interface PutRequest {
   vcs: VcDetails[];
   si?: StoredIdentityDetails;
 }
+
+export interface InvalidateIdentityRequest {
+  userId: string;
+}

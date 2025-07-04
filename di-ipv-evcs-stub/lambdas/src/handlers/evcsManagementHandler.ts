@@ -11,12 +11,9 @@ export async function getUserStoredIdentityHandler(
     const userId = event.pathParameters?.userId;
 
     if (!userId) {
-      return buildApiResponse(
-        {
-          message: "Missing userId",
-        },
-        StatusCodes.BadRequest,
-      );
+      return buildApiResponse(StatusCodes.BadRequest, {
+        message: "Missing userId",
+      });
     }
 
     const decodedUserId = decodeURIComponent(userId);
@@ -24,18 +21,16 @@ export async function getUserStoredIdentityHandler(
     const res = await processGetStoredIdentity(decodedUserId);
 
     if (res.storedIdentities.length === 0) {
-      return buildApiResponse(
-        { message: "No stored identity found for user" },
-        StatusCodes.NotFound,
-      );
+      return buildApiResponse(StatusCodes.NotFound, {
+        message: "No stored identity found for user",
+      });
     }
 
-    return buildApiResponse(res.storedIdentities, StatusCodes.Success);
+    return buildApiResponse(StatusCodes.Success, res.storedIdentities);
   } catch (error) {
     console.error(error);
-    return buildApiResponse(
-      { message: "Unable to get stored identity for user" },
-      StatusCodes.InternalServerError,
-    );
+    return buildApiResponse(StatusCodes.InternalServerError, {
+      message: "Unable to get stored identity for user",
+    });
   }
 }

@@ -175,7 +175,14 @@ Responses
           $ref: '#/components/responses/ServerError'
 ```
 
-5) The `/management/stored-identity/{userId}` endpoint is used for testing. It doesn't take a request body and requires only the userId as path parameter.
+5) The format of the `/identity/invalidate` POST endpoint. This is used to set the `isValid` property on a user's stored identities as false.
+Example request body takes just a userId:
+```
+{ "userId": "userId" }
+```
+
+#### Management Endpoint
+The `/management/stored-identity/{userId}` endpoint is used for testing. It doesn't take a request body and requires only the userId as path parameter.
 Example response:
 ```
 [
