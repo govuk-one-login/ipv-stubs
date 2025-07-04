@@ -203,7 +203,7 @@ export async function invalidateUserSi(userId: string) {
     if (storedIdentities.length === 0) {
       console.info("No stored identity found for user");
       return {
-        statusCode: StatusCodes.NoContent,
+        statusCode: StatusCodes.NotFound,
       };
     }
 

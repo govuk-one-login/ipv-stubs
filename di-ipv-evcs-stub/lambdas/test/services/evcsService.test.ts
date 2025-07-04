@@ -342,7 +342,7 @@ describe("invalidateUserSi", () => {
     dbMock.reset();
   });
 
-  it("should return 200 for user with existing stored identities", async () => {
+  it("should return 204 for user with existing stored identities", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves({
       Items: [
@@ -364,7 +364,7 @@ describe("invalidateUserSi", () => {
     });
   });
 
-  it("should return 200 for user with no existing stored identity", async () => {
+  it("should return 404 for user with no existing stored identity", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves({ Items: [] });
 
@@ -372,7 +372,7 @@ describe("invalidateUserSi", () => {
     const res = await invalidateUserSi(TEST_USER_ID);
 
     // Assert
-    expect(res.statusCode).toBe(StatusCodes.NoContent);
+    expect(res.statusCode).toBe(StatusCodes.NotFound);
     expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
   });
 
