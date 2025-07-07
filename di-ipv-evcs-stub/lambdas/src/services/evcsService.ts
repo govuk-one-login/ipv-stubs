@@ -320,7 +320,7 @@ export async function processPatchUserVCsRequest(
   }
 }
 
-function createPutItem(evcsItem: EvcsVcItem | EvcsStoredIdentityItem) {
+export function createPutItem(evcsItem: EvcsVcItem | EvcsStoredIdentityItem) {
   return {
     TableName: isEvcsVcItem(evcsItem)
       ? config.evcsStubUserVCsTableName
@@ -404,7 +404,7 @@ function getUpdatedState(
   return currentVcState;
 }
 
-function getRecordTypeFromVot(vot: Vot): StoredIdentityRecordType {
+export function getRecordTypeFromVot(vot: Vot): StoredIdentityRecordType {
   if (GPG45_VOTS.includes(vot)) {
     return StoredIdentityRecordType.GPG45;
   }

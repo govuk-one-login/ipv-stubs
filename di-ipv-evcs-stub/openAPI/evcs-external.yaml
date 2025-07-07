@@ -326,6 +326,45 @@ paths:
             statusCode: 200
             responseTemplates:
               application/json: '{"result": "success"}'
+    post:
+      description: Saves a stored identity record for a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                si:
+                  $ref: "#/components/schemas/StoredIdentityDetails"
+      responses:
+        202:
+          description: Stored identity record accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+      x-amazon-apigateway-request-validator: ALL
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsManagementCreateStoredIdentityFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          202:
+            statusCode: 202
+            responseTemplates:
+              application/json: '{"result": "success"}'
 components:
   responses:
     BadRequest:

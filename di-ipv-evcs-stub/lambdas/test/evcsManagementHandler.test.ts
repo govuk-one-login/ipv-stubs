@@ -1,16 +1,23 @@
-import { getUserStoredIdentityHandler } from "../src/handlers/evcsManagementHandler";
+import {
+  createUserStoredIdentityHandler,
+  getUserStoredIdentityHandler,
+} from "../src/handlers/evcsManagementHandler";
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyEventPathParameters,
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
-import { processGetStoredIdentity } from "../src/services/evcsManagementService";
+import {
+  processCreateStoredIdentity,
+  processGetStoredIdentity,
+} from "../src/services/evcsManagementService";
 import { StoredIdentityRecordType } from "../src/domain/enums/StoredIdentityRecordType";
 import { Vot } from "../src/domain/enums/vot";
 import { StatusCodes } from "../src/domain/enums";
 
 jest.mock("../src/services/evcsManagementService", () => ({
   processGetStoredIdentity: jest.fn(),
+  processCreateStoredIdentity: jest.fn(),
 }));
 
 const TEST_USER_ID = "test-user-id";
@@ -102,6 +109,138 @@ describe("evcs management handlers", () => {
       expect(res.body).toBe(
         JSON.stringify({ message: "Unable to get stored identity for user" }),
       );
+    });
+  });
+
+  describe("createUserStoredIdentityHandler", () => {
+    it("should return 204 given valid request", async () => {
+      // Arrange
+      const testRequest = {
+        pathParameters: {
+          userId: TEST_USER_ID,
+        } as APIGatewayProxyEventPathParameters,
+        body: JSON.stringify({
+          si: {
+            jwt: TEST_VC_STRING,
+            vot: Vot.P2,
+          },
+        }),
+      } as APIGatewayProxyEvent;
+      jest.mocked(processCreateStoredIdentity).mockResolvedValue({
+        response: { result: "success" },
+        statusCode: StatusCodes.Accepted,
+      });
+
+      // Act
+      const res = (await createUserStoredIdentityHandler(
+        testRequest,
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // Assert
+      expect(res.statusCode).toBe(StatusCodes.Accepted);
+    });
+
+    it("should return 500 if processing fails", async () => {
+      // Arrange
+      const testRequest = {
+        pathParameters: {
+          userId: TEST_USER_ID,
+        } as APIGatewayProxyEventPathParameters,
+        body: JSON.stringify({
+          si: {
+            jwt: TEST_VC_STRING,
+            vot: Vot.P2,
+          },
+        }),
+      } as APIGatewayProxyEvent;
+      jest.mocked(processCreateStoredIdentity).mockResolvedValue({
+        response: { result: "failed" },
+        statusCode: StatusCodes.InternalServerError,
+      });
+
+      // Act
+      const res = (await createUserStoredIdentityHandler(
+        testRequest,
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // Assert
+      expect(res.statusCode).toBe(StatusCodes.InternalServerError);
+    });
+
+    it("should return 400 if given no user id", async () => {
+      // Arrange
+      const testRequest = {
+        body: JSON.stringify({
+          si: {
+            jwt: TEST_VC_STRING,
+            vot: Vot.P2,
+          },
+        }),
+      } as APIGatewayProxyEvent;
+
+      // Act
+      const res = (await createUserStoredIdentityHandler(
+        testRequest,
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // Assert
+      expect(res.statusCode).toBe(StatusCodes.BadRequest);
+    });
+
+    it.each([
+      {
+        case: "no user id",
+        request: {
+          body: JSON.stringify({
+            si: {
+              jwt: TEST_VC_STRING,
+              vot: Vot.P2,
+            },
+          }),
+        } as APIGatewayProxyEvent,
+      },
+      {
+        case: "no body",
+        request: {
+          pathParameters: {
+            userId: TEST_USER_ID,
+          } as APIGatewayProxyEventPathParameters,
+        } as APIGatewayProxyEvent,
+      },
+      {
+        case: "no si.jwt",
+        request: {
+          pathParameters: {
+            userId: TEST_USER_ID,
+          } as APIGatewayProxyEventPathParameters,
+          body: JSON.stringify({
+            si: {
+              vot: Vot.P2,
+            },
+          }),
+        } as APIGatewayProxyEvent,
+      },
+      {
+        case: "no si.vot",
+        request: {
+          pathParameters: {
+            userId: TEST_USER_ID,
+          } as APIGatewayProxyEventPathParameters,
+          body: JSON.stringify({
+            si: {
+              jwt: TEST_VC_STRING,
+            },
+          }),
+        } as APIGatewayProxyEvent,
+      },
+    ])("should return 400 if $case", async ({ request }) => {
+      // Act
+      const res = (await createUserStoredIdentityHandler(
+        request,
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // Assert
+      expect(res.statusCode).toBe(StatusCodes.BadRequest);
     });
   });
 });
