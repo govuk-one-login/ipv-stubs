@@ -113,7 +113,7 @@ describe("evcs management handlers", () => {
   });
 
   describe("createUserStoredIdentityHandler", () => {
-    it("should return 204 given valid request", async () => {
+    it("should return 202 given valid request", async () => {
       // Arrange
       const testRequest = {
         pathParameters: {
