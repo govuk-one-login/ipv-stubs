@@ -7,13 +7,17 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { getSsmParameter } from "../../src/common/ssmParameter";
-import { processPostIdentityRequest } from "../../src/services/evcsService";
+import {
+  invalidateUserSi,
+  processPostIdentityRequest,
+} from "../../src/services/evcsService";
 import { PostIdentityRequest, PutRequest } from "../../src/domain/requests";
 import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
 import "aws-sdk-client-mock-jest";
 import { config } from "../../src/common/config";
 import { Vot } from "../../src/domain/enums/vot";
 import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
+import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-01"));
 
@@ -42,6 +46,23 @@ const TEST_VC2 = `eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1cm46dXVpZDo5N
 const TEST_VC3_SIGNATURE =
   "ggN9Y1utkbVunE5brcR3KmXntj5jK_jzccXlLnUO_2DMENTDuBUDlh4dkt7K-upx_n0Ygu125TzduNad41QzoA"; // pragma: allowlist secret
 const TEST_VC3 = `eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1cm46dXVpZDo5NjI4OTgxNS0wZTUyLTQ4MDAtOTZkZi0xZmY3ZGU5ODFjZDQiLCJhdWQiOiJodHRwczovL2lkZW50aXR5LmJ1aWxkLmFjY291bnQuZ292LnVrIiwibmJmIjoxNzQ2MDkyNjAzLCJpc3MiOiJodHRwczovL2ZyYXVkLWNyaS5zdHVicy5hY2NvdW50Lmdvdi51ayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJJZGVudGl0eUNoZWNrQ3JlZGVudGlhbCJdLCJjcmVkZW50aWFsU3ViamVjdCI6eyJuYW1lIjpbeyJuYW1lUGFydHMiOlt7InZhbHVlIjoiS2VubmV0aCIsInR5cGUiOiJHaXZlbk5hbWUifSx7InZhbHVlIjoiRGVjZXJxdWVpcmEiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XX1dLCJiaXJ0aERhdGUiOlt7InZhbHVlIjoiMTk2NS0wNy0wOCJ9XSwiYWRkcmVzcyI6W3siYWRkcmVzc0NvdW50cnkiOiJHQiIsImJ1aWxkaW5nTmFtZSI6IiIsInN0cmVldE5hbWUiOiJIQURMRVkgUk9BRCIsInBvc3RhbENvZGUiOiJCQTIgNUFBIiwiYnVpbGRpbmdOdW1iZXIiOiI4IiwiYWRkcmVzc0xvY2FsaXR5IjoiQkFUSCIsInZhbGlkRnJvbSI6IjIwMDAtMDEtMDEifV19LCJldmlkZW5jZSI6W3sidHlwZSI6IklkZW50aXR5Q2hlY2siLCJpZGVudGl0eUZyYXVkU2NvcmUiOjIsInR4biI6IjM0OTg4OTVhLTk0Y2MtNDlkZS04MDc0LTQ5OWU1MjczZDI2YyJ9XX0sImp0aSI6InVybjp1dWlkOjg5ZDY5MTAwLTRiOTctNDYxZi1hOTlkLTNlZDZjMzNkNGVhNCJ9.${TEST_VC3_SIGNATURE}`; // pragma: allowlist secret
+
+const TEST_SI_JWT =
+  "eyJraWQiOiJ0ZXN0LXNpZ25pbmcta2V5IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJodHRwczovL3JldXNlLWlkZW50aXR5LmJ1aWxkLmFjY291bnQuZ292LnVrIiwic3ViIjoiNmJkMjM1ZGMyYTBhNTliODkyMGU0NTJjNzE1MzY0ZWQiLCJuYmYiOjE3NTA2NzQ3NTUsImNyZWRlbnRpYWxzIjpbInl0NUgtN0EyWXhqeTd0eDlUaXRnQ1NTeW80dV9RUHlTam84Q2FrdXlyY01EMjhLMThKSnFyWG5uemc1TXFmZkZxZTB5clRKRlBNa201V3hRdmlNa01BIiwiVDFHdFA3X01ueUZHYmJhSUl3NER3NmJYcEZwakRaeU5jSlU0V1BiME9tTzBYRmZPV0V4NXNiZEkwTlBGeFpNT1JsQjFUYlRibmMxVHhNMVhybjBfRXciXSwiaXNzIjoiaHR0cHM6Ly9pZGVudGl0eS5sb2NhbC5hY2NvdW50Lmdvdi51ayIsImNsYWltcyI6eyJodHRwczovL3ZvY2FiLmFjY291bnQuZ292LnVrL3YxL2NvcmVJZGVudGl0eSI6eyJuYW1lIjpbeyJuYW1lUGFydHMiOlt7InR5cGUiOiJHaXZlbk5hbWUiLCJ2YWx1ZSI6IkFsaWNlIn0seyJ0eXBlIjoiR2l2ZW5OYW1lIiwidmFsdWUiOiJKYW5lIn0seyJ0eXBlIjoiRmFtaWx5TmFtZSIsInZhbHVlIjoiRG9lIn1dfV0sImJpcnRoRGF0ZSI6W3sidmFsdWUiOiIxOTcwLTAxLTAxIn1dfX0sInZvdCI6IlBDTDI1MCIsImlhdCI6MTc1MDY3NDc1NX0.9OqD33fjZLozlbDHZtbAqtrnMNXHyJ-mFZo5F4sVRB-qzjxdK8Iuz9aK_h5iTP6PFHCx7ZwXLbAbtZKjeCEqHg"; // pragma: allowlist secret
+const TEST_SI_TABLE_ITEM_GPG45: EvcsStoredIdentityItem = {
+  userId: TEST_USER_ID,
+  recordType: StoredIdentityRecordType.GPG45,
+  isValid: true,
+  levelOfConfidence: Vot.P2,
+  storedIdentity: TEST_SI_JWT,
+};
+const TEST_SI_TABLE_ITEM_HMRC: EvcsStoredIdentityItem = {
+  userId: TEST_USER_ID,
+  recordType: StoredIdentityRecordType.HMRC,
+  isValid: true,
+  levelOfConfidence: Vot.PCL200,
+  storedIdentity: TEST_SI_JWT,
+};
 
 const TEST_METADATA = {
   reason: "test-created",
@@ -88,7 +109,7 @@ describe("processPostIdentityRequest", () => {
 
   it("should return 200 response with new vc if successful transaction", async () => {
     // Arrange
-    dbMock.on(QueryCommand).resolves(createQueryResponse([]));
+    dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
 
     const putRequest: PutRequest = {
       userId: TEST_USER_ID,
@@ -130,7 +151,7 @@ describe("processPostIdentityRequest", () => {
   it("should return 200 response with updated vc if successful transaction", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves(
-      createQueryResponse([
+      createEvcsUserVcsQueryResponse([
         {
           vc: TEST_VC1,
           state: VcState.HISTORIC,
@@ -183,7 +204,7 @@ describe("processPostIdentityRequest", () => {
 
   it("should return 200 response if SI not provided", async () => {
     // Arrange
-    dbMock.on(QueryCommand).resolves(createQueryResponse([]));
+    dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
 
     const putRequest: PutRequest = {
       userId: TEST_USER_ID,
@@ -216,7 +237,7 @@ describe("processPostIdentityRequest", () => {
   it("should return 200 response, update existing VCs and add new ones if successful transaction", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves(
-      createQueryResponse([
+      createEvcsUserVcsQueryResponse([
         { vc: TEST_VC1, state: VcState.CURRENT },
         { vc: TEST_VC2, state: VcState.PENDING_RETURN },
       ]),
@@ -292,7 +313,7 @@ describe("processPostIdentityRequest", () => {
 
   it("should return 500 status code if it fails to complete the transaction", async () => {
     // Arrange
-    dbMock.on(QueryCommand).resolves(createQueryResponse([]));
+    dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
     dbMock
       .on(TransactWriteItemsCommand)
       .rejects(new Error("Failed to complete transaction"));
@@ -316,11 +337,67 @@ describe("processPostIdentityRequest", () => {
   });
 });
 
+describe("invalidateUserSi", () => {
+  beforeEach(() => {
+    dbMock.reset();
+  });
+
+  it("should return 204 for user with existing stored identities", async () => {
+    // Arrange
+    dbMock.on(QueryCommand).resolves({
+      Items: [
+        marshall(TEST_SI_TABLE_ITEM_GPG45),
+        marshall(TEST_SI_TABLE_ITEM_HMRC),
+      ],
+    });
+
+    // Act
+    const res = await invalidateUserSi(TEST_USER_ID);
+
+    // Assert
+    expect(res.statusCode).toBe(StatusCodes.NoContent);
+    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+      TransactItems: [
+        createUpdateSiIsValidUpdateItem(StoredIdentityRecordType.GPG45),
+        createUpdateSiIsValidUpdateItem(StoredIdentityRecordType.HMRC),
+      ],
+    });
+  });
+
+  it("should return 404 for user with no existing stored identity", async () => {
+    // Arrange
+    dbMock.on(QueryCommand).resolves({ Items: [] });
+
+    // Act
+    const res = await invalidateUserSi(TEST_USER_ID);
+
+    // Assert
+    expect(res.statusCode).toBe(StatusCodes.NotFound);
+    expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
+  });
+
+  it("should return 500 if it fails to update the user's stored identity", async () => {
+    // Arrange
+    dbMock
+      .on(QueryCommand)
+      .resolves({ Items: [marshall(TEST_SI_TABLE_ITEM_GPG45)] });
+    dbMock
+      .on(TransactWriteItemsCommand)
+      .rejects(new Error("Failed to update SI item"));
+
+    // Act
+    const res = await invalidateUserSi(TEST_USER_ID);
+
+    // Assert
+    expect(res.statusCode).toBe(StatusCodes.InternalServerError);
+  });
+});
+
 function getTestTtl() {
   return Math.floor(Date.now() / 1000) + parseInt(MOCK_TTL);
 }
 
-function createQueryResponse(
+function createEvcsUserVcsQueryResponse(
   vcsForReturn: {
     vc: string;
     state: VcState;
@@ -409,6 +486,25 @@ function createUserVcUpdateItem(updateVcDetails: {
         ":metadataValue": {
           M: marshall(TEST_METADATA),
         },
+      },
+    },
+  };
+}
+
+function createUpdateSiIsValidUpdateItem(recordType: StoredIdentityRecordType) {
+  return {
+    Update: {
+      TableName: config.evcsStoredIdentityObjectTableName,
+      Key: marshall({
+        userId: TEST_USER_ID,
+        recordType: recordType,
+      }),
+      UpdateExpression: "set #isValid = :isValid",
+      ExpressionAttributeNames: {
+        "#isValid": "isValid",
+      },
+      ExpressionAttributeValues: {
+        ":isValid": marshall(false),
       },
     },
   };

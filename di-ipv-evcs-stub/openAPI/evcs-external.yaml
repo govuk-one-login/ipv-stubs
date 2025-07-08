@@ -203,6 +203,35 @@ paths:
             responseTemplates:
               application/json: '{"result": "success"}'
 
+  /identity/invalidate:
+    post:
+      description: Set a User's SI document as invalid hence the SI document should no longer be used.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserIdRequestBody"
+      responses:
+        204:
+          description: "Successfully invalidated user stored identity record"
+        400:
+          $ref: '#/components/responses/BadRequest'
+        500:
+          $ref: '#/components/responses/ServerError'
+      x-amazon-apigateway-request-validator: ALL
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsInvalidateStoredIdentityFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          204:
+            statusCode: 204
+            responseTemplates:
+              application/json: '{"result": "success"}'
+
   /migration/{userId}:
     get:
       description: "Returns a list of user verifiable credentials"
@@ -297,6 +326,45 @@ paths:
             statusCode: 200
             responseTemplates:
               application/json: '{"result": "success"}'
+    post:
+      description: Saves a stored identity record for a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                si:
+                  $ref: "#/components/schemas/StoredIdentityDetails"
+      responses:
+        202:
+          description: Stored identity record accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        500:
+          $ref: '#/components/responses/ServerError'
+      x-amazon-apigateway-request-validator: ALL
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsManagementCreateStoredIdentityFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          202:
+            statusCode: 202
+            responseTemplates:
+              application/json: '{"result": "success"}'
 components:
   responses:
     BadRequest:
@@ -362,17 +430,24 @@ components:
         required:
           - signature
           - state
-    PersistStoredIdentity:
-      description: The request body for the /identity POST endpoint to store a user's stored identity record
+    UserIdRequestBody:
+      description: Request body schema containing required userId property.
       type: object
       properties:
         userId:
           type: string
-        si:
-          $ref: "#/components/schemas/StoredIdentityDetails"
       required:
         - userId
-        - si # TODO PYIC-8458: mark this as non-required when updating this endpoint with vcs list
+    PersistStoredIdentity:
+      description: The request body for the /identity POST endpoint to store a user's stored identity record
+      allOf:
+        - $ref: "#/components/schemas/UserIdRequestBody"
+        - type: object
+          properties:
+            si:
+              $ref: "#/components/schemas/StoredIdentityDetails"
+          required:
+            - si # TODO PYIC-8458: mark this as non-required when updating this endpoint with vcs list
     StoredIdentityDetails:
       type: object
       properties:

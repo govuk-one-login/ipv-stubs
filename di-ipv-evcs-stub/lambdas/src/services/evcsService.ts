@@ -185,6 +185,65 @@ export async function processPostIdentityRequest(
   }
 }
 
+export async function invalidateUserSi(userId: string) {
+  try {
+    const queryInput: QueryInput = {
+      TableName: config.evcsStoredIdentityObjectTableName,
+      KeyConditionExpression: "#userId = :userId",
+      ExpressionAttributeNames: {
+        "#userId": "userId",
+      },
+      ExpressionAttributeValues: {
+        ":userId": marshall(userId),
+      },
+    };
+
+    const storedIdentities = (await dynamoClient.query(queryInput)).Items ?? [];
+
+    if (storedIdentities.length === 0) {
+      console.info("No stored identity found for user");
+      return {
+        statusCode: StatusCodes.NotFound,
+      };
+    }
+
+    const updateTransactItems: TransactWriteItem[] = storedIdentities
+      .map((si) => unmarshall(si) as EvcsStoredIdentityItem)
+      .map((parsedSi) => ({
+        Update: {
+          TableName: config.evcsStoredIdentityObjectTableName,
+          Key: {
+            userId: marshall(userId),
+            recordType: marshall(parsedSi.recordType),
+          },
+          UpdateExpression: `set #isValid = :isValid`,
+          ExpressionAttributeNames: {
+            "#isValid": "isValid",
+          },
+          ExpressionAttributeValues: {
+            ":isValid": marshall(false),
+          },
+        },
+      }));
+
+    await dynamoClient.transactWriteItems({
+      TransactItems: updateTransactItems,
+    });
+
+    return {
+      statusCode: StatusCodes.NoContent,
+    };
+  } catch (error) {
+    console.error(
+      "Transaction failed. Failed to invalidate stored identity",
+      error,
+    );
+    return {
+      statusCode: StatusCodes.InternalServerError,
+    };
+  }
+}
+
 export async function processGetUserVCsRequest(
   userId: string,
   requestedStates: string[],
@@ -261,7 +320,7 @@ export async function processPatchUserVCsRequest(
   }
 }
 
-function createPutItem(evcsItem: EvcsVcItem | EvcsStoredIdentityItem) {
+export function createPutItem(evcsItem: EvcsVcItem | EvcsStoredIdentityItem) {
   return {
     TableName: isEvcsVcItem(evcsItem)
       ? config.evcsStubUserVCsTableName
@@ -345,7 +404,7 @@ function getUpdatedState(
   return currentVcState;
 }
 
-function getRecordTypeFromVot(vot: Vot): StoredIdentityRecordType {
+export function getRecordTypeFromVot(vot: Vot): StoredIdentityRecordType {
   if (GPG45_VOTS.includes(vot)) {
     return StoredIdentityRecordType.GPG45;
   }

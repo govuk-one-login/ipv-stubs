@@ -3,6 +3,15 @@ import { config } from "../common/config";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { GetStoredIdentity } from "../domain/serviceResponse";
 import { dynamoClient } from "../clients/dynamodbClient";
+import { StoredIdentityDetails } from "../domain/requests";
+import { createPutItem, getRecordTypeFromVot } from "./evcsService";
+import EvcsStoredIdentityItem from "../model/storedIdentityItem";
+import { StatusCodes } from "../domain/enums";
+
+export interface CreateStoredIdentityRequest {
+  userId: string;
+  si: StoredIdentityDetails;
+}
 
 export async function processGetStoredIdentity(
   userId: string,
@@ -40,4 +49,33 @@ export async function processGetStoredIdentity(
   return {
     storedIdentities: parsedResponse,
   };
+}
+
+export async function processCreateStoredIdentity(
+  createSiRequest: CreateStoredIdentityRequest,
+) {
+  try {
+    const evcsStoredIdentityItem: EvcsStoredIdentityItem = {
+      userId: createSiRequest.userId,
+      recordType: getRecordTypeFromVot(createSiRequest.si.vot),
+      storedIdentity: createSiRequest.si.jwt,
+      levelOfConfidence: createSiRequest.si.vot,
+      metadata: createSiRequest.si.metadata,
+      isValid: true,
+    };
+    const putItem = createPutItem(evcsStoredIdentityItem);
+
+    await dynamoClient.putItem(putItem);
+
+    return {
+      response: { result: "success" },
+      statusCode: StatusCodes.Accepted,
+    };
+  } catch (error) {
+    console.error("Failed to create SI for user: ", error);
+    return {
+      response: { result: "fail" },
+      statusCode: StatusCodes.InternalServerError,
+    };
+  }
 }

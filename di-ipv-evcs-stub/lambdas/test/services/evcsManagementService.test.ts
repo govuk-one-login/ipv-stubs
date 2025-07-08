@@ -1,12 +1,20 @@
 import { mockClient } from "aws-sdk-client-mock";
-import { DynamoDB, QueryCommand } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDB,
+  PutItemCommand,
+  QueryCommand,
+} from "@aws-sdk/client-dynamodb";
 import { beforeEach } from "@jest/globals";
 import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { Vot } from "../../src/domain/enums/vot";
 import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
-import { processGetStoredIdentity } from "../../src/services/evcsManagementService";
+import {
+  processCreateStoredIdentity,
+  processGetStoredIdentity,
+} from "../../src/services/evcsManagementService";
 import "aws-sdk-client-mock-jest";
+import { StatusCodes } from "../../src/domain/enums";
 
 const dbMock = mockClient(DynamoDB);
 
@@ -30,11 +38,19 @@ const HMRC_SI_RECORD: EvcsStoredIdentityItem = {
   isValid: true,
 };
 
-describe("processGetStoredIdentity", () => {
-  beforeEach(() => {
-    dbMock.reset();
-  });
+const TEST_CREATE_SI_REQUEST = {
+  userId: TEST_USER_ID,
+  si: {
+    jwt: TEST_VC_STRING,
+    vot: Vot.P2,
+  },
+};
 
+beforeEach(() => {
+  dbMock.reset();
+});
+
+describe("processGetStoredIdentity", () => {
   it("should return stored identities with a 200 response for user", async () => {
     // Arrange
     const expectedResponse = [GPG45_SI_RECORD, HMRC_SI_RECORD];
@@ -68,6 +84,19 @@ describe("processGetStoredIdentity", () => {
       },
     });
     expect(res.storedIdentities).toEqual([]);
+  });
+});
+
+describe("processCreateStoredIdentity", () => {
+  it("should successfully create an SI given a valid request", async () => {
+    // Act
+    const res = await processCreateStoredIdentity(TEST_CREATE_SI_REQUEST);
+
+    // Assert
+    expect(res.statusCode).toEqual(StatusCodes.Accepted);
+    expect(dbMock).toHaveReceivedCommandWith(PutItemCommand, {
+      Item: marshall(GPG45_SI_RECORD, { removeUndefinedValues: true }),
+    });
   });
 });
 
