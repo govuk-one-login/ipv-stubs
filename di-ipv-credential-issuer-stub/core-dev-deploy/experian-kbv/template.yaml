@@ -23,31 +23,31 @@ Parameters:
   JbpConfigOpenJdkJre:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/experianKbv/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/experian-kbv/env/JBP_CONFIG_OPEN_JDK_JRE" #pragma: allowlist secret
   JavaOpts:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/experianKbv/env/JAVA_OPTS" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/experian-kbv/env/JAVA_OPTS" #pragma: allowlist secret
   CredentialIssuerPort:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/experianKbv/env/CREDENTIAL_ISSUER_PORT" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/experian-kbv/env/CREDENTIAL_ISSUER_PORT" #pragma: allowlist secret
   CredentialIssuerName:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/experianKbv/env/CREDENTIAL_ISSUER_NAME" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/experian-kbv/env/CREDENTIAL_ISSUER_NAME" #pragma: allowlist secret
   CredentialIssuerType:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/experianKbv/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/experian-kbv/env/CREDENTIAL_ISSUER_TYPE" #pragma: allowlist secret
   ClientAudience:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/experianKbv/env/CLIENT_AUDIENCE" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/experian-kbv/env/CLIENT_AUDIENCE" #pragma: allowlist secret
   VcIssuer:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/credential-issuer/experianKbv/env/VC_ISSUER" #pragma: allowlist secret
+    Default: "/stubs/credential-issuer/experian-kbv/env/VC_ISSUER" #pragma: allowlist secret
 
 Conditions:
   IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
@@ -453,9 +453,9 @@ Resources:
             Value: !Ref VcIssuer
           Secrets:
             - Name: "VC_SIGNING_KEY"
-              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/experianKbv/env/VC_SIGNING_KEY"
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/experian-kbv/env/VC_SIGNING_KEY"
             - Name: "PRIVATE_ENCRYPTION_KEY_JWK"
-              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/experianKbv/env/PRIVATE_ENCRYPTION_KEY_JWK"
+              ValueFrom: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/stubs/credential-issuer/experian-kbv/env/PRIVATE_ENCRYPTION_KEY_JWK"
           PortMappings:
             - ContainerPort: 8080
               Protocol: tcp

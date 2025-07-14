@@ -87,7 +87,7 @@ Resources:
               { "clusterNamePrefix" : "cri-fraud-stub-CriStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/credential-issuer/fraud/env/" } ,
               { "clusterNamePrefix" : "cri-experian-kbv-stub-CriStubCluster-" ,
-                "ssmParamPrefix" : "/stubs/credential-issuer/experianKbv/env/" } ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/experian-kbv/env/" } ,
               { "clusterNamePrefix" : "cri-passport-stub-CriStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/credential-issuer/passport/env/" }
             ]

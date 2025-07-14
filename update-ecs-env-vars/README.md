@@ -12,7 +12,7 @@ PREFIXES: |
               { "clusterNamePrefix" : "orch-stub-OrchStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/build/orch/env/" } ,
               { "clusterNamePrefix" : "cri-experian-kbv-stub-CriStubCluster-" ,
-                  "ssmParamPrefix" : "/stubs/credential-issuer/experianKbv/env/" } ,
+                  "ssmParamPrefix" : "/stubs/credential-issuer/experian-kbv/env/" } ,
               { "clusterNamePrefix" : "cri-err-test-2-stub-CriStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-2/env/" } ,
               { "clusterNamePrefix" : "cri-passport-stub-CriStubCluster-" ,
