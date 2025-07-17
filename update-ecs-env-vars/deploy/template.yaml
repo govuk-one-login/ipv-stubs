@@ -78,6 +78,8 @@ Resources:
                 "ssmParamPrefix" : "/stubs/credential-issuer/dcmaw/env/" } ,
               { "clusterNamePrefix" : "cri-drv-license-stub-CriStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/credential-issuer/driving-licence/env/" } ,
+              { "clusterNamePrefix" : "cri-drv-licence-stub-CriStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/driving-licence/env/" } ,
               { "clusterName" : "cri-err-test-1-stub-CriStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/credential-issuer/error-testing-1/env/" } ,
               { "clusterNamePrefix" : "cri-err-test-2-stub-CriStubCluster-" ,
