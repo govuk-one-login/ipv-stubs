@@ -27,6 +27,8 @@ PREFIXES: |
                 "ssmParamPrefix" : "/stubs/credential-issuer/address/env/" } ,
               { "clusterNamePrefix" : "cri-drv-license-stub-CriStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/credential-issuer/driving-licence/env/" } ,
+                { "clusterNamePrefix" : "cri-drv-licence-stub-CriStubCluster-" ,
+                "ssmParamPrefix" : "/stubs/credential-issuer/driving-licence/env/" } ,
               { "clusterNamePrefix" : "cri-f2f-stub-CriStubCluster-",
                 "ssmParamPrefix" : "/stubs/credential-issuer/f2f/env/"  } ,
               { "clusterNamePrefix" : "core-front-dev-tobys-CoreFrontCluster-" ,
