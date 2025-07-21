@@ -36,3 +36,4 @@ config
 !/src/test/java/uk/gov/di/ipv/stub/cred/config
 deploy/*/*-*.yaml
 core-dev-deploy/*/*-*.yaml
+secrets.gradle

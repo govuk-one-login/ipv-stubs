@@ -22,6 +22,17 @@ The stub application to simulate the credential issuers to be used during the IP
 | VC_ISSUER               | Hostname of the VC issuer                             | `http://localhost:8084` |
 | VC_SIGNING_KEY          | Signing key for the VC issuer | See [test fixtures](https://github.com/alphagov/di-ipv-stubs/blob/main/di-ipv-credential-issuer-stub/src/test/java/uk/gov/di/ipv/stub/cred/fixtures/TestFixtures.java#L6) for example values      |
 
+## Development
+
+### Secrets
+To set up secrets, copy the `secrets.gradle.template` to `secrets.gradle` and enter values for each variable.
+
+The DI data-vocab classes are published to a GitHub maven repository (https://github.com/govuk-one-login/data-vocab/packages)
+and you require a personal access token to download these.
+
+See [Managing your personal access tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
+for instructions on creating a token. The token must have the `read:packages` permission.
+
 ## Running locally
 
 ### Startup script
