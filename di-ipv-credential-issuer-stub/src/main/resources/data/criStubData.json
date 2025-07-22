@@ -762,43 +762,6 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
-      "label": "Alice Parker (InValid) BRP",
-      "payload": {
-        "name": [
-          {
-            "nameParts": [
-              {
-                "value": "ALICE",
-                "type": "GivenName"
-              },
-              {
-                "value": "JANE",
-                "type": "GivenName"
-              },
-              {
-                "value": "PARKER",
-                "type": "FamilyName"
-              }
-            ]
-          }
-        ],
-        "birthDate": [
-          {
-            "value": "1970-01-01"
-          }
-        ],
-        "residencePermit": [
-          {
-            "documentType": "IR",
-            "icaoIssuerCode": "GBR",
-            "documentNumber": "ZR8016200",
-            "expiryDate": "2024-02-02"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "DOC Checking App (Stub)",
       "label": "Alice Parker (Valid) BRC",
       "payload": {
         "name": [
@@ -836,7 +799,7 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
-      "label": "Alice Parker (Valid) BRP",
+      "label": "Alice Parker BRP",
       "payload": {
         "name": [
           {
@@ -903,7 +866,8 @@
             "issuedBy": "DVLA",
             "issueDate": "2005-02-02",
             "personalNumber": "PARKE710112PBFGA",
-            "expiryDate": "2032-02-02"
+            "expiryDate": "2032-02-02",
+            "issueNumber": "23"
           }
         ]
       }
@@ -1464,7 +1428,7 @@
     },
     {
       "criType": "DOC Checking App (Stub)",
-      "label": "Saul Goodman (Valid) BRC",
+      "label": "Saul Goodman BRC",
       "payload": {
         "name": [
           {
@@ -1489,7 +1453,7 @@
           {
             "documentNumber": "AX66K69P2",
             "expiryDate": "2030-07-13",
-            "icaoIssuerCode": "UTO",
+            "icaoIssuerCode": "GBR",
             "documentType": "CR"
           }
         ]
@@ -2356,7 +2320,7 @@
     },
     {
       "criType": "Face to Face Check (Stub)",
-      "label": "Saul Goodman (Valid BRP)",
+      "label": "Saul Goodman BRC",
       "payload": {
         "name": [
           {
@@ -2367,7 +2331,7 @@
               },
               {
                 "value": "Goodman",
-                "type": "GivenName"
+                "type": "FamilyName"
               }
             ]
           }
@@ -2379,7 +2343,7 @@
         ],
         "residencePermit": [
           {
-            "icaoIssuerCode": "UTO",
+            "icaoIssuerCode": "GBR",
             "documentType": "CR",
             "documentNumber": "AX66K69P2",
             "expiryDate": "2030-07-13"
@@ -2400,7 +2364,7 @@
               },
               {
                 "value": "Goodman",
-                "type": "GivenName"
+                "type": "FamilyName"
               }
             ]
           }
@@ -2773,7 +2737,7 @@
             "streetName": "YEOMAN WAY",
             "postalCode": "BA14 0QP",
             "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
+            "validFrom": "1951-01-01"
           }
         ]
       }
@@ -3398,7 +3362,7 @@
             "streetName": "YEOMAN WAY",
             "postalCode": "BA14 0QP",
             "addressLocality": "TROWBRIDGE",
-            "validFrom": "1952-01-01"
+            "validFrom": "1951-01-01"
           }
         ]
       }
