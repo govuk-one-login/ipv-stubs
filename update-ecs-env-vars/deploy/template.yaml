@@ -19,10 +19,10 @@ Parameters:
   #  Description: "The ARN of the permissions boundary to apply when creating IAM roles"
   #  Type: String
   #  Default: "none"
-  #ProgrammaticPermissionsBoundary:
-  #  Description: "The ARN of the programmatic permissions boundary to apply when creating IAM roles"
-  #  Type: String
-  #  Default: "none"
+  ProgrammaticPermissionsBoundary:
+    Description: "The ARN of the programmatic permissions boundary to apply when creating IAM roles"
+    Type: String
+    Default: "none"
   CodeSigningConfigArn:
     Type: String
     Description: >
@@ -50,7 +50,7 @@ Resources:
     Properties:
       CodeUri: "../"
       Handler: app.lambdaHandler
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Architectures:
         - arm64
       DeadLetterQueue:
@@ -177,7 +177,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "es2020"
+        Target: "es2024"
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         External:
           - "@aws-sdk/client-ecs"
