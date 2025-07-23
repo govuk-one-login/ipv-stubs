@@ -18,6 +18,7 @@ if (file("secrets.gradle").exists()) {
 	githubToken = System.getenv("GITHUB_TOKEN")
 }
 
+// qq:DCC Need to make sure these secrets exist in GitHub
 repositories {
 	mavenCentral()
 	maven {
