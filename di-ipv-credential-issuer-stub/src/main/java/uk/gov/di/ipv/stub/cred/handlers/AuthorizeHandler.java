@@ -27,6 +27,19 @@ import org.slf4j.LoggerFactory;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.config.CriType;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataAddress;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataBav;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataClaimedIdentity;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataDcmaw;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataDrivingLicence;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataDwpKbv;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataExperianKbv;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataF2f;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataFraud;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataHmrcKbv;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataNino;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataUkPassport;
+import uk.gov.di.ipv.stub.cred.data.IdentityCheckSubjectCriStubData;
 import uk.gov.di.ipv.stub.cred.domain.*;
 import uk.gov.di.ipv.stub.cred.error.CriStubException;
 import uk.gov.di.ipv.stub.cred.service.AuthCodeService;
@@ -171,7 +184,7 @@ public class AuthorizeHandler {
             return;
         }
 
-        var criStubData = getCriStubData();
+        var criStubData = getCriStubData(CredentialIssuerConfig.NAME);
         var criStubEvidencePayloads = getCriStubEvidencePayloads();
 
         String sharedAttributesJson;
@@ -711,11 +724,51 @@ public class AuthorizeHandler {
         }
     }
 
-    private String getCriStubData() throws IOException {
-        return OBJECT_MAPPER
-                .readTree(AuthorizeHandler.class.getResourceAsStream("/data/criStubData.json"))
-                .get("data")
-                .toString();
+    private String getCriStubData(String stubName) throws IOException {
+        List<IdentityCheckSubjectCriStubData> data;
+
+        switch (stubName) {
+            case "Address (Stub)":
+                data = CriStubDataAddress.Data;
+                break;
+            case "Bank account verification (Stub)":
+                data = CriStubDataBav.Data;
+                break;
+            case "Claimed Identity (Stub)":
+                data = CriStubDataClaimedIdentity.Data;
+                break;
+            case "DOC Checking App (Stub)":
+                data = CriStubDataDcmaw.Data;
+                break;
+            case "DWP KBV (Stub)":
+                data = CriStubDataDwpKbv.Data;
+                break;
+            case "Driving Licence (Stub)":
+                data = CriStubDataDrivingLicence.Data;
+                break;
+            case "Experian Knowledge Based Verification (Stub)":
+                data = CriStubDataExperianKbv.Data;
+                break;
+            case "Face to Face Check (Stub)":
+                data = CriStubDataF2f.Data;
+                break;
+            case "Fraud Check (Stub)":
+                data = CriStubDataFraud.Data;
+                break;
+            case "HMRC Knowledge Based Verification (Stub)":
+                data = CriStubDataHmrcKbv.Data;
+                break;
+            case "National Insurance Number (Stub)":
+                data = CriStubDataNino.Data;
+                break;
+            case "UK Passport (Stub)":
+                data = CriStubDataUkPassport.Data;
+                break;
+            default:
+                throw new IllegalArgumentException("Unrecognised stub type: " + stubName);
+        }
+
+        return OBJECT_MAPPER.writeValueAsString(data);
     }
 
     private String getCriStubEvidencePayloads() throws IOException {
