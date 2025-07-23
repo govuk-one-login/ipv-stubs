@@ -88,6 +88,8 @@ Resources:
                 "ssmParamPrefix" : "/stubs/credential-issuer/f2f/env/" } ,
               { "clusterNamePrefix" : "cri-fraud-stub-CriStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/credential-issuer/fraud/env/" } ,
+              { "clusterNamePrefix" : "cri-hmrc-kbv-stub-CriStubCluster-",
+                "ssmParamPrefix" : "/stubs/credential-issuer/hmrc-kbv/env/" } ,
               { "clusterNamePrefix" : "cri-experian-kbv-stub-CriStubCluster-" ,
                 "ssmParamPrefix" : "/stubs/credential-issuer/experian-kbv/env/" } ,
               { "clusterNamePrefix" : "cri-passport-stub-CriStubCluster-" ,
@@ -177,7 +179,7 @@ Resources:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Target: "es2024"
+        Target: "es2022"
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         External:
           - "@aws-sdk/client-ecs"
