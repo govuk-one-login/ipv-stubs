@@ -3,7 +3,7 @@ package uk.gov.di.ipv.stub.orc.models;
 import java.util.List;
 
 public record JarClaims(JarUserInfo userinfo) {
-    public JarClaims(String inheritedIdentityJwt, String evcsAccessToken) {
+    public JarClaims(String evcsAccessToken) {
         this(
                 new JarUserInfo(
                         new Essential(true),
@@ -12,9 +12,6 @@ public record JarClaims(JarUserInfo userinfo) {
                         null,
                         new Essential(true),
                         new Essential(true),
-                        inheritedIdentityJwt == null
-                                ? null
-                                : new ListOfStringValues(List.of(inheritedIdentityJwt)),
                         evcsAccessToken == null
                                 ? null
                                 : new ListOfStringValues(List.of(evcsAccessToken))));

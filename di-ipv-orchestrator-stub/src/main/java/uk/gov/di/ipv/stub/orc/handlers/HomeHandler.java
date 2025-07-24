@@ -36,9 +36,6 @@ public class HomeHandler {
         moustacheDataModel.put("signInJourneyId", journeyId);
         moustacheDataModel.put("uuid", userId);
         moustacheDataModel.put("defaultEnvironment", defaultEnvironment);
-        moustacheDataModel.put(
-                "credentialSubjects", getData("/data/inheritedJWTCredentialSubjects.json"));
-        moustacheDataModel.put("evidences", getData("/data/inheritedJWTEvidences.json"));
         ctx.render("templates/home.mustache", moustacheDataModel);
     }
 

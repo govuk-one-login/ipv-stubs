@@ -77,10 +77,6 @@ public class IpvHandler {
     private static final String ENVIRONMENT_PARAM = "targetEnvironment";
     private static final String REPROVE_IDENTITY_PARAM = "reproveIdentity";
     private static final String EMAIL_ADDRESS_PARAM = "emailAddress";
-    private static final String INHERITED_ID_INCLUDED_PARAM = "duringMigration";
-    private static final String INHERITED_ID_VOT_PARAM = "votText";
-    private static final String INHERITED_ID_SUBJECT_PARAM = "jsonPayload";
-    private static final String INHERITED_ID_EVIDENCE_PARAM = "evidenceJsonPayload";
     private static final String MFA_RESET_PARAM = "mfaReset";
     private static final String ERROR_TYPE_PARAM = "error";
     private static final String CHECKBOX_CHECKED_VALUE = "checked";
@@ -142,10 +138,6 @@ public class IpvHandler {
                             userEmailAddress,
                             JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT,
                             environment,
-                            false,
-                            null,
-                            null,
-                            null,
                             scope,
                             clientId,
                             evcsAccessTokenGenerator.getAccessToken(environment, userId));
@@ -165,13 +157,6 @@ public class IpvHandler {
                             ? JwtBuilder.ReproveIdentityClaimValue.valueOf(reproveIdentityString)
                             : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
 
-            var includeInheritedId =
-                    Objects.equals(
-                            ctx.queryParam(INHERITED_ID_INCLUDED_PARAM), CHECKBOX_CHECKED_VALUE);
-            var inheritedIdVot = ctx.queryParam(INHERITED_ID_VOT_PARAM);
-            var inheritedIdSubject = ctx.queryParam(INHERITED_ID_SUBJECT_PARAM);
-            var inheritedIdEvidence = ctx.queryParam(INHERITED_ID_EVIDENCE_PARAM);
-
             claims =
                     JwtBuilder.buildAuthorizationRequestClaims(
                             userId,
@@ -182,10 +167,6 @@ public class IpvHandler {
                             userEmailAddress,
                             reproveIdentityClaimValue,
                             environment,
-                            includeInheritedId,
-                            inheritedIdSubject,
-                            inheritedIdEvidence,
-                            inheritedIdVot,
                             scope,
                             clientId,
                             evcsAccessTokenGenerator.getAccessToken(environment, userId));

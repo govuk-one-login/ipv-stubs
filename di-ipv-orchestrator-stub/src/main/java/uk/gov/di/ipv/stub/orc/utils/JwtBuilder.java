@@ -1,6 +1,5 @@
 package uk.gov.di.ipv.stub.orc.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.EncryptionMethod;
@@ -55,7 +54,6 @@ public class JwtBuilder {
     public static final String URN_UUID = "urn:uuid:";
     public static final String INVALID_AUDIENCE = "invalid-audience";
     public static final String INVALID_REDIRECT_URI = "invalid-redirect-uri";
-    public static final String INVALID_INHERITED_ID = "invalid-jwt";
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtBuilder.class);
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final JWSHeader ORCH_JWS_HEADER = createHeader(ORCHESTRATOR_SIGNING_JWK);
@@ -78,40 +76,20 @@ public class JwtBuilder {
             String userEmailAddress,
             ReproveIdentityClaimValue reproveIdentityValue,
             String environment,
-            boolean includeInheritedId,
-            String inheritedIdSubject,
-            String inheritedIdEvidence,
-            String inheritedIdVot,
             Scope scope,
             String clientId,
-            String evcsAccessToken)
-            throws NoSuchAlgorithmException,
-                    InvalidKeySpecException,
-                    JOSEException,
-                    JsonProcessingException,
-                    ParseException {
+            String evcsAccessToken) {
         String audience = getIpvCoreAudience(environment);
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
-
-        var inheritedIdJwt =
-                includeInheritedId
-                        ? InheritedIdentityJwtBuilder.generate(
-                                        userId,
-                                        inheritedIdVot,
-                                        inheritedIdSubject,
-                                        inheritedIdEvidence)
-                                .serialize()
-                        : null;
 
         if (errorType != null) {
             switch (errorType) {
                 case "recoverable" -> audience = INVALID_AUDIENCE;
                 case "non-recoverable" -> redirectUri = INVALID_REDIRECT_URI;
-                case "inherited-identity" -> inheritedIdJwt = INVALID_INHERITED_ID;
             }
         }
 
-        var jarClaims = new JarClaims(inheritedIdJwt, evcsAccessToken);
+        var jarClaims = new JarClaims(evcsAccessToken);
         var jarClaimsMap =
                 OBJECT_MAPPER.convertValue(jarClaims, new TypeReference<Map<String, Object>>() {});
 

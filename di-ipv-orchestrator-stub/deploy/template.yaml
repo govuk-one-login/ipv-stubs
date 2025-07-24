@@ -495,14 +495,6 @@ Resources:
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME}}'
             - Name: ORCHESTRATOR_BASIC_AUTH_PASSWORD
               Value: '{{resolve:ssm:/stubs/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSWORD}}'
-            - Name: INHERITED_IDENTITY_JWT_SIGNING_JWK
-              Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_SIGNING_JWK}}'
-            - Name: INHERITED_IDENTITY_JWT_TTL
-              Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_TTL}}'
-            - Name: INHERITED_IDENTITY_JWT_ISSUER
-              Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_ISSUER}}'
-            - Name: INHERITED_IDENTITY_JWT_VTM
-              Value: '{{resolve:ssm:/stubs/orch/env/INHERITED_IDENTITY_JWT_VTM}}'
             - Name: EVCS_ACCESS_TOKEN_ENDPOINT
               Value: '{{resolve:ssm:/stubs/orch/env/EVCS_ACCESS_TOKEN_ENDPOINT}}'
             - Name: EVCS_ACCESS_TOKEN_TTL

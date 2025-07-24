@@ -108,33 +108,12 @@
                 MFA Reset
                 </label>
               </div>
-              <div class="govuk-checkboxes__item">
-                <input class="govuk-checkboxes__input" type="checkbox" name="duringMigration" id="duringMigration" value="checked">
-                <label class="govuk-label govuk-checkboxes__label" for="duringMigration">
-                Include inherited identity claim
-                </label>
-              </div>
             </div><br/>
-            <div id="integrationIdentityDiv" style="display: none">
-                <div class="govuk-form-group">
-                    <label class="govuk-label" for="votText">
-                        Enter VOT (PCL200 or PCL250)
-                    </label>
-                    <input class="govuk-input" data-module="govuk-input" name="votText" id="votText" type="text" >
-                </div>
-
-                <div class="govuk-form-group" id="test_data_block"></div>
-                <div class="govuk-form-group"><textarea class="govuk-textarea" id="jsonPayload" name="jsonPayload" rows="5"  aria-describedby="more-detail-hint"></textarea></div>
-
-                <div class="govuk-form-group" id="custom_evidence_block"></div>
-                <div class="govuk-form-group"> <textarea class="govuk-textarea" id="evidenceJsonPayload" name="evidenceJsonPayload" rows="5"  aria-describedby="more-detail-hint"></textarea></div>
-            </div>
             <input id="full-journey-button" class="govuk-button" data-module="govuk-button" type="submit" value="Full journey route">
             <label class="govuk-label" for="error">Choose an error type:</label>
             <select class="govuk-select" name="error" id="error">
                 <option value="recoverable">Recoverable</option>
                 <option value="non-recoverable">Non-Recoverable</option>
-                <option value="inherited-identity">Inherited identity</option>
             </select>
             <input id="error-journey-button" class="govuk-button" data-module="govuk-button" type="submit" value="Error journey route" formaction="/authorize-error">
         </form>

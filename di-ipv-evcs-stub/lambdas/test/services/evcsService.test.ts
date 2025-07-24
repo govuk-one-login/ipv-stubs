@@ -56,13 +56,6 @@ const TEST_SI_TABLE_ITEM_GPG45: EvcsStoredIdentityItem = {
   levelOfConfidence: Vot.P2,
   storedIdentity: TEST_SI_JWT,
 };
-const TEST_SI_TABLE_ITEM_HMRC: EvcsStoredIdentityItem = {
-  userId: TEST_USER_ID,
-  recordType: StoredIdentityRecordType.HMRC,
-  isValid: true,
-  levelOfConfidence: Vot.PCL200,
-  storedIdentity: TEST_SI_JWT,
-};
 
 const TEST_METADATA = {
   reason: "test-created",
@@ -342,13 +335,10 @@ describe("invalidateUserSi", () => {
     dbMock.reset();
   });
 
-  it("should return 204 for user with existing stored identities", async () => {
+  it("should return 204 for user with an existing stored identity", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves({
-      Items: [
-        marshall(TEST_SI_TABLE_ITEM_GPG45),
-        marshall(TEST_SI_TABLE_ITEM_HMRC),
-      ],
+      Items: [marshall(TEST_SI_TABLE_ITEM_GPG45)],
     });
 
     // Act
@@ -359,7 +349,6 @@ describe("invalidateUserSi", () => {
     expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
       TransactItems: [
         createUpdateSiIsValidUpdateItem(StoredIdentityRecordType.GPG45),
-        createUpdateSiIsValidUpdateItem(StoredIdentityRecordType.HMRC),
       ],
     });
   });

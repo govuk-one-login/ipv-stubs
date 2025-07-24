@@ -55,19 +55,6 @@ public class OrchestratorConfig {
     public static final String BASIC_AUTH_PASSWORD =
             getConfigValue("ORCHESTRATOR_BASIC_AUTH_PASSWORD");
 
-    public static final String INHERITED_IDENTITY_JWT_SIGNING_JWK =
-            getConfigValue(
-                    "INHERITED_IDENTITY_JWT_SIGNING_JWK",
-                    // This is a test key used for local development
-                    "{\"kty\":\"EC\",\"kid\":\"inherited-identity-signing-default-FI4xysvMVdRtkt6xmO5gqcaTF4Tf9NKD1zdg3T8y69M\",\"use\":\"sig\",\"d\":\"OXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthU\",\"crv\":\"P-256\",\"x\":\"E9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIM\",\"y\":\"KlTMZthHZUkYz5AleTQ8jff0TJiS3q2OB9L5Fw4xA04\"}"); // pragma: allowlist secret
-    public static final String INHERITED_IDENTITY_JWT_ISSUER =
-            getConfigValue(
-                    "INHERITED_IDENTITY_JWT_ISSUER",
-                    "https://orch.stubs.account.gov.uk/migration/v1");
-    public static final String INHERITED_IDENTITY_JWT_VTM =
-            getConfigValue("INHERITED_IDENTITY_JWT_VTM", "https://hmrc.gov.uk/trustmark");
-    public static final String INHERITED_IDENTITY_JWT_TTL =
-            getConfigValue("INHERITED_IDENTITY_JWT_TTL", "900");
     public static final String EVCS_ACCESS_TOKEN_ENDPOINT =
             getConfigValue(
                     "EVCS_ACCESS_TOKEN_ENDPOINT",
