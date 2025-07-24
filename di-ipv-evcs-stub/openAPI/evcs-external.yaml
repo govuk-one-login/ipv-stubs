@@ -507,8 +507,6 @@ components:
       title: Vector of Trust
       description: |-
         The highest Level of Confidence that has been attained by the VC bundle.
-        This is used to determine the type of SI that should be checked, either a GPG45
-        provided by another org.
       type: string
       default: P2
       example: P2
