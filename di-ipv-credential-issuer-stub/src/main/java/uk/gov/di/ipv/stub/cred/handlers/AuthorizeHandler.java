@@ -184,7 +184,7 @@ public class AuthorizeHandler {
             return;
         }
 
-        var criStubData = getCriStubData(CredentialIssuerConfig.NAME);
+        var criStubData = getCriStubData(CredentialIssuerConfig.getName());
         var criStubEvidencePayloads = getCriStubEvidencePayloads();
 
         String sharedAttributesJson;
@@ -247,7 +247,7 @@ public class AuthorizeHandler {
             frontendParams.put(ERROR_PARAM, error);
         }
 
-        frontendParams.put(CRI_NAME_PARAM, CredentialIssuerConfig.NAME);
+        frontendParams.put(CRI_NAME_PARAM, CredentialIssuerConfig.getName());
 
         ctx.render("templates/authorize.mustache", frontendParams);
     }
@@ -443,7 +443,7 @@ public class AuthorizeHandler {
                 URI.create(redirectUri),
                 new ErrorObject(error.getMessage(), error.getDescription()),
                 null,
-                new Issuer(CredentialIssuerConfig.NAME),
+                new Issuer(CredentialIssuerConfig.getName()),
                 ResponseMode.QUERY);
     }
 

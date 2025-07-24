@@ -7,8 +7,6 @@ import java.text.ParseException;
 
 public class CredentialIssuerConfig {
     public static final String PORT = getConfigValue("CREDENTIAL_ISSUER_PORT", "8084");
-    public static final String NAME =
-            getConfigValue("CREDENTIAL_ISSUER_NAME", "Credential Issuer Stub");
 
     public static final String CLIENT_AUDIENCE = getConfigValue("CLIENT_AUDIENCE");
     public static final String DEV_DOMAIN =
@@ -28,6 +26,10 @@ public class CredentialIssuerConfig {
     public static CriType getCriType() {
         return CriType.fromValue(
                 getConfigValue(CREDENTIAL_ISSUER_TYPE_VAR, CriType.EVIDENCE_CRI_TYPE.value));
+    }
+
+    public static String getName() {
+        return getConfigValue("CREDENTIAL_ISSUER_NAME", "Credential Issuer Stub");
     }
 
     public static String getVerifiableCredentialIssuer() {
