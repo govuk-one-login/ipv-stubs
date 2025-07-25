@@ -18,11 +18,8 @@ public class Ninos {
         // Replace default public constructor
     }
 
-    private static SocialSecurityRecordDetails createNino(
-            String personalNumber) {
-        
-        return SocialSecurityRecordDetails.builder()
-                .withPersonalNumber(personalNumber)
-                .build();
+    private static SocialSecurityRecordDetails createNino(String personalNumber) {
+
+        return SocialSecurityRecordDetails.builder().withPersonalNumber(personalNumber).build();
     }
 }

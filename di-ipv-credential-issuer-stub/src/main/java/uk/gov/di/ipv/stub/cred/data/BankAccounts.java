@@ -4,7 +4,8 @@ import uk.gov.di.model.BankAccountDetails;
 
 public class BankAccounts {
 
-    public final static BankAccountDetails BANK_ACCOUNT_VALID = createBankAccount("103233", "12345678");
+    public static final BankAccountDetails BANK_ACCOUNT_VALID =
+            createBankAccount("103233", "12345678");
 
     private BankAccounts() {
         // Replace default public constructor

@@ -16,56 +16,103 @@ public class CriStubDataF2f {
         // Replace default public constructor
     }
 
-    public static final List<IdentityCheckSubjectCriStubData> Data = List.of(
-            createData("Alice Parker (Valid) DVLA Licence", Names.Alice_Jane_Parker, BirthDates.ALICE_PARKER, DrivingLicences.ALICE_PARKER_DVLA),
-            createData("Claire Aarts DVLA Licence (DWP)", Names.Claire_Aarts, BirthDates.CLAIRE_AARTS_DWP, DrivingLicences.CLAIRE_AARTS_DVLA),
-            createData("Kabir Singh DVLA Licence (DWP)", Names.Kabir_Singh, BirthDates.KABIR_SINGH_DWP, DrivingLicences.KABIR_SINGH_DVLA),
-            createData("Kenneth Decerqueira (Valid Passport)", Names.Kenneth_Decerqueira, BirthDates.KENNETH_DECERQUEIRA, Passports.KENNETH_DECERQUEIRA_PASSPORT),
-            createData("Nora Porter DVLA Licence (DWP)", Names.Nora_Porter, BirthDates.NORA_PORTER_DWP, DrivingLicences.NORA_PORTER_DVLA),
-            createData("Mary Watson (Valid Passport)", Names.Mary_Watson, BirthDates.MARY_WATSON, Passports.MARY_WATSON_F2F_PASSPORT),
-            createData("Saul Goodman BRC", Names.Saul_Goodman, BirthDates.SAUL_GOODMAN, ResidencePermits.SAUL_GOODMAN_BRC),
-            createData("Saul Goodman (Valid EEA Card)", Names.Saul_Goodman, BirthDates.SAUL_GOODMAN, IdCards.EEA_VALID),
-            createData("Tom Hardy DVLA Licence (DWP)", Names.Tom_Hardy, BirthDates.TOM_HARDY_DWP, DrivingLicences.TOM_HARDY_DVLA)
-    );
+    public static final List<IdentityCheckSubjectCriStubData> Data =
+            List.of(
+                    createData(
+                            "Alice Parker (Valid) DVLA Licence",
+                            Names.Alice_Jane_Parker,
+                            BirthDates.ALICE_PARKER,
+                            DrivingLicences.ALICE_PARKER_DVLA),
+                    createData(
+                            "Claire Aarts DVLA Licence (DWP)",
+                            Names.Claire_Aarts,
+                            BirthDates.CLAIRE_AARTS_DWP,
+                            DrivingLicences.CLAIRE_AARTS_DVLA),
+                    createData(
+                            "Kabir Singh DVLA Licence (DWP)",
+                            Names.Kabir_Singh,
+                            BirthDates.KABIR_SINGH_DWP,
+                            DrivingLicences.KABIR_SINGH_DVLA),
+                    createData(
+                            "Kenneth Decerqueira (Valid Passport)",
+                            Names.Kenneth_Decerqueira,
+                            BirthDates.KENNETH_DECERQUEIRA,
+                            Passports.KENNETH_DECERQUEIRA_PASSPORT),
+                    createData(
+                            "Nora Porter DVLA Licence (DWP)",
+                            Names.Nora_Porter,
+                            BirthDates.NORA_PORTER_DWP,
+                            DrivingLicences.NORA_PORTER_DVLA),
+                    createData(
+                            "Mary Watson (Valid Passport)",
+                            Names.Mary_Watson,
+                            BirthDates.MARY_WATSON,
+                            Passports.MARY_WATSON_F2F_PASSPORT),
+                    createData(
+                            "Saul Goodman BRC",
+                            Names.Saul_Goodman,
+                            BirthDates.SAUL_GOODMAN,
+                            ResidencePermits.SAUL_GOODMAN_BRC),
+                    createData(
+                            "Saul Goodman (Valid EEA Card)",
+                            Names.Saul_Goodman,
+                            BirthDates.SAUL_GOODMAN,
+                            IdCards.EEA_VALID),
+                    createData(
+                            "Tom Hardy DVLA Licence (DWP)",
+                            Names.Tom_Hardy,
+                            BirthDates.TOM_HARDY_DWP,
+                            DrivingLicences.TOM_HARDY_DVLA));
 
-    private static IdentityCheckSubjectCriStubData createData(String label, Name name, BirthDate birthDate, DrivingPermitDetails drivingLicences) {
+    private static IdentityCheckSubjectCriStubData createData(
+            String label, Name name, BirthDate birthDate, DrivingPermitDetails drivingLicences) {
         return IdentityCheckSubjectCriStubData.builder()
                 .label(label)
-                .payload(IdentityCheckSubject.builder()
-                        .withName(List.of(name))
-                        .withBirthDate(List.of(birthDate))
-                        .withDrivingPermit(List.of(drivingLicences))
-                        .build()).build();
+                .payload(
+                        IdentityCheckSubject.builder()
+                                .withName(List.of(name))
+                                .withBirthDate(List.of(birthDate))
+                                .withDrivingPermit(List.of(drivingLicences))
+                                .build())
+                .build();
     }
 
-    private static IdentityCheckSubjectCriStubData createData(String label, Name name, BirthDate birthDate, PassportDetails passport) {
+    private static IdentityCheckSubjectCriStubData createData(
+            String label, Name name, BirthDate birthDate, PassportDetails passport) {
         return IdentityCheckSubjectCriStubData.builder()
                 .label(label)
-                .payload(IdentityCheckSubject.builder()
-                        .withName(List.of(name))
-                        .withBirthDate(List.of(birthDate))
-                        .withPassport(List.of(passport))
-                        .build()).build();
+                .payload(
+                        IdentityCheckSubject.builder()
+                                .withName(List.of(name))
+                                .withBirthDate(List.of(birthDate))
+                                .withPassport(List.of(passport))
+                                .build())
+                .build();
     }
 
-    private static IdentityCheckSubjectCriStubData createData(String label, Name name, BirthDate birthDate, ResidencePermitDetails residencePermit) {
+    private static IdentityCheckSubjectCriStubData createData(
+            String label, Name name, BirthDate birthDate, ResidencePermitDetails residencePermit) {
         return IdentityCheckSubjectCriStubData.builder()
                 .label(label)
-                .payload(IdentityCheckSubject.builder()
-                        .withName(List.of(name))
-                        .withBirthDate(List.of(birthDate))
-                        .withResidencePermit(List.of(residencePermit))
-                        .build()).build();
+                .payload(
+                        IdentityCheckSubject.builder()
+                                .withName(List.of(name))
+                                .withBirthDate(List.of(birthDate))
+                                .withResidencePermit(List.of(residencePermit))
+                                .build())
+                .build();
     }
 
-    private static IdentityCheckSubjectCriStubData createData(String label, Name name, BirthDate birthDate, IdCardDetails idCard) {
+    private static IdentityCheckSubjectCriStubData createData(
+            String label, Name name, BirthDate birthDate, IdCardDetails idCard) {
         return IdentityCheckSubjectCriStubData.builder()
                 .label(label)
-                .payload(IdentityCheckSubject.builder()
-                        .withName(List.of(name))
-                        .withBirthDate(List.of(birthDate))
-                        .withIdCard(List.of(idCard))
-                        .build()).build();
+                .payload(
+                        IdentityCheckSubject.builder()
+                                .withName(List.of(name))
+                                .withBirthDate(List.of(birthDate))
+                                .withIdCard(List.of(idCard))
+                                .build())
+                .build();
     }
 }
-

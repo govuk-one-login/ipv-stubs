@@ -6,8 +6,4 @@ import uk.gov.di.model.IdentityCheckSubject;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Builder
-public record IdentityCheckSubjectCriStubData(
-        String label,
-        IdentityCheckSubject payload) {
-}
-
+public record IdentityCheckSubjectCriStubData(String label, IdentityCheckSubject payload) {}

@@ -13,26 +13,64 @@ public class CriStubDataDrivingLicence {
         // Replace default public constructor
     }
 
-    public static final List<IdentityCheckSubjectCriStubData> Data = List.of(
-            createData("Alice Parker (Valid) DVLA Licence", Names.Alison_Jane_Parker, BirthDates.ALICE_PARKER, DrivingLicences.ALICE_PARKER_DVLA),
-            createData("Alice Parker (Changed First Name) DVLA Licence", Names.Alison_Jane_Parker, BirthDates.ALICE_PARKER, DrivingLicences.ALICE_PARKER_DVLA),
-            createData("Alice Parker (Changed Last Name) DVLA Licence", Names.Alice_Jane_Smith, BirthDates.ALICE_PARKER, DrivingLicences.ALICE_PARKER_DVLA),
-            createData("Bob Parker (Valid) DVA Licence", Names.Bob_Parker, BirthDates.BOB_PARKER, DrivingLicences.BOB_PARKER_DVA),
-            createData("Claire Aarts DVLA Licence (DWP)", Names.Claire_Aarts, BirthDates.CLAIRE_AARTS_DWP, DrivingLicences.CLAIRE_AARTS_DVLA),
-            createData("Kabir Singh DVLA Licence (DWP)", Names.Kabir_Singh, BirthDates.KABIR_SINGH_DWP, DrivingLicences.KABIR_SINGH_DVLA),
-            createData("Kenneth Decerqueira (Valid) DVLA Licence", Names.Kenneth_Decerqueira, BirthDates.KENNETH_DECERQUEIRA, DrivingLicences.KENNETH_DECERQUEIRA_DVLA),
-            createData("Nora Porter DVLA Licence (DWP)", Names.Nora_Porter, BirthDates.NORA_PORTER_DWP, DrivingLicences.NORA_PORTER_DVLA),
-            createData("Tom Hardy DVLA Licence (DWP)", Names.Tom_Hardy, BirthDates.TOM_HARDY_DWP, DrivingLicences.TOM_HARDY_DVLA)
-    );
+    public static final List<IdentityCheckSubjectCriStubData> Data =
+            List.of(
+                    createData(
+                            "Alice Parker (Valid) DVLA Licence",
+                            Names.Alison_Jane_Parker,
+                            BirthDates.ALICE_PARKER,
+                            DrivingLicences.ALICE_PARKER_DVLA),
+                    createData(
+                            "Alice Parker (Changed First Name) DVLA Licence",
+                            Names.Alison_Jane_Parker,
+                            BirthDates.ALICE_PARKER,
+                            DrivingLicences.ALICE_PARKER_DVLA),
+                    createData(
+                            "Alice Parker (Changed Last Name) DVLA Licence",
+                            Names.Alice_Jane_Smith,
+                            BirthDates.ALICE_PARKER,
+                            DrivingLicences.ALICE_PARKER_DVLA),
+                    createData(
+                            "Bob Parker (Valid) DVA Licence",
+                            Names.Bob_Parker,
+                            BirthDates.BOB_PARKER,
+                            DrivingLicences.BOB_PARKER_DVA),
+                    createData(
+                            "Claire Aarts DVLA Licence (DWP)",
+                            Names.Claire_Aarts,
+                            BirthDates.CLAIRE_AARTS_DWP,
+                            DrivingLicences.CLAIRE_AARTS_DVLA),
+                    createData(
+                            "Kabir Singh DVLA Licence (DWP)",
+                            Names.Kabir_Singh,
+                            BirthDates.KABIR_SINGH_DWP,
+                            DrivingLicences.KABIR_SINGH_DVLA),
+                    createData(
+                            "Kenneth Decerqueira (Valid) DVLA Licence",
+                            Names.Kenneth_Decerqueira,
+                            BirthDates.KENNETH_DECERQUEIRA,
+                            DrivingLicences.KENNETH_DECERQUEIRA_DVLA),
+                    createData(
+                            "Nora Porter DVLA Licence (DWP)",
+                            Names.Nora_Porter,
+                            BirthDates.NORA_PORTER_DWP,
+                            DrivingLicences.NORA_PORTER_DVLA),
+                    createData(
+                            "Tom Hardy DVLA Licence (DWP)",
+                            Names.Tom_Hardy,
+                            BirthDates.TOM_HARDY_DWP,
+                            DrivingLicences.TOM_HARDY_DVLA));
 
-    private static IdentityCheckSubjectCriStubData createData(String label, Name name, BirthDate birthDate, DrivingPermitDetails drivingLicence) {
+    private static IdentityCheckSubjectCriStubData createData(
+            String label, Name name, BirthDate birthDate, DrivingPermitDetails drivingLicence) {
         return IdentityCheckSubjectCriStubData.builder()
                 .label(label)
-                .payload(IdentityCheckSubject.builder()
-                        .withName(List.of(name))
-                        .withBirthDate(List.of(birthDate))
-                        .withDrivingPermit(List.of(drivingLicence))
-                        .build()).build();
+                .payload(
+                        IdentityCheckSubject.builder()
+                                .withName(List.of(name))
+                                .withBirthDate(List.of(birthDate))
+                                .withDrivingPermit(List.of(drivingLicence))
+                                .build())
+                .build();
     }
 }
-
