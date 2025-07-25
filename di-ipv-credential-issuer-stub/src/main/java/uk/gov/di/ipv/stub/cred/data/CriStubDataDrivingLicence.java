@@ -38,12 +38,12 @@ public class CriStubDataDrivingLicence {
                     createData(
                             "Claire Aarts DVLA Licence (DWP)",
                             Names.Claire_Aarts,
-                            BirthDates.CLAIRE_AARTS_DWP,
+                            BirthDates.CLAIRE_AARTS,
                             DrivingLicences.CLAIRE_AARTS_DVLA),
                     createData(
                             "Kabir Singh DVLA Licence (DWP)",
                             Names.Kabir_Singh,
-                            BirthDates.KABIR_SINGH_DWP,
+                            BirthDates.KABIR_SINGH,
                             DrivingLicences.KABIR_SINGH_DVLA),
                     createData(
                             "Kenneth Decerqueira (Valid) DVLA Licence",
@@ -53,12 +53,12 @@ public class CriStubDataDrivingLicence {
                     createData(
                             "Nora Porter DVLA Licence (DWP)",
                             Names.Nora_Porter,
-                            BirthDates.NORA_PORTER_DWP,
+                            BirthDates.NORA_PORTER,
                             DrivingLicences.NORA_PORTER_DVLA),
                     createData(
                             "Tom Hardy DVLA Licence (DWP)",
                             Names.Tom_Hardy,
-                            BirthDates.TOM_HARDY_DWP,
+                            BirthDates.TOM_HARDY,
                             DrivingLicences.TOM_HARDY_DVLA));
 
     private static IdentityCheckSubjectCriStubData createData(

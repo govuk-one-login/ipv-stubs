@@ -16,10 +16,10 @@ public class BirthDates {
     public static final BirthDate SAUL_GOODMAN = createBirthDate("1995-08-16");
 
     // DWP users
-    public static final BirthDate CLAIRE_AARTS_DWP = createBirthDate("1997-06-29");
-    public static final BirthDate KABIR_SINGH_DWP = createBirthDate("1991-12-24");
-    public static final BirthDate NORA_PORTER_DWP = createBirthDate("1978-01-01");
-    public static final BirthDate TOM_HARDY_DWP = createBirthDate("1980-03-15");
+    public static final BirthDate CLAIRE_AARTS = createBirthDate("1997-06-29");
+    public static final BirthDate KABIR_SINGH = createBirthDate("1991-12-24");
+    public static final BirthDate NORA_PORTER = createBirthDate("1978-01-01");
+    public static final BirthDate TOM_HARDY = createBirthDate("1980-03-15");
 
     private BirthDates() {
         // Replace default public constructor

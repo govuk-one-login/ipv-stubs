@@ -59,7 +59,7 @@ public class CriStubDataFraud {
                     createData(
                             "Claire Aarts Fraud (DWP)",
                             Names.Claire_Aarts,
-                            BirthDates.CLAIRE_AARTS_DWP,
+                            BirthDates.CLAIRE_AARTS,
                             Addresses.CLAIRE_AARTS_ADDRESS),
                     createData(
                             "James Moriarty (Invalid) Fraud",
@@ -74,7 +74,7 @@ public class CriStubDataFraud {
                     createData(
                             "Kabir Singh Fraud (DWP)",
                             Names.Kabir_Singh,
-                            BirthDates.KABIR_SINGH_DWP,
+                            BirthDates.KABIR_SINGH,
                             Addresses.KABIR_SINGH_ADDRESS),
                     createData(
                             "Kenneth Decerqueira (Valid Experian) Fraud",
@@ -117,7 +117,7 @@ public class CriStubDataFraud {
                     createData(
                             "Nora Porter Fraud (DWP)",
                             Names.Nora_Porter,
-                            BirthDates.NORA_PORTER_DWP,
+                            BirthDates.NORA_PORTER,
                             Addresses.NORA_PORTER_ADDRESS),
                     createData(
                             "Mary Watson (Valid) Fraud",
@@ -132,7 +132,7 @@ public class CriStubDataFraud {
                     createData(
                             "Tom Hardy Fraud (DWP)",
                             Names.Tom_Hardy,
-                            BirthDates.TOM_HARDY_DWP,
+                            BirthDates.TOM_HARDY,
                             Addresses.TOM_HARDY_ADDRESS));
 
     private static IdentityCheckSubjectCriStubData createData(

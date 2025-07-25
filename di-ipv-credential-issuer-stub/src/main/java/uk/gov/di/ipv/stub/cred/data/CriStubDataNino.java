@@ -28,12 +28,12 @@ public class CriStubDataNino {
                     createData(
                             "Claire Aarts National Insurance (DWP)",
                             Names.Claire_Aarts,
-                            BirthDates.CLAIRE_AARTS_DWP,
+                            BirthDates.CLAIRE_AARTS,
                             Ninos.NINO_CLAIRE_AARTS),
                     createData(
                             "Kabir Singh National Insurance (DWP)",
                             Names.Kabir_Singh,
-                            BirthDates.KABIR_SINGH_DWP,
+                            BirthDates.KABIR_SINGH,
                             Ninos.NINO_KABIR_SINGH),
                     createData(
                             "Kenneth Decerqueira (Valid) National Insurance",
@@ -43,7 +43,7 @@ public class CriStubDataNino {
                     createData(
                             "Nora Porter National Insurance (DWP)",
                             Names.Nora_Porter,
-                            BirthDates.NORA_PORTER_DWP,
+                            BirthDates.NORA_PORTER,
                             Ninos.NINO_NORA_PORTER),
                     createData(
                             "Mary Watson (Valid) National Insurance",
@@ -53,7 +53,7 @@ public class CriStubDataNino {
                     createData(
                             "Tom Hardy National Insurance (DWP)",
                             Names.Tom_Hardy,
-                            BirthDates.TOM_HARDY_DWP,
+                            BirthDates.TOM_HARDY,
                             Ninos.NINO_TOM_HARDY));
 
     private static IdentityCheckSubjectCriStubData createData(

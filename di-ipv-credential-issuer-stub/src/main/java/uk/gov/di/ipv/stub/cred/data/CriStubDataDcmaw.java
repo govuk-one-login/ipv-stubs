@@ -56,7 +56,7 @@ public class CriStubDataDcmaw {
                     createData(
                             "Claire Aarts DVLA Licence (DWP)",
                             Names.CLAIRE_AARTS,
-                            BirthDates.CLAIRE_AARTS_DWP,
+                            BirthDates.CLAIRE_AARTS,
                             DrivingLicences.CLAIRE_AARTS_DVLA),
                     createData(
                             "Joe Shmoe (Valid) Driving Licence",
@@ -72,7 +72,7 @@ public class CriStubDataDcmaw {
                     createData(
                             "Kabir Singh DVLA Licence (DWP)",
                             Names.KABIR_SINGH,
-                            BirthDates.KABIR_SINGH_DWP,
+                            BirthDates.KABIR_SINGH,
                             DrivingLicences.KABIR_SINGH_DVLA),
                     createData(
                             "Kenneth Decerqueira (Valid Experian) Passport",
@@ -117,7 +117,7 @@ public class CriStubDataDcmaw {
                     createData(
                             "Nora Porter DVLA Licence (DWP)",
                             Names.NORA_PORTER,
-                            BirthDates.NORA_PORTER_DWP,
+                            BirthDates.NORA_PORTER,
                             DrivingLicences.NORA_PORTER_DVLA),
                     createData(
                             "Saul Goodman BRC",
@@ -127,7 +127,7 @@ public class CriStubDataDcmaw {
                     createData(
                             "Tom Hardy DVLA Licence (DWP)",
                             Names.TOM_HARDY,
-                            BirthDates.TOM_HARDY_DWP,
+                            BirthDates.TOM_HARDY,
                             DrivingLicences.TOM_HARDY_DVLA));
 
     private static IdentityCheckSubjectCriStubData createData(

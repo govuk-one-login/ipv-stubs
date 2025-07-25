@@ -23,17 +23,17 @@ public class CriStubDataUkPassport {
                     createData(
                             "Claire Aarts Passport (DWP)",
                             Names.Claire_Aarts,
-                            BirthDates.CLAIRE_AARTS_DWP,
+                            BirthDates.CLAIRE_AARTS,
                             Passports.CLAIRE_AARTS_PASSPORT),
                     createData(
                             "James Moriarty (Invalid) Passport",
                             Names.James_Moriarty,
                             BirthDates.JAMES_MORIARTY,
-                            Passports.JAMES_MORIARTY_PASSPORT),
+                            Passports.JAMES_MORIARTY_PASSPORT_INVALID),
                     createData(
                             "Kabir Singh Passport (DWP)",
                             Names.Kabir_Singh,
-                            BirthDates.KABIR_SINGH_DWP,
+                            BirthDates.KABIR_SINGH,
                             Passports.KABIR_SINGH_PASSPORT),
                     createData(
                             "Kenneth Decerqueira (Valid Experian) Passport",
@@ -43,7 +43,7 @@ public class CriStubDataUkPassport {
                     createData(
                             "Nora Porter Passport (DWP)",
                             Names.Nora_Porter,
-                            BirthDates.NORA_PORTER_DWP,
+                            BirthDates.NORA_PORTER,
                             Passports.NORA_PORTER_PASSPORT),
                     createData(
                             "Mary Watson (Valid) Passport",
@@ -53,7 +53,7 @@ public class CriStubDataUkPassport {
                     createData(
                             "Tom Hardy Passport (DWP)",
                             Names.Tom_Hardy,
-                            BirthDates.TOM_HARDY_DWP,
+                            BirthDates.TOM_HARDY,
                             Passports.TOM_HARDY_PASSPORT));
 
     private static IdentityCheckSubjectCriStubData createData(

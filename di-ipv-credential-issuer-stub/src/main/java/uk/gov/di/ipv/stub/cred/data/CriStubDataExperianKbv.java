@@ -28,7 +28,7 @@ public class CriStubDataExperianKbv {
                     createData(
                             "Claire Aarts KBV (DWP)",
                             Names.Claire_Aarts,
-                            BirthDates.CLAIRE_AARTS_DWP,
+                            BirthDates.CLAIRE_AARTS,
                             Addresses.CLAIRE_AARTS_ADDRESS),
                     createData(
                             "James Moriarty (Invalid) KBV",
@@ -38,7 +38,7 @@ public class CriStubDataExperianKbv {
                     createData(
                             "Kabir Singh KBV (DWP)",
                             Names.Kabir_Singh,
-                            BirthDates.KABIR_SINGH_DWP,
+                            BirthDates.KABIR_SINGH,
                             Addresses.KABIR_SINGH_ADDRESS),
                     createData(
                             "Kenneth Decerqueira (Valid Experian) KBV",
@@ -48,7 +48,7 @@ public class CriStubDataExperianKbv {
                     createData(
                             "Nora Porter KBV (DWP)",
                             Names.Nora_Porter,
-                            BirthDates.NORA_PORTER_DWP,
+                            BirthDates.NORA_PORTER,
                             Addresses.NORA_PORTER_ADDRESS),
                     createData(
                             "Mary Watson (Valid) KBV",
@@ -58,7 +58,7 @@ public class CriStubDataExperianKbv {
                     createData(
                             "Tom Hardy KBV (DWP)",
                             Names.Tom_Hardy,
-                            BirthDates.TOM_HARDY_DWP,
+                            BirthDates.TOM_HARDY,
                             Addresses.TOM_HARDY_ADDRESS));
 
     private static IdentityCheckSubjectCriStubData createData(

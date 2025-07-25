@@ -28,7 +28,7 @@ public class CriStubDataDwpKbv {
                     createData(
                             "Claire Aarts (Valid) DWP KBV (Thin file)",
                             Names.Claire_Aarts,
-                            BirthDates.CLAIRE_AARTS_DWP,
+                            BirthDates.CLAIRE_AARTS,
                             Addresses.CLAIRE_AARTS_ADDRESS),
                     createData(
                             "James Moriarty (Invalid) DWP KBV",
@@ -48,7 +48,7 @@ public class CriStubDataDwpKbv {
                     createData(
                             "Tom Hardy (Valid) DWP KBV",
                             Names.Tom_Hardy,
-                            BirthDates.TOM_HARDY_DWP,
+                            BirthDates.TOM_HARDY,
                             Addresses.TOM_HARDY_ADDRESS));
 
     private static IdentityCheckSubjectCriStubData createData(
