@@ -642,11 +642,10 @@
 </script>
 <script>
     var dropdownData = {{{cri_stub_data}}}
-    var filtered = dropdownData.filter(x => x.criType === "{{cri-name}}")
     $(document).ready(function() {
         var select = $('<select class="govuk-select" id="test_data" name="sort">')
         select.append($("<option selected disabled hidden value=''>").text('Select from dropdown...'))
-        $(filtered).each(function() {
+        $(dropdownData).each(function() {
             select.append($("<option>")
             .prop('value', this.label)
             .text(this.label));
@@ -656,7 +655,7 @@
         $('#test_data_block').append(label).append(select);
         $("#test_data").on("change", function(event) {
             var val = $(event.target).val();
-            var {payload} = filtered.find(x => x.label === val)
+            var {payload} = dropdownData.find(x => x.label === val)
             $("#jsonPayload").val(JSON.stringify(payload, undefined, 4))
         });
     });

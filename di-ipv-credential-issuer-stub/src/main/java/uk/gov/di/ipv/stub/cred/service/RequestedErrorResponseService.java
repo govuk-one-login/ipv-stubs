@@ -77,7 +77,7 @@ public class RequestedErrorResponseService {
                     URI.create(redirectUri),
                     new ErrorObject(requestedError.error(), requestedError.description()),
                     (state == null || state.isEmpty()) ? null : new State(state),
-                    new Issuer(CredentialIssuerConfig.NAME),
+                    new Issuer(CredentialIssuerConfig.getName()),
                     ResponseMode.QUERY);
         }
         return null;

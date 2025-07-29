@@ -161,6 +161,7 @@ class AuthorizeHandlerTest {
         @BeforeEach
         void setup() {
             ENVIRONMENT_VARIABLES.set("MITIGATION_ENABLED", "False");
+            ENVIRONMENT_VARIABLES.set("CREDENTIAL_ISSUER_NAME", "DOC Checking App (Stub)");
         }
 
         @Test

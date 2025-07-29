@@ -6,12 +6,34 @@ plugins {
 
 group 'uk.gov.di.ipv'
 
+String githubUsername
+String githubToken
+
+if (file("secrets.gradle").exists()) {
+	apply from: "secrets.gradle"
+	githubUsername = ext.githubUsername
+	githubToken = ext.githubToken
+} else {
+	githubUsername = System.getenv("GITHUB_ACTOR")
+	githubToken = System.getenv("GITHUB_TOKEN")
+}
+
 repositories {
 	mavenCentral()
+	maven {
+		url = uri("https://maven.pkg.github.com/govuk-one-login/data-vocab")
+		credentials {
+			username = githubUsername
+			password = githubToken
+		}
+	}
 }
 
 java {
 	sourceCompatibility = JavaVersion.VERSION_21
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
 }
 
 dependencies {
@@ -24,7 +46,8 @@ dependencies {
 			"com.fasterxml.jackson.core:jackson-annotations:2.19.1",
 			"com.google.code.gson:gson:2.13.1",
 			"org.slf4j:slf4j-simple:2.0.17",
-			"software.amazon.awssdk:ssm:2.31.77"
+			"software.amazon.awssdk:ssm:2.31.77",
+			"uk.gov.di.model:di-data-model-jackson:1.9.3"
 
 	compileOnly 'org.projectlombok:lombok:1.18.38'
 	annotationProcessor 'org.projectlombok:lombok:1.18.38'
