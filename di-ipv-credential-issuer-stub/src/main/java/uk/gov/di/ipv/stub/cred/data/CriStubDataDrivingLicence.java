@@ -17,7 +17,7 @@ public class CriStubDataDrivingLicence {
             List.of(
                     createData(
                             "Alice Parker (Valid) DVLA Licence",
-                            Names.Alison_Jane_Parker,
+                            Names.Alice_Jane_Parker,
                             BirthDates.ALICE_PARKER,
                             DrivingLicences.ALICE_PARKER_DVLA),
                     createData(
