@@ -26,7 +26,6 @@ import {
 import { VcDetails } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
-import { GPG45_VOTS, HMRC_VOTS, Vot } from "../domain/enums/vot";
 import { dynamoClient } from "../clients/dynamodbClient";
 
 export async function processPostUserVCsRequest(
@@ -159,7 +158,7 @@ export async function processPostIdentityRequest(
     if (request.si) {
       const storedIdentityItem: EvcsStoredIdentityItem = {
         userId: request.userId,
-        recordType: getRecordTypeFromVot(request.si.vot),
+        recordType: StoredIdentityRecordType.GPG45,
         storedIdentity: request.si.jwt,
         levelOfConfidence: request.si.vot,
         metadata: request.si.metadata,
@@ -402,16 +401,4 @@ function getUpdatedState(
     }
   }
   return currentVcState;
-}
-
-export function getRecordTypeFromVot(vot: Vot): StoredIdentityRecordType {
-  if (GPG45_VOTS.includes(vot)) {
-    return StoredIdentityRecordType.GPG45;
-  }
-
-  if (HMRC_VOTS.includes(vot)) {
-    return StoredIdentityRecordType.HMRC;
-  }
-
-  throw new Error(`Vot "${vot}" does not have an associated record type`);
 }

@@ -35,15 +35,8 @@ describe("evcs management handlers", () => {
         isValid: true,
         levelOfConfidence: Vot.P2,
       };
-      const expectedHmrcSi = {
-        userId: TEST_USER_ID,
-        storedIdentity: TEST_VC_STRING,
-        recordType: StoredIdentityRecordType.HMRC,
-        isValid: true,
-        levelOfConfidence: Vot.PCL250,
-      };
       jest.mocked(processGetStoredIdentity).mockResolvedValue({
-        storedIdentities: [expectedGpg45Si, expectedHmrcSi],
+        storedIdentities: [expectedGpg45Si],
       });
       const getRequest = generateGetStoredIdentityRequest(TEST_USER_ID);
 
@@ -54,7 +47,7 @@ describe("evcs management handlers", () => {
 
       // Assert
       expect(res.statusCode).toBe(StatusCodes.Success);
-      expect(res.body).toBe(JSON.stringify([expectedGpg45Si, expectedHmrcSi]));
+      expect(res.body).toBe(JSON.stringify([expectedGpg45Si]));
     });
 
     it("should return 400 if missing userId", async () => {

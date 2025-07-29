@@ -30,14 +30,6 @@ const GPG45_SI_RECORD: EvcsStoredIdentityItem = {
   isValid: true,
 };
 
-const HMRC_SI_RECORD: EvcsStoredIdentityItem = {
-  storedIdentity: TEST_VC_STRING,
-  userId: TEST_USER_ID,
-  recordType: StoredIdentityRecordType.HMRC,
-  levelOfConfidence: Vot.PCL250,
-  isValid: true,
-};
-
 const TEST_CREATE_SI_REQUEST = {
   userId: TEST_USER_ID,
   si: {
@@ -53,7 +45,7 @@ beforeEach(() => {
 describe("processGetStoredIdentity", () => {
   it("should return stored identities with a 200 response for user", async () => {
     // Arrange
-    const expectedResponse = [GPG45_SI_RECORD, HMRC_SI_RECORD];
+    const expectedResponse = [GPG45_SI_RECORD];
     dbMock.on(QueryCommand).resolves(generateQueryResponse(expectedResponse));
 
     // Act

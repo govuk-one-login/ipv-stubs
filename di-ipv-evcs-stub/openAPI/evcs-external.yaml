@@ -507,8 +507,6 @@ components:
       title: Vector of Trust
       description: |-
         The highest Level of Confidence that has been attained by the VC bundle.
-        This is used to determine the type of SI that should be checked, either a GPG45 or an Operational Profile
-        provided by another org.
       type: string
       default: P2
       example: P2
@@ -518,8 +516,6 @@ components:
         - P2     # gpg45 profile
         - P3     # gpg45 profile
         - P4     # gpg45 profile
-        - PCL200 # hmrc op profile
-        - PCL250 # hmrc op profile
     VC:
       title: Verifiable Credential (Signed JWT)
       description: A JWT formatted Verifiable Credential.

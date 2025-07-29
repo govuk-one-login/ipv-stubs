@@ -4,9 +4,10 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { GetStoredIdentity } from "../domain/serviceResponse";
 import { dynamoClient } from "../clients/dynamodbClient";
 import { StoredIdentityDetails } from "../domain/requests";
-import { createPutItem, getRecordTypeFromVot } from "./evcsService";
+import { createPutItem } from "./evcsService";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 import { StatusCodes } from "../domain/enums";
+import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
 
 export interface CreateStoredIdentityRequest {
   userId: string;
@@ -57,7 +58,7 @@ export async function processCreateStoredIdentity(
   try {
     const evcsStoredIdentityItem: EvcsStoredIdentityItem = {
       userId: createSiRequest.userId,
-      recordType: getRecordTypeFromVot(createSiRequest.si.vot),
+      recordType: StoredIdentityRecordType.GPG45,
       storedIdentity: createSiRequest.si.jwt,
       levelOfConfidence: createSiRequest.si.vot,
       metadata: createSiRequest.si.metadata,
