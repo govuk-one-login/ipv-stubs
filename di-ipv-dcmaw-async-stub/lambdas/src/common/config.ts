@@ -1,7 +1,8 @@
-import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
-import getErrorMessage from "./errorReporting";
+import { SSMProvider } from "@aws-lambda-powertools/parameters/ssm";
 
 const CONFIG_PARAMETER_NAME = "config";
+const ssmProvider = new SSMProvider();
+
 
 interface SsmConfig {
   dummyClientId: string;
@@ -20,23 +21,33 @@ interface Config extends SsmConfig {
   dcmawAsyncParamBasePath: string;
 }
 
-async function getSsmConfig(basePath: string): Promise<SsmConfig> {
+export async function getSsmConfig(basePath: string): Promise<SsmConfig> {
   const parameterPath = basePath + CONFIG_PARAMETER_NAME;
+  const parameters = await ssmProvider.getMultiple(parameterPath);
 
-  let configString;
-  try {
-    configString = await getParameter(parameterPath);
-  } catch (error) {
-    throw new Error(
-      `Error thrown getting parameter ${parameterPath}: ${getErrorMessage(error)}`,
-    );
+  if (!parameters) {
+    throw new Error(`No parameters found under path: ${parameterPath}`);
   }
 
-  if (configString === undefined) {
-    throw new Error(`Could not retrieve ssm parameter: ${parameterPath}`);
-  }
+  const get = (key: string): string => {
+    const fullKey = `${parameterPath}/${key}`;
+    const value = parameters[fullKey];
+    if (value === undefined) throw new Error(`Missing parameter: ${fullKey}`);
+    return value;
+  };
 
-  return Promise.resolve(JSON.parse(configString) as SsmConfig);
+  return {
+    dummyClientId: get("dummyClientId"),
+    dummySecret: get("dummySecret"),
+    dummyAccessTokenValue: get("dummyAccessTokenValue"),
+    tokenLifetimeSeconds: Number(get("tokenLifetimeSeconds")),
+    vcIssuer: get("vcIssuer"),
+    vcAudience: get("vcAudience"),
+    vcSigningKey: get("vcSigningKey"),
+    queueStubUrl: get("queueStubUrl"),
+    queueStubApiKey: get("queueStubApiKey"),
+    queueName: get("queueName"),
+  };
 }
 
 export function getEnvironmentVariable(variableName: string): string {
