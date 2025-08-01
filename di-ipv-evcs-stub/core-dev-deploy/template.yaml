@@ -43,12 +43,16 @@ Mappings:
   AccountConfiguration:
     "130355686670": # IPV Core dev01
       DomainName: "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
+      HostedZoneImport: Dev01StubsHostedZoneId
     "175872367215": # IPV Core dev02
       DomainName: "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
+      HostedZoneImport: Dev02StubsHostedZoneId
     "110869144943": # Reuse stubs dev
-      DomainName: "evcs-${Environment}.01.core.dev.stubs.account.gov.uk" # evcs.stubs.dev.account.gov.uk
+      DomainName: evcs.reuse.dev.stubs.account.gov.uk
+      HostedZoneImport: ReusePublicHostedZoneId
     "054367266435": # Reuse stubs build
       DomainName: "evcs-${Environment}.02.core.dev.stubs.account.gov.uk" # evcs.stubs.account.gov.uk
+      HostedZoneImport: ReusePublicHostedZoneId
 
 Conditions:
   IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
@@ -694,22 +698,19 @@ Resources:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
 
   # ssl cert
-  # EvcsStubSSLCert:
-  #   Type: AWS::CertificateManager::Certificate
-  #   Properties:
-  #     DomainName: !Sub 
-  #       - "${DomainName}"
-  #       - DomainName: !FindInMap 
-  #         - AccountConfiguration
-  #         - !Sub "${AWS::AccountId}"
-  #         - DomainName
-  #     DomainValidationOptions:
-  #       - DomainName: !FindInMap [AccountConfiguration, !Sub "${AWS::AccountId}", DomainName]
-  #         HostedZoneId: !If
-  #           - IsDev01
-  #           - !ImportValue Dev01StubsHostedZoneId
-  #           - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
-  #     ValidationMethod: DNS
+  EvcsStubSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Sub 
+        - "${DomainName}"
+        - DomainName: !FindInMap [AccountConfiguration, !Sub "${AWS::AccountId}", DomainName]
+      DomainValidationOptions:
+        - DomainName: !Sub 
+            - "${DomainName}"
+            - DomainName: !FindInMap [AccountConfiguration, !Sub "${AWS::AccountId}", DomainName]
+          HostedZoneId:
+            Fn::ImportValue: !FindInMap [AccountConfiguration, !Sub "${AWS::AccountId}", HostedZoneImport]
+      ValidationMethod: DNS
 
     # api domain entries / mapping
   # EvcsStubRestApiDomain:
