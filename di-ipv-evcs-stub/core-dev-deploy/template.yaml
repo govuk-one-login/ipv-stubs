@@ -1,6 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Transform: AWS::Serverless-2016-10-31
+Transform:
+- AWS::Serverless-2016-10-31
+- AWS::LanguageExtensions
+
 Globals:
   Function:
     Timeout: 30
@@ -35,6 +38,17 @@ Parameters:
     Description: >
       The ARN of the Code Signing Config to use, provided by the deployment pipeline
     Default: "none"
+
+Mappings:
+  AccountConfiguration:
+    "130355686670": # IPV Core dev01
+      DomainName: "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
+    "175872367215": # IPV Core dev02
+      DomainName: "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
+    "110869144943": # Reuse stubs dev
+      DomainName: "evcs-${Environment}.01.core.dev.stubs.account.gov.uk" # evcs.stubs.dev.account.gov.uk
+    "054367266435": # Reuse stubs build
+      DomainName: "evcs-${Environment}.02.core.dev.stubs.account.gov.uk" # evcs.stubs.account.gov.uk
 
 Conditions:
   IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
@@ -680,68 +694,62 @@ Resources:
                 "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
 
   # ssl cert
-  EvcsStubSSLCert:
-    Type: AWS::CertificateManager::Certificate
-    Properties:
-      DomainName: !If
-        - IsDev01
-        - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-      DomainValidationOptions:
-        - DomainName: !If
-            - IsDev01
-            - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-          HostedZoneId: !If
-            - IsDev01
-            - !ImportValue Dev01StubsHostedZoneId
-            - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
-      ValidationMethod: DNS
+  # EvcsStubSSLCert:
+  #   Type: AWS::CertificateManager::Certificate
+  #   Properties:
+  #     DomainName: !Sub 
+  #       - "${DomainName}"
+  #       - DomainName: !FindInMap 
+  #         - AccountConfiguration
+  #         - !Sub "${AWS::AccountId}"
+  #         - DomainName
+  #     DomainValidationOptions:
+  #       - DomainName: !FindInMap [AccountConfiguration, !Sub "${AWS::AccountId}", DomainName]
+  #         HostedZoneId: !If
+  #           - IsDev01
+  #           - !ImportValue Dev01StubsHostedZoneId
+  #           - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
+  #     ValidationMethod: DNS
 
     # api domain entries / mapping
-  EvcsStubRestApiDomain:
-    Type: AWS::ApiGateway::DomainName
-    # checkov:skip=CKV_AWS_120: doing it later
-    Properties:
-      DomainName: !If
-        - IsDev01
-        - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
-      RegionalCertificateArn: !Ref EvcsStubSSLCert
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      SecurityPolicy: TLS_1_2
+  # EvcsStubRestApiDomain:
+  #   Type: AWS::ApiGateway::DomainName
+  #   # checkov:skip=CKV_AWS_120: doing it later
+  #   Properties:
+  #     DomainName: !Sub 
+  #       - "${DomainName}"
+  #       - DomainName: !FindInMap [AccountConfiguration, !Sub "${AWS::AccountId}", DomainName]
+  #     RegionalCertificateArn: !Ref EvcsStubSSLCert
+  #     EndpointConfiguration:
+  #       Types:
+  #         - REGIONAL
+  #     SecurityPolicy: TLS_1_2
 
-  EvcsStubRestApiMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    # checkov:skip=CKV_AWS_120: doing it later
-    Properties:
-      DomainName: !If
-        - IsDev01
-        - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-      RestApiId: !Ref RestApiGateway
-      Stage: !Ref RestApiGateway.Stage
-    DependsOn:
-      - EvcsStubRestApiDomain
+  # EvcsStubRestApiMapping:
+  #   Type: AWS::ApiGateway::BasePathMapping
+  #   # checkov:skip=CKV_AWS_120: doing it later
+  #   Properties:
+  #     DomainName: !Sub 
+  #       - "${DomainName}"
+  #       - DomainName: !FindInMap [AccountConfiguration, !Sub "${AWS::AccountId}", DomainName]
+  #     RestApiId: !Ref RestApiGateway
+  #     Stage: !Ref RestApiGateway.Stage
+  #   DependsOn:
+  #     - EvcsStubRestApiDomain
 
   # dns record
-  EvcsStubDNSRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Type: A
-      Name: !If
-        - IsDev01
-        - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-      HostedZoneId: !If
-        - IsDev01
-        - !ImportValue Dev01StubsHostedZoneId
-        - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
-      AliasTarget:
-        DNSName: !GetAtt EvcsStubRestApiDomain.RegionalDomainName
-        HostedZoneId: !GetAtt EvcsStubRestApiDomain.RegionalHostedZoneId
+  # EvcsStubDNSRecord:
+  #   Type: AWS::Route53::RecordSet
+  #   Properties:
+  #     Type: A
+  #     Name: !FindInMap [AccountConfiguration, !Sub "${AWS::AccountId}", DomainName]
+  #     HostedZoneId: !If
+  #       - IsDev01
+  #       - !ImportValue Dev01StubsHostedZoneId
+  #       - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
+  #     # AliasTarget:
+  #     #   DNSName: !GetAtt EvcsStubRestApiDomain.RegionalDomainName
+  #     #   HostedZoneId: !GetAtt EvcsStubRestApiDomain.RegionalHostedZoneId
 
   RestApiGateway:
     Type: AWS::Serverless::Api
