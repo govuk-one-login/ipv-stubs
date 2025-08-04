@@ -62,8 +62,17 @@ Conditions:
 
   IsReuse:
     Fn::Or:
-      - Fn::Equals: [ !Ref "AWS::AccountId", "110869144943" ]
-      - Fn::Equals: [ !Ref "AWS::AccountId", "054367266435" ]
+      - Condition: IsReuseDev
+      - Condition: IsReuseBuild
+
+  IsReuseDev: 
+    Fn::Equals: [ !Ref "AWS::AccountId", "110869144943"]
+
+  IsReuseBuild:
+    Fn::Equals: [ !Ref "AWS::AccountId", "054367266435"]
+
+  IsReuseMain:
+    Fn::Equals: [ !Ref "AWS::StackName", "evcs-stub"]
       
   UsePermissionsBoundary:
     Fn::Not:
@@ -710,20 +719,32 @@ Resources:
     Type: AWS::CertificateManager::Certificate
     Properties:
       DomainName: !If 
-          - IsIPVCore
-          - !If 
-            - IsDev01
-            - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-          - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+        - IsReuse
+        - !If 
+          - IsReuseDev
+          - !If
+            - IsReuseMain
+            - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "evcs-${AWS::StackName}.reuse.${Environment}.stubs.account.gov.uk"
+          - !Sub "evcs.reuse.stubs.account.gov.uk"
+        - !If
+          - IsDev01
+          - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
+          - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainValidationOptions:
         - DomainName: !If 
-          - IsIPVCore
+          - IsReuse
           - !If 
+            - IsReuseDev
+            - !If
+              - IsReuseMain
+              - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+              - !Sub "evcs-${AWS::StackName}.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "evcs.reuse.stubs.account.gov.uk"
+          - !If
             - IsDev01
             - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
             - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-          - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
           HostedZoneId:
             Fn::ImportValue:
               Fn::FindInMap: [HostedZoneImportName, !Ref "AWS::AccountId", Name]
@@ -735,12 +756,18 @@ Resources:
     # checkov:skip=CKV_AWS_120: doing it later
     Properties:
       DomainName: !If 
-        - IsIPVCore
+        - IsReuse
         - !If 
+          - IsReuseDev
+          - !If
+            - IsReuseMain
+            - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "evcs-${AWS::StackName}.reuse.${Environment}.stubs.account.gov.uk"
+          - !Sub "evcs.reuse.stubs.account.gov.uk"
+        - !If
           - IsDev01
           - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
           - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-        - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
       RegionalCertificateArn: !Ref EvcsStubSSLCert
       EndpointConfiguration:
         Types:
@@ -752,12 +779,18 @@ Resources:
     # checkov:skip=CKV_AWS_120: doing it later
     Properties:
       DomainName: !If 
-        - IsIPVCore
+        - IsReuse
         - !If 
+          - IsReuseDev
+          - !If
+            - IsReuseMain
+            - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "evcs-${AWS::StackName}.reuse.${Environment}.stubs.account.gov.uk"
+          - !Sub "evcs.reuse.stubs.account.gov.uk"
+        - !If
           - IsDev01
           - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
           - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-        - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
       RestApiId: !Ref RestApiGateway
       Stage: !Ref RestApiGateway.Stage
     DependsOn:
@@ -769,12 +802,18 @@ Resources:
     Properties:
       Type: A
       Name: !If 
-        - IsIPVCore
+        - IsReuse
         - !If 
+          - IsReuseDev
+          - !If
+            - IsReuseMain
+            - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "evcs-${AWS::StackName}.reuse.${Environment}.stubs.account.gov.uk"
+          - !Sub "evcs.reuse.stubs.account.gov.uk"
+        - !If
           - IsDev01
           - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
           - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-        - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
       HostedZoneId:
         Fn::ImportValue:
           Fn::FindInMap: [HostedZoneImportName, !Ref "AWS::AccountId", Name]
