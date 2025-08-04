@@ -46,7 +46,7 @@ dependencies {
 			"com.fasterxml.jackson.core:jackson-annotations:2.19.1",
 			"com.google.code.gson:gson:2.13.1",
 			"org.slf4j:slf4j-simple:2.0.17",
-			"software.amazon.awssdk:ssm:2.31.77",
+			"software.amazon.awssdk:ssm:2.32.14",
 			"uk.gov.di.model:di-data-model-jackson:1.9.3"
 
 	compileOnly 'org.projectlombok:lombok:1.18.38'
