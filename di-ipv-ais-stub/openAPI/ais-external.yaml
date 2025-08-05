@@ -302,6 +302,10 @@ components:
         intervention:
           type: "string"
           example: "AIS_NO_INTERVENTION"
+        statusCode:
+          type: "integer"
+          minimum: 400
+          maximum: 599
 
   parameters:
     UserId:
