@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Transform: AWS::Serverless-2016-10-31
+
 Globals:
   Function:
     Timeout: 30
@@ -36,9 +37,43 @@ Parameters:
       The ARN of the Code Signing Config to use, provided by the deployment pipeline
     Default: "none"
 
+Mappings:
+  HostedZoneImportName:
+    "130355686670": # IPV Core dev01
+      Name: Dev01StubsHostedZoneId
+    "175872367215": # IPV Core dev02
+      Name: Dev02StubsHostedZoneId
+    "110869144943": # Reuse stubs dev
+      Name: ReusePublicHostedZoneId
+    "054367266435": # Reuse stubs build
+      Name: ReusePublicHostedZoneId
+
 Conditions:
-  IsDev01: !Equals [ !Ref AWS::AccountId, "130355686670"]
-  IsDev02: !Equals [ !Ref AWS::AccountId, "175872367215"]
+  IsIPVCore:
+    Fn::Or:
+      - Condition: IsDev01
+      - Condition: IsDev02
+
+  IsDev01: 
+    Fn::Equals: [ !Ref "AWS::AccountId", "130355686670"]
+
+  IsDev02:
+    Fn::Equals: [ !Ref "AWS::AccountId", "175872367215"]
+
+  IsReuse:
+    Fn::Or:
+      - Condition: IsReuseDev
+      - Condition: IsReuseBuild
+
+  IsReuseDev: 
+    Fn::Equals: [ !Ref "AWS::AccountId", "110869144943"]
+
+  IsReuseBuild:
+    Fn::Equals: [ !Ref "AWS::AccountId", "054367266435"]
+
+  IsReuseMain:
+    Fn::Equals: [ !Ref "AWS::StackName", "evcs-stub"]
+      
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
@@ -683,30 +718,56 @@ Resources:
   EvcsStubSSLCert:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !If
-        - IsDev01
-        - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
+      DomainName: !If 
+        - IsReuse
+        - !If 
+          - IsReuseDev
+          - !If
+            - IsReuseMain
+            - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "evcs-${AWS::StackName}.reuse.${Environment}.stubs.account.gov.uk"
+          - !Sub "evcs.reuse.stubs.account.gov.uk"
+        - !If
+          - IsDev01
+          - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
+          - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainValidationOptions:
-        - DomainName: !If
+        - DomainName: !If 
+          - IsReuse
+          - !If 
+            - IsReuseDev
+            - !If
+              - IsReuseMain
+              - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+              - !Sub "evcs-${AWS::StackName}.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "evcs.reuse.stubs.account.gov.uk"
+          - !If
             - IsDev01
             - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
             - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-          HostedZoneId: !If
-            - IsDev01
-            - !ImportValue Dev01StubsHostedZoneId
-            - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
+          HostedZoneId:
+            Fn::ImportValue:
+              Fn::FindInMap: [HostedZoneImportName, !Ref "AWS::AccountId", Name]
       ValidationMethod: DNS
 
-    # api domain entries / mapping
+  # api domain entries / mapping
   EvcsStubRestApiDomain:
     Type: AWS::ApiGateway::DomainName
     # checkov:skip=CKV_AWS_120: doing it later
     Properties:
-      DomainName: !If
-        - IsDev01
-        - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+      DomainName: !If 
+        - IsReuse
+        - !If 
+          - IsReuseDev
+          - !If
+            - IsReuseMain
+            - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "evcs-${AWS::StackName}.reuse.${Environment}.stubs.account.gov.uk"
+          - !Sub "evcs.reuse.stubs.account.gov.uk"
+        - !If
+          - IsDev01
+          - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
+          - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
       RegionalCertificateArn: !Ref EvcsStubSSLCert
       EndpointConfiguration:
         Types:
@@ -717,10 +778,19 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     # checkov:skip=CKV_AWS_120: doing it later
     Properties:
-      DomainName: !If
-        - IsDev01
-        - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
+      DomainName: !If 
+        - IsReuse
+        - !If 
+          - IsReuseDev
+          - !If
+            - IsReuseMain
+            - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "evcs-${AWS::StackName}.reuse.${Environment}.stubs.account.gov.uk"
+          - !Sub "evcs.reuse.stubs.account.gov.uk"
+        - !If
+          - IsDev01
+          - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
+          - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
       RestApiId: !Ref RestApiGateway
       Stage: !Ref RestApiGateway.Stage
     DependsOn:
@@ -731,14 +801,22 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       Type: A
-      Name: !If
-        - IsDev01
-        - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
-      HostedZoneId: !If
-        - IsDev01
-        - !ImportValue Dev01StubsHostedZoneId
-        - !If [IsDev02, !ImportValue Dev02StubsHostedZoneId, DevStubsHostedZoneId]
+      Name: !If 
+        - IsReuse
+        - !If 
+          - IsReuseDev
+          - !If
+            - IsReuseMain
+            - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "evcs-${AWS::StackName}.reuse.${Environment}.stubs.account.gov.uk"
+          - !Sub "evcs.reuse.stubs.account.gov.uk"
+        - !If
+          - IsDev01
+          - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
+          - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
+      HostedZoneId:
+        Fn::ImportValue:
+          Fn::FindInMap: [HostedZoneImportName, !Ref "AWS::AccountId", Name]
       AliasTarget:
         DNSName: !GetAtt EvcsStubRestApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt EvcsStubRestApiDomain.RegionalHostedZoneId
