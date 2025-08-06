@@ -1,6 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Transform: AWS::Serverless-2016-10-31
+Transform:
+  - AWS::Serverless-2016-10-31
+  - AWS::LanguageExtensions
 Globals:
   Function:
     Environment:
@@ -8,19 +10,19 @@ Globals:
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
         DT_CONNECTION_AUTH_TOKEN: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}'  #pragma: allowlist secret
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn, DefaultValue: "not-used" ]  #pragma: allowlist secret
         DT_CONNECTION_BASE_URL: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}'   #pragma: allowlist secret
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn, DefaultValue: "not-used" ]  #pragma: allowlist secret
         DT_CLUSTER_ID: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}'   #pragma: allowlist secret
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn, DefaultValue: "not-used" ]  #pragma: allowlist secret
         DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}'  #pragma: allowlist secret
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn, DefaultValue: "not-used" ]  #pragma: allowlist secret
         DT_TENANT: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}'   #pragma: allowlist secret
-          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]   #pragma: allowlist secret
+          - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn, DefaultValue: "not-used" ]   #pragma: allowlist secret
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
     Timeout: 30
     PermissionsBoundary: !If
