@@ -47,9 +47,9 @@ jobs:
           echo "::set-output name=image_tag::$IMAGE_TAG"
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3.9.1
+        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
         with:
-          cosign-release: 'v1.9.0'
+          cosign-release: 'v2.5.1'
 
       - name: Build, tag, sign and push image to Amazon ECR
         working-directory: ./di-ipv-orchestrator-stub
@@ -60,9 +60,13 @@ jobs:
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
           DT_API_TOKEN: ${{ secrets.DYNATRACE_PAAS_TOKEN }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg DT_API_TOKEN=${DT_API_TOKEN} -f Dockerfile-arm64 .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            --build-arg DT_API_TOKEN=${DT_API_TOKEN} \
+            -f Dockerfile-arm64 .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          cosign sign --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          cosign sign --yes --tlog-upload=false \
+            --key awskms:///${CONTAINER_SIGN_KEY} \
+            $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Set up SAM cli
         uses: aws-actions/setup-sam@v2
@@ -99,4 +103,3 @@ jobs:
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
           working-directory: ./di-ipv-orchestrator-stub/deploy
           template-file: cf-template.yaml
-
