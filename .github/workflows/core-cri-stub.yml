@@ -60,9 +60,9 @@ jobs:
           echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Install Cosign
-        uses: sigstore/cosign-installer@398d4b0eeef1380460a10c8013a76f728fb906ac # v3.9.1
+        uses: sigstore/cosign-installer@d58896d6a1865668819e1d91763c7751a165e159 # v3.9.2
         with:
-          cosign-release: 'v1.9.0'
+          cosign-release: 'v2.5.1'
 
       - name: Copy Core Config into place
         id: copy-config-to-stub
@@ -80,7 +80,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg DT_API_TOKEN=${DT_API_TOKEN} -f Dockerfile-arm64 .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          cosign sign --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          cosign sign --yes --tlog-upload=false --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Set up SAM cli
         uses: aws-actions/setup-sam@v2
@@ -113,7 +113,7 @@ jobs:
       - name: Deploy SAM app
         uses: govuk-one-login/devplatform-upload-action@v3.9
         with:
-            artifact-bucket-name: ${{ secrets.CORE_CRI_ARTIFACT_BUCKET_NAME }}
-            signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-            working-directory: ./di-ipv-core-stub/deploy/cri
-            template-file: cf-template.yaml
+          artifact-bucket-name: ${{ secrets.CORE_CRI_ARTIFACT_BUCKET_NAME }}
+          signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+          working-directory: ./di-ipv-core-stub/deploy/cri
+          template-file: cf-template.yaml
