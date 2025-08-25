@@ -40,7 +40,7 @@ dependencies {
 	implementation "io.javalin:javalin:6.7.0",
 			"io.javalin:javalin-rendering:6.7.0",
 			"com.github.spullara.mustache.java:compiler:0.9.14",
-			"com.nimbusds:oauth2-oidc-sdk:11.27",
+			"com.nimbusds:oauth2-oidc-sdk:11.27.1",
 			"com.fasterxml.jackson.core:jackson-core:2.19.2",
 			"com.fasterxml.jackson.core:jackson-databind:2.19.2",
 			"com.fasterxml.jackson.core:jackson-annotations:2.19.2",
