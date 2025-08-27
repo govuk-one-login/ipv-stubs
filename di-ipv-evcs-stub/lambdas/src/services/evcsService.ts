@@ -14,7 +14,7 @@ import { StatusCodes, VCProvenance, VcState } from "../domain/enums";
 import EvcsVcItem from "../model/evcsVcItem";
 
 import { config } from "../common/config";
-import { getSsmParameter } from "../common/ssmParameter";
+import { getTtl } from "../common/utils";
 import { v4 as uuid } from "uuid";
 import {
   EvcsItemForUpdate,
@@ -367,13 +367,6 @@ async function updateUserVC(evcsVcItem: EvcsItemForUpdate) {
   const updateItemInput: UpdateItemInput = createUpdateItemInput(evcsVcItem);
   updateItemInput.ReturnValues = "ALL_NEW";
   return dynamoClient.updateItem(updateItemInput);
-}
-
-async function getTtl(): Promise<number> {
-  const evcsTtlSeconds: number = parseInt(
-    await getSsmParameter(config.evcsParamBasePath + "evcsStubTtl"),
-  );
-  return Math.floor(Date.now() / 1000) + evcsTtlSeconds;
 }
 
 function getSignatureFromJwt(jwt: string): string {

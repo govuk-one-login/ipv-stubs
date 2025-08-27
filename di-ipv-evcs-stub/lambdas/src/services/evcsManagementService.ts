@@ -8,6 +8,7 @@ import { createPutItem } from "./evcsService";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 import { StatusCodes } from "../domain/enums";
 import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
+import { getTtl } from "../common/utils";
 
 export interface CreateStoredIdentityRequest {
   userId: string;
@@ -63,6 +64,7 @@ export async function processCreateStoredIdentity(
       levelOfConfidence: createSiRequest.si.vot,
       metadata: createSiRequest.si.metadata,
       isValid: true,
+      ttl: await getTtl(),
     };
     const putItem = createPutItem(evcsStoredIdentityItem);
 

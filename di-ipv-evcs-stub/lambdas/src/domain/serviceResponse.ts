@@ -16,5 +16,5 @@ export interface GetResponse {
 }
 
 export interface GetStoredIdentity {
-  storedIdentities: Omit<EvcsStoredIdentityItem, "metadata">[];
+  storedIdentities: Omit<EvcsStoredIdentityItem, "metadata" | "ttl">[];
 }
