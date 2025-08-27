@@ -5,4 +5,5 @@ export default interface EvcsStoredIdentityItem {
   levelOfConfidence: string;
   isValid: boolean;
   metadata?: object;
+  ttl: number;
 }

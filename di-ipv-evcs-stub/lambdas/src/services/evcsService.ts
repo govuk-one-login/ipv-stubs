@@ -84,10 +84,10 @@ export async function processPostIdentityRequest(
 
   try {
     const transactItems: TransactWriteItem[] = [];
+    const ttl = await getTtl();
 
     if ("vcs" in request) {
       const newUserVcs = request.vcs;
-      const ttl = await getTtl();
 
       // Read user's existing VCs
       const getResponse = await processGetUserVCsRequest(userId, [
@@ -163,6 +163,7 @@ export async function processPostIdentityRequest(
         levelOfConfidence: request.si.vot,
         metadata: request.si.metadata,
         isValid: true,
+        ttl,
       };
       transactItems.push({ Put: createPutItem(storedIdentityItem) });
     }

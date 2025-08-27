@@ -17,7 +17,6 @@ import "aws-sdk-client-mock-jest";
 import { config } from "../../src/common/config";
 import { Vot } from "../../src/domain/enums/vot";
 import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
-import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
 
 jest.useFakeTimers().setSystemTime(new Date("2025-01-01"));
 
@@ -49,13 +48,15 @@ const TEST_VC3 = `eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1cm46dXVpZDo5N
 
 const TEST_SI_JWT =
   "eyJraWQiOiJ0ZXN0LXNpZ25pbmcta2V5IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJodHRwczovL3JldXNlLWlkZW50aXR5LmJ1aWxkLmFjY291bnQuZ292LnVrIiwic3ViIjoiNmJkMjM1ZGMyYTBhNTliODkyMGU0NTJjNzE1MzY0ZWQiLCJuYmYiOjE3NTA2NzQ3NTUsImNyZWRlbnRpYWxzIjpbInl0NUgtN0EyWXhqeTd0eDlUaXRnQ1NTeW80dV9RUHlTam84Q2FrdXlyY01EMjhLMThKSnFyWG5uemc1TXFmZkZxZTB5clRKRlBNa201V3hRdmlNa01BIiwiVDFHdFA3X01ueUZHYmJhSUl3NER3NmJYcEZwakRaeU5jSlU0V1BiME9tTzBYRmZPV0V4NXNiZEkwTlBGeFpNT1JsQjFUYlRibmMxVHhNMVhybjBfRXciXSwiaXNzIjoiaHR0cHM6Ly9pZGVudGl0eS5sb2NhbC5hY2NvdW50Lmdvdi51ayIsImNsYWltcyI6eyJodHRwczovL3ZvY2FiLmFjY291bnQuZ292LnVrL3YxL2NvcmVJZGVudGl0eSI6eyJuYW1lIjpbeyJuYW1lUGFydHMiOlt7InR5cGUiOiJHaXZlbk5hbWUiLCJ2YWx1ZSI6IkFsaWNlIn0seyJ0eXBlIjoiR2l2ZW5OYW1lIiwidmFsdWUiOiJKYW5lIn0seyJ0eXBlIjoiRmFtaWx5TmFtZSIsInZhbHVlIjoiRG9lIn1dfV0sImJpcnRoRGF0ZSI6W3sidmFsdWUiOiIxOTcwLTAxLTAxIn1dfX0sInZvdCI6IlBDTDI1MCIsImlhdCI6MTc1MDY3NDc1NX0.9OqD33fjZLozlbDHZtbAqtrnMNXHyJ-mFZo5F4sVRB-qzjxdK8Iuz9aK_h5iTP6PFHCx7ZwXLbAbtZKjeCEqHg"; // pragma: allowlist secret
-const TEST_SI_TABLE_ITEM_GPG45: EvcsStoredIdentityItem = {
+
+const getSiTableItemGpg45 = () => ({
   userId: TEST_USER_ID,
   recordType: StoredIdentityRecordType.GPG45,
   isValid: true,
   levelOfConfidence: Vot.P2,
   storedIdentity: TEST_SI_JWT,
-};
+  ttl: getTestTtl(),
+});
 
 const TEST_METADATA = {
   reason: "test-created",
@@ -338,7 +339,7 @@ describe("invalidateUserSi", () => {
   it("should return 204 for user with an existing stored identity", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves({
-      Items: [marshall(TEST_SI_TABLE_ITEM_GPG45)],
+      Items: [marshall(getSiTableItemGpg45())],
     });
 
     // Act
@@ -369,7 +370,7 @@ describe("invalidateUserSi", () => {
     // Arrange
     dbMock
       .on(QueryCommand)
-      .resolves({ Items: [marshall(TEST_SI_TABLE_ITEM_GPG45)] });
+      .resolves({ Items: [marshall(getSiTableItemGpg45())] });
     dbMock
       .on(TransactWriteItemsCommand)
       .rejects(new Error("Failed to update SI item"));
@@ -447,6 +448,7 @@ function createStoredIdentityPutItem(putSiDetails: {
           levelOfConfidence: putSiDetails.levelOfConfidence,
           isValid: true,
           metadata: putSiDetails.metadata,
+          ttl: getTestTtl(),
         },
         { removeUndefinedValues: true },
       ),
