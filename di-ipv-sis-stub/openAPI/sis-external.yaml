@@ -1,0 +1,170 @@
+openapi: 3.0.3
+info:
+  title: "Stored Identity Service (SIS) Stub API"
+  description: "The external api presented by SIS Stub for use by services"
+  version: "1.0.0"
+paths:
+  /healthcheck:
+    get:
+      description: "returns a 200 for Route53 health checks to use"
+      responses:
+        200:
+          description: "A healthcheck response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "MOCK"
+        requestTemplates:
+          application/json: "{\"statusCode\":200}"
+        responses:
+          200:
+            statusCode: 200
+            responseTemplates:
+              application/json: "{\"healthcheck\": \"ok\"}"
+  /user-identity:
+    get:
+      summary: "Retrieve the user’s stored identity record"
+      description: >
+        Returns the signed Stored Identity JWT and associated metadata
+        indicating whether the record is still valid, whether it has expired,
+        and the stored vector of trust (VOT).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: vtr
+          in: query
+          description: "The requested level of confidence"
+          schema:
+            type: string
+        - name: vtr
+          in: query
+          description: "The requested levels of confidence as a list of strings"
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        '200':
+          description: "Stored identity record returned"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoredIdentityResponse"
+        '401':
+          description: "Unauthorized – e.g. missing or invalid access token"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OauthError"
+        '403':
+          description: "Forbidden – e.g. expired access token"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OauthError"
+        '404':
+          description: "Not Found – no stored identity exists for this user"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OauthError"
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OauthError"
+      x-amazon-apigateway-request-validator: ALL
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SisGetUserIdentityFunction.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          202:
+            statusCode: 202
+            responseTemplates:
+              application/json: '{"result": "success"}'
+
+components:
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OauthError'
+    ServerError:
+      description: Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OauthError'
+    Forbidden:
+      description: Forbidden Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OauthError'
+    NotFound:
+      description: Not Found Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/OauthError'
+  schemas:
+    securitySchemes:
+      bearerAuth:
+        type: http
+        scheme: bearer
+    OauthError:
+      type: object
+      properties:
+        error:
+          type: string
+        error_description:
+          type: string
+      required:
+        - error
+      additionalProperties: false
+    StoredIdentityResponse:
+      type: object
+      properties:
+        content:
+          type: string
+          description: "The expanded body of the signed Stored Identity JWT"
+        isValid:
+          type: boolean
+          description: "Indicates whether SIS considers the stored record still usable"
+        expired:
+          type: boolean
+          description: "Indicates whether SIS considers the stored record past its expiry window"
+        vot:
+          $ref: "#/components/schemas/VectorOfTrust"
+      required:
+        - content
+        - isValid
+        - expired
+        - vot
+    VectorOfTrust:
+      title: Vector of Trust
+      description: |-
+        The vector of trust that was stored with the record
+      type: string
+      default: P2
+      example: P2
+      enum:
+        - P0     # gpg45 profile
+        - P1     # gpg45 profile
+        - P2     # gpg45 profile
+        - P3     # gpg45 profile
+        - P4     # gpg45 profile
+
+x-amazon-apigateway-request-validators:
+  ALL:
+    validateRequestBody: true
+    validateRequestParameters: true
+    validateRequestHeaders: true
