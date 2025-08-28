@@ -2,13 +2,17 @@ import { beforeEach } from "@jest/globals";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   DynamoDB,
+  GetItemCommand,
+  GetItemCommandOutput,
   QueryCommand,
+  QueryCommandOutput,
   TransactWriteItemsCommand,
 } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { getSsmParameter } from "../../src/common/ssmParameter";
 import {
   invalidateUserSi,
+  processGetIdentityRequest,
   processPostIdentityRequest,
 } from "../../src/services/evcsService";
 import { PostIdentityRequest, PutRequest } from "../../src/domain/requests";
@@ -327,6 +331,105 @@ describe("processPostIdentityRequest", () => {
     // Assert
     expect(response.statusCode).toBe(StatusCodes.InternalServerError);
     expect(dbMock).toHaveReceivedCommand(QueryCommand);
+  });
+});
+
+describe("processGetIdentityRequest", () => {
+  it("should return 404 is the stored identity is not found", async () => {
+    dbMock.on(GetItemCommand).resolves({
+      $metadata: {},
+    } satisfies GetItemCommandOutput);
+
+    await expect(
+      processGetIdentityRequest(TEST_USER_ID),
+    ).resolves.toStrictEqual({
+      statusCode: 404,
+      response: { message: "Not found" },
+    });
+  });
+
+  it("should return 200 if the stored identity is found with no VCs", async () => {
+    dbMock
+      .on(GetItemCommand)
+      .resolves({
+        $metadata: {},
+        Item: {
+          storedIdentity: {
+            S: TEST_SI_JWT,
+          },
+        },
+      } satisfies GetItemCommandOutput)
+      .on(QueryCommand)
+      .resolves({
+        $metadata: {},
+        Items: [],
+      } satisfies QueryCommandOutput);
+
+    await expect(
+      processGetIdentityRequest(TEST_USER_ID),
+    ).resolves.toStrictEqual({
+      statusCode: 200,
+      response: {
+        si: {
+          vc: TEST_SI_JWT,
+        },
+        vcs: [],
+      },
+    });
+  });
+
+  it("should return 200 if the stored identity is found with VCs", async () => {
+    dbMock
+      .on(GetItemCommand)
+      .resolves({
+        $metadata: {},
+        Item: {
+          storedIdentity: {
+            S: TEST_SI_JWT,
+          },
+        },
+      } satisfies GetItemCommandOutput)
+      .on(QueryCommand)
+      .resolves({
+        $metadata: {},
+        Items: [
+          {
+            vc: {
+              S: TEST_VC1,
+            },
+            state: {
+              S: "CURRENT",
+            },
+            metadata: {
+              M: {
+                Hello: {
+                  S: "World",
+                },
+              },
+            },
+          },
+        ],
+      } satisfies QueryCommandOutput);
+
+    await expect(
+      processGetIdentityRequest(TEST_USER_ID),
+    ).resolves.toStrictEqual({
+      statusCode: 200,
+      response: {
+        si: {
+          vc: TEST_SI_JWT,
+        },
+        vcs: [
+          {
+            vc: TEST_VC1,
+            state: "CURRENT",
+            metadata: {
+              Hello: "World",
+            },
+          },
+        ],
+      },
+    });
   });
 });
 
