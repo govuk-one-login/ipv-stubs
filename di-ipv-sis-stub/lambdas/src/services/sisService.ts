@@ -38,5 +38,20 @@ export const getUserIdentity = async (
     };
   });
 
-  return parsedResponse[0];
+  return validateUserIdentityResponse(parsedResponse[0]);
+};
+
+/* eslint-disable  @typescript-eslint/no-explicit-any */
+const validateUserIdentityResponse = (userIdentityResponse: any) => {
+  const requiredProperties = ["vot", "content"];
+
+  const missingProperties = requiredProperties.filter(
+    (key) => !userIdentityResponse[key],
+  );
+
+  if (missingProperties.length != 0) {
+    console.info(`Missing required properties: ${missingProperties}`);
+  }
+
+  return userIdentityResponse;
 };
