@@ -9,8 +9,6 @@ export const getUserIdentity = async (
 ): Promise<UserIdentity | null> => {
   console.info("Getting user's SIS record");
 
-  console.log(config.evcsStoredIdentityObjectTableName);
-
   const getItemInput: QueryInput = {
     TableName: config.evcsStoredIdentityObjectTableName,
     KeyConditionExpression: "userId = :userIdValue",
