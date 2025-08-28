@@ -49,23 +49,15 @@ Mappings:
       Name: ReusePublicHostedZoneId
 
 Conditions:
-  IsIPVCore:
-    Fn::Or:
-      - Condition: IsDev01
-      - Condition: IsDev02
-
-  IsDev01: 
+  IsDev01:
     Fn::Equals: [ !Ref "AWS::AccountId", "130355686670"]
-
-  IsDev02:
-    Fn::Equals: [ !Ref "AWS::AccountId", "175872367215"]
 
   IsReuse:
     Fn::Or:
       - Condition: IsReuseDev
       - Condition: IsReuseBuild
 
-  IsReuseDev: 
+  IsReuseDev:
     Fn::Equals: [ !Ref "AWS::AccountId", "110869144943"]
 
   IsReuseBuild:
@@ -73,7 +65,7 @@ Conditions:
 
   IsReuseMain:
     Fn::Equals: [ !Ref "AWS::StackName", "evcs-stub"]
-      
+
   UsePermissionsBoundary:
     Fn::Not:
       - Fn::Equals:
@@ -718,9 +710,9 @@ Resources:
   EvcsStubSSLCert:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !If 
+      DomainName: !If
         - IsReuse
-        - !If 
+        - !If
           - IsReuseDev
           - !If
             - IsReuseMain
@@ -732,9 +724,9 @@ Resources:
           - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
           - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainValidationOptions:
-        - DomainName: !If 
+        - DomainName: !If
           - IsReuse
-          - !If 
+          - !If
             - IsReuseDev
             - !If
               - IsReuseMain
@@ -755,9 +747,9 @@ Resources:
     Type: AWS::ApiGateway::DomainName
     # checkov:skip=CKV_AWS_120: doing it later
     Properties:
-      DomainName: !If 
+      DomainName: !If
         - IsReuse
-        - !If 
+        - !If
           - IsReuseDev
           - !If
             - IsReuseMain
@@ -778,9 +770,9 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     # checkov:skip=CKV_AWS_120: doing it later
     Properties:
-      DomainName: !If 
+      DomainName: !If
         - IsReuse
-        - !If 
+        - !If
           - IsReuseDev
           - !If
             - IsReuseMain
@@ -801,9 +793,9 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       Type: A
-      Name: !If 
+      Name: !If
         - IsReuse
-        - !If 
+        - !If
           - IsReuseDev
           - !If
             - IsReuseMain
@@ -872,3 +864,15 @@ Outputs:
     Export:
       Name: !Sub "EvcsRestApiGatewayID-${Environment}"
     Value: !Ref RestApiGateway
+
+  EvcsDynamoDBKmsKey:
+    Description: DynamoDB KMS Key
+    Export:
+      Name: !Sub "EvcsDynamoDBKmsKey-${Environment}"
+    Value: !Ref DynamoDBKmsKey
+
+  EvcsStoredIdentityRecordsTable:
+    Description: EVCS Stored Identity Records table
+    Export:
+      Name: !Sub "EvcsStoredIdentityRecordsTable-${Environment}"
+    Value: !Ref EvcsStoredIdentityStoreTable

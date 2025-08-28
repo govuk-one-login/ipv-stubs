@@ -924,3 +924,15 @@ Outputs:
     Export:
       Name: !Sub "EvcsRestApiGatewayID-${Environment}"
     Value: !Ref RestApiGateway
+
+  EvcsDynamoDBKmsKey:
+    Description: DynamoDB KMS Key
+    Export:
+      Name: !Sub "EvcsDynamoDBKmsKey-${Environment}"
+    Value: !Ref DynamoDBKmsKey
+
+  EvcsStoredIdentityRecordsTable:
+    Description: EVCS Stored Identity Records table
+    Export:
+      Name: !Sub "EvcsStoredIdentityRecordsTable-${Environment}"
+    Value: !Ref EvcsStoredIdentityStoreTable
