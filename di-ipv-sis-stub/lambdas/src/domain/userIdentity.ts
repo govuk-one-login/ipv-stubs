@@ -3,4 +3,6 @@ export interface UserIdentity {
   isValid: boolean;
   expired: boolean;
   vot: string;
+  kidValid: true;
+  signatureValid: true;
 }

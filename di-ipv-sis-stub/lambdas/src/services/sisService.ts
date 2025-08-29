@@ -4,6 +4,8 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { dynamoClient } from "../clients/dynamodbClient";
 import { UserIdentity } from "../domain/userIdentity";
 
+const GPG45_RECORD_TYPE = "idrec:gpg45";
+
 export const getUserIdentity = async (
   userId: string,
 ): Promise<UserIdentity | null> => {
@@ -11,9 +13,11 @@ export const getUserIdentity = async (
 
   const getItemInput: QueryInput = {
     TableName: config.evcsStoredIdentityObjectTableName,
-    KeyConditionExpression: "userId = :userIdValue",
+    KeyConditionExpression:
+      "userId = :userIdValue AND recordType = :recordTypeValue",
     ExpressionAttributeValues: {
       ":userIdValue": marshall(userId),
+      ":recordTypeValue": marshall(GPG45_RECORD_TYPE),
     },
   };
 
@@ -33,6 +37,9 @@ export const getUserIdentity = async (
       // defaulting to false as the ttl is set to the default
       // retention of VCs which is 120 years
       expired: false,
+      // defaulting to true for below as we don't use these
+      kidValid: true,
+      signatureValid: true,
     };
   });
 

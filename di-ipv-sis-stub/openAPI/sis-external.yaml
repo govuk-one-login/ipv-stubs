@@ -24,7 +24,7 @@ paths:
             responseTemplates:
               application/json: "{\"healthcheck\": \"ok\"}"
   /user-identity:
-    get:
+    post:
       summary: "Retrieve the user’s stored identity record"
       description: >
         Returns the signed Stored Identity JWT and associated metadata
@@ -32,19 +32,12 @@ paths:
         and the stored vector of trust (VOT).
       security:
         - bearerAuth: []
-      parameters:
-        - name: vtr
-          in: query
-          description: "The requested level of confidence"
-          schema:
-            type: string
-        - name: vtr
-          in: query
-          description: "The requested levels of confidence as a list of strings"
-          schema:
-            type: array
-            items:
-              type: string
+      requestBody:
+        description: "User input containing VTR and GovUk Signin ID"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserIdentityRequestBody"
       responses:
         '200':
           description: "Stored identity record returned"
@@ -81,7 +74,7 @@ paths:
         type: "aws_proxy"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SisGetUserIdentityFunction.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SisPostUserIdentityFunction.Arn}:live/invocations
         passthroughBehavior: "WHEN_NO_TEMPLATES"
         responses:
           202:
@@ -130,6 +123,19 @@ components:
       required:
         - error
       additionalProperties: false
+    UserIdentityRequestBody:
+      type: object
+      properties:
+        vtr:
+          type: array
+          items:
+            $ref: "#/components/schemas/VectorOfTrust"
+        govukSigninJourneyId:
+          type: string
+          description: "Unique journey identifier"
+      required:
+        - vtr
+        - govukSigninJourneyId
     StoredIdentityResponse:
       type: object
       properties:

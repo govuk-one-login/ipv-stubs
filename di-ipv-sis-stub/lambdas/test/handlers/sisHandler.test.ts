@@ -1,5 +1,5 @@
 import { getUserIdentity } from "../../src/services/sisService";
-import { getUserIdentityHandler } from "../../src/handlers/sisHandler";
+import { postUserIdentityHandler } from "../../src/handlers/sisHandler";
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyStructuredResultV2,
@@ -34,22 +34,28 @@ const TEST_GET_EVENT = {
   headers: {
     Authorization: `Bearer someToken`,
   },
+  body: JSON.stringify({
+    vtr: ["P2"],
+    govukSigninJourneyId: "journeyId",
+  }),
 } as unknown as APIGatewayProxyEvent;
 
 describe("getUserIdentityHandler", () => {
   it("should return 200 with valid response object given a valid request", async () => {
     // Arrange
-    const expectedUserIdentity = {
+    const expectedUserIdentity: UserIdentity = {
       vot: "P2",
       content: TEST_SI_JWT,
       isValid: true,
       expired: false,
+      kidValid: true,
+      signatureValid: true,
     };
     jest.mocked(getUserIdentity).mockResolvedValue(expectedUserIdentity);
     jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
 
     // Act
-    const res = (await getUserIdentityHandler(
+    const res = (await postUserIdentityHandler(
       TEST_GET_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
@@ -70,7 +76,7 @@ describe("getUserIdentityHandler", () => {
     jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
 
     // Act
-    const res = (await getUserIdentityHandler(
+    const res = (await postUserIdentityHandler(
       TEST_GET_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
@@ -85,7 +91,7 @@ describe("getUserIdentityHandler", () => {
     jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
 
     // Act
-    const res = (await getUserIdentityHandler(
+    const res = (await postUserIdentityHandler(
       TEST_GET_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
@@ -94,12 +100,53 @@ describe("getUserIdentityHandler", () => {
     expect(res.body).toBe(JSON.stringify(buildNotFoundResponse()));
   });
 
+  it.each([
+    {
+      case: "missing vtr in request body",
+      testBody: { govukSigninJourneyId: "journeyId" },
+      expectErrorMessage: "Missing vtr in request body",
+    },
+    {
+      case: "empty vtr list in request body",
+      testBody: { govukSigninJourneyId: "journeyId", vtr: [] },
+      expectErrorMessage: "Missing vtr in request body",
+    },
+    {
+      case: "missing govukSigninJourneyId in request body",
+      testBody: { vtr: ["P2"] },
+      expectErrorMessage: "Missing govukSigninJourneyId in request body",
+    },
+    {
+      case: "missing  request body",
+      testBody: undefined,
+      expectErrorMessage: "Missing request body",
+    },
+  ])(
+    "should return 400 if given $case",
+    async ({ testBody, expectErrorMessage }) => {
+      // Arrange
+      jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce("userId");
+
+      // Act
+      const res = (await postUserIdentityHandler({
+        ...TEST_GET_EVENT,
+        body: testBody ? JSON.stringify(testBody) : null,
+      })) as APIGatewayProxyStructuredResultV2;
+
+      // Assert
+      expect(res.statusCode).toBe(400);
+      expect(res.body).toBe(
+        JSON.stringify(buildBadRequestResponse(expectErrorMessage)),
+      );
+    },
+  );
+
   it("should return 400 if no userId found", async () => {
     // Arrange
     jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce("");
 
     // Act
-    const res = (await getUserIdentityHandler(
+    const res = (await postUserIdentityHandler(
       TEST_GET_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
@@ -114,7 +161,7 @@ describe("getUserIdentityHandler", () => {
     // Arrange
 
     // Act
-    const res = (await getUserIdentityHandler({
+    const res = (await postUserIdentityHandler({
       headers: {},
     } as unknown as APIGatewayProxyEvent)) as APIGatewayProxyStructuredResultV2;
 
@@ -130,7 +177,7 @@ describe("getUserIdentityHandler", () => {
       .mockRejectedValue(new InvalidAuthHeader("Missing Authorization header"));
 
     // Act
-    const res = (await getUserIdentityHandler(
+    const res = (await postUserIdentityHandler(
       TEST_GET_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
@@ -148,7 +195,7 @@ describe("getUserIdentityHandler", () => {
       );
 
     // Act
-    const res = (await getUserIdentityHandler(
+    const res = (await postUserIdentityHandler(
       TEST_GET_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 
@@ -164,7 +211,7 @@ describe("getUserIdentityHandler", () => {
       .mockRejectedValue(new Error("Failed to get parameter from SSM"));
 
     // Act
-    const res = (await getUserIdentityHandler(
+    const res = (await postUserIdentityHandler(
       TEST_GET_EVENT,
     )) as APIGatewayProxyStructuredResultV2;
 

@@ -133,18 +133,18 @@ Mappings:
 
 Resources:
   # lambda to get user's stored identity
-  SisGetUserIdentityFunction:
+  SisPostUserIdentityFunction:
     Type: AWS::Serverless::Function
     # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
     # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
     # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     # checkov:skip=CKV_AWS_173: doing it later
     DependsOn:
-      - "SisGetUserIdentityFunctionLogGroup"
+      - "SisPostUserIdentityFunctionLogGroup"
     Properties:
-      FunctionName: !Sub "sisGetUserIdentity-${Environment}"
+      FunctionName: !Sub "sisPostUserIdentity-${Environment}"
       CodeUri: "../lambdas"
-      Handler: sisHandler.getUserIdentityHandler
+      Handler: sisHandler.postUserIdentityHandler
       Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
@@ -181,12 +181,12 @@ Resources:
               Fn::ImportValue: !Sub ${EvcsSisStoreTableName}-${Environment}
       AutoPublishAlias: live
       Events:
-        SisGetUserIdentity:
+        SisPostUserIdentity:
           Type: Api
           Properties:
             RestApiId: !Ref RestApiGateway
             Path: /user-identity
-            Method: GET
+            Method: POST
     Metadata:
       # Manage esbuild properties
       BuildMethod: esbuild
@@ -197,12 +197,12 @@ Resources:
         EntryPoints:
           - src/handlers/sisHandler.ts
 
-  SisGetUserIdentityFunctionLogGroup:
+  SisPostUserIdentityFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     # checkov:skip=CKV_AWS_158: No need for customer managed keys for short lived logs
     Properties:
       RetentionInDays: 14
-      LogGroupName: !Sub "/aws/lambda/sisGetUserIdentity-${Environment}"
+      LogGroupName: !Sub "/aws/lambda/sisPostUserIdentity-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   # kms key for logging

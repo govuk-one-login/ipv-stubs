@@ -36,6 +36,8 @@ describe("getUserIdentity", () => {
       vot: MOCK_USER_IDENTITY.levelOfConfidence,
       expired: false,
       isValid: MOCK_USER_IDENTITY.isValid,
+      signatureValid: true,
+      kidValid: true,
     });
   });
 
@@ -50,7 +52,12 @@ describe("getUserIdentity", () => {
     const res = await getUserIdentity(TEST_USER_ID);
 
     // Assert
-    expect(res).toEqual({ ...malformedJson, expired: false });
+    expect(res).toEqual({
+      ...malformedJson,
+      expired: false,
+      kidValid: true,
+      signatureValid: true,
+    });
   });
 
   it("should return null if it no SI exists for user", async () => {

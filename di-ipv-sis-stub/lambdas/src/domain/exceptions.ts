@@ -17,3 +17,13 @@ export class InvalidAuthHeader extends Error {
     this.name = "Invalid Auth Header";
   }
 }
+
+export class InvalidRequestBody extends Error {
+  name: string;
+
+  constructor(message: string) {
+    super();
+    this.message = message;
+    this.name = "Invalid Request Body";
+  }
+}
