@@ -398,30 +398,6 @@
       }
     },
     {
-      "criType": "National Insurance Number (Stub)",
-      "label": "Passed National Insurance Number - no scope",
-      "payload": {
-        "type": "IdentityCheck",
-        "checkDetails": [
-          {
-            "checkMethod": "data"
-          }
-        ]
-      }
-    },
-    {
-      "criType": "National Insurance Number (Stub)",
-      "label": "Failed National Insurance Number - no scope",
-      "payload": {
-        "type": "IdentityCheck",
-        "failedCheckDetails": [
-          {
-            "checkMethod": "data"
-          }
-        ]
-      }
-    },
-    {
       "criType": "Bank account verification (Stub)",
       "label": "Passed Bank account verification (Stub)",
       "payload": {
