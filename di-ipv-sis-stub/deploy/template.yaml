@@ -1,0 +1,363 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Transform:
+  - AWS::Serverless-2016-10-31
+Globals:
+  Function:
+    Environment:
+      Variables:
+        AWS_LAMBDA_EXEC_WRAPPER: !If
+          - IsDevelopment
+          - !Ref "AWS::NoValue"
+          - /opt/dynatrace
+        DT_CONNECTION_AUTH_TOKEN: !If
+          - IsDevelopment
+          - !Ref "AWS::NoValue"
+          - !Sub
+            - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}'  #pragma: allowlist secret
+            - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]  #pragma: allowlist secret
+        DT_CONNECTION_BASE_URL: !If
+          - IsDevelopment
+          - !Ref "AWS::NoValue"
+          - !Sub
+            - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}'   #pragma: allowlist secret
+            - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]  #pragma: allowlist secret
+        DT_CLUSTER_ID: !If
+          - IsDevelopment
+          - !Ref "AWS::NoValue"
+          - !Sub
+            - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}'   #pragma: allowlist secret
+            - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]  #pragma: allowlist secret
+        DT_LOG_COLLECTION_AUTH_TOKEN: !If
+          - IsDevelopment
+          - !Ref "AWS::NoValue"
+          - !Sub
+            - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}'  #pragma: allowlist secret
+            - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]  #pragma: allowlist secret
+        DT_TENANT: !If
+          - IsDevelopment
+          - !Ref "AWS::NoValue"
+          - !Sub
+            - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}'   #pragma: allowlist secret
+            - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]   #pragma: allowlist secret
+        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
+    Timeout: 30
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    Layers:
+      - !If
+        - IsDevelopment
+        - !Ref AWS::NoValue
+        - !FindInMap [
+          EnvironmentConfiguration,
+          !Ref Environment,
+          dynatraceLayerArn,
+        ]
+
+Description: >-
+  This creates the infrastructure for SIS stub.
+
+Parameters:
+  VpcStackName:
+    Description: >
+      The name of the stack that defines the VPC in which this container will
+      run.
+    Type: String
+  Environment:
+    Description: The name of the environment to deploy to.
+    Type: String
+    AllowedPattern: ((production)|(build)|(dev.*))
+  PermissionsBoundary:
+    Description: The ARN of the permissions boundary to apply when creating IAM roles
+    Type: String
+    Default: "none"
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+  EvcsSisStoreTableName:
+    Type: String
+    Description: >
+      The table name of the EVCS SIS table
+    Default: "EvcsStoredIdentityRecordsTable"
+  EvcsDynamoDbKmsKey:
+    Type: String
+    Description: >
+      The KMS Key used for the stub EVCS Stored Identity table
+    Default: "EvcsDynamoDBKmsKey"
+
+Conditions:
+  IsDevelopment: !Or
+    - !Equals [ !Ref AWS::AccountId, "130355686670"]
+    - !Equals [ !Ref AWS::AccountId, "175872367215"]
+    - !Equals [ !Ref AWS::AccountId, "110869144943"]
+  IsProduction: !Equals [ !Ref Environment, "production" ]
+  IsNonProd: !Not [!Condition IsProduction ]
+
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
+
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
+
+Mappings:
+  EnvironmentConfiguration:
+    dev:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
+      dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_51_20250331-143707_with_collector_java:1
+    build:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
+      dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_51_20250331-143707_with_collector_java:1
+    production:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
+      dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_51_20250331-143707_with_collector_java:1
+
+  HostedZoneImportName:
+    "616199614141": # IPV Core Non Prod
+      Name: BuildPublicHostedZoneId
+    "388905755587": # IPV Core Prod
+      Name: RootPublicHostedZoneId
+
+Resources:
+  # lambda to get user's stored identity
+  SisPostUserIdentityFunction:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    # checkov:skip=CKV_AWS_173: doing it later
+    DependsOn:
+      - "SisPostUserIdentityFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "sisPostUserIdentity-${Environment}"
+      CodeUri: "../lambdas"
+      Handler: sisHandler.postUserIdentityHandler
+      Runtime: nodejs22.x
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
+          EVCS_STORED_IDENTITY_TABLE:
+            Fn::ImportValue: !Sub ${EvcsSisStoreTableName}-${Environment}
+          NODE_OPTIONS: --enable-source-maps
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt SisLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/evcs/*
+        - KMSDecryptPolicy:
+            KeyId:
+              Fn::ImportValue: !Sub ${EvcsDynamoDbKmsKey}-${Environment}
+        - DynamoDBCrudPolicy:
+            TableName:
+              Fn::ImportValue: !Sub ${EvcsSisStoreTableName}-${Environment}
+      AutoPublishAlias: live
+      Events:
+        SisPostUserIdentity:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user-identity
+            Method: POST
+    Metadata:
+      # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - src/handlers/sisHandler.ts
+
+  SisPostUserIdentityFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    # checkov:skip=CKV_AWS_158: No need for customer managed keys for short lived logs
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/sisPostUserIdentity-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  # kms key for logging
+  LoggingKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+
+  RestApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
+      Name: !Sub SIS API Gateway ${Environment}
+      StageName: !Sub ${Environment}
+      TracingEnabled: true
+      DefinitionBody:
+        openapi: "3.0.3" # workaround to get `sam validate` to work
+        paths: # workaround to get `sam validate` to work
+          /foo:
+            options: { } # workaround to get `sam validate` to work
+        'Fn::Transform':
+          Name: "AWS::Include"
+          Parameters:
+            Location: "../openAPI/sis-external.yaml"
+      ApiKeySourceType: HEADER #pragma: allowlist secret
+      Auth:
+        ApiKeyRequired: true #pragma: allowlist secret
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          UsagePlanName: "SIS Usage Plan"
+      AccessLogSetting:
+        DestinationArn: !GetAtt RestApiLogGroup.Arn
+        Format: >-
+          {
+          "requestId":"$context.requestId",
+          "ip":"$context.identity.sourceIp",
+          "requestTime":"$context.requestTime",
+          "httpMethod":"$context.httpMethod",
+          "path":"$context.path",
+          "routeKey":"$context.routeKey",
+          "status":"$context.status",
+          "protocol":"$context.protocol",
+          "responseLatency":"$context.responseLatency",
+          "responseLength":"$context.responseLength"
+          }
+
+  RestApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/sisRestApi-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+
+  SisLambdaSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: >-
+        SIS Lambdas Security Group
+      SecurityGroupIngress:
+        - CidrIp:
+            Fn::ImportValue: !Sub ${VpcStackName}-VpcCidr
+          Description: Allow ingress traffic from vpc cidr to port 443
+          FromPort: 443
+          IpProtocol: tcp
+          ToPort: 443
+      VpcId:
+        Fn::ImportValue: !Sub ${VpcStackName}-VpcId
+
+  # ssl cert
+  SisStubSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsNonProd
+        - !Sub "sis.${Environment}.stubs.account.gov.uk"
+        - sis.stubs.account.gov.uk
+      DomainValidationOptions:
+        - DomainName: !If
+            - IsNonProd
+            - !Sub "sis.${Environment}.stubs.account.gov.uk"
+            - sis.stubs.account.gov.uk
+          HostedZoneId:
+            Fn::ImportValue:
+              Fn::FindInMap: [ HostedZoneImportName, !Ref "AWS::AccountId", Name ]
+      ValidationMethod: DNS
+
+  # api domain entries / mapping
+  SisStubRestApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    # checkov:skip=CKV_AWS_120: doing it later
+    Properties:
+      DomainName: !If
+        - IsNonProd
+        - !Sub "sis.${Environment}.stubs.account.gov.uk"
+        - sis.stubs.account.gov.uk
+      RegionalCertificateArn: !Ref SisStubSSLCert
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+
+  SisStubRestApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    # checkov:skip=CKV_AWS_120: doing it later
+    Properties:
+      DomainName: !If
+        - IsNonProd
+        - !Sub "sis.${Environment}.stubs.account.gov.uk"
+        - sis.stubs.account.gov.uk
+      RestApiId: !Ref RestApiGateway
+      Stage: !Ref RestApiGateway.Stage
+    DependsOn:
+      - SisStubRestApiDomain
+
+  # dns record
+  SisStubDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Type: A
+      Name: !If
+          - IsNonProd
+          - !Sub "sis.${Environment}.stubs.account.gov.uk"
+          - sis.stubs.account.gov.uk
+      HostedZoneId:
+        Fn::ImportValue:
+          Fn::FindInMap: [ HostedZoneImportName, !Ref "AWS::AccountId", Name ]
+      AliasTarget:
+        DNSName: !GetAtt SisStubRestApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt SisStubRestApiDomain.RegionalHostedZoneId
+
+Outputs:
+  RestApiGatewayID:
+    Description: SIS API Gateway ID
+    Export:
+      Name: !Sub "SisRestApiGatewayID-${Environment}"
+    Value: !Ref RestApiGateway
