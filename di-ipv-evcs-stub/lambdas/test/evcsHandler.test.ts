@@ -7,6 +7,7 @@ import {
 import {
   createHandler,
   getHandler,
+  getIdentityHandler,
   invalidateStoredIdentityHandler,
   postIdentityHandler,
   updateHandler,
@@ -17,6 +18,7 @@ import {
   processPostUserVCsRequest,
   processPostIdentityRequest,
   invalidateUserSi,
+  processGetIdentityRequest,
 } from "../src/services/evcsService";
 import { VcState, VCProvenance } from "../src/domain/enums";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
@@ -31,6 +33,7 @@ jest.mock("../src/services/evcsService", () => ({
   processGetUserVCsRequest: jest.fn(),
   processPatchUserVCsRequest: jest.fn(),
   processPostUserVCsRequest: jest.fn(),
+  processGetIdentityRequest: jest.fn(),
   processPostIdentityRequest: jest.fn(),
   invalidateUserSi: jest.fn(),
 }));
@@ -114,6 +117,14 @@ type RecursivePartial<T> = {
   [P in keyof T]?: RecursivePartial<T[P]>;
 };
 
+const buildGetIdentityRequest = (
+  headers: APIGatewayProxyEventHeaders = {},
+): APIGatewayProxyEvent => {
+  return {
+    headers,
+  } as never as APIGatewayProxyEvent;
+};
+
 const buildPostIdentityRequest = (
   postIdentityRequest?: RecursivePartial<PostIdentityRequest>,
 ) => {
@@ -134,6 +145,10 @@ const TEST_PATH_PARAM = {
 
 const TEST_HEADERS = {
   Authorization: `Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2V2Y3MuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJzdWIiOiJ1cm46dXVpZDpkMTgyMzA2Ni0yMTM3LTQzODAtYjBiYS00YjYxOTQ3ZTA4ZTYiLCJhdWQiOiJodHRwczovL2V2Y3MuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJqdGkiOiJ1cm46dXVpZDpiNmRkMjNkMy1mZjM3LTQzYzYtOTI3My01NTRkNjQzMjFiODMiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.1-nRkV6ny9ThBGDbQ1sDCrJpYSe0tbOXEMJJNEoomVWjKsRL1RK6qdATkk-54p_c68Gzu1mN4FDM-buk1gXIPQ`, // pragma: allowlist secret
+} as APIGatewayProxyEventHeaders;
+
+const TEST_HEADERS_NO_SUBJECT = {
+  Authorization: `Bearer eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL2V2Y3MuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJhdWQiOiJodHRwczovL2V2Y3MuYnVpbGQuc3R1YnMuYWNjb3VudC5nb3YudWsiLCJqdGkiOiJ1cm46dXVpZDpiNmRkMjNkMy1mZjM3LTQzYzYtOTI3My01NTRkNjQzMjFiODMiLCJuYmYiOjE3MTUxNjU0NjksImlhdCI6MTcxMjU3MzQ2OX0.1-nRkV6ny9ThBGDbQ1sDCrJpYSe0tbOXEMJJNEoomVWjKsRL1RK6qdATkk-54p_c68Gzu1mN4FDM-buk1gXIPQ`, // pragma: allowlist secret
 } as APIGatewayProxyEventHeaders;
 
 const TEST_POST_EVENT = {
@@ -272,6 +287,49 @@ describe("evcs handlers", () => {
       // assert
       expect(response.statusCode).toBe(400);
       expect(processPatchUserVCsRequest).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("get identity handler", () => {
+    it("should return Forbidden if credentials are not present", async () => {
+      await expect(
+        getIdentityHandler(buildGetIdentityRequest()),
+      ).resolves.toStrictEqual({
+        body: '{"message":"Request missing access token"}',
+        headers: {
+          "content-type": "application/json",
+        },
+        statusCode: 403,
+      });
+    });
+
+    it("should return BadRequest if the credentials do not contain a subject", async () => {
+      await expect(
+        getIdentityHandler(buildGetIdentityRequest(TEST_HEADERS_NO_SUBJECT))
+      ).resolves.toStrictEqual({
+        body: '{"message":"JWT does not include subject"}',
+        headers: {
+          "content-type": "application/json",
+        },
+        statusCode: 400,
+      });
+    });
+
+    it("should return Ok if the method passes", async () => {
+      jest.mocked(processGetIdentityRequest).mockResolvedValue({
+        statusCode: 200,
+        response: {},
+      });
+
+      await expect(
+        getIdentityHandler(buildGetIdentityRequest(TEST_HEADERS)),
+      ).resolves.toStrictEqual({
+        body: "{}",
+        headers: {
+          "content-type": "application/json",
+        },
+        statusCode: 200,
+      });
     });
   });
 

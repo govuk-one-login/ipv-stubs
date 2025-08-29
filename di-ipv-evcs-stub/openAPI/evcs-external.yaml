@@ -202,6 +202,43 @@ paths:
             statusCode: 202
             responseTemplates:
               application/json: '{"result": "success"}'
+    get:
+      description: Retrieves the Stored identity and VCs held for a user.
+      parameters:
+        - name: afterKey
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/VCSignature"
+            example: qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ
+          description: A VC signature to retrieve next set of VCs, its used for pagination.
+      responses:
+        200:
+          description: "The list of Verifiable Credentials"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoredIdentityResponse"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        403:
+          $ref: "#/components/responses/Forbidden"
+        404:
+          $ref: "#/components/responses/NotFound"
+        500:
+          $ref: "#/components/responses/ServerError"
+      x-amazon-apigateway-request-validator: ALL
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsGetIdentityFunction.Arn}:live/invocations
+        passthroughBehavior: "when_no_match"
+        responses:
+          200:
+            statusCode: 200
+            responseTemplates:
+              application/json: '{"result": "success"}'
 
   /identity/invalidate:
     post:
@@ -460,6 +497,28 @@ components:
       required:
         - jwt
         - vot
+    StoredIdentityResponse:
+      description: Retrieve Stored Identity and VCs Response
+      type: object
+      additionalProperties: false
+      properties:
+        si:
+          type: "object"
+          additionalProperties: false
+          properties:
+            vc:
+              $ref: "#/components/schemas/VC"
+            state:
+              $ref: "#/components/schemas/CreateStates"
+            metadata:
+              $ref: "#/components/schemas/VCMetadata"
+        vcs:
+          type: array
+          description: List of user VCs.
+        afterKey:
+          type: string
+          description: Indicates that the user has more VCs than the ones returned in the response. If full set of VCS is required subsequent calls should be made with this value as a query string parameter, until this value is not returned in the response.
+          example: qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ
     EvcsManagementGetStoredIdentity:
       type: array
       items:

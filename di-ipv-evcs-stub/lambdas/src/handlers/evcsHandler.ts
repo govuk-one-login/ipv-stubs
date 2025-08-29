@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
-import { JWTPayload } from "jose";
+import { JWTPayload, decodeJwt } from "jose";
 import { buildApiResponse } from "../common/apiResponses";
 import {
   PostRequest,
@@ -20,6 +20,7 @@ import {
   processGetUserVCsRequest,
   processPatchUserVCsRequest,
   invalidateUserSi,
+  processGetIdentityRequest,
 } from "../services/evcsService";
 import { verifyTokenAndReturnPayload } from "../services/jwtService";
 import { getErrorMessage } from "../common/utils";
@@ -39,6 +40,31 @@ export async function postIdentityHandler(
   }
 
   const res = await processPostIdentityRequest(parsedPostIdentityRequest);
+
+  return buildApiResponse(res.statusCode, res.response);
+}
+
+export async function getIdentityHandler(
+  event: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResultV2> {
+  let accessToken: string;
+
+  try {
+    accessToken = getAccessToken(event);
+  } catch (error) {
+    return buildApiResponse(StatusCodes.Forbidden, {
+      message: getErrorMessage(error),
+    });
+  }
+
+  const { sub } = decodeJwt(accessToken);
+  if (!sub) {
+    return buildApiResponse(StatusCodes.BadRequest, {
+      message: "JWT does not include subject",
+    });
+  }
+
+  const res = await processGetIdentityRequest(sub);
 
   return buildApiResponse(res.statusCode, res.response);
 }
@@ -139,18 +165,7 @@ export async function getHandler(
 
       accessTokenVerified = event.path?.startsWith("/migration")
         ? true
-        : await verifyAccessToken(
-            validateAccessToken(
-              event.headers
-                ? event.headers[
-                    Object.keys(event.headers).find(
-                      (header) => header.toLowerCase() === "authorization",
-                    ) || ""
-                  ]
-                : undefined,
-            ),
-            decodedUserId,
-          );
+        : await verifyAccessToken(getAccessToken(event), decodedUserId);
     } catch (error) {
       console.error(error);
       return buildApiResponse(StatusCodes.BadRequest, {
@@ -287,6 +302,18 @@ function getRequestedStates(event: APIGatewayProxyEvent): string[] {
     requestStates = Object.values(VcState).map((value) => value);
   }
   return requestStates;
+}
+
+function getAccessToken(event: APIGatewayProxyEvent) {
+  return validateAccessToken(
+    event.headers
+      ? event.headers[
+          Object.keys(event.headers).find(
+            (header) => header.toLowerCase() === "authorization",
+          ) || ""
+        ]
+      : undefined,
+  );
 }
 
 function validateAccessToken(authheader: string | undefined): string {

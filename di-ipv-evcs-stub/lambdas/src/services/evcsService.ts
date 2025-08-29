@@ -23,7 +23,7 @@ import {
   PostRequest,
   PutRequest,
 } from "../domain/requests";
-import { VcDetails } from "../domain/sharedTypes";
+import { VcDetails, StoredIdentityResponse } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
 import { dynamoClient } from "../clients/dynamodbClient";
@@ -182,6 +182,57 @@ export async function processPostIdentityRequest(
       statusCode: StatusCodes.InternalServerError,
     };
   }
+}
+
+export async function processGetIdentityRequest(
+  userId: string,
+): Promise<ServiceResponse> {
+  console.log(userId, config.evcsStoredIdentityObjectTableName);
+  const getItemResponse = await dynamoClient.getItem({
+    TableName: config.evcsStoredIdentityObjectTableName,
+    Key: {
+      userId: {
+        S: userId,
+      },
+      recordType: {
+        S: StoredIdentityRecordType.GPG45,
+      },
+    },
+  });
+
+  if (!getItemResponse.Item?.storedIdentity?.S) {
+    return { statusCode: 404, response: { message: "Not found" } };
+  }
+
+  const value = await dynamoClient.query({
+    TableName: config.evcsStubUserVCsTableName,
+    KeyConditionExpression: "#userId = :userId",
+    FilterExpression: "#state IN (:state0)",
+    ExpressionAttributeNames: {
+      "#userId": "userId",
+      "#state": "state",
+    },
+    ExpressionAttributeValues: {
+      ":userId": {
+        S: userId,
+      },
+      ":state0": {
+        S: "CURRENT",
+      },
+    },
+  });
+
+  const response: StoredIdentityResponse = {
+    si: { vc: getItemResponse.Item.storedIdentity.S },
+    vcs:
+      value.Items?.map((vc) => ({
+        vc: vc.vc.S || "",
+        state: vc.state.S,
+        metadata: vc.metadata?.M ? unmarshall(vc.metadata.M) : undefined,
+      })) || [],
+  };
+
+  return { statusCode: 200, response };
 }
 
 export async function invalidateUserSi(userId: string) {
