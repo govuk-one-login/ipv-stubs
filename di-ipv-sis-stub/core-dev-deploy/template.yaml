@@ -40,10 +40,12 @@ Parameters:
     Type: String
     Description: >
       The table name of the EVCS SIS table
+    Default: "EvcsStoredIdentityRecordsTable"
   EvcsDynamoDbKmsKey:
     Type: String
     Description: >
       The KMS Key used for the stub EVCS Stored Identity table
+    Default: "EvcsDynamoDBKmsKey"
 
 Conditions:
   IsDev01:
