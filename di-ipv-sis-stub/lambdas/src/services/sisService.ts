@@ -8,6 +8,7 @@ const GPG45_RECORD_TYPE = "idrec:gpg45";
 
 export const getUserIdentity = async (
   userId: string,
+  requestedVtrs: string[],
 ): Promise<UserIdentity | null> => {
   console.info("Getting user's SIS record");
 
@@ -33,7 +34,7 @@ export const getUserIdentity = async (
     return {
       content: storedIdentity,
       vot: levelOfConfidence,
-      isValid,
+      isValid: isValid && requestedVtrs.includes(levelOfConfidence),
       // defaulting to false as the ttl is set to the default
       // retention of VCs which is 120 years
       expired: false,
