@@ -6,3 +6,8 @@ export interface UserIdentity {
   kidValid: true;
   signatureValid: true;
 }
+
+export interface UserIdentityRequestBody {
+  govukSigninJourneyId: string;
+  vtr: string[];
+}

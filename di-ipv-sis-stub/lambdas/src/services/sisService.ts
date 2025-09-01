@@ -31,24 +31,34 @@ export const getUserIdentity = async (
 
   const parsedResponse = response.Items.map((siItem) => {
     const { storedIdentity, levelOfConfidence, isValid } = unmarshall(siItem);
-    const matchedProfile = levelOfConfidence
-      ? getVotForUserIdentity(levelOfConfidence, requestedVtrs)
-      : undefined;
 
     return {
       content: storedIdentity,
-      vot: matchedProfile,
-      isValid: !!(isValid && matchedProfile && matchedProfile != "P0"),
-      // defaulting to false as the ttl is set to the default
-      // retention of VCs which is 120 years
-      expired: false,
-      // defaulting to true for below as we don't use these
-      kidValid: true,
-      signatureValid: true,
+      vot: levelOfConfidence,
+      isValid,
     };
   });
 
-  return validateUserIdentityResponse(parsedResponse[0]);
+  const validatedResponse = validateUserIdentityResponse(parsedResponse[0]);
+  const matchedProfile = validatedResponse.vot
+    ? getVotForUserIdentity(validatedResponse.vot, requestedVtrs)
+    : undefined;
+
+  return {
+    ...validatedResponse,
+    vot: matchedProfile,
+    isValid: !!(
+      validatedResponse.isValid &&
+      matchedProfile &&
+      matchedProfile != "P0"
+    ),
+    // defaulting to false as the ttl is set to the default
+    // retention of VCs which is 120 years
+    expired: false,
+    // defaulting to true for below as we don't use these
+    kidValid: true,
+    signatureValid: true,
+  };
 };
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
