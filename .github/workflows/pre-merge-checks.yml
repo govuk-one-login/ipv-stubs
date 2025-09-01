@@ -76,3 +76,35 @@ jobs:
       - name: Test
         working-directory: ./di-ipv-dcmaw-async-stub/lambdas
         run: npm run test
+  build-sis-stub:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install
+        working-directory: ./di-ipv-sis-stub/lambdas
+        run: npm ci
+      - name: Build
+        working-directory: ./di-ipv-sis-stub/lambdas
+        run: npm run build
+      - name: Test
+        working-directory: ./di-ipv-sis-stub/lambdas
+        run: npm run test
+  build-ais-stub:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install
+        working-directory: ./di-ipv-ais-stub/lambdas
+        run: npm ci
+      - name: Build
+        working-directory: ./di-ipv-ais-stub/lambdas
+        run: npm run build
+      - name: Test
+        working-directory: ./di-ipv-ais-stub/lambdas
+        run: npm run test
