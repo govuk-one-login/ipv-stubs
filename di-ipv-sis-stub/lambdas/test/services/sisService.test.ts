@@ -43,7 +43,7 @@ describe("getUserIdentity", () => {
     });
   });
 
-  it("should return malformed JSON if required properties are missing", async () => {
+  it("should return malformed JSON if required properties are missing and isValid=false", async () => {
     // Arrange
     const malformedJson = { isValid: true };
     dbMock.on(QueryCommand).resolves({
@@ -59,6 +59,7 @@ describe("getUserIdentity", () => {
       expired: false,
       kidValid: true,
       signatureValid: true,
+      isValid: false,
     });
   });
 
@@ -75,7 +76,7 @@ describe("getUserIdentity", () => {
     expect(res).toBeNull();
   });
 
-  it("should return not valid if level of confidence on sis record does not match any of the requested VTRs", async () => {
+  it("should return not valid and vot=P0 if level of confidence on sis record does not match any of the requested VTRs", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves({
       Items: [marshall({ ...MOCK_USER_IDENTITY, levelOfConfidence: "P1" })],
@@ -87,11 +88,31 @@ describe("getUserIdentity", () => {
     // Assert
     expect(res).toEqual({
       content: MOCK_USER_IDENTITY.storedIdentity,
-      vot: "P1",
+      vot: "P0",
       expired: false,
       kidValid: true,
       signatureValid: true,
       isValid: false,
+    });
+  });
+
+  it("should return strongest matched profile", async () => {
+    // Arrange
+    dbMock.on(QueryCommand).resolves({
+      Items: [marshall({ ...MOCK_USER_IDENTITY, levelOfConfidence: "P2" })],
+    });
+
+    // Act
+    const res = await getUserIdentity(TEST_USER_ID, ["P1"]);
+
+    // Assert
+    expect(res).toEqual({
+      content: MOCK_USER_IDENTITY.storedIdentity,
+      vot: "P1",
+      expired: false,
+      kidValid: true,
+      signatureValid: true,
+      isValid: true,
     });
   });
 });

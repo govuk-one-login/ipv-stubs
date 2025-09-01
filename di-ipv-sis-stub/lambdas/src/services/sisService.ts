@@ -3,6 +3,7 @@ import { config } from "../config/config";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { dynamoClient } from "../clients/dynamodbClient";
 import { UserIdentity } from "../domain/userIdentity";
+import { getVotForUserIdentity } from "../utils/votHelper";
 
 const GPG45_RECORD_TYPE = "idrec:gpg45";
 
@@ -30,11 +31,14 @@ export const getUserIdentity = async (
 
   const parsedResponse = response.Items.map((siItem) => {
     const { storedIdentity, levelOfConfidence, isValid } = unmarshall(siItem);
+    const matchedProfile = levelOfConfidence
+      ? getVotForUserIdentity(levelOfConfidence, requestedVtrs)
+      : undefined;
 
     return {
       content: storedIdentity,
-      vot: levelOfConfidence,
-      isValid: isValid && requestedVtrs.includes(levelOfConfidence),
+      vot: matchedProfile,
+      isValid: !!(isValid && matchedProfile && matchedProfile != "P0"),
       // defaulting to false as the ttl is set to the default
       // retention of VCs which is 120 years
       expired: false,
