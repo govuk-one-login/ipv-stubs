@@ -203,9 +203,7 @@ Resources:
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/sis-external.yaml"
-      ApiKeySourceType: HEADER #pragma: allowlist secret
       Auth:
-        ApiKeyRequired: true #pragma: allowlist secret
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "SIS Usage Plan"

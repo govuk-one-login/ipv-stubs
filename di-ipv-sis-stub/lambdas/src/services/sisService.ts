@@ -3,11 +3,13 @@ import { config } from "../config/config";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { dynamoClient } from "../clients/dynamodbClient";
 import { UserIdentity } from "../domain/userIdentity";
+import { getVotForUserIdentity } from "../utils/votHelper";
 
 const GPG45_RECORD_TYPE = "idrec:gpg45";
 
 export const getUserIdentity = async (
   userId: string,
+  requestedVtrs: string[],
 ): Promise<UserIdentity | null> => {
   console.info("Getting user's SIS record");
 
@@ -34,16 +36,29 @@ export const getUserIdentity = async (
       content: storedIdentity,
       vot: levelOfConfidence,
       isValid,
-      // defaulting to false as the ttl is set to the default
-      // retention of VCs which is 120 years
-      expired: false,
-      // defaulting to true for below as we don't use these
-      kidValid: true,
-      signatureValid: true,
     };
   });
 
-  return validateUserIdentityResponse(parsedResponse[0]);
+  const validatedResponse = validateUserIdentityResponse(parsedResponse[0]);
+  const matchedProfile = validatedResponse.vot
+    ? getVotForUserIdentity(validatedResponse.vot, requestedVtrs)
+    : undefined;
+
+  return {
+    ...validatedResponse,
+    vot: matchedProfile,
+    isValid: !!(
+      validatedResponse.isValid &&
+      matchedProfile &&
+      matchedProfile != "P0"
+    ),
+    // defaulting to false as the ttl is set to the default
+    // retention of VCs which is 120 years
+    expired: false,
+    // defaulting to true for below as we don't use these
+    kidValid: true,
+    signatureValid: true,
+  };
 };
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
