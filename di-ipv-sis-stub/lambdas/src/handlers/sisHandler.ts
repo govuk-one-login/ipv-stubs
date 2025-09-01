@@ -14,7 +14,6 @@ import {
   buildUnauthorisedResponse,
 } from "../domain/errorResponse";
 import { getUserIdFromBearerToken } from "../utils/tokenVerifier";
-import { UserIdentityRequestBody } from "../domain/userIdentity";
 
 const AUTHORISATION_HEADER = "Authorization";
 
@@ -35,9 +34,9 @@ export const postUserIdentityHandler = async (
       return buildApiResponse(400, buildBadRequestResponse("Missing user id"));
     }
 
-    const validatedRequest = validateUserIdentityRequestBody(event);
+    validateUserIdentityRequestBody(event);
 
-    const userIdentity = await getUserIdentity(userId, validatedRequest.vtr);
+    const userIdentity = await getUserIdentity(userId);
 
     if (!userIdentity) {
       return buildApiResponse(404, buildNotFoundResponse());
@@ -62,9 +61,7 @@ export const postUserIdentityHandler = async (
   }
 };
 
-const validateUserIdentityRequestBody = (
-  event: APIGatewayProxyEvent,
-): UserIdentityRequestBody => {
+const validateUserIdentityRequestBody = (event: APIGatewayProxyEvent) => {
   console.info("---Parsing user identity request body---");
 
   if (!event.body) {
@@ -82,6 +79,4 @@ const validateUserIdentityRequestBody = (
       "Missing govukSigninJourneyId in request body",
     );
   }
-
-  return requestBody;
 };
