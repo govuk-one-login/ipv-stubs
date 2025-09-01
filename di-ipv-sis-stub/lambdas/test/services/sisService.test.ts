@@ -30,7 +30,7 @@ describe("getUserIdentity", () => {
     });
 
     // Act
-    const res = await getUserIdentity(TEST_USER_ID);
+    const res = await getUserIdentity(TEST_USER_ID, TEST_VTRS);
 
     // Assert
     expect(res).toEqual({
@@ -51,7 +51,7 @@ describe("getUserIdentity", () => {
     });
 
     // Act
-    const res = await getUserIdentity(TEST_USER_ID);
+    const res = await getUserIdentity(TEST_USER_ID, TEST_VTRS);
 
     // Assert
     expect(res).toEqual({
@@ -70,7 +70,7 @@ describe("getUserIdentity", () => {
     });
 
     // Act
-    const res = await getUserIdentity(TEST_USER_ID);
+    const res = await getUserIdentity(TEST_USER_ID, TEST_VTRS);
 
     // Assert
     expect(res).toBeNull();
