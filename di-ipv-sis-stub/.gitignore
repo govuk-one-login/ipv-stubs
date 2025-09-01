@@ -1,0 +1,19 @@
+# Compiled class file
+# Log file
+*.log
+
+# Package Files #
+*.zip
+
+build
+.idea
+
+lambdas/node_modules
+lambdas/coverage
+lambdas/lib
+
+# Ignore dev-deploy generated file
+core-dev-deploy/.aws-sam
+core-dev-deploy/**/sis-stub-*.yaml
+deploy*/**/sis-stub-*.yaml
+deploy/.aws-sam
