@@ -41,7 +41,11 @@ export const getUserIdentity = async (
 
   const validatedResponse = validateUserIdentityResponse(parsedResponse[0]);
   const matchedProfile = validatedResponse.vot
-    ? getVotForUserIdentity(validatedResponse.vot, requestedVtrs)
+    ? getVotForUserIdentity(
+        validatedResponse.vot,
+        requestedVtrs,
+        validatedResponse.isValid,
+      )
     : undefined;
 
   return {

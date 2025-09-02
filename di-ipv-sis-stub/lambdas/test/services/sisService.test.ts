@@ -43,6 +43,26 @@ describe("getUserIdentity", () => {
     });
   });
 
+  it("should return P0 if isValid is false but levelOfConfidence meets requested vtr", async () => {
+    // Arrange
+    dbMock.on(QueryCommand).resolves({
+      Items: [marshall({ ...MOCK_USER_IDENTITY, isValid: false })],
+    });
+
+    // Act
+    const res = await getUserIdentity(TEST_USER_ID, TEST_VTRS);
+
+    // Assert
+    expect(res).toEqual({
+      content: MOCK_USER_IDENTITY.storedIdentity,
+      vot: "P0",
+      expired: false,
+      isValid: false,
+      signatureValid: true,
+      kidValid: true,
+    });
+  });
+
   it("should return malformed JSON if required properties are missing and isValid=false", async () => {
     // Arrange
     const malformedJson = { isValid: true };

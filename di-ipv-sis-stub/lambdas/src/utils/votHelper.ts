@@ -3,7 +3,12 @@ const VOTS_BY_ASCENDING_STRENGTH = ["P0", "P1", "P2", "P3", "P4"];
 export const getVotForUserIdentity = (
   sisVot: string,
   requestedVtrs: string[],
+  isSisRecordValid: boolean,
 ) => {
+  if (!isSisRecordValid) {
+    return "P0";
+  }
+
   const sisVotIndex = VOTS_BY_ASCENDING_STRENGTH.indexOf(sisVot);
 
   if (sisVotIndex < 0) {
