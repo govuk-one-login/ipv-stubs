@@ -170,6 +170,19 @@ describe("getUserIdentityHandler", () => {
     expect(res.body).toBe(JSON.stringify(buildUnauthorisedResponse()));
   });
 
+  it("should return 401 if missing header", async () => {
+    // Arrange
+
+    // Act
+    const res = (await postUserIdentityHandler({
+      headers: undefined,
+    } as unknown as APIGatewayProxyEvent)) as APIGatewayProxyStructuredResultV2;
+
+    // Assert
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toBe(JSON.stringify(buildUnauthorisedResponse()));
+  });
+
   it("should return 401 if getUserIdFromBearerToken throws InvalidAuthHeader", async () => {
     // Arrange
     jest
