@@ -23,7 +23,7 @@ export const postUserIdentityHandler = async (
 ): Promise<APIGatewayProxyResultV2> => {
   console.info("------------Processing GET user-identity request------------");
   try {
-    const authHeader = event.headers[AUTHORISATION_HEADER];
+    const authHeader = event.headers && event.headers[AUTHORISATION_HEADER];
 
     if (!authHeader) {
       throw new InvalidAuthHeader("Missing auth header");
