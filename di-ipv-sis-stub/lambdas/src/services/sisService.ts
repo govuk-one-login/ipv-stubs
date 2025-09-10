@@ -5,7 +5,7 @@ import { dynamoClient } from "../clients/dynamodbClient";
 import { StoredIdentityJwt, UserIdentity } from "../domain/userIdentity";
 import { getVotForUserIdentity } from "../utils/votHelper";
 import { decodeJwt } from "jose";
-import { createSignedJwt, updateVotOnSiVot } from "../utils/signedJwtHelper";
+import { createSignedJwt, updateVotOnSiJwt } from "../utils/signedJwtHelper";
 
 const GPG45_RECORD_TYPE = "idrec:gpg45";
 
@@ -54,7 +54,7 @@ export const getUserIdentity = async (
       validatedResponse.isValid,
     );
 
-    const jwt = updateVotOnSiVot(decodedSiJwt, matchedProfile);
+    const jwt = updateVotOnSiJwt(decodedSiJwt, matchedProfile);
     signedJwt = await createSignedJwt(jwt);
   }
 

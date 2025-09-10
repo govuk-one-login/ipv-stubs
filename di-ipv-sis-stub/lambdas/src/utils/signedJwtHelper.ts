@@ -32,7 +32,7 @@ const createKid = async () => {
   return hash.update(`${didStoredIdentityId}#${sisSigningKeyId}`).digest("hex");
 };
 
-export const updateVotOnSiVot = (
+export const updateVotOnSiJwt = (
   siJwt: StoredIdentityJwt,
   matchedProfile: string | undefined,
 ) => {
@@ -46,8 +46,8 @@ export const updateVotOnSiVot = (
     jwt.setAudience(siJwt.aud);
   }
 
-  if (siJwt.aud) {
-    jwt.setAudience(siJwt.aud);
+  if (siJwt.sub) {
+    jwt.setAudience(siJwt.sub);
   }
 
   if (siJwt.nbf) {
