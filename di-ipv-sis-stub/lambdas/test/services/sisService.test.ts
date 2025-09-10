@@ -2,8 +2,19 @@ import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDB, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { getUserIdentity } from "../../src/services/sisService";
+import { decodeJwt } from "jose";
+import { StoredIdentityJwt } from "../../src/domain/userIdentity";
 
 const dbMock = mockClient(DynamoDB);
+
+jest.mock("../../src/config/config", () => ({
+  config: {
+    sisSigningKeyId: "some-key-id",
+    didStoredIdentityId: "some-did-id",
+    sisSigningKey:
+      "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO", //pragma: allowlist secret
+  },
+}));
 
 const TEST_USER_ID = "userId";
 const TEST_SI_JWT =
@@ -34,16 +45,19 @@ describe("getUserIdentity", () => {
 
     // Assert
     expect(res).toEqual({
-      content: MOCK_USER_IDENTITY.storedIdentity,
+      content: expect.any(String),
       vot: MOCK_USER_IDENTITY.levelOfConfidence,
       expired: false,
       isValid: MOCK_USER_IDENTITY.isValid,
       signatureValid: true,
       kidValid: true,
     });
+
+    const parsedContent = decodeJwt<StoredIdentityJwt>(res?.content as string);
+    expect(parsedContent.vot).toEqual("P2");
   });
 
-  it("should return P0 if isValid is false but levelOfConfidence meets requested vtr", async () => {
+  it("should return content.vot=P0 if isValid is false but levelOfConfidence meets requested vtr", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves({
       Items: [marshall({ ...MOCK_USER_IDENTITY, isValid: false })],
@@ -54,13 +68,16 @@ describe("getUserIdentity", () => {
 
     // Assert
     expect(res).toEqual({
-      content: MOCK_USER_IDENTITY.storedIdentity,
-      vot: "P0",
+      content: expect.any(String),
+      vot: MOCK_USER_IDENTITY.levelOfConfidence,
       expired: false,
       isValid: false,
       signatureValid: true,
       kidValid: true,
     });
+
+    const parsedContent = decodeJwt<StoredIdentityJwt>(res?.content as string);
+    expect(parsedContent.vot).toEqual("P0");
   });
 
   it("should return malformed JSON if required properties are missing and isValid=false", async () => {
@@ -96,7 +113,7 @@ describe("getUserIdentity", () => {
     expect(res).toBeNull();
   });
 
-  it("should return not valid and vot=P0 if level of confidence on sis record does not match any of the requested VTRs", async () => {
+  it("should return not valid and content.vot=P0 if level of confidence on sis record does not match any of the requested VTRs", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves({
       Items: [marshall({ ...MOCK_USER_IDENTITY, levelOfConfidence: "P1" })],
@@ -107,13 +124,16 @@ describe("getUserIdentity", () => {
 
     // Assert
     expect(res).toEqual({
-      content: MOCK_USER_IDENTITY.storedIdentity,
-      vot: "P0",
+      content: expect.any(String),
+      vot: "P1",
       expired: false,
       kidValid: true,
       signatureValid: true,
       isValid: false,
     });
+
+    const parsedContent = decodeJwt<StoredIdentityJwt>(res?.content as string);
+    expect(parsedContent.vot).toEqual("P0");
   });
 
   it("should return strongest matched profile", async () => {
@@ -127,12 +147,15 @@ describe("getUserIdentity", () => {
 
     // Assert
     expect(res).toEqual({
-      content: MOCK_USER_IDENTITY.storedIdentity,
-      vot: "P1",
+      content: expect.any(String),
+      vot: "P2",
       expired: false,
       kidValid: true,
       signatureValid: true,
       isValid: true,
     });
+
+    const parsedContent = decodeJwt<StoredIdentityJwt>(res?.content as string);
+    expect(parsedContent.vot).toEqual("P1");
   });
 });

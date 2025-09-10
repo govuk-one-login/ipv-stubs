@@ -6,6 +6,7 @@ export async function vcToSignedJwt(vc: JWTPayload, signingKey: string) {
     `-----BEGIN PRIVATE KEY-----\n${signingKey}\n-----END PRIVATE KEY-----`, // pragma: allowlist secret - the key is coming from config
     "ES256",
   );
+  console.log("");
   return await new SignJWT(vc)
     .setProtectedHeader({ alg: "ES256", typ: "JWT" })
     .sign(formattedSigningKey);

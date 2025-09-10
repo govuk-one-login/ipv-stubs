@@ -2,8 +2,10 @@ import { QueryInput } from "@aws-sdk/client-dynamodb";
 import { config } from "../config/config";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { dynamoClient } from "../clients/dynamodbClient";
-import { UserIdentity } from "../domain/userIdentity";
+import { StoredIdentityJwt, UserIdentity } from "../domain/userIdentity";
 import { getVotForUserIdentity } from "../utils/votHelper";
+import { decodeJwt } from "jose";
+import { createSignedJwt, updateVotOnSiVot } from "../utils/signedJwtHelper";
 
 const GPG45_RECORD_TYPE = "idrec:gpg45";
 
@@ -33,24 +35,32 @@ export const getUserIdentity = async (
     const { storedIdentity, levelOfConfidence, isValid } = unmarshall(siItem);
 
     return {
-      content: storedIdentity,
-      vot: levelOfConfidence,
+      siJwt: storedIdentity,
+      maxVot: levelOfConfidence,
       isValid,
     };
   });
 
   const validatedResponse = validateUserIdentityResponse(parsedResponse[0]);
-  const matchedProfile = validatedResponse.vot
-    ? getVotForUserIdentity(
-        validatedResponse.vot,
-        requestedVtrs,
-        validatedResponse.isValid,
-      )
-    : undefined;
+
+  let signedJwt = validatedResponse.siJwt;
+  let matchedProfile = validatedResponse.maxVot;
+  if (signedJwt && validatedResponse.maxVot) {
+    const decodedSiJwt = decodeJwt<StoredIdentityJwt>(validatedResponse.siJwt);
+
+    matchedProfile = getVotForUserIdentity(
+      validatedResponse.maxVot,
+      requestedVtrs,
+      validatedResponse.isValid,
+    );
+
+    const jwt = updateVotOnSiVot(decodedSiJwt, matchedProfile);
+    signedJwt = await createSignedJwt(jwt);
+  }
 
   return {
-    ...validatedResponse,
-    vot: matchedProfile,
+    content: signedJwt,
+    vot: validatedResponse.maxVot,
     isValid: !!(
       validatedResponse.isValid &&
       matchedProfile &&
@@ -67,7 +77,7 @@ export const getUserIdentity = async (
 
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 const validateUserIdentityResponse = (userIdentityResponse: any) => {
-  const requiredProperties = ["vot", "content"];
+  const requiredProperties = ["maxVot", "siJwt"];
 
   const missingProperties = requiredProperties.filter(
     (key) => !userIdentityResponse[key],
