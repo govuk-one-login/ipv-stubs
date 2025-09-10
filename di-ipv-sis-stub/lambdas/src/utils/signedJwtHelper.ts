@@ -2,27 +2,34 @@ import { importPKCS8, SignJWT } from "jose";
 import { createHash } from "node:crypto";
 import { config } from "../config/config";
 import { StoredIdentityJwt } from "../domain/userIdentity";
+import { getSsmParameter } from "./ssmParameter";
 
 export const createSignedJwt = async (jwt: SignJWT) => {
-  if (!config.sisSigningKey) {
-    throw new Error("No signing key found");
-  }
+  const sisSigningKey = await getSsmParameter(
+    config.sisParamsBasePath + "sisSigningKey",
+  );
 
   const signingKey = await importPKCS8(
-    `-----BEGIN PRIVATE KEY-----\n${config.sisSigningKey}\n-----END PRIVATE KEY-----`, // pragma: allowlist secret
+    `-----BEGIN PRIVATE KEY-----\n${sisSigningKey}\n-----END PRIVATE KEY-----`, // pragma: allowlist secret
     "ES256",
   );
 
   return await jwt
-    .setProtectedHeader({ alg: "ES256", typ: "JWT", kid: createKid() })
+    .setProtectedHeader({ alg: "ES256", typ: "JWT", kid: await createKid() })
     .sign(signingKey);
 };
 
-const createKid = () => {
+const createKid = async () => {
+  const sisSigningKeyId = await getSsmParameter(
+    config.sisParamsBasePath + "sisSigningKeyId",
+  );
+
+  const didStoredIdentityId = await getSsmParameter(
+    config.sisParamsBasePath + "didStoredIdentityId",
+  );
+
   const hash = createHash("sha256");
-  return hash
-    .update(`${config.didStoredIdentityId}#${config.sisSigningKeyId}`)
-    .digest("hex");
+  return hash.update(`${didStoredIdentityId}#${sisSigningKeyId}`).digest("hex");
 };
 
 export const updateVotOnSiVot = (
