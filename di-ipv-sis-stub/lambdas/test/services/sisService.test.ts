@@ -2,9 +2,31 @@ import { mockClient } from "aws-sdk-client-mock";
 import { DynamoDB, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { getUserIdentity } from "../../src/services/sisService";
+import { decodeJwt } from "jose";
+import { StoredIdentityJwt } from "../../src/domain/userIdentity";
+import { getSsmParameter } from "../../src/utils/ssmParameter";
 
 const dbMock = mockClient(DynamoDB);
 
+jest.mock("../../src/utils/ssmParameter", () => {
+  const module = jest.requireActual("../../src/utils/ssmParameter");
+  return {
+    __esModule: true,
+    ...module,
+    getSsmParameter: jest.fn(),
+  };
+});
+
+jest.mock("../../src/config/config", () => ({
+  config: {
+    sisParamsBasePath: "/some/base",
+  },
+}));
+
+const TEST_SIGNING_KEY_ID = "some-key-id";
+const TEST_SIGNING_KEY =
+  "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO"; //pragma: allowlist secret
+const TEST_DID_ID = "some-did-id";
 const TEST_USER_ID = "userId";
 const TEST_SI_JWT =
   "eyJraWQiOiJ0ZXN0LXNpZ25pbmcta2V5IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJodHRwczovL3JldXNlLWlkZW50aXR5LmJ1aWxkLmFjY291bnQuZ292LnVrIiwic3ViIjoiZWFlMDFhYzI5MGE5ODRkMGVhN2MzM2NjNDVlMzZmMTIiLCJuYmYiOjE3NTA2ODIwMTgsImNyZWRlbnRpYWxzIjpbIk43UHhoZmtGa215VFFGS3lBWE15U19INk51Ri13RHpFa3RiX2RWdXJ1bFNSTU1YaG54aGJSMnJ4czlUYy1LUUIwaVhiMV85YUJJOFhDeTJBYkdRdkZRIiwiUzROSlBjaWltYmZ4MDhqczltOThoc3JLTDRiSkh0QlF5S0d0cmRJeklmWW1CUGpyVTlwYXpfdV8xaENySFo4aWp5UW81UlBtUWxNUC1fYzVldXZaSHciLCJBOU9IdUtJOE41aDRDNDU3UTRxdE52a1NGS2ZGZVZNNHNFR3dxUlBjU0hpUXlsemh4UnlxMDBlMURVUUxtU2RpZTlYSWswQ2ZpUVNBX3I3LW1tQ2JBdyIsInk0NHYwcEVBODh6dURoREZEQ0RjUGduOTZwOWJTRm9qeHZQQTFCeEdYTnhEMG5QelFONk1SaG1PWXBTUXg4TW92XzNLWUF4bmZ5aXdSemVBclhKa3FBIl0sImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkubG9jYWwuYWNjb3VudC5nb3YudWsiLCJjbGFpbXMiOnsiaHR0cHM6Ly92b2NhYi5hY2NvdW50Lmdvdi51ay92MS9jb3JlSWRlbnRpdHkiOnsibmFtZSI6W3sibmFtZVBhcnRzIjpbeyJ0eXBlIjoiR2l2ZW5OYW1lIiwidmFsdWUiOiJLRU5ORVRIIn0seyJ0eXBlIjoiRmFtaWx5TmFtZSIsInZhbHVlIjoiREVDRVJRVUVJUkEifV19XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5NjUtMDctMDgifV19LCJodHRwczovL3ZvY2FiLmFjY291bnQuZ292LnVrL3YxL2FkZHJlc3MiOlt7ImFkZHJlc3NDb3VudHJ5IjoiR0IiLCJhZGRyZXNzTG9jYWxpdHkiOiJCQVRIIiwiYnVpbGRpbmdOYW1lIjoiIiwiYnVpbGRpbmdOdW1iZXIiOiI4IiwicG9zdGFsQ29kZSI6IkJBMiA1QUEiLCJzdHJlZXROYW1lIjoiSEFETEVZIFJPQUQiLCJzdWJCdWlsZGluZ05hbWUiOiIiLCJ1cHJuIjoxMDAxMjAwMTIwNzcsInZhbGlkRnJvbSI6IjEwMDAtMDEtMDEifV0sImh0dHBzOi8vdm9jYWIuYWNjb3VudC5nb3YudWsvdjEvcGFzc3BvcnQiOlt7ImRvY3VtZW50TnVtYmVyIjoiMzIxNjU0OTg3IiwiZXhwaXJ5RGF0ZSI6IjIwMzAtMDEtMDEiLCJpY2FvSXNzdWVyQ29kZSI6IkdCUiJ9XX0sInZvdCI6IlAyIiwiaWF0IjoxNzUwNjgyMDE4fQ.nrbiwaOcvWM92TTAlORzerjjrrCuYD9fcxwEoXbf71J3YZUnwNW0KGUN5jaEvOysG0YWTXSLl_W4sN-Krf7PfQ"; // pragma: allowlist secret
@@ -20,6 +42,12 @@ const MOCK_USER_IDENTITY = {
 
 beforeEach(() => {
   dbMock.reset();
+  jest.resetAllMocks();
+  jest
+    .mocked(getSsmParameter)
+    .mockResolvedValueOnce(TEST_SIGNING_KEY)
+    .mockResolvedValueOnce(TEST_SIGNING_KEY_ID)
+    .mockResolvedValueOnce(TEST_DID_ID);
 });
 
 describe("getUserIdentity", () => {
@@ -34,16 +62,19 @@ describe("getUserIdentity", () => {
 
     // Assert
     expect(res).toEqual({
-      content: MOCK_USER_IDENTITY.storedIdentity,
+      content: expect.any(String),
       vot: MOCK_USER_IDENTITY.levelOfConfidence,
       expired: false,
       isValid: MOCK_USER_IDENTITY.isValid,
       signatureValid: true,
       kidValid: true,
     });
+
+    const parsedContent = decodeJwt<StoredIdentityJwt>(res?.content as string);
+    expect(parsedContent.vot).toEqual("P2");
   });
 
-  it("should return P0 if isValid is false but levelOfConfidence meets requested vtr", async () => {
+  it("should return content.vot=P0 if isValid is false but levelOfConfidence meets requested vtr", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves({
       Items: [marshall({ ...MOCK_USER_IDENTITY, isValid: false })],
@@ -54,13 +85,16 @@ describe("getUserIdentity", () => {
 
     // Assert
     expect(res).toEqual({
-      content: MOCK_USER_IDENTITY.storedIdentity,
-      vot: "P0",
+      content: expect.any(String),
+      vot: MOCK_USER_IDENTITY.levelOfConfidence,
       expired: false,
       isValid: false,
       signatureValid: true,
       kidValid: true,
     });
+
+    const parsedContent = decodeJwt<StoredIdentityJwt>(res?.content as string);
+    expect(parsedContent.vot).toEqual("P0");
   });
 
   it("should return malformed JSON if required properties are missing and isValid=false", async () => {
@@ -96,7 +130,7 @@ describe("getUserIdentity", () => {
     expect(res).toBeNull();
   });
 
-  it("should return not valid and vot=P0 if level of confidence on sis record does not match any of the requested VTRs", async () => {
+  it("should return not valid and content.vot=P0 if level of confidence on sis record does not match any of the requested VTRs", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves({
       Items: [marshall({ ...MOCK_USER_IDENTITY, levelOfConfidence: "P1" })],
@@ -107,13 +141,16 @@ describe("getUserIdentity", () => {
 
     // Assert
     expect(res).toEqual({
-      content: MOCK_USER_IDENTITY.storedIdentity,
-      vot: "P0",
+      content: expect.any(String),
+      vot: "P1",
       expired: false,
       kidValid: true,
       signatureValid: true,
       isValid: false,
     });
+
+    const parsedContent = decodeJwt<StoredIdentityJwt>(res?.content as string);
+    expect(parsedContent.vot).toEqual("P0");
   });
 
   it("should return strongest matched profile", async () => {
@@ -127,12 +164,15 @@ describe("getUserIdentity", () => {
 
     // Assert
     expect(res).toEqual({
-      content: MOCK_USER_IDENTITY.storedIdentity,
-      vot: "P1",
+      content: expect.any(String),
+      vot: "P2",
       expired: false,
       kidValid: true,
       signatureValid: true,
       isValid: true,
     });
+
+    const parsedContent = decodeJwt<StoredIdentityJwt>(res?.content as string);
+    expect(parsedContent.vot).toEqual("P1");
   });
 });

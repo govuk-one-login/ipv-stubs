@@ -98,6 +98,7 @@ Resources:
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
           EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
+          SIS_PARAM_BASE_PATH: "/stubs/core/sis/"
           EVCS_STORED_IDENTITY_TABLE:
             Fn::ImportValue: !Sub ${EvcsSisStoreTableName}-${Environment}
           NODE_OPTIONS: --enable-source-maps
@@ -111,6 +112,8 @@ Resources:
         - VPCAccessPolicy: { }
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/sis/*
         - KMSDecryptPolicy:
             KeyId:
               Fn::ImportValue: !Sub ${EvcsDynamoDbKmsKey}-${Environment}

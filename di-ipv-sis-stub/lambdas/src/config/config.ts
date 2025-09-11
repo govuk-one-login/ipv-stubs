@@ -5,4 +5,5 @@ export const config = {
   localDynamoDbEndpoint: process.env.LOCAL_DYNAMODB_ENDPOINT,
   evcsStoredIdentityObjectTableName: process.env.EVCS_STORED_IDENTITY_TABLE,
   evcsParamBasePath: process.env.EVCS_PARAM_BASE_PATH,
+  sisParamsBasePath: process.env.SIS_PARAM_BASE_PATH,
 };
