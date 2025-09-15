@@ -1,4 +1,5 @@
-FROM gradle:jdk17-alpine
+#FROM gradle:jdk17-alpine
+FROM --platform="linux/arm64" gradle:jdk17@sha256:6ff0b959f7da8ba5109f815697f174549668f1a44659d1177eaf8ef11132f476
 
 ARG CONTIND
 ENV CONTIND=$CONTIND
