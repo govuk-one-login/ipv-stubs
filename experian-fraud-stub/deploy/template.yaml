@@ -231,6 +231,11 @@ Resources:
           - Key: deletion_protection.enabled
             Value: true
           - !Ref AWS::NoValue
+      Tags:
+        - Key: FMSRegionalPolicy
+          Value: false
+        - Key: CustomPolicy
+          Value: true
     DependsOn: CoreStubAccessLogsBucketPolicy
 
   LoadBalancerListenerTargetGroupECS:
