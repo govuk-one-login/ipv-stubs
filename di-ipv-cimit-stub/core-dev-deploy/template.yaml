@@ -583,6 +583,9 @@ Resources:
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "Internal CIMIT Usage Plan"
+      Tags:
+        FMSRegionalPolicy: false
+        CustomPolicy: true
       AccessLogSetting:
         DestinationArn: !GetAtt InternalRestApiLogGroup.Arn
         Format: >-
