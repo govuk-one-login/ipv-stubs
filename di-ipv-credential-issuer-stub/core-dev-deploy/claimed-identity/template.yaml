@@ -105,12 +105,12 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "claimed-identity-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "claimed-identity-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "claimed-identity-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainValidationOptions:
         - DomainName: !If
             - IsDev01
             - !Sub "claimed-identity-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !If [IsDev02, !Sub "claimed-identity-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+            - !Sub "claimed-identity-${Environment}.02.core.dev.stubs.account.gov.uk"
           HostedZoneId: !If
             - IsDev01
             - !ImportValue Dev01StubsHostedZoneId
@@ -124,7 +124,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "claimed-identity-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "claimed-identity-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "claimed-identity-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainNameConfigurations:
         - CertificateArn: !Ref CriStubSSLCert
           EndpointType: REGIONAL
@@ -136,7 +136,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "claimed-identity-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "claimed-identity-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "claimed-identity-${Environment}.02.core.dev.stubs.account.gov.uk"
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -151,7 +151,7 @@ Resources:
       Name: !If
         - IsDev01
         - !Sub "claimed-identity-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "claimed-identity-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "claimed-identity-${Environment}.02.core.dev.stubs.account.gov.uk"
       HostedZoneId: !If
         - IsDev01
         - !ImportValue Dev01StubsHostedZoneId
