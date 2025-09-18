@@ -317,12 +317,12 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "ais-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
       DomainValidationOptions:
         - DomainName: !If
             - IsDev01
             - !Sub "ais-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk"
+            - !If [ IsDev02, !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
           HostedZoneId: !If
             - IsDev01
             - !ImportValue Dev01StubsHostedZoneId
@@ -352,7 +352,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "ais-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk"
+        - !If [ IsDev02, !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
       RestApiId: !Ref RestApiGateway
       Stage: !Ref RestApiGateway.Stage
     DependsOn:
@@ -367,7 +367,7 @@ Resources:
       Name: !If
         - IsDev01
         - !Sub "ais-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk"
+        - !If [IsDev02, !Sub "ais-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
       HostedZoneId: !If
         - IsDev01
         - !ImportValue Dev01StubsHostedZoneId
@@ -393,9 +393,6 @@ Resources:
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/ais-external.yaml"
-      Tags:
-        FMSRegionalPolicy: false
-        CustomPolicy: true
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiLogGroup.Arn
         Format: >-
