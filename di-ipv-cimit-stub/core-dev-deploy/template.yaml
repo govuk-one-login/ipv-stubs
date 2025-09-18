@@ -51,15 +51,6 @@ Conditions:
           - !Ref CodeSigningConfigArn
           - "none"
 
-Mappings:
-  CoreAccounts:
-    dev01:
-      accountId: "130355686670"
-    dev02:
-      accountId: "175872367215"
-    build:
-      accountId: "457601271792"
-
 Resources:
   # lambda to stub cimit postMitigations
   PostMitigationsFunction:
@@ -428,12 +419,12 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "cimit-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainValidationOptions:
         - DomainName: !If
             - IsDev01
             - !Sub "cimit-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !If [IsDev02, !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+            - !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk"
           HostedZoneId: !If
             - IsDev01
             - !ImportValue Dev01StubsHostedZoneId
@@ -448,7 +439,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "cimit-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk"
       RegionalCertificateArn: !Ref CimitStubSSLCert
       EndpointConfiguration:
         Types:
@@ -461,7 +452,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "cimit-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk"
       RestApiId: !Ref RestApiGateway
       Stage: !Ref RestApiGateway.Stage
     DependsOn:
@@ -476,7 +467,7 @@ Resources:
       Name: !If
         - IsDev01
         - !Sub "cimit-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "cimit-${Environment}.02.core.dev.stubs.account.gov.uk"
       HostedZoneId: !If
         - IsDev01
         - !ImportValue Dev01StubsHostedZoneId
@@ -492,12 +483,12 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+        - !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainValidationOptions:
         - DomainName: !If
             - IsDev01
             - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+            - !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk"
           HostedZoneId: !If
             - IsDev01
             - !ImportValue Dev01StubsHostedZoneId
@@ -511,7 +502,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+        - !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk"
       RegionalCertificateArn: !Ref CimitStubApiSSLCert
       EndpointConfiguration:
         Types:
@@ -524,7 +515,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [ IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue ]
+        - !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk"
       RestApiId: !Ref InternalRestApiGateway
       Stage: !Ref InternalRestApiGateway.Stage
     DependsOn:
@@ -539,7 +530,7 @@ Resources:
       Name: !If
         - IsDev01
         - !Sub "cimit-api-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "cimit-api-${Environment}.02.core.dev.stubs.account.gov.uk"
       HostedZoneId: !If
         - IsDev01
         - !ImportValue Dev01StubsHostedZoneId
@@ -583,6 +574,9 @@ Resources:
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "Internal CIMIT Usage Plan"
+      Tags:
+        FMSRegionalPolicy: false
+        CustomPolicy: true
       AccessLogSetting:
         DestinationArn: !GetAtt InternalRestApiLogGroup.Arn
         Format: >-

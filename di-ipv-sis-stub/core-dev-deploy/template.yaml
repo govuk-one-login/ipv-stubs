@@ -210,6 +210,9 @@ Resources:
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "SIS Usage Plan"
+      Tags:
+        FMSRegionalPolicy: false
+        CustomPolicy: true
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiLogGroup.Arn
         Format: >-

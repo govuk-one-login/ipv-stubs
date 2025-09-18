@@ -343,6 +343,9 @@ Resources:
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "Queue Stub Usage Plan"
+      Tags:
+        FMSRegionalPolicy: false
+        CustomPolicy: true
 
   CleanQueuesLambda:
     Type: AWS::Serverless::Function

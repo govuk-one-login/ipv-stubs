@@ -105,12 +105,12 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "error-testing-1-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "error-testing-1-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "error-testing-1-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainValidationOptions:
         - DomainName: !If
             - IsDev01
             - !Sub "error-testing-1-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !If [IsDev02, !Sub "error-testing-1-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+            - !Sub "error-testing-1-${Environment}.02.core.dev.stubs.account.gov.uk"
           HostedZoneId: !If
             - IsDev01
             - !ImportValue Dev01StubsHostedZoneId
@@ -124,7 +124,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "error-testing-1-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "error-testing-1-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "error-testing-1-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainNameConfigurations:
         - CertificateArn: !Ref CriStubSSLCert
           EndpointType: REGIONAL
@@ -136,7 +136,7 @@ Resources:
       DomainName: !If
         - IsDev01
         - !Sub "error-testing-1-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "error-testing-1-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "error-testing-1-${Environment}.02.core.dev.stubs.account.gov.uk"
       ApiId: !Ref ApiGwHttpEndpoint
       Stage: "$default"
     DependsOn:
@@ -151,7 +151,7 @@ Resources:
       Name: !If
         - IsDev01
         - !Sub "error-testing-1-${Environment}.01.core.dev.stubs.account.gov.uk"
-        - !If [IsDev02, !Sub "error-testing-1-${Environment}.02.core.dev.stubs.account.gov.uk", !Ref AWS::NoValue]
+        - !Sub "error-testing-1-${Environment}.02.core.dev.stubs.account.gov.uk"
       HostedZoneId: !If
         - IsDev01
         - !ImportValue Dev01StubsHostedZoneId
@@ -315,6 +315,11 @@ Resources:
       #checkov:skip=CKV_AWS_91:ALB access logging is disabled in developer environments to make them easier to manage.
       LoadBalancerAttributes:
         - Key: routing.http.drop_invalid_header_fields.enabled
+          Value: true
+      Tags:
+        - Key: FMSRegionalPolicy
+          Value: false
+        - Key: CustomPolicy
           Value: true
 
   LoadBalancerListenerTargetGroupECS:
