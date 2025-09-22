@@ -46,23 +46,24 @@ Parameters:
     Default: vpc
 
 Mappings:
-  EnvConfig:
-    dev:
+  HostedZoneImportName:
+    "110869144943": # Reuse stubs dev
       LambdaLogLevel: DEBUG
-      APIBaseURL: mock.credential-store.dev.account.gov.uk
-      Audience: https://credential-store.dev.account.gov.uk
-    build:
-      LambdaLogLevel: DEBUG
-      APIBaseURL: mock.credential-store.build.account.gov.uk
-      Audience: https://credential-store.build.account.gov.uk
-    staging:
+      Name: ReusePublicHostedZoneId
+    "054367266435": # Reuse stubs build
       LambdaLogLevel: INFO
-      APIBaseURL: mock.credential-store.staging.account.gov.uk
-      Audience: https://credential-store.staging.account.gov.uk
+      Name: ReusePublicHostedZoneId
 
 Conditions:
   UsePermissionsBoundary: !Not [!Equals [!Ref PermissionsBoundary, 'none']]
+
   UseCodeSigning: !Not [!Equals [!Ref CodeSigningConfigArn, 'none']]
+
+  IsReuseDev:
+    Fn::Equals: [ !Ref "AWS::AccountId", "110869144943"]
+
+  IsReuseMain:
+    Fn::Equals: [ !Ref "AWS::StackName", "credential-store"]
 
 Globals:
   Function:
@@ -73,7 +74,15 @@ Globals:
       Variables:
         AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
         DEFAULT_SSM_VALUE: 'set-me'
-        POWERTOOLS_LOG_LEVEL: !FindInMap [ EnvConfig, !Ref Environment, LambdaLogLevel ]
+        POWERTOOLS_LOG_LEVEL: 
+          Fn::FindInMap: [HostedZoneImportName, !Ref "AWS::AccountId", LambdaLogLevel]
+    VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
 
 Resources:
   ###########################
@@ -102,20 +111,14 @@ Resources:
               Ref: RestApi
       Environment:
         Variables:
+          POWERTOOLS_SERVICE_NAME: TokenGeneratorFunction
           METRIC_SERVICE_NAME: TokenGeneratorFunction
           EC_PRIVATE_KEY_SSM_NAME: !Sub /${AWS::StackName}/EcPrivateKey
           RSA_PRIVATE_KEY_SSM_NAME: !Sub /${AWS::StackName}/RsaPrivateKey
           EC_PRIVATE_KEY_SSM_NAME_AUTHENTICATION: !Sub /${AWS::StackName}/Authentication/EcPrivateKey
           RSA_PRIVATE_KEY_SSM_NAME_AUTHENTICATION: !Sub /${AWS::StackName}/Authentication/RsaPrivateKey
-          DEFAULT_ISSUER: !FindInMap [EnvConfig, !Ref Environment, APIBaseURL]
-          DEFAULT_AUDIENCE: !FindInMap [EnvConfig, !Ref Environment, Audience]
-      VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
-        SecurityGroupIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+          DEFAULT_ISSUER: !Ref CustomDomain
+          DEFAULT_AUDIENCE: !Sub "https://${CustomDomain}"
       Tags:
         CheckovRulesToSkip: CKV_AWS_116.CKV_AWS_115
         Product: !Ref ProductTagValue
@@ -227,6 +230,7 @@ Resources:
       Timeout: 31
       Environment:
         Variables:
+          POWERTOOLS_SERVICE_NAME: JwksFunction
           METRIC_SERVICE_NAME: JwksFunction
           EC_PUBLIC_KEY_SSM_NAME: !Sub /${AWS::StackName}/EcPublicKey
           RSA_PUBLIC_KEY_SSM_NAME: !Sub /${AWS::StackName}/RsaPublicKey
@@ -252,13 +256,6 @@ Resources:
             Method: GET
             RestApiId:
               Ref: RestApi
-      VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
-        SecurityGroupIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
       Tags:
         CheckovRulesToSkip: CKV_AWS_116.CKV_AWS_115
         Product: !Ref ProductTagValue
@@ -564,7 +561,9 @@ Resources:
     Properties:
       Name: !Ref CustomDomain
       Type: A
-      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Infra/Route53/HostedZone/CredentialStore/ID}}'
+      HostedZoneId:
+        Fn::ImportValue:
+          Fn::FindInMap: [HostedZoneImportName, !Ref "AWS::AccountId", Name]
       AliasTarget:
         DNSName: !GetAtt CustomDomain.RegionalDomainName
         HostedZoneId: !GetAtt CustomDomain.RegionalHostedZoneId
@@ -600,8 +599,14 @@ Resources:
   CustomDomain:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !FindInMap [EnvConfig, !Ref Environment, APIBaseURL]
-      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Infra/ACM/HostedZone/Certificate/CredentialStore/ARN}}'
+      DomainName: !If
+        - IsReuseDev
+        - !If
+          - IsReuseMain
+          - !Sub "credential-store.reuse.${Environment}.stubs.account.gov.uk"
+          - !Sub "credential-store-${AWS::StackName}.reuse.dev.stubs.account.gov.uk"
+        - !Sub "credential-store.reuse.stubs.account.gov.uk"
+      RegionalCertificateArn: !Ref CredentialStoreSSLCert
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -617,6 +622,29 @@ Resources:
         Value: !Ref OwnerTagValue
       - Key: Source
         Value: !Ref SourceTagValue
+
+  CredentialStoreSSLCert:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !If
+        - IsReuseDev
+        - !If
+          - IsReuseMain
+          - !Sub "credential-store.reuse.${Environment}.stubs.account.gov.uk"
+          - !Sub "credential-store-${AWS::StackName}.reuse.dev.stubs.account.gov.uk"
+        - !Sub "credential-store.reuse.stubs.account.gov.uk"
+      DomainValidationOptions:
+        - DomainName: !If
+          - IsReuseDev
+          - !If
+            - IsReuseMain
+            - !Sub "credential-store.reuse.${Environment}.stubs.account.gov.uk"
+            - !Sub "credential-store-${AWS::StackName}.reuse.dev.stubs.account.gov.uk"
+          - !Sub "credential-store.reuse.stubs.account.gov.uk"
+          HostedZoneId:
+            Fn::ImportValue:
+              Fn::FindInMap: [HostedZoneImportName, !Ref "AWS::AccountId", Name]
+      ValidationMethod: DNS
 
   ConfigLambdaPermission:
     Type: "AWS::Lambda::Permission"

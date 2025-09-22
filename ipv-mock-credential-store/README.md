@@ -5,25 +5,22 @@ A mock environment to simulate the authoriser provider by creating tokens and mu
 
 ## How To
 ### Prerequisites
-- [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html#install-sam-cli-instructions) >= 1.73.0
+- [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html#install-sam-cli-instructions)
 
 ### Clone the repo and switch to mock-environment
 ```shell
-git clone git@github.com:govuk-one-login/ipv-identity-reuse-storage.git
-cd ipv-identity-reuse-storage/mock-environment
+git clone git@github.com:govuk-one-login/ipv-stubs.git
+cd ipv-stubs/ipv-mock-credential-store
 ```
 
 ### Install Project Dependencies
 ```shell
-cd mock-environment
-yarn install --frozen-lockfile
+npm ci
 ```
 
 ### Build & Deploy Project
 ```shell
-cd mock-environment
-yarn build
-yarn deploy
+sam build -t src/infra/template.yaml --parallel
 ```
 
 ### Updating SSM with signing key pairs
