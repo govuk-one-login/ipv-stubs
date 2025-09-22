@@ -28,7 +28,7 @@ dependencies {
 	annotationProcessor "org.projectlombok:lombok:1.18.38"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.13.4",
-			"org.mockito:mockito-junit-jupiter:5.18.0"
+			"org.mockito:mockito-junit-jupiter:5.20.0"
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

@@ -17,7 +17,7 @@ dependencies {
 			"com.amazonaws:aws-lambda-java-events:3.16.1"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:5.13.4",
-			"org.mockito:mockito-junit-jupiter:5.18.0",
+			"org.mockito:mockito-junit-jupiter:5.20.0",
 			'uk.org.webcompere:system-stubs-jupiter:2.1.8'
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
