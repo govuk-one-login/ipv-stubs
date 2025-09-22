@@ -6,7 +6,8 @@
   "license": "UNLICENSED",
   "type": "module",
   "scripts": {
-    "test": "jest --verbose"
+    "test": "jest --verbose",
+    "build": "sam build -t src/infra/template.yaml"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "2.17.0",

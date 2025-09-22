@@ -1,5 +1,5 @@
-name: deploy-evcs-stub
-description: Deploy the EVCS stub to a given environment
+name: deploy-stub
+description: Deploy stub to a given environment
 inputs:
   role-to-assume:
     required: true
@@ -10,6 +10,9 @@ inputs:
   signing-profile-name:
     required: true
     description: The signing profile used to sign code on upload
+  working-directory:
+    required: true
+    description: The working directory
 runs:
   using: composite
   steps:
@@ -24,5 +27,5 @@ runs:
       with:
         artifact-bucket-name: ${{ inputs.artifact-bucket-name }}
         signing-profile-name: ${{ inputs.signing-profile-name }}
-        working-directory: ./di-ipv-evcs-stub/deploy
+        working-directory: ${{ inputs.working-directory }}
         template-file: .aws-sam/build/template.yaml

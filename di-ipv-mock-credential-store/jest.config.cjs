@@ -13,8 +13,8 @@ module.exports = {
   },
 };
 
-process.env['EC_PRIVATE_KEY_SSM_NAME'] = 'ecPrivateKeyName';
-process.env['RSA_PRIVATE_KEY_SSM_NAME'] = 'rsaPrivateKeyName';
+process.env['EC_PRIVATE_KEY_SSM_NAME'] = 'ecPrivateKeyName'; // pragma: allowlist secret
+process.env['RSA_PRIVATE_KEY_SSM_NAME'] = 'rsaPrivateKeyName'; // pragma: allowlist secret
 process.env['EC_PUBLIC_KEY_SSM_NAME'] = 'ecPublicKeyName';
 process.env['RSA_PUBLIC_KEY_SSM_NAME'] = 'rsaPublicKeyName';
 process.env['DEFAULT_SSM_VALUE'] = "mock-value";

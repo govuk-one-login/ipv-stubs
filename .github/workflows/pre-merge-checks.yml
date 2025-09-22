@@ -108,3 +108,18 @@ jobs:
       - name: Test
         working-directory: ./di-ipv-ais-stub/lambdas
         run: npm run test
+  build-mock-credential-store:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install
+        working-directory: ./di-ipv-mock-credential-store
+        run: npm ci
+      - name: Build
+        working-directory: ./di-ipv-mock-credential-store
+        run: npm run build
+      - name: Test
+        working-directory: ./di-ipv-mock-credential-store
+        run: npm run test
