@@ -1,0 +1,628 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: >-
+  Mock environment to retrieve and verify tokens
+
+Parameters:
+  Environment:
+    Description: The name of the environment to deploy to
+    Type: String
+    AllowedValues:
+      - dev
+      - build
+      - staging
+    Default: dev
+  ApiStageName:
+    Description: The stage name of the API
+    Type: String
+    Default: dev
+  CodeSigningConfigArn:
+    Description: Asserts that lambdas are signed when deployed.
+    Type: String
+    Default: none
+  PermissionsBoundary:
+    Description: The ARN of the permissions boundary to apply when creating IAM roles
+    Type: String
+    Default: none
+  ProductTagValue:
+    Description: Value for the Product Tag
+    Type: String
+    Default: GOV.UK One Login
+  SystemTagValue:
+    Description: Value for the System Tag
+    Type: String
+    Default: VC Storage
+  OwnerTagValue:
+    Description: Value for the Owner Tag
+    Type: String
+    Default: credential-store@digital.cabinet-office.gov.uk
+  SourceTagValue:
+    Description: Value for the Source Tag
+    Type: String
+    Default: govuk-one-login/ipv-identity-reuse-storage/mock-environment/src/infra/template.yaml
+  VpcStackName:
+    Description: The name of the stack that defines the VPC
+    Type: String
+    Default: vpc
+
+Mappings:
+  EnvConfig:
+    dev:
+      LambdaLogLevel: DEBUG
+      APIBaseURL: mock.credential-store.dev.account.gov.uk
+      Audience: https://credential-store.dev.account.gov.uk
+    build:
+      LambdaLogLevel: DEBUG
+      APIBaseURL: mock.credential-store.build.account.gov.uk
+      Audience: https://credential-store.build.account.gov.uk
+    staging:
+      LambdaLogLevel: INFO
+      APIBaseURL: mock.credential-store.staging.account.gov.uk
+      Audience: https://credential-store.staging.account.gov.uk
+
+Conditions:
+  UsePermissionsBoundary: !Not [!Equals [!Ref PermissionsBoundary, 'none']]
+  UseCodeSigning: !Not [!Equals [!Ref CodeSigningConfigArn, 'none']]
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Architectures:
+      - arm64
+    Environment:
+      Variables:
+        AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+        DEFAULT_SSM_VALUE: 'set-me'
+        POWERTOOLS_LOG_LEVEL: !FindInMap [ EnvConfig, !Ref Environment, LambdaLogLevel ]
+
+Resources:
+  ###########################
+  # TOKEN GENERATOR FEATURE #
+  ###########################
+
+  TokenGeneratorFunction:
+    # checkov:skip=CKV_AWS_116: DLQ is not appropriate for a Lambda invoked by an API
+    # checkov:skip=CKV_AWS_115: Function is not configured for function-level concurrent execution Limit
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Generates a signed JWT token for authorisation in non-prod environments
+      CodeUri: ../handlers
+      Handler: token-generator.handle
+      MemorySize: 1024
+      # ReservedConcurrentExecutions: 5
+      Role: !GetAtt TokenGeneratorRole.Arn
+      CodeSigningConfigArn: !If [UseCodeSigning, !Ref CodeSigningConfigArn, !Ref AWS::NoValue]
+      Events:
+        TokenGenerator:
+          Type: Api
+          Properties:
+            Path: /generate
+            Method: POST
+            RestApiId:
+              Ref: RestApi
+      Environment:
+        Variables:
+          METRIC_SERVICE_NAME: TokenGeneratorFunction
+          EC_PRIVATE_KEY_SSM_NAME: !Sub /${AWS::StackName}/EcPrivateKey
+          RSA_PRIVATE_KEY_SSM_NAME: !Sub /${AWS::StackName}/RsaPrivateKey
+          EC_PRIVATE_KEY_SSM_NAME_AUTHENTICATION: !Sub /${AWS::StackName}/Authentication/EcPrivateKey
+          RSA_PRIVATE_KEY_SSM_NAME_AUTHENTICATION: !Sub /${AWS::StackName}/Authentication/RsaPrivateKey
+          DEFAULT_ISSUER: !FindInMap [EnvConfig, !Ref Environment, APIBaseURL]
+          DEFAULT_AUDIENCE: !FindInMap [EnvConfig, !Ref Environment, Audience]
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+      Tags:
+        CheckovRulesToSkip: CKV_AWS_116.CKV_AWS_115
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Environment: !Ref Environment
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - token-generator.ts
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        Format: esm
+        Platform: node
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+
+  TokenGeneratorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: token generator lambda role
+      PermissionsBoundary: !If [UsePermissionsBoundary, !Ref PermissionsBoundary, !Ref AWS::NoValue]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Tags:
+        - Key: Product
+          Value: !Ref ProductTagValue
+        - Key: System
+          Value: !Ref SystemTagValue
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref OwnerTagValue
+        - Key: Source
+          Value: !Ref SourceTagValue
+
+  TokenGeneratorPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-TokenGeneratorPolicy"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource:
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/Authentication/EcPrivateKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/Authentication/RsaPrivateKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/EcPrivateKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/RsaPrivateKey
+          - Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource:
+              - !GetAtt TokenGeneratorLogGroup.Arn
+      Roles:
+        - !Ref TokenGeneratorRole
+
+  TokenGeneratorLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${TokenGeneratorFunction}
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+      Tags:
+        - Key: Product
+          Value: !Ref ProductTagValue
+        - Key: System
+          Value: !Ref SystemTagValue
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref OwnerTagValue
+        - Key: Source
+          Value: !Ref SourceTagValue
+
+  ###########################
+  # JWKS ENDPOINT FEATURE #
+  ###########################
+
+  JwksFunction:
+    # checkov:skip=CKV_AWS_116: DLQ is not appropriate for a Lambda invoked by an API
+    # checkov:skip=CKV_AWS_115: Function is not configured for function-level concurrent execution Limit
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Creates the JWKS json to verify tokens created by the token generator lambda
+      CodeUri: ../handlers
+      Handler: jwks.handle
+      # ReservedConcurrentExecutions: 5
+      MemorySize: 1024
+      Role: !GetAtt JwksRole.Arn
+      CodeSigningConfigArn: !If [UseCodeSigning, !Ref CodeSigningConfigArn, !Ref AWS::NoValue]
+      Timeout: 31
+      Environment:
+        Variables:
+          METRIC_SERVICE_NAME: JwksFunction
+          EC_PUBLIC_KEY_SSM_NAME: !Sub /${AWS::StackName}/EcPublicKey
+          RSA_PUBLIC_KEY_SSM_NAME: !Sub /${AWS::StackName}/RsaPublicKey
+          EC_PUBLIC_KEY_SSM_NAME_AUTHENTICATION: !Sub /${AWS::StackName}/Authentication/EcPublicKey
+          RSA_PUBLIC_KEY_SSM_NAME_AUTHENTICATION: !Sub /${AWS::StackName}/Authentication/RsaPublicKey
+          PERCENTAGE_RETURN_4XX: 0
+          PERCENTAGE_RETURN_5XX: 0
+          PERCENTAGE_TIMEOUT: 0
+          PERCENTAGE_DELAY: 0
+          MAXIMUM_DELAY_MILLISECONDS: 0
+      Events:
+        orchjwks:
+          Type: Api
+          Properties:
+            Path: orchestration/.well-known/storage-token-jwk.json
+            Method: GET
+            RestApiId:
+              Ref: RestApi
+        authjwks:
+          Type: Api
+          Properties:
+            Path: authentication/.not-well-known/jwks.json
+            Method: GET
+            RestApiId:
+              Ref: RestApi
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+      Tags:
+        CheckovRulesToSkip: CKV_AWS_116.CKV_AWS_115
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Environment: !Ref Environment
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        EntryPoints:
+          - jwks.ts
+        Minify: true
+        Target: es2022
+        Sourcemap: false
+        Format: esm
+        Platform: node
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+
+  JwksRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Description: JWKS lambda role
+      PermissionsBoundary: !If [UsePermissionsBoundary, !Ref PermissionsBoundary, !Ref AWS::NoValue]
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Tags:
+        - Key: Product
+          Value: !Ref ProductTagValue
+        - Key: System
+          Value: !Ref SystemTagValue
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref OwnerTagValue
+        - Key: Source
+          Value: !Ref SourceTagValue
+
+  JwksPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "${AWS::StackName}-JwksPolicy"
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !GetAtt JwksLogGroup.Arn
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+            Resource:
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/EcPublicKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/RsaPublicKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/Authentication/EcPublicKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/Authentication/RsaPublicKey
+      Roles:
+        - Ref: JwksRole
+
+  JwksLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${JwksFunction}
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+      Tags:
+        - Key: Product
+          Value: !Ref ProductTagValue
+        - Key: System
+          Value: !Ref SystemTagValue
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref OwnerTagValue
+        - Key: Source
+          Value: !Ref SourceTagValue
+
+  ########
+  # KEYS #
+  ########
+
+  CloudWatchEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: AWS KMS key for encrypting CloudWatch logs
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource: '*'
+          - Effect: Allow
+            Principal:
+              Service: !Sub logs.${AWS::Region}.amazonaws.com
+            Action:
+              - kms:Encrypt*
+              - kms:Decrypt*
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:Describe*
+            Resource: '*'
+            Condition:
+              ArnLike:
+                kms:EncryptionContext:aws:logs:arn:
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-TokenGeneratorFunction*
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${AWS::StackName}-JwksFunction*
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/apigateway/${RestApi}/${ApiStageName}
+      Tags:
+        - Key: Product
+          Value: !Ref ProductTagValue
+        - Key: System
+          Value: !Ref SystemTagValue
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref OwnerTagValue
+        - Key: Source
+          Value: !Ref SourceTagValue
+
+  CloudWatchEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}-CloudWatchEncryptionKey
+      TargetKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+# params to store authentication issuer keys
+  AuthenticationECPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The EC private key for Authentication Issuer
+      Name: !Sub /${AWS::StackName}/Authentication/EcPrivateKey
+      Type: String
+      Value: 'set-me'
+      Tags:
+        Environment: !Ref Environment
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+    # DependsOn:
+    #   - RSAPrivateKeySSM
+
+  AuthenticationECPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The EC public key
+      Name: !Sub /${AWS::StackName}/Authentication/EcPublicKey
+      Type: String
+      Value: 'set-me'
+      Tags:
+        Environment: !Ref Environment
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+
+  AuthenticationRSAPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The RSA private key
+      Name: !Sub /${AWS::StackName}/Authentication/RsaPrivateKey
+      Type: String
+      Value: 'set-me'
+      Tags:
+        Environment: !Ref Environment
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+
+  AuthenticationRSAPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The RSA public key
+      Name: !Sub /${AWS::StackName}/Authentication/RsaPublicKey
+      Type: String
+      Value: 'set-me'
+      Tags:
+        Environment: !Ref Environment
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+
+  # params to store Orchestration issuer keys (can rename later)
+  ECPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The EC private key
+      Name: !Sub /${AWS::StackName}/EcPrivateKey
+      Type: String
+      Value: 'set-me'
+      Tags:
+        Environment: !Ref Environment
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+    # DependsOn:
+    #   - RSAPrivateKeySSM
+
+  ECPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The EC public key
+      Name: !Sub /${AWS::StackName}/EcPublicKey
+      Type: String
+      Value: 'set-me'
+      Tags:
+        Environment: !Ref Environment
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+
+  RSAPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The RSA private key
+      Name: !Sub /${AWS::StackName}/RsaPrivateKey
+      Type: String
+      Value: 'set-me'
+      Tags:
+        Environment: !Ref Environment
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+
+  RSAPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The RSA public key
+      Name: !Sub /${AWS::StackName}/RsaPublicKey
+      Type: String
+      Value: 'set-me'
+      Tags:
+        Environment: !Ref Environment
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+
+
+  #######
+  # API #
+  #######
+
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Description: HTTP API to emulate a token issuer for authorization in non-prod environments
+      StageName: !Ref Environment
+      CacheClusterEnabled: true
+      CacheClusterSize: "0.5"
+      AlwaysDeploy: true
+      MethodSettings:
+        - HttpMethod: GET
+          CachingEnabled: true
+          CacheTtlInSeconds: 3600
+          CacheDataEncrypted: false
+          ResourcePath: /orchestration/.well-known/storage-token-jwk.json
+        - HttpMethod: GET
+          CachingEnabled: true
+          CacheTtlInSeconds: 3600
+          CacheDataEncrypted: false
+          ResourcePath: /authentication/.not-well-known/jwks.json
+        - HttpMethod: POST
+          ResourcePath: /generate
+          CachingEnabled: false
+      TracingEnabled: true
+      AccessLogSetting:
+        DestinationArn: !GetAtt ApiGatewayApiLogGroup.Arn
+        Format: $context.requestId
+      Tags:
+        Product: !Ref ProductTagValue
+        System: !Ref SystemTagValue
+        Environment: !Ref Environment
+        Owner: !Ref OwnerTagValue
+        Source: !Ref SourceTagValue
+        FMSRegionalPolicy: false
+        CustomPolicy: true
+
+  ApiRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Ref CustomDomain
+      Type: A
+      HostedZoneId: !Sub '{{resolve:ssm:/${Environment}/Infra/Route53/HostedZone/CredentialStore/ID}}'
+      AliasTarget:
+        DNSName: !GetAtt CustomDomain.RegionalDomainName
+        HostedZoneId: !GetAtt CustomDomain.RegionalHostedZoneId
+        EvaluateTargetHealth: false
+
+  ApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref CustomDomain
+      RestApiId: !Ref RestApi
+      Stage: !Ref Environment
+    DependsOn:
+      - RestApiStage # This resource is created as part of the RestApi resource
+
+  ApiGatewayApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${RestApi}/${ApiStageName}"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+      Tags:
+        - Key: Product
+          Value: !Ref ProductTagValue
+        - Key: System
+          Value: !Ref SystemTagValue
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Owner
+          Value: !Ref OwnerTagValue
+        - Key: Source
+          Value: !Ref SourceTagValue
+
+  CustomDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName: !FindInMap [EnvConfig, !Ref Environment, APIBaseURL]
+      RegionalCertificateArn: !Sub '{{resolve:ssm:/${Environment}/Infra/ACM/HostedZone/Certificate/CredentialStore/ARN}}'
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+      Tags:
+      - Key: Product
+        Value: !Ref ProductTagValue
+      - Key: System
+        Value: !Ref SystemTagValue
+      - Key: Environment
+        Value: !Ref Environment
+      - Key: Owner
+        Value: !Ref OwnerTagValue
+      - Key: Source
+        Value: !Ref SourceTagValue
+
+  ConfigLambdaPermission:
+    Type: "AWS::Lambda::Permission"
+    DependsOn:
+      - RestApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref JwksFunction
+      Principal: apigateway.amazonaws.com

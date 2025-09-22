@@ -1,0 +1,39 @@
+{
+  "name": "mock-environment",
+  "version": "1.0.0",
+  "description": "Instantiates a mock representation of external/3rd party API endpoints",
+  "author": "GDS",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "test": "jest --verbose",
+    "build": "sam build --template src/infra/template.yaml",
+    "audit:fix": "yarn-audit-fix"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "2.17.0",
+    "@aws-lambda-powertools/parameters": "2.17.0",
+    "@aws-sdk/client-ssm": "3.777.0",
+    "@aws-sdk/client-sso-oidc": "3.777.0",
+    "@aws-sdk/client-sts": "3.777.0",
+    "aws-crt": "1.26.2",
+    "ecdsa-sig-formatter": "1.0.11",
+    "jose": "6.0.10"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "8.10.148",
+    "@types/jest": "29.5.14",
+    "@types/node": "20.17.30",
+    "@types/node-jose": "1.1.13",
+    "esbuild": "0.25.2",
+    "jest": "29.7.0",
+    "ts-jest": "29.3.1",
+    "ts-jest-resolver": "2.0.1",
+    "typescript": "5.8.2",
+    "yaml-cfn": "0.3.2",
+    "yarn-audit-fix": "10.1.1"
+  },
+  "resolutions": {
+    "form-data": ">=4.0.4"
+  }
+}
