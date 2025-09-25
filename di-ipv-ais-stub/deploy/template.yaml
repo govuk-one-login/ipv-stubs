@@ -424,6 +424,9 @@ Resources:
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/ais-external.yaml"
+      Tags:
+        FMSRegionalPolicy: false
+        CustomPolicy: true
       AccessLogSetting:
         DestinationArn: !GetAtt RestApiLogGroup.Arn
         Format: >-
