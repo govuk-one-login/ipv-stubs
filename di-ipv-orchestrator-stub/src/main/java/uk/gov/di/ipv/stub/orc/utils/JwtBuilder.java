@@ -61,6 +61,12 @@ public class JwtBuilder {
     private static final JWSSigner ORCH_SIGNER = createSigner(ORCHESTRATOR_SIGNING_JWK);
     private static final JWSSigner AUTH_SIGNER = createSigner(AUTH_SIGNING_JWK);
 
+    public enum ReproveIdentityClaimValue {
+        NOT_PRESENT,
+        TRUE,
+        FALSE
+    }
+
     public static JWTClaimsSet buildAuthorizationRequestClaims(
             String userId,
             String signInJourneyId,
@@ -68,6 +74,7 @@ public class JwtBuilder {
             List<String> vtr,
             String errorType,
             String userEmailAddress,
+            ReproveIdentityClaimValue reproveIdentityValue,
             String environment,
             Scope scope,
             String clientId,
@@ -105,6 +112,10 @@ public class JwtBuilder {
                         .claim("email_address", userEmailAddress)
                         .claim("vtr", vtr)
                         .claim("scope", scope.toString());
+        if (reproveIdentityValue != ReproveIdentityClaimValue.NOT_PRESENT) {
+            claimSetBuilder.claim(
+                    "reprove_identity", reproveIdentityValue == ReproveIdentityClaimValue.TRUE);
+        }
         return claimSetBuilder.build();
     }
 

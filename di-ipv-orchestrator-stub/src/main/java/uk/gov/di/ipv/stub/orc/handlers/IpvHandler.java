@@ -75,6 +75,7 @@ public class IpvHandler {
     private static final String JOURNEY_ID_PARAM = "signInJourneyIdText";
     private static final String VTR_PARAM = "vtrText";
     private static final String ENVIRONMENT_PARAM = "targetEnvironment";
+    private static final String REPROVE_IDENTITY_PARAM = "reproveIdentity";
     private static final String EMAIL_ADDRESS_PARAM = "emailAddress";
     private static final String MFA_RESET_PARAM = "mfaReset";
     private static final String ERROR_TYPE_PARAM = "error";
@@ -135,6 +136,7 @@ public class IpvHandler {
                             null,
                             errorType,
                             userEmailAddress,
+                            JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT,
                             environment,
                             scope,
                             clientId,
@@ -149,6 +151,12 @@ public class IpvHandler {
                             .filter(value -> !value.isEmpty())
                             .toList();
 
+            var reproveIdentityString = ctx.queryParam(REPROVE_IDENTITY_PARAM);
+            var reproveIdentityClaimValue =
+                    StringUtils.isNotBlank(reproveIdentityString)
+                            ? JwtBuilder.ReproveIdentityClaimValue.valueOf(reproveIdentityString)
+                            : JwtBuilder.ReproveIdentityClaimValue.NOT_PRESENT;
+
             claims =
                     JwtBuilder.buildAuthorizationRequestClaims(
                             userId,
@@ -157,6 +165,7 @@ public class IpvHandler {
                             vtr,
                             errorType,
                             userEmailAddress,
+                            reproveIdentityClaimValue,
                             environment,
                             scope,
                             clientId,
