@@ -356,6 +356,11 @@ Resources:
           - Key: deletion_protection.enabled
             Value: false
           - !Ref AWS::NoValue
+      Tags:
+        - Key: FMSRegionalPolicy
+          Value: false
+        - Key: CustomPolicy
+          Value: true
 
   LoadBalancerListenerTargetGroupECS:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
