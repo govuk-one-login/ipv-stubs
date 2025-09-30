@@ -21,7 +21,7 @@ dependencies {
 			"com.google.code.gson:gson:2.13.1",
 			"org.slf4j:slf4j-simple:2.0.17",
 			"org.yaml:snakeyaml:2.4",
-			"com.fasterxml.jackson.core:jackson-databind:2.19.2",
+			"com.fasterxml.jackson.core:jackson-databind:2.20.0",
 			"com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.2",
 			"org.eclipse.jetty:jetty-server:10.0.26", // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/24
 			"org.eclipse.jetty:jetty-webapp:10.0.26" // https://github.com/govuk-one-login/ipv-stubs/security/dependabot/26
