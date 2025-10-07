@@ -12,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
+import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 
@@ -30,13 +31,16 @@ public class CredentialHandlerTest {
     @Mock private Context mockContext;
     @Mock private CredentialService mockCredentialService;
     @Mock private TokenService mockTokenService;
+    @Mock private RequestedErrorResponseService mockRequestedErrorResponseService;
     private CredentialHandler resourceHandler;
     private AccessToken accessToken;
 
     @BeforeEach
     void setup() {
         accessToken = new BearerAccessToken();
-        resourceHandler = new CredentialHandler(mockCredentialService, mockTokenService);
+        resourceHandler =
+                new CredentialHandler(
+                        mockCredentialService, mockTokenService, mockRequestedErrorResponseService);
     }
 
     @Test

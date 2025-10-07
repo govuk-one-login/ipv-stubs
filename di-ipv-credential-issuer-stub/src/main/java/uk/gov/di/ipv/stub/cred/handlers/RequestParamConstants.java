@@ -22,8 +22,9 @@ public class RequestParamConstants {
     public static final String VERIFICATION = "verificationScore";
     public static final String BIOMETRIC_VERIFICATION = "biometricVerificationScore";
 
-    public static final String REQUESTED_OAUTH_ERROR = "requested_oauth_error";
     public static final String REQUESTED_OAUTH_ERROR_ENDPOINT = "requested_oauth_error_endpoint";
+    public static final String REQUESTED_OAUTH_ERROR = "requested_oauth_error";
+    public static final String REQUESTED_API_ERROR = "requested_api_error";
     public static final String REQUESTED_OAUTH_ERROR_DESCRIPTION =
             "requested_oauth_error_description";
     public static final String REQUESTED_USERINFO_ERROR = "requested_userinfo_error";

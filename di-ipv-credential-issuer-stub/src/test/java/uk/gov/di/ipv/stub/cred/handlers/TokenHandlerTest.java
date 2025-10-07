@@ -200,7 +200,7 @@ public class TokenHandlerTest {
     }
 
     @Test
-    void shouldReturn400IfClientConfigureForAuthenticationProvidesClientId() throws Exception {
+    void shouldReturn400IfClientConfigureForAuthenticationProvidesClientId() {
         setupMockFormParams(Map.of(RequestParamConstants.CLIENT_ID, "clientIdValid"));
         when(mockValidator.validateTokenRequest(any()))
                 .thenReturn(ValidationResult.createValidResult());
@@ -217,7 +217,7 @@ public class TokenHandlerTest {
     }
 
     @Test
-    void shouldReturn400ResponseWhenRedirectUrlsDoNotMatch() throws Exception {
+    void shouldReturn400ResponseWhenRedirectUrlsDoNotMatch() {
         setupMockFormParams(Map.of(RequestParamConstants.CLIENT_ID, "noAuthenticationClient"));
 
         when(mockValidator.validateTokenRequest(any()))
@@ -237,25 +237,25 @@ public class TokenHandlerTest {
     }
 
     @Test
-    void shouldReturn400WithRequestedOAuthError() throws Exception {
+    void shouldReturn400WithRequestedApiError() {
         setupMockFormParams(
                 Map.of(
                         RequestParamConstants.AUTH_CODE, "anAuthCode",
-                        RequestParamConstants.REQUESTED_OAUTH_ERROR, "access_denied",
                         RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, "token",
+                        RequestParamConstants.REQUESTED_API_ERROR, "403",
                         RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
                                 "an requestedError description"));
 
         requestedErrorResponseService.persist(
                 "anAuthCode",
-                new RequestedError("access_denied", "an error description", "token", null));
+                new RequestedError(null, "an error description", "token", null, "403"));
 
         tokenHandler.issueAccessToken(mockContext);
 
-        verify(mockContext).status(HttpStatus.BAD_REQUEST.getCode());
+        verify(mockContext).status(HttpStatus.FORBIDDEN.getCode());
         verify(mockContext).json(resultCaptor.capture());
 
-        assertEquals("access_denied", resultCaptor.getValue().get("error"));
+        assertEquals("403", resultCaptor.getValue().get("error"));
         assertEquals("an error description", resultCaptor.getValue().get("error_description"));
     }
 

@@ -543,20 +543,26 @@
                                         <div class="govuk-radios" data-module="govuk-radios">
                                             <div class="govuk-radios__item">
                                                 <input class="govuk-radios__input" id="endpoint" name="requested_oauth_error_endpoint" type="radio" value="auth">
-                                                <label class="govuk-label govuk-radios__label" for="requested_oauth_error_endpoint">
+                                                <label class="govuk-label govuk-radios__label" for="endpoint">
                                                     Authorization
                                                 </label>
                                             </div>
                                             <div class="govuk-radios__item">
-                                                <input class="govuk-radios__input" id="requested_oauth_error_endpoint_2" name="requested_oauth_error_endpoint" type="radio" value="token">
-                                                <label class="govuk-label govuk-radios__label" for="requested_oauth_error_endpoint_2">
+                                                <input class="govuk-radios__input" id="endpoint_2" name="requested_oauth_error_endpoint" type="radio" value="token">
+                                                <label class="govuk-label govuk-radios__label" for="endpoint_2">
                                                     Access Token
+                                                </label>
+                                            </div>
+                                            <div class="govuk-radios__item">
+                                                <input class="govuk-radios__input" id="endpoint_3" name="requested_oauth_error_endpoint" type="radio" value="token">
+                                                <label class="govuk-label govuk-radios__label" for="endpoint_3">
+                                                    Credential (User Info)
                                                 </label>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="govuk-form-group">
+                                    <div class="govuk-form-group" id="requested_oauth_error_group">
                                         <label class="govuk-label" for="requested_oauth_error">
                                             OAuth error
                                         </label>
@@ -569,6 +575,21 @@
                                             <option value="invalid_scope">invalid_scope</option>
                                             <option value="server_error">server_error</option>
                                             <option value="temporarily_unavailable">temporarily_unavailable</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="govuk-form-group" id="requested_api_error_group">
+                                        <label class="govuk-label" for="requested_api_error">
+                                            API Error Status Code
+                                        </label>
+                                        <select class="govuk-select" id="requested_api_error" name="requested_api_error">
+                                            <option value="none" selected>none</option>
+                                            <option value="400" selected>400 - Bad Request</option>
+                                            <option value="401" selected>401 - Unauthorised</option>
+                                            <option value="403" selected>403 - Forbidden</option>
+                                            <option value="404" selected>404 - Not Found</option>
+                                            <option value="500" selected>500 - Internal Server Error</option>
+                                            <option value="503" selected>503 - Service Unavailable</option>
                                         </select>
                                     </div>
 
@@ -629,14 +650,20 @@
   document.querySelector('form').addEventListener('submit', function(e) {
     const jsonPayload = document.getElementById('jsonPayload').value.trim();
     const oauthError = document.getElementById('requested_oauth_error').value;
-    const oauthErrorEndpoint = document.querySelector('input[name="requested_oauth_error_endpoint"]:checked');
+    const apiError = document.getElementById('requested_api_error').value;
+    const authEndpointSelected = document.querySelector('input[id="endpoint"]:checked');
+    const tokenOrCredentialEndpointSelected = document.querySelector('input[id="endpoint_2"]:checked') || document.querySelector('input[id="endpoint_3"]:checked');
 
     const isJsonPayloadFilled = !!jsonPayload;
-    const areOauthFieldsValid = oauthError !== 'none' && oauthErrorEndpoint;
+    const areOauthFieldsValid = oauthError !== 'none' && authEndpointSelected;
+    const areApiErrorFieldsValid = apiError !== 'none' && tokenOrCredentialEndpointSelected;
 
-    if (!isJsonPayloadFilled && !areOauthFieldsValid) {
+    if (!isJsonPayloadFilled && !areOauthFieldsValid && !areApiErrorFieldsValid) {
       e.preventDefault();
-      alert("Please either enter JSON payload data or select both an OAuth error and an endpoint.");
+      alert("Please enter JSON payload data (and select the credential/token endpoint with an API error if simulating an api error response from these endpoints) or select the authorization endpoint with a valid error.");
+    } else if (areApiErrorFieldsValid && !isJsonPayloadFilled) {
+        e.preventDefault();
+        alert("Please enter JSON payload data and select the credential/token endpoint with an API error if simulating an api error response from these endpoints");
     }
   });
 </script>
@@ -727,6 +754,17 @@
 
 
 </script>
-
+<script>
+    const authEndpoint = document.getElementById("endpoint");
+    const oauthErrorOptions = document.getElementById("requested_oauth_error_group");
+    const apiErrorOptions = document.getElementById("requested_api_error_group");
+    if (authEndpoint.checked) {
+        oauthErrorOptions.style.display = true;
+        apiErrorOptions.style.display = false;
+    } else {
+        oauthErrorOptions.style.display = false;
+        apiErrorOptions.style.display = true;
+    }
+</script>
 </body>
 </html>

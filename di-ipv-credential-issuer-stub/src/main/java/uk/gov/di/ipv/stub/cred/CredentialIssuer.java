@@ -67,12 +67,14 @@ public class CredentialIssuer {
                         validator,
                         clientJwtVerifier,
                         requestedErrorResponseService);
-        credentialHandler = new CredentialHandler(credentialService, tokenService);
+        credentialHandler =
+                new CredentialHandler(
+                        credentialService, tokenService, requestedErrorResponseService);
         docAppCredentialHandler =
                 new DocAppCredentialHandler(
                         credentialService, tokenService, requestedErrorResponseService);
         jwksHandler = new JwksHandler();
-        f2fHandler = new F2FHandler(credentialService, tokenService);
+        f2fHandler = new F2FHandler(credentialService, tokenService, requestedErrorResponseService);
         healthCheckHandler = new HealthCheckHandler();
         generateCredentialHandler = new GenerateCredentialHandler(vcGenerator);
 

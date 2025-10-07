@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
+import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 
@@ -39,6 +40,7 @@ public class F2FHandlerTest {
     @Mock private Context mockContext;
     @Mock private TokenService mockTokenService;
     @Mock private CredentialService mockCredentialService;
+    @Mock private RequestedErrorResponseService mockRequestedErrorResponseService;
     @Captor private ArgumentCaptor<JSONObject> resultCaptor;
     private F2FHandler resourceHandler;
     private AccessToken accessToken;
@@ -48,7 +50,9 @@ public class F2FHandlerTest {
     void setup() {
         credential = DCMAW_VC;
         accessToken = new BearerAccessToken();
-        resourceHandler = new F2FHandler(mockCredentialService, mockTokenService);
+        resourceHandler =
+                new F2FHandler(
+                        mockCredentialService, mockTokenService, mockRequestedErrorResponseService);
     }
 
     @Test
