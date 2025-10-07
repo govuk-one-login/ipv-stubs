@@ -116,18 +116,20 @@ public class DocAppCredentialHandlerTest {
     }
 
     @Test
-     void shouldReturnErrorWhenUserInfoErrorIsRequested() throws Exception {
+    void shouldReturnErrorWhenUserInfoErrorIsRequested() throws Exception {
         when(mockTokenService.validateAccessToken(Mockito.anyString()))
                 .thenReturn(ValidationResult.createValidResult());
         when(mockContext.header("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
 
-        var expectedError = new UserInfoErrorResponse(
-                new ErrorObject(
-                        "404",
-                        String.format("UserInfo endpoint %s triggered by stub", "404"),
-                        Integer.parseInt("404")));
+        var expectedError =
+                new UserInfoErrorResponse(
+                        new ErrorObject(
+                                "404",
+                                String.format("UserInfo endpoint %s triggered by stub", "404"),
+                                Integer.parseInt("404")));
 
-        when(mockRequestedErrorResponseService.getUserInfoErrorByToken(any())).thenReturn(expectedError);
+        when(mockRequestedErrorResponseService.getUserInfoErrorByToken(any()))
+                .thenReturn(expectedError);
 
         resourceHandler.getResource(mockContext);
 

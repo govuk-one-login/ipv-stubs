@@ -813,7 +813,6 @@ class AuthorizeHandlerTest {
                                             "invalid_request",
                                             "a bad thing happened",
                                             "auth",
-                                            null,
                                             null)));
 
             authorizeHandler.apiAuthorize(mockContext);
@@ -843,7 +842,6 @@ class AuthorizeHandlerTest {
                                             null,
                                             "a bad thing happened at the token endpoint",
                                             "token",
-                                            null,
                                             "400")));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
@@ -873,7 +871,7 @@ class AuthorizeHandlerTest {
                                     null,
                                     null,
                                     null,
-                                    new RequestedError(null, null, "credential", "404", "404")));
+                                    new RequestedError(null, null, "credential", "404")));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
             authorizeHandler.apiAuthorize(mockContext);

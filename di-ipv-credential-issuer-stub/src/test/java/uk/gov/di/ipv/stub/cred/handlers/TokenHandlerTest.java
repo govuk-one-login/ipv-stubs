@@ -247,8 +247,7 @@ public class TokenHandlerTest {
                                 "an requestedError description"));
 
         requestedErrorResponseService.persist(
-                "anAuthCode",
-                new RequestedError(null, "an error description", "token", null, "403"));
+                "anAuthCode", new RequestedError(null, "an error description", "token", "403"));
 
         tokenHandler.issueAccessToken(mockContext);
 

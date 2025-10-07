@@ -48,8 +48,6 @@ public class RequestedErrorResponseService {
         paramsValuesMap.put(
                 RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
                 requestedError.description());
-        paramsValuesMap.put(
-                RequestParamConstants.REQUESTED_USERINFO_ERROR, requestedError.userInfoError());
         paramsValuesMap.put(RequestParamConstants.REQUESTED_API_ERROR, requestedError.apiError());
 
         errorResponsesRequested.put(authCode, paramsValuesMap);
