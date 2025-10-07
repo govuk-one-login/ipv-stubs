@@ -554,7 +554,7 @@
                                                 </label>
                                             </div>
                                             <div class="govuk-radios__item">
-                                                <input class="govuk-radios__input" id="endpoint_3" name="requested_oauth_error_endpoint" type="radio" value="token">
+                                                <input class="govuk-radios__input" id="endpoint_3" name="requested_oauth_error_endpoint" type="radio" value="credential">
                                                 <label class="govuk-label govuk-radios__label" for="endpoint_3">
                                                     Credential (User Info)
                                                 </label>
@@ -562,7 +562,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="govuk-form-group" id="requested_oauth_error_group">
+                                    <div class="govuk-form-group" id="requested_oauth_error_group" style="display:none">
                                         <label class="govuk-label" for="requested_oauth_error">
                                             OAuth error
                                         </label>
@@ -578,18 +578,18 @@
                                         </select>
                                     </div>
 
-                                    <div class="govuk-form-group" id="requested_api_error_group">
+                                    <div class="govuk-form-group" id="requested_api_error_group" style="display:none">
                                         <label class="govuk-label" for="requested_api_error">
                                             API Error Status Code
                                         </label>
                                         <select class="govuk-select" id="requested_api_error" name="requested_api_error">
                                             <option value="none" selected>none</option>
-                                            <option value="400" selected>400 - Bad Request</option>
-                                            <option value="401" selected>401 - Unauthorised</option>
-                                            <option value="403" selected>403 - Forbidden</option>
-                                            <option value="404" selected>404 - Not Found</option>
-                                            <option value="500" selected>500 - Internal Server Error</option>
-                                            <option value="503" selected>503 - Service Unavailable</option>
+                                            <option value="400">400 - Bad Request</option>
+                                            <option value="401">401 - Unauthorised</option>
+                                            <option value="403">403 - Forbidden</option>
+                                            <option value="404">404 - Not Found</option>
+                                            <option value="500">500 - Internal Server Error</option>
+                                            <option value="503">503 - Service Unavailable</option>
                                         </select>
                                     </div>
 
@@ -755,16 +755,29 @@
 
 </script>
 <script>
-    const authEndpoint = document.getElementById("endpoint");
     const oauthErrorOptions = document.getElementById("requested_oauth_error_group");
     const apiErrorOptions = document.getElementById("requested_api_error_group");
-    if (authEndpoint.checked) {
-        oauthErrorOptions.style.display = true;
-        apiErrorOptions.style.display = false;
-    } else {
-        oauthErrorOptions.style.display = false;
-        apiErrorOptions.style.display = true;
+
+    const authEndpoint = document.getElementById("endpoint");
+    function displayOauthErrorOptions() {
+        if (authEndpoint.checked) {
+            oauthErrorOptions.style.display = "block";
+            apiErrorOptions.style.display = "none";
+        }
     }
+    authEndpoint.addEventListener("change", displayOauthErrorOptions);
+
+    const tokenEndpoint = document.getElementById("endpoint_2");
+    const credentialEndpoint = document.getElementById("endpoint_3");
+
+    function displayApiErrorOptions() {
+        if (tokenEndpoint.checked || credentialEndpoint.checked) {
+            oauthErrorOptions.style.display = "none";
+            apiErrorOptions.style.display = "block";
+        }
+    }
+    tokenEndpoint.addEventListener("change", displayApiErrorOptions);
+    credentialEndpoint.addEventListener("change", displayApiErrorOptions);
 </script>
 </body>
 </html>

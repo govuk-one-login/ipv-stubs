@@ -873,7 +873,7 @@ class AuthorizeHandlerTest {
                                     null,
                                     null,
                                     null,
-                                    new RequestedError(null, null, null, "404", "404")));
+                                    new RequestedError(null, null, "credential", "404", "404")));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
             authorizeHandler.apiAuthorize(mockContext);
