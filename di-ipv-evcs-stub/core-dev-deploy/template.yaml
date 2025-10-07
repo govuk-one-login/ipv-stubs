@@ -324,7 +324,7 @@ Resources:
           Properties:
             RestApiId: !Ref RestApiGateway
             Path: /identity
-            Method: GET
+            Method: POST
     Metadata:
       # Manage esbuild properties
       BuildMethod: esbuild
