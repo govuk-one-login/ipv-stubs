@@ -200,7 +200,10 @@ export async function processGetIdentityRequest(
     },
   });
 
-  if (!getItemResponse.Item?.storedIdentity?.S) {
+  if (
+    !getItemResponse.Item?.storedIdentity?.S ||
+    !getItemResponse.Item?.isValid?.BOOL
+  ) {
     return { statusCode: 404, response: { message: "Not found" } };
   }
 

@@ -357,6 +357,9 @@ describe("processGetIdentityRequest", () => {
           storedIdentity: {
             S: TEST_SI_JWT,
           },
+          isValid: {
+            BOOL: true,
+          },
         },
       } satisfies GetItemCommandOutput)
       .on(QueryCommand)
@@ -378,6 +381,36 @@ describe("processGetIdentityRequest", () => {
     });
   });
 
+  it("should return 404 if the stored identity is found but is inValid", async () => {
+    dbMock
+      .on(GetItemCommand)
+      .resolves({
+        $metadata: {},
+        Item: {
+          storedIdentity: {
+            S: TEST_SI_JWT,
+          },
+          isValid: {
+            BOOL: false,
+          },
+        },
+      } satisfies GetItemCommandOutput)
+      .on(QueryCommand)
+      .resolves({
+        $metadata: {},
+        Items: [],
+      } satisfies QueryCommandOutput);
+
+    await expect(
+      processGetIdentityRequest(TEST_USER_ID)
+    ).resolves.toStrictEqual({
+      statusCode: 404,
+      response: {
+        message: "Not found",
+      },
+    });
+  });
+
   it("should return 200 if the stored identity is found with VCs", async () => {
     dbMock
       .on(GetItemCommand)
@@ -386,6 +419,9 @@ describe("processGetIdentityRequest", () => {
         Item: {
           storedIdentity: {
             S: TEST_SI_JWT,
+          },
+          isValid: {
+            BOOL: true,
           },
         },
       } satisfies GetItemCommandOutput)
