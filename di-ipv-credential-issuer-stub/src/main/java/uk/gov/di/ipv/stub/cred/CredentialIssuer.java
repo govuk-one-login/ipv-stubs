@@ -25,6 +25,10 @@ import java.net.http.HttpClient;
 import static uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig.getCriType;
 
 public class CredentialIssuer {
+    private static final String CREDENTIALS_ENDPOINT = "/credentials/issue";
+    private static final String AUTHORIZE_ENDPOINT = "/authorize";
+    private static final String TOKEN_ENDPOINT = "/token";
+    private static final String API_AUTHORIZE_ENDPOINT = "/api/authorize";
 
     private final AuthorizeHandler authorizeHandler;
     private final TokenHandler tokenHandler;
@@ -86,16 +90,16 @@ public class CredentialIssuer {
 
     private void initRoutes(Javalin app) {
         app.get("/", healthCheckHandler::healthy);
-        app.get("/authorize", authorizeHandler::doAuthorize);
-        app.post("/authorize", authorizeHandler::formAuthorize);
-        app.post("/api/authorize", authorizeHandler::apiAuthorize);
-        app.post("/token", tokenHandler::issueAccessToken);
+        app.get(AUTHORIZE_ENDPOINT, authorizeHandler::doAuthorize);
+        app.post(AUTHORIZE_ENDPOINT, authorizeHandler::formAuthorize);
+        app.post(API_AUTHORIZE_ENDPOINT, authorizeHandler::apiAuthorize);
+        app.post(TOKEN_ENDPOINT, tokenHandler::issueAccessToken);
         if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
-            app.post("/credentials/issue", docAppCredentialHandler::getResource);
+            app.post(CREDENTIALS_ENDPOINT, docAppCredentialHandler::getResource);
         } else if (getCriType().equals(CriType.F2F_CRI_TYPE)) {
-            app.post("/credentials/issue", f2fHandler::getResource);
+            app.post(CREDENTIALS_ENDPOINT, f2fHandler::getResource);
         } else {
-            app.post("/credentials/issue", credentialHandler::getResource);
+            app.post(CREDENTIALS_ENDPOINT, credentialHandler::getResource);
         }
         app.post(
                 "/credentials/generate",

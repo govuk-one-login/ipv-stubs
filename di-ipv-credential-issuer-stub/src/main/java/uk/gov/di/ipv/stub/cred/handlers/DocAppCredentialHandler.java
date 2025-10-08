@@ -1,5 +1,6 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.oauth2.sdk.id.Subject;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import io.javalin.http.Context;
@@ -9,7 +10,6 @@ import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 
 import java.util.List;
-import java.util.UUID;
 
 public class DocAppCredentialHandler extends CredentialHandler {
 
@@ -21,8 +21,10 @@ public class DocAppCredentialHandler extends CredentialHandler {
     }
 
     @Override
-    protected void sendResponse(Context ctx, String verifiableCredential) {
-        var userInfo = new UserInfo(new Subject("urn:fdc:gov.uk:2022:" + UUID.randomUUID()));
+    protected void sendResponse(Context ctx, String verifiableCredential) throws Exception {
+        String subject = SignedJWT.parse(verifiableCredential).getJWTClaimsSet().getSubject();
+
+        var userInfo = new UserInfo(new Subject(subject));
         userInfo.setClaim(
                 "https://vocab.account.gov.uk/v1/credentialJWT", List.of(verifiableCredential));
 

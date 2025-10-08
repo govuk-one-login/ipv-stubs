@@ -26,15 +26,16 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
 
 @ExtendWith(MockitoExtension.class)
 public class DocAppCredentialHandlerTest {
     private static final String JSON_RESPONSE_TYPE = "application/json;charset=UTF-8";
+    private static final String SUBJECT = "urn:uuid:5d6d6833-8512-4e37-b5ea-be7de77948dd";
     private static final ValidationResult INVALID_REQUEST =
             new ValidationResult(false, OAuth2Error.INVALID_REQUEST);
     private static final ValidationResult INVALID_CLIENT =
@@ -64,7 +65,7 @@ public class DocAppCredentialHandlerTest {
                 .thenReturn(ValidationResult.createValidResult());
         when(mockContext.header("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
         when(mockCredentialService.getCredentialSignedJwt("aResourceId"))
-                .thenReturn("A.VERIFIABLE.CREDENTIAL");
+                .thenReturn(DCMAW_VC);
 
         resourceHandler.getResource(mockContext);
 
@@ -74,12 +75,12 @@ public class DocAppCredentialHandlerTest {
         verify(mockTokenService).revoke(accessToken.toAuthorizationHeader());
 
         var docAppUserInfo = new UserInfo(responseCaptor.getValue());
-        assertTrue(docAppUserInfo.getSubject().getValue().startsWith("urn:fdc:gov.uk:2022:"));
+        assertEquals(SUBJECT, docAppUserInfo.getSubject().getValue());
         assertNotNull(docAppUserInfo.getClaim("https://vocab.account.gov.uk/v1/credentialJWT"));
         List<?> verifiedCredentials =
                 (List<?>) docAppUserInfo.getClaim("https://vocab.account.gov.uk/v1/credentialJWT");
         assertEquals(1, verifiedCredentials.size());
-        assertEquals("A.VERIFIABLE.CREDENTIAL", verifiedCredentials.get(0));
+        assertEquals(DCMAW_VC, verifiedCredentials.get(0));
     }
 
     @Test
