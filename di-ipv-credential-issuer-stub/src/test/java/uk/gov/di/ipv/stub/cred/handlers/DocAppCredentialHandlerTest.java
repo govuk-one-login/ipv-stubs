@@ -64,8 +64,7 @@ public class DocAppCredentialHandlerTest {
         when(mockTokenService.validateAccessToken(Mockito.anyString()))
                 .thenReturn(ValidationResult.createValidResult());
         when(mockContext.header("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
-        when(mockCredentialService.getCredentialSignedJwt("aResourceId"))
-                .thenReturn(DCMAW_VC);
+        when(mockCredentialService.getCredentialSignedJwt("aResourceId")).thenReturn(DCMAW_VC);
 
         resourceHandler.getResource(mockContext);
 
