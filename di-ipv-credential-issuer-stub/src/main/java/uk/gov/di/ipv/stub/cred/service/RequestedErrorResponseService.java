@@ -112,6 +112,7 @@ public class RequestedErrorResponseService {
             if (error != null && CREDENTIAL.equals(endpoint)) {
                 Map<String, String> paramsValuesMap = new HashMap<>();
                 paramsValuesMap.put(RequestParamConstants.REQUESTED_API_ERROR, error);
+                paramsValuesMap.put(RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, endpoint);
                 errorResponsesRequested.put(accessToken, paramsValuesMap);
             }
         }
