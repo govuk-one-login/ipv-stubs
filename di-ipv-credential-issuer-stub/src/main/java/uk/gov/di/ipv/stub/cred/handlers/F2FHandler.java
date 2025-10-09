@@ -6,12 +6,16 @@ import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
+import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 
 public class F2FHandler extends CredentialHandler {
 
-    public F2FHandler(CredentialService credentialService, TokenService tokenService) {
-        super(credentialService, tokenService);
+    public F2FHandler(
+            CredentialService credentialService,
+            TokenService tokenService,
+            RequestedErrorResponseService requestedErrorResponseService) {
+        super(credentialService, tokenService, requestedErrorResponseService);
     }
 
     @Override

@@ -152,7 +152,7 @@ class AuthorizeHandlerTest {
     @Captor ArgumentCaptor<AuthorizationCode> authCoreArgumentCaptor;
 
     @BeforeAll
-    public static void beforeAllSetUp() {
+    static void beforeAllSetUp() {
         StubSsmClient.setClientConfigParams(CLIENT_CONFIG);
     }
 
@@ -839,10 +839,10 @@ class AuthorizeHandlerTest {
                                     null,
                                     null,
                                     new RequestedError(
-                                            "invalid_request",
+                                            null,
                                             "a bad thing happened at the token endpoint",
                                             "token",
-                                            null)));
+                                            "400")));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
             authorizeHandler.apiAuthorize(mockContext);
@@ -852,7 +852,7 @@ class AuthorizeHandlerTest {
                     requestedErrorResponseService
                             .getRequestedAccessTokenErrorResponse(stringArgumentCaptor.getValue())
                             .getErrorObject();
-            assertEquals("invalid_request", tokenErrorResponse.getCode());
+            assertEquals("400", tokenErrorResponse.getCode());
             assertEquals(
                     "a bad thing happened at the token endpoint",
                     tokenErrorResponse.getDescription());
@@ -871,7 +871,7 @@ class AuthorizeHandlerTest {
                                     null,
                                     null,
                                     null,
-                                    new RequestedError(null, null, null, "404")));
+                                    new RequestedError(null, null, "credential", "404")));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
             authorizeHandler.apiAuthorize(mockContext);

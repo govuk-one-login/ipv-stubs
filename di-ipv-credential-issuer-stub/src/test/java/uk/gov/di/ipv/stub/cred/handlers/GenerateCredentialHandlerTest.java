@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.stub.cred.handlers.GenerateCredentialHandler.JWT_CONTENT_TYPE;
 
 @ExtendWith(MockitoExtension.class)
-public class GenerateCredentialHandlerTest {
+class GenerateCredentialHandlerTest {
     @Mock private Context mockContext;
     @Mock private VerifiableCredentialGenerator mockCredentialGenerator;
     @InjectMocks private GenerateCredentialHandler generateCredentialHandler;
