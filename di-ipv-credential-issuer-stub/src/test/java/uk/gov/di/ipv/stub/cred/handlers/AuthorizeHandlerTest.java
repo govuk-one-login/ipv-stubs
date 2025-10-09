@@ -152,7 +152,7 @@ class AuthorizeHandlerTest {
     @Captor ArgumentCaptor<AuthorizationCode> authCoreArgumentCaptor;
 
     @BeforeAll
-    public static void beforeAllSetUp() {
+    static void beforeAllSetUp() {
         StubSsmClient.setClientConfigParams(CLIENT_CONFIG);
     }
 

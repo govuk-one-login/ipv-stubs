@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
 
 @ExtendWith(MockitoExtension.class)
-public class F2FHandlerTest {
+class F2FHandlerTest {
     private static final String SUBJECT = "urn:uuid:5d6d6833-8512-4e37-b5ea-be7de77948dd";
 
     private static final ValidationResult INVALID_REQUEST =
@@ -59,7 +59,7 @@ public class F2FHandlerTest {
     }
 
     @Test
-    public void shouldReturn200AndUserInfoWhenValidRequestReceived() throws Exception {
+    void shouldReturn200AndUserInfoWhenValidRequestReceived() throws Exception {
         when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
                 .thenReturn(UUID.randomUUID().toString());
         when(mockTokenService.validateAccessToken(Mockito.anyString()))
@@ -82,7 +82,7 @@ public class F2FHandlerTest {
     }
 
     @Test
-    public void shouldReturn400WhenAccessTokenIsNotProvided() throws Exception {
+    void shouldReturn400WhenAccessTokenIsNotProvided() throws Exception {
         when(mockTokenService.validateAccessToken(Mockito.any())).thenReturn(INVALID_REQUEST);
 
         resourceHandler.getResource(mockContext);
@@ -92,8 +92,7 @@ public class F2FHandlerTest {
     }
 
     @Test
-    public void shouldReturn400WhenIssuedAccessTokenDoesNotMatchRequestAccessToken()
-            throws Exception {
+    void shouldReturn400WhenIssuedAccessTokenDoesNotMatchRequestAccessToken() throws Exception {
         when(mockContext.header("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
         when(mockTokenService.validateAccessToken(Mockito.any())).thenReturn(INVALID_CLIENT);
 
@@ -104,7 +103,7 @@ public class F2FHandlerTest {
     }
 
     @Test
-    public void shouldReturn400WhenRequestAccessTokenIsNotValid() throws Exception {
+    void shouldReturn400WhenRequestAccessTokenIsNotValid() throws Exception {
         when(mockContext.header("Authorization")).thenReturn("invalid-token");
         when(mockTokenService.validateAccessToken(Mockito.any())).thenReturn(INVALID_CLIENT);
 

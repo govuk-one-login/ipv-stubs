@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
 
 @ExtendWith(MockitoExtension.class)
-public class DocAppCredentialHandlerTest {
+class DocAppCredentialHandlerTest {
     private static final String JSON_RESPONSE_TYPE = "application/json;charset=UTF-8";
     private static final String SUBJECT = "urn:uuid:5d6d6833-8512-4e37-b5ea-be7de77948dd";
     private static final ValidationResult INVALID_REQUEST =
@@ -58,7 +58,7 @@ public class DocAppCredentialHandlerTest {
     }
 
     @Test
-    public void shouldReturn201AndUserInfoWhenValidRequestReceived() throws Exception {
+    void shouldReturn201AndUserInfoWhenValidRequestReceived() throws Exception {
         when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
                 .thenReturn("aResourceId");
         when(mockTokenService.validateAccessToken(Mockito.anyString()))
@@ -83,7 +83,7 @@ public class DocAppCredentialHandlerTest {
     }
 
     @Test
-    public void shouldReturn400WhenAccessTokenIsNotProvided() throws Exception {
+    void shouldReturn400WhenAccessTokenIsNotProvided() throws Exception {
         when(mockTokenService.validateAccessToken(any())).thenReturn(INVALID_REQUEST);
 
         resourceHandler.getResource(mockContext);
@@ -93,8 +93,7 @@ public class DocAppCredentialHandlerTest {
     }
 
     @Test
-    public void shouldReturn400WhenIssuedAccessTokenDoesNotMatchRequestAccessToken()
-            throws Exception {
+    void shouldReturn400WhenIssuedAccessTokenDoesNotMatchRequestAccessToken() throws Exception {
         when(mockContext.header("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
         when(mockTokenService.validateAccessToken(any())).thenReturn(INVALID_CLIENT);
 
@@ -105,7 +104,7 @@ public class DocAppCredentialHandlerTest {
     }
 
     @Test
-    public void shouldReturn400WhenRequestAccessTokenIsNotValid() throws Exception {
+    void shouldReturn400WhenRequestAccessTokenIsNotValid() throws Exception {
         when(mockContext.header("Authorization")).thenReturn("invalid-token");
         when(mockTokenService.validateAccessToken(any())).thenReturn(INVALID_CLIENT);
 

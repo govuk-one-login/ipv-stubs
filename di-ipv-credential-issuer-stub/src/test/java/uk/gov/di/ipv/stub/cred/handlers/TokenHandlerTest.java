@@ -54,7 +54,7 @@ import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(SystemStubsExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-public class TokenHandlerTest {
+class TokenHandlerTest {
     private static final String TEST_REDIRECT_URI = "https://example.com";
     private static final String TEST_AUTH_CODE =
             "e2Ln9Vs6bwZ1mDM8gfl256hg8I88i8LLenVfqxKuDEg"; // pragma: allowlist secret
