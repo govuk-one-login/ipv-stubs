@@ -1,8 +1,10 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
+import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
@@ -23,6 +25,7 @@ import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -109,5 +112,27 @@ public class F2FHandlerTest {
 
         verify(mockContext).status(HttpStatus.UNAUTHORIZED.getCode());
         verify(mockContext).result("Client authentication failed");
+    }
+
+    @Test
+    void shouldReturnErrorWhenUserInfoErrorIsRequested() throws Exception {
+        when(mockTokenService.validateAccessToken(Mockito.anyString()))
+                .thenReturn(ValidationResult.createValidResult());
+        when(mockContext.header("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
+
+        var expectedError =
+                new UserInfoErrorResponse(
+                        new ErrorObject(
+                                "404",
+                                String.format("UserInfo endpoint %s triggered by stub", "404"),
+                                Integer.parseInt("404")));
+
+        when(mockRequestedErrorResponseService.getUserInfoErrorByToken(any()))
+                .thenReturn(expectedError);
+
+        resourceHandler.getResource(mockContext);
+
+        verify(mockContext).status(HttpStatus.NOT_FOUND.getCode());
+        verify(mockContext).json(expectedError.getErrorObject().toJSONObject());
     }
 }
