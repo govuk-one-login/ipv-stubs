@@ -28,8 +28,8 @@ export interface StoredIdentityContents {
   vtm: string;
   "https://vocab.account.gov.uk/v1/credentialJWT": string[];
   "https://vocab.account.gov.uk/v1/coreIdentity"?: object;
-  "https://vocab.account.gov.uk/v1/address"?: object;
-  "https://vocab.account.gov.uk/v1/passport"?: object;
-  "https://vocab.account.gov.uk/v1/drivingPermit"?: object;
-  "https://vocab.account.gov.uk/v1/socialSecurityRecord"?: object;
+  "https://vocab.account.gov.uk/v1/address"?: object[];
+  "https://vocab.account.gov.uk/v1/passport"?: object[];
+  "https://vocab.account.gov.uk/v1/drivingPermit"?: object[];
+  "https://vocab.account.gov.uk/v1/socialSecurityRecord"?: object[];
 }
