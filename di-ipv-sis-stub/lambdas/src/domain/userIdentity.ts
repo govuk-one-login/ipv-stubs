@@ -1,7 +1,7 @@
 import { JWTPayload } from "jose";
 
 export interface UserIdentity {
-  content: string;
+  content?: StoredIdentityContents;
   isValid: boolean;
   expired: boolean;
   vot: string;
@@ -17,7 +17,19 @@ export interface UserIdentityRequestBody {
 export interface StoredIdentityJwt extends JWTPayload {
   claims?: object;
   vot?: string;
-  credentials?: string[];
+  credentials: string[];
   sub: string;
   aud: string;
+}
+
+export interface StoredIdentityContents {
+  sub: string;
+  vot: string;
+  vtm: string;
+  "https://vocab.account.gov.uk/v1/credentialJWT": string[];
+  "https://vocab.account.gov.uk/v1/coreIdentity"?: object;
+  "https://vocab.account.gov.uk/v1/address"?: object;
+  "https://vocab.account.gov.uk/v1/passport"?: object;
+  "https://vocab.account.gov.uk/v1/drivingPermit"?: object;
+  "https://vocab.account.gov.uk/v1/socialSecurityRecord"?: object;
 }

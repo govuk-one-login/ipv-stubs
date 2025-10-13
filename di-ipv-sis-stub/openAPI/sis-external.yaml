@@ -140,14 +140,22 @@ components:
       type: object
       properties:
         content:
-          type: string
-          description: "The expanded body of the signed Stored Identity JWT"
+          type: object
+          description: "The contents of the Stored Identity JWT"
+          items:
+            $ref: "#/components/schemas/UserIdentityDataType"
         isValid:
           type: boolean
           description: "Indicates whether SIS considers the stored record still usable"
         expired:
           type: boolean
           description: "Indicates whether SIS considers the stored record past its expiry window"
+        kidValid:
+          type: boolean
+          description: "Indicates whether kid values are verified"
+        signatureValid:
+          type: boolean
+          description: "Indicates whether the kid was valid and signature was verified successfully "
         vot:
           $ref: "#/components/schemas/VectorOfTrust"
       required:
@@ -155,6 +163,77 @@ components:
         - isValid
         - expired
         - vot
+        - kidValid
+        - signatureValid
+    UserIdentityDataType:
+      type: object
+      properties:
+        sub:
+          type: string
+        vot:
+          type: string
+        vtm:
+          type: string
+        "https://vocab.account.gov.uk/v1/credentialJWT":
+          type: array
+          "description": "An array of the user's VC signatures"
+          items:
+            type: string
+        "https://vocab.account.gov.uk/v1/coreIdentity":
+          type: "object"
+          properties:
+            name:
+              type: array
+              items:
+                type: object
+                # API Gateway doesn't support these external references
+                # but they may be turned into $ref's by tooling that does
+                description: https://vocab.account.gov.uk/v1/json-schemas/Name.json
+            birthDate:
+              type: array
+              items:
+                type: object
+                # API Gateway doesn't support these external references
+                # but they may be turned into $ref's by tooling that does
+                description: https://vocab.account.gov.uk/v1/json-schemas/BirthDate.json
+          required:
+            - name
+            - birthDate
+          additionalProperties: false
+        "https://vocab.account.gov.uk/v1/address":
+          type: "array"
+          items:
+            type: object
+            # API Gateway doesn't support these external references
+            # but they may be turned into $ref's by tooling that does
+            description: https://vocab.account.gov.uk/v1/json-schemas/PostalAddress.json
+        "https://vocab.account.gov.uk/v1/passport":
+          type: "array"
+          items:
+            type: object
+            # API Gateway doesn't support these external references
+            # but they may be turned into $ref's by tooling that does
+            description: https://vocab.account.gov.uk/v1/json-schemas/PassportDetails.json
+        "https://vocab.account.gov.uk/v1/drivingPermit":
+          type: "array"
+          items:
+            type: object
+            # API Gateway doesn't support these external references
+            # but they may be turned into $ref's by tooling that does
+            description: https://vocab.account.gov.uk/v1/json-schemas/DrivingPermit.json
+        "https://vocab.account.gov.uk/v1/socialSecurityRecord":
+          type: "array"
+          items:
+            type: object
+            # API Gateway doesn't support these external references
+            # but they may be turned into $ref's by tooling that does
+            description: https://vocab.account.gov.uk/v1/json-schemas/SocialSecurityRecord.json
+      required:
+        - sub
+        - vot
+        - vtm
+        - "https://vocab.account.gov.uk/v1/credentialJWT"
+      additionalProperties: false
     VectorOfTrust:
       title: Vector of Trust
       description: |-

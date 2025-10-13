@@ -2,12 +2,17 @@ import { QueryInput } from "@aws-sdk/client-dynamodb";
 import { config } from "../config/config";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { dynamoClient } from "../clients/dynamodbClient";
-import { StoredIdentityJwt, UserIdentity } from "../domain/userIdentity";
+import {
+  StoredIdentityContents,
+  StoredIdentityJwt,
+  UserIdentity,
+} from "../domain/userIdentity";
 import { getVotForUserIdentity } from "../utils/votHelper";
 import { decodeJwt } from "jose";
-import { createSignedJwt, updateVotOnSiJwt } from "../utils/signedJwtHelper";
 
 const GPG45_RECORD_TYPE = "idrec:gpg45";
+
+const VTM = "https://oidc.account.gov.uk/trustmark";
 
 export const getUserIdentity = async (
   userId: string,
@@ -43,10 +48,11 @@ export const getUserIdentity = async (
 
   const validatedResponse = validateUserIdentityResponse(parsedResponse[0]);
 
-  let signedJwt = validatedResponse.siJwt;
+  const signedJwt = validatedResponse.siJwt;
   let matchedProfile = validatedResponse.maxVot;
+  let siContent: StoredIdentityContents | undefined = undefined;
   if (signedJwt && validatedResponse.maxVot) {
-    const decodedSiJwt = decodeJwt<StoredIdentityJwt>(validatedResponse.siJwt);
+    const decodedSiJwt = decodeJwt<StoredIdentityJwt>(signedJwt);
 
     matchedProfile = getVotForUserIdentity(
       validatedResponse.maxVot,
@@ -54,12 +60,18 @@ export const getUserIdentity = async (
       validatedResponse.isValid,
     );
 
-    const jwt = updateVotOnSiJwt(decodedSiJwt, matchedProfile);
-    signedJwt = await createSignedJwt(jwt);
+    siContent = {
+      sub: decodedSiJwt.sub,
+      vot: matchedProfile,
+      // We don't check this value so it can be anything
+      vtm: VTM,
+      "https://vocab.account.gov.uk/v1/credentialJWT": decodedSiJwt.credentials,
+      ...decodedSiJwt.claims,
+    };
   }
 
   return {
-    content: signedJwt,
+    content: siContent,
     vot: validatedResponse.maxVot,
     isValid: !!(
       validatedResponse.isValid &&
