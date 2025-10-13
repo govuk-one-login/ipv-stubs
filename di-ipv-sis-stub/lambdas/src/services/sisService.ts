@@ -14,6 +14,13 @@ const GPG45_RECORD_TYPE = "idrec:gpg45";
 
 const VTM = "https://oidc.account.gov.uk/trustmark";
 
+const IDENTITY_CLAIM = "https://vocab.account.gov.uk/v1/coreIdentity";
+const ADDRESS_CLAIM = "https://vocab.account.gov.uk/v1/address";
+const PASSPORT_CLAIM = "https://vocab.account.gov.uk/v1/passport";
+const DRIVING_PERMIT_CLAIM = "https://vocab.account.gov.uk/v1/drivingPermit";
+const SOCIAL_SECURITY_RECORD_CLAIM =
+  "https://vocab.account.gov.uk/v1/socialSecurityRecord";
+
 export const getUserIdentity = async (
   userId: string,
   requestedVtrs: string[],
@@ -66,7 +73,13 @@ export const getUserIdentity = async (
       // We don't check this value so it can be anything
       vtm: VTM,
       "https://vocab.account.gov.uk/v1/credentialJWT": decodedSiJwt.credentials,
-      ...decodedSiJwt.claims,
+      [IDENTITY_CLAIM]: decodedSiJwt.claims?.[IDENTITY_CLAIM] || undefined,
+      [ADDRESS_CLAIM]: decodedSiJwt.claims?.[ADDRESS_CLAIM] || undefined,
+      [PASSPORT_CLAIM]: decodedSiJwt.claims?.[PASSPORT_CLAIM] || undefined,
+      [DRIVING_PERMIT_CLAIM]:
+        decodedSiJwt.claims?.[DRIVING_PERMIT_CLAIM] || undefined,
+      [SOCIAL_SECURITY_RECORD_CLAIM]:
+        decodedSiJwt.claims?.[SOCIAL_SECURITY_RECORD_CLAIM] || undefined,
     };
   }
 
