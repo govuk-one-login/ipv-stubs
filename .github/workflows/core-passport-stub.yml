@@ -81,8 +81,11 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           cosign sign --yes --tlog-upload=false --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Set up SAM cli
-        uses: aws-actions/setup-sam@v2
+      - name: Setup SAM
+        uses: aws-actions/setup-sam@f664fad9e12492edfc187a31f575537dfbb0ff63
+        with:
+          use-installer: true
+          version: "1.134.0"
 
       - name: sam fix https://github.com/aws/aws-sam-cli/issues/4527
         run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
