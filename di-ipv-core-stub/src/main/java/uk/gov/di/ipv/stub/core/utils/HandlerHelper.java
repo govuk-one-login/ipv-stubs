@@ -11,9 +11,7 @@ import com.nimbusds.jose.JWEHeader;
 import com.nimbusds.jose.JWEObject;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.Payload;
-import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.crypto.RSAEncrypter;
 import com.nimbusds.jose.crypto.impl.ECDSA;
@@ -76,24 +74,6 @@ import java.util.stream.Collectors;
 import static com.nimbusds.jose.JWSAlgorithm.ES256;
 
 public class HandlerHelper {
-    private class JWTSigner {
-
-        private final JWSSigner jwsSigner;
-        private final String keyId;
-
-        JWTSigner() throws JOSEException {
-            this.keyId = ecSigningKey.getKeyID();
-            this.jwsSigner = new ECDSASigner(ecSigningKey);
-        }
-
-        void signJWT(SignedJWT jwtToSign) throws JOSEException {
-            jwtToSign.sign(this.jwsSigner);
-        }
-
-        String getKeyId() {
-            return keyId;
-        }
-    }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HandlerHelper.class);
     public static final String SHARED_CLAIMS = "shared_claims";
@@ -106,9 +86,11 @@ public class HandlerHelper {
 
     private final ECKey ecSigningKey;
     private final ObjectMapper objectMapper;
+    private final JWTSigner jwtSigner;
 
-    public HandlerHelper(ECKey ecSigningKey) {
+    public HandlerHelper(ECKey ecSigningKey) throws JOSEException {
         this.ecSigningKey = ecSigningKey;
+        this.jwtSigner = new JWTSigner(ecSigningKey);
         this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
         this.objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));
         this.objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -119,6 +101,13 @@ public class HandlerHelper {
         var authorizationResponse =
                 AuthorizationResponse.parse(URI.create("https:///?" + request.queryString()));
         if (!authorizationResponse.indicatesSuccess()) {
+            // There is a later attempt to process this as an oauth error, which it may not be
+            String errorMessage =
+                    String.format(
+                            "❌ Authorization request failed - endpoint response %s",
+                            authorizationResponse.toHTTPResponse().getBody());
+            LOGGER.error(errorMessage);
+
             var error = authorizationResponse.toErrorResponse().getErrorObject();
             State state = request.session().attribute("state");
             AuthorizationErrorResponse authorizationErrorResponse =
@@ -156,8 +145,22 @@ public class HandlerHelper {
         }
 
         LOGGER.info(
-                "🤞 sending OAuth token request for state {} to {}", state, httpRequest.getURL());
+                "🤞 sending {} OAuth token request for state {} to {}",
+                credentialIssuer.name(),
+                state,
+                httpRequest.getURL());
         var httpTokenResponse = sendHttpRequest(httpRequest);
+
+        if (!httpTokenResponse.indicatesSuccess()) {
+            String errorMessage =
+                    String.format(
+                            "❌ Token request failed - endpoint response %s",
+                            httpTokenResponse.getBody());
+            LOGGER.error(errorMessage);
+
+            throw new RuntimeException(errorMessage);
+        }
+
         TokenResponse tokenResponse = parseTokenResponse(httpTokenResponse);
 
         if (tokenResponse instanceof TokenErrorResponse) {
@@ -175,25 +178,19 @@ public class HandlerHelper {
         ClientID clientID = new ClientID(CoreStubConfig.CORE_STUB_CLIENT_ID);
         URI tokenURI = credentialIssuer.tokenUrl();
 
-        LOGGER.info("token url is {}", tokenURI);
+        LOGGER.info("{} token url is {}", credentialIssuer.name(), tokenURI);
+
+        JWTClaimsSet clientAuthClaimsSet =
+                new JWTAuthenticationClaimsSet(clientID, new Audience(credentialIssuer.audience()))
+                        .toJWTClaimsSet();
+
+        SignedJWT signedJWT = createSignedJWT(credentialIssuer, clientAuthClaimsSet);
 
         AuthorizationCodeGrant authzGrant =
                 new AuthorizationCodeGrant(
                         authorizationCode, CoreStubConfig.CORE_STUB_REDIRECT_URL);
 
-        String hashedKid = getHashedKeyId(this.ecSigningKey.getKeyID());
-        LOGGER.info("hashed KID is {}", hashedKid);
-
-        PrivateKeyJWT privateKeyJWT =
-                new PrivateKeyJWT(
-                        new JWTAuthenticationClaimsSet(
-                                clientID, new Audience(credentialIssuer.audience())),
-                        JWSAlgorithm.ES256,
-                        this.ecSigningKey.toECPrivateKey(),
-                        hashedKid,
-                        null);
-
-        return new TokenRequest(tokenURI, privateKeyJWT, authzGrant);
+        return new TokenRequest(tokenURI, new PrivateKeyJWT(signedJWT), authzGrant, null);
     }
 
     public TokenResponse parseTokenResponse(HTTPResponse httpResponse) {
@@ -228,10 +225,22 @@ public class HandlerHelper {
 
         userInfoRequest.setAuthorization(accessToken.toAuthorizationHeader());
         LOGGER.info(
-                "🎁 sending OAuth credential issue for state {} to {}",
+                "🎁 sending {} OAuth credential issue request for state {} to {}",
+                credentialIssuer.name(),
                 state,
                 userInfoRequest.getURL());
         HTTPResponse userInfoHttpResponse = sendHttpRequest(userInfoRequest);
+
+        if (!userInfoHttpResponse.indicatesSuccess()) {
+
+            String errorMessage =
+                    String.format(
+                            "❌ VC request failed - endpoint response %s",
+                            userInfoHttpResponse.getBody());
+            LOGGER.error(errorMessage);
+
+            throw new RuntimeException(errorMessage);
+        }
 
         // Try lowercase, fall back to TitleCase
         String contentType = userInfoHttpResponse.getHeaderValue("content-type");
@@ -241,14 +250,14 @@ public class HandlerHelper {
                         : contentType;
 
         if (!"application/jwt".equalsIgnoreCase(contentType)) {
-            // Fail now to prevent CRI's passing with a missmatch
+            // Fail now to prevent CRI's passing with a mismatch
             String message =
                     String.format(
                             "Expected content-type application/jwt but VC response had content-type - %s",
                             contentType);
             throw new RuntimeException(message);
         } else {
-            return userInfoHttpResponse.getContent();
+            return userInfoHttpResponse.getBody();
         }
     }
 
@@ -275,7 +284,7 @@ public class HandlerHelper {
                         state, credentialIssuer, clientID, sharedClaims, evidenceRequest, context);
         // The only difference (frontend/backend) are the ClaimSets are created above for the
         // frontend and clientID is already set in the backend ClaimSet
-        LOGGER.info("ClaimsSets generated: {}", claimsSet);
+        LOGGER.debug("ClaimsSets generated: {}", claimsSet);
         return createBackEndAuthorizationJAR(credentialIssuer, claimsSet);
     }
 
@@ -298,17 +307,11 @@ public class HandlerHelper {
     private SignedJWT createSignedJWT(CredentialIssuer credentialIssuer, JWTClaimsSet claimSets)
             throws JOSEException {
         JWSAlgorithm signingAlgorithm = JWSAlgorithm.parse(credentialIssuer.expectedAlgo());
-        JWTSigner jwtSigner = new JWTSigner();
+
         String hashedKid = getHashedKeyId(jwtSigner.getKeyId());
         LOGGER.info("Hashed KID: {}", hashedKid);
 
-        JWSHeader header = new JWSHeader.Builder(signingAlgorithm).keyID(hashedKid).build();
-
-        SignedJWT signedJWT = new SignedJWT(header, claimSets);
-
-        jwtSigner.signJWT(signedJWT);
-
-        return signedJWT;
+        return JwtHelper.createSignedJwt(claimSets, jwtSigner, hashedKid, signingAlgorithm);
     }
 
     public JWTClaimsSet createJWTClaimsSets(
@@ -430,26 +433,17 @@ public class HandlerHelper {
 
         JWSAlgorithm jwsSigningAlgorithm = JWSAlgorithm.parse(credentialIssuer.expectedAlgo());
 
-        JWTSigner jwtSigner = new JWTSigner();
-
-        SignedJWT signedJWT =
-                new SignedJWT(
-                        new JWSHeader.Builder(jwsSigningAlgorithm)
-                                .keyID(jwtSigner.getKeyId())
-                                .build(),
-                        new JWTClaimsSet.Builder()
-                                .subject(getSubject())
-                                .audience(credentialIssuer.audience().toString())
-                                .issueTime(Date.from(now))
-                                .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
-                                .notBeforeTime(Date.from(now))
-                                .expirationTime(Date.from(now.plus(1, ChronoUnit.HOURS)))
-                                .claim(SHARED_CLAIMS, map)
-                                .build());
-
-        jwtSigner.signJWT(signedJWT);
-
-        return signedJWT;
+        return new SignedJWT(
+                new JWSHeader.Builder(jwsSigningAlgorithm).keyID(jwtSigner.getKeyId()).build(),
+                new JWTClaimsSet.Builder()
+                        .subject(getSubject())
+                        .audience(credentialIssuer.audience().toString())
+                        .issueTime(Date.from(now))
+                        .issuer(CoreStubConfig.CORE_STUB_JWT_ISS_CRI_URI)
+                        .notBeforeTime(Date.from(now))
+                        .expirationTime(Date.from(now.plus(1, ChronoUnit.HOURS)))
+                        .claim(SHARED_CLAIMS, map)
+                        .build());
     }
 
     private String getSubject() {
@@ -538,7 +532,7 @@ public class HandlerHelper {
     }
 
     private RSAKey getEncryptionPublicKey(String key) throws java.text.ParseException {
-        return RSAKey.parse(new String(Base64.getDecoder().decode(key)));
+        return RSAKey.parse(base64Decode(key));
     }
 
     public boolean checkES256SignatureFormat(SignedJWT signedJWT) throws JOSEException {

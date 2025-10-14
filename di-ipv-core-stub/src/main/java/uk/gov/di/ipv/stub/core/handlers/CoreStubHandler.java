@@ -36,6 +36,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -89,6 +90,10 @@ public class CoreStubHandler {
                         .append("  ]\n")
                         .append("}");
         jwksResponse = sb.toString();
+
+        LOGGER.info(
+                "Public Signing Key (Base64) - {}",
+                Base64.getEncoder().encodeToString(jwksResponse.getBytes()));
     }
 
     private void setQuestions() {
@@ -192,12 +197,19 @@ public class CoreStubHandler {
                 var authorizationCode =
                         authorizationResponse.toSuccessResponse().getAuthorizationCode();
                 var state = authorizationResponse.toSuccessResponse().getState();
-                LOGGER.info("👈 received callback for state {}", state);
                 var credentialIssuer = stateSession.remove(state.getValue());
+                LOGGER.info(
+                        "👈 received callback for state {} from {}",
+                        state,
+                        credentialIssuer.name());
                 var accessToken =
                         handlerHelper.exchangeCodeForToken(
                                 authorizationCode, credentialIssuer, state);
-                LOGGER.info("access token value: " + accessToken.getValue());
+                LOGGER.info(
+                        "{} access token value: {}",
+                        credentialIssuer.name(),
+                        accessToken.getValue());
+
                 var signedJWT =
                         SignedJWT.parse(
                                 handlerHelper.getUserInfo(accessToken, credentialIssuer, state));
@@ -211,6 +223,7 @@ public class CoreStubHandler {
 
                 var userInfo = signedJWT.getJWTClaimsSet().toString();
 
+                // Important - PreProd Stub
                 String data = "{\"result\": \"hidden\"}";
                 if (CoreStubConfig.CORE_STUB_SHOW_VC) {
                     Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -222,6 +235,11 @@ public class CoreStubHandler {
                 moustacheDataModel.put("data", data);
                 moustacheDataModel.put("cri", credentialIssuer.id());
                 moustacheDataModel.put("criName", credentialIssuer.name());
+
+                LOGGER.info(
+                        "✅ {} VC returned {}",
+                        credentialIssuer.name(),
+                        signedJWT.getSignature().toString());
 
                 return ViewHelper.render(moustacheDataModel, "userinfo.mustache");
             };
@@ -374,12 +392,21 @@ public class CoreStubHandler {
             throw e;
         }
 
-        LOGGER.info("🚀 sending AuthorizationRequest for state {}", state);
+        LOGGER.info(
+                "🚀 sending {} AuthorizationRequest for state {}", credentialIssuer.name(), state);
 
         if (authRequest != null) {
             URI uri = authRequest.toURI();
             if (uri != null) {
-                LOGGER.info("Redirecting to {}", uri);
+                int maxUriLengthToLog = 75;
+                String largeURIToTruncate = uri.toString();
+                String largeURITruncated =
+                        largeURIToTruncate.length() >= maxUriLengthToLog
+                                ? largeURIToTruncate.substring(0, maxUriLengthToLog)
+                                : largeURIToTruncate;
+
+                LOGGER.info(
+                        "Redirecting to {} Uri {}...", credentialIssuer.name(), largeURITruncated);
                 response.redirect(authRequest.toURI().toString());
             } else {
                 String error = "AuthorizationRequest URI object is null";
@@ -559,15 +586,21 @@ public class CoreStubHandler {
                 var escapedData = Objects.requireNonNull(request.body(), "UTF-8");
                 String data = escapedData.replace("\\", "");
 
-                LOGGER.info("Parsing Request data to JWTClaimsSet {}", data);
+                LOGGER.debug("Parsing Request data to JWTClaimsSet {}", data);
                 JWTClaimsSet claimsSet = JWTClaimsSet.parse(new Payload(data).toJSONObject());
                 LOGGER.info("JWTClaimsSet Parsed!");
 
                 AuthorizationRequest authorizationRequest =
                         createBackendAuthorizationRequest(credentialIssuer, claimsSet);
 
-                // This uri can be pasted into a browser and Journey continued in the frontend.
-                LOGGER.info("Auth URI {}", authorizationRequest.toURI());
+                int maxUriLengthToLog = 75;
+                String largeURIToTruncate = authorizationRequest.toURI().toString();
+                String largeURITruncated =
+                        largeURIToTruncate.length() >= maxUriLengthToLog
+                                ? largeURIToTruncate.substring(0, maxUriLengthToLog)
+                                : largeURIToTruncate;
+
+                LOGGER.info("Auth URI {}", largeURITruncated);
 
                 LOGGER.info("CreateBackendSessionRequest Complete");
                 response.type("application/json");
@@ -669,6 +702,8 @@ public class CoreStubHandler {
     private State createNewState(CredentialIssuer credentialIssuer) {
         var state = new State();
         stateSession.put(state.getValue(), credentialIssuer);
+        LOGGER.info(
+                "New State {} Created for {} Journey", state.getValue(), credentialIssuer.name());
         return state;
     }
 
