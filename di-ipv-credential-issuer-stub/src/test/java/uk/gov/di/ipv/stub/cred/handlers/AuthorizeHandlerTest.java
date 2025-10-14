@@ -826,7 +826,7 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void apiAuthorizeShouldAllowRequestedOAuthErrorResponseFromTokenEndpoint()
+        void authorizeHandlerShouldPersistApiErrorResponseForTokenEndpoint()
                 throws Exception {
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
@@ -859,7 +859,7 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void apiAuthorizeShouldAllowRequestedOAuthErrorResponseFromCredentialEndpoint()
+        void authorizeHandlerShouldPersistApiErrorResponseForCredentialEndpoint()
                 throws Exception {
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(

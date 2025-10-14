@@ -81,7 +81,7 @@ class TokenHandlerTest {
                     "TEST");
 
     @BeforeAll
-    public static void setUp() {
+    static void setUp() {
         StubSsmClient.setClientConfigParams(CLIENT_CONFIG);
     }
 
@@ -165,7 +165,7 @@ class TokenHandlerTest {
     }
 
     @Test
-    void shouldReturnCorrectErrorResponseIfTokenRequestFailsValidation() throws Exception {
+    void shouldReturnCorrectErrorResponseIfTokenRequestFailsValidation() {
         when(mockValidator.validateTokenRequest(any()))
                 .thenReturn(new ValidationResult(false, OAuth2Error.INVALID_CLIENT));
 
@@ -237,7 +237,7 @@ class TokenHandlerTest {
     }
 
     @Test
-    void shouldReturn400WithRequestedApiError() {
+    void shouldReturn403FromRequestedApiError() {
         setupMockFormParams(
                 Map.of(
                         RequestParamConstants.AUTH_CODE, "anAuthCode",
