@@ -284,32 +284,41 @@ public class AuthorizeHandler {
         String state = claimsSet.getClaim(RequestParamConstants.STATE).toString();
 
         try {
-            var credentialAttributesMap = jsonStringToMap(authRequest.credentialSubjectJson());
-
-            Long nbf =
-                    authRequest.nbf() != null ? authRequest.nbf() : Instant.now().getEpochSecond();
-
-            String signedVcJwt =
-                    verifiableCredentialGenerator
-                            .generate(
-                                    new Credential(
-                                            credentialAttributesMap,
-                                            generateEvidenceMap(authRequest),
-                                            userId,
-                                            clientIdValue,
-                                            nbf))
-                            .serialize();
-
-            if (CredentialIssuerConfig.isEnabled(
-                    CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
-                processMitigatedCIs(userId, authRequest, signedVcJwt);
-            }
-
-            handleF2fRequests(authRequest.f2f(), userId, state, signedVcJwt);
-
             AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
-            persistData(
-                    authRequest, successResponse.getAuthorizationCode(), signedVcJwt, redirectUri);
+
+            var credentialsSubject = authRequest.credentialSubjectJson();
+            if (!StringUtils.isBlank(credentialsSubject)) {
+                var credentialAttributesMap = jsonStringToMap(credentialsSubject);
+
+                Long nbf =
+                        authRequest.nbf() != null
+                                ? authRequest.nbf()
+                                : Instant.now().getEpochSecond();
+
+                String signedVcJwt =
+                        verifiableCredentialGenerator
+                                .generate(
+                                        new Credential(
+                                                credentialAttributesMap,
+                                                generateEvidenceMap(authRequest),
+                                                userId,
+                                                clientIdValue,
+                                                nbf))
+                                .serialize();
+
+                if (CredentialIssuerConfig.isEnabled(
+                        CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
+                    processMitigatedCIs(userId, authRequest, signedVcJwt);
+                }
+
+                handleF2fRequests(authRequest.f2f(), userId, state, signedVcJwt);
+
+                persistData(
+                        authRequest,
+                        successResponse.getAuthorizationCode(),
+                        signedVcJwt,
+                        redirectUri);
+            }
 
             return successResponse.toURI().toString();
         } catch (CriStubException e) {

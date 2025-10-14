@@ -649,10 +649,7 @@
 
     if (!isJsonPayloadFilled && !areOauthFieldsValid && !areApiErrorFieldsValid) {
       e.preventDefault();
-      alert("Please enter JSON payload data (and select the credential/token endpoint with an API error if simulating an api error response from these endpoints) or select the authorization endpoint with a valid error.");
-    } else if (areApiErrorFieldsValid && !isJsonPayloadFilled) {
-        e.preventDefault();
-        alert("Please enter JSON payload data and select the credential/token endpoint with an API error if simulating an api error response from these endpoints");
+      alert("Please enter JSON payload data or select an endpoint with a valid error.");
     }
   });
 </script>

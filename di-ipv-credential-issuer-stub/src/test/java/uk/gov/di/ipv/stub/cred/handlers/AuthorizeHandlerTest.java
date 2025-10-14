@@ -97,6 +97,7 @@ import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_API_KEY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_URL;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CLIENT_ID;
+import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.EVIDENCE_JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.MITIGATED_CI;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUEST;
@@ -826,8 +827,7 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void authorizeHandlerShouldPersistApiErrorResponseForTokenEndpoint()
-                throws Exception {
+        void authorizeHandlerShouldPersistApiErrorResponseForTokenEndpoint() throws Exception {
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
                             new ApiAuthRequest(
@@ -859,8 +859,7 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void authorizeHandlerShouldPersistApiErrorResponseForCredentialEndpoint()
-                throws Exception {
+        void authorizeHandlerShouldPersistApiErrorResponseForCredentialEndpoint() throws Exception {
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
                             new ApiAuthRequest(
@@ -946,6 +945,7 @@ class AuthorizeHandlerTest {
 
     private Map<String, String> validGenerateResponseFormParams() {
         Map<String, String> queryParams = new HashMap<>();
+        queryParams.put(EVIDENCE_JSON_PAYLOAD, "{\"test\": \"test-value\"}");
         queryParams.put(JSON_PAYLOAD, "{\"test\": \"test-value\"}");
         queryParams.put(STRENGTH, "2");
         queryParams.put(VALIDITY, "3");
