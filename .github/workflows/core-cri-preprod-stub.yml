@@ -88,9 +88,6 @@ jobs:
           use-installer: true
           version: "1.134.0"
 
-      - name: sam fix https://github.com/aws/aws-sam-cli/issues/4527
-        run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
-
       - name: SAM Validate
         working-directory: ./di-ipv-core-stub/deploy/cri-preprod
         run: sam validate --region ${{ env.AWS_REGION }}
