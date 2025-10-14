@@ -85,7 +85,6 @@ jobs:
       - name: Setup SAM
         uses: aws-actions/setup-sam@f664fad9e12492edfc187a31f575537dfbb0ff63
         with:
-          use-installer: true
           version: "1.134.0"
 
       - name: sam fix https://github.com/aws/aws-sam-cli/issues/4527
