@@ -34,6 +34,7 @@ export interface StoredIdentityContents {
   sub: string;
   vot: string;
   vtm: string;
+  credentials: string[];
   "https://vocab.account.gov.uk/v1/credentialJWT": string[];
   "https://vocab.account.gov.uk/v1/coreIdentity"?: object;
   "https://vocab.account.gov.uk/v1/address"?: object[];

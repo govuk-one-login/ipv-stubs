@@ -174,9 +174,14 @@ components:
           type: string
         vtm:
           type: string
+        "credentials":
+          "description": "An array of the user's VC signatures"
+          type: array
+          items:
+            type: string
         "https://vocab.account.gov.uk/v1/credentialJWT":
           type: array
-          "description": "An array of the user's VC signatures"
+          "description": "An array of the user's VCs"
           items:
             type: string
         "https://vocab.account.gov.uk/v1/coreIdentity":

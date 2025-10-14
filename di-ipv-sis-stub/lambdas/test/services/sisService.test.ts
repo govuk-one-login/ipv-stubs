@@ -57,7 +57,8 @@ describe("getUserIdentity", () => {
         sub: parsedSi.sub,
         vot: "P2",
         vtm: expect.any(String),
-        "https://vocab.account.gov.uk/v1/credentialJWT": parsedSi.credentials,
+        credentials: parsedSi.credentials,
+        "https://vocab.account.gov.uk/v1/credentialJWT": [],
         "https://vocab.account.gov.uk/v1/coreIdentity": {
           name: [
             {

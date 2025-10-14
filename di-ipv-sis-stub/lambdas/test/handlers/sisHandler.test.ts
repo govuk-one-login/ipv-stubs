@@ -34,6 +34,7 @@ const TEST_SI_CONTENT: StoredIdentityContents = {
   sub: "some-sub",
   vot: "P2",
   vtm: "some-vtm",
+  credentials: ["vc-sig1", "vc-sig2"],
   "https://vocab.account.gov.uk/v1/credentialJWT": ["vc1", "vc2"],
 };
 const TEST_GET_EVENT = {

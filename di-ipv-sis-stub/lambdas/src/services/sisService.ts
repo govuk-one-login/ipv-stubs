@@ -72,7 +72,11 @@ export const getUserIdentity = async (
       vot: matchedProfile,
       // We don't check this value so it can be anything
       vtm: VTM,
-      "https://vocab.account.gov.uk/v1/credentialJWT": decodedSiJwt.credentials,
+      credentials: decodedSiJwt.credentials,
+      // This should be the list of VC JWTs from the user.
+      // We don't actually use this so to simplify, we will
+      // just return an empty string
+      "https://vocab.account.gov.uk/v1/credentialJWT": [],
       [IDENTITY_CLAIM]: decodedSiJwt.claims?.[IDENTITY_CLAIM] || undefined,
       [ADDRESS_CLAIM]: decodedSiJwt.claims?.[ADDRESS_CLAIM] || undefined,
       [PASSPORT_CLAIM]: decodedSiJwt.claims?.[PASSPORT_CLAIM] || undefined,
