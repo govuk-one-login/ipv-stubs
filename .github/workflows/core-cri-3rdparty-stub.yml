@@ -83,8 +83,9 @@ jobs:
           cosign sign --yes --tlog-upload=false --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Setup SAM
-        uses: aws-actions/setup-sam@f664fad9e12492edfc187a31f575537dfbb0ff63
+        uses: aws-actions/setup-sam@c71dd89d980e49367c70391e8ada4353f52f2800
         with:
+          use-installer: true
           version: "1.134.0"
 
       - name: sam fix https://github.com/aws/aws-sam-cli/issues/4527
