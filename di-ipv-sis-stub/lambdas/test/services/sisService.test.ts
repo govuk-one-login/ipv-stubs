@@ -129,7 +129,7 @@ describe("getUserIdentity", () => {
     });
   });
 
-  it("should return malformed JSON if required properties are missing and isValid=false", async () => {
+  it("should return null if required properties are missing", async () => {
     // Arrange
     const malformedJson = { isValid: true };
     dbMock.on(QueryCommand).resolves({
@@ -140,13 +140,7 @@ describe("getUserIdentity", () => {
     const res = await getUserIdentity(TEST_USER_ID, TEST_VTRS);
 
     // Assert
-    expect(res).toEqual({
-      ...malformedJson,
-      expired: false,
-      kidValid: true,
-      signatureValid: true,
-      isValid: false,
-    });
+    expect(res).toEqual(null);
   });
 
   it("should return null if it no SI exists for user", async () => {
@@ -162,7 +156,7 @@ describe("getUserIdentity", () => {
     expect(res).toBeNull();
   });
 
-  it("should return not valid and content.vot=P0 if level of confidence on sis record does not match any of the requested VTRs", async () => {
+  it("should return content.vot=P0 if level of confidence on sis record does not match any of the requested VTRs", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves({
       Items: [marshall({ ...MOCK_USER_IDENTITY, levelOfConfidence: "P1" })],
@@ -178,7 +172,7 @@ describe("getUserIdentity", () => {
       expired: false,
       kidValid: true,
       signatureValid: true,
-      isValid: false,
+      isValid: true,
     });
   });
 

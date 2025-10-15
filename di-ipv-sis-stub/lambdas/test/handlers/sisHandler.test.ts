@@ -92,7 +92,7 @@ describe("getUserIdentityHandler", () => {
     expect(res.body).toBe(JSON.stringify(expectedUserIdentity));
   });
 
-  it("should return 404 if no SI record is found for user", async () => {
+  it("should return 404 if no SI record is found for user or if si record if malformed", async () => {
     // Arrange
     jest.mocked(getUserIdentity).mockResolvedValue(null);
     jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
