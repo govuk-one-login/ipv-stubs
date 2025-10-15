@@ -543,26 +543,20 @@
                                         <div class="govuk-radios" data-module="govuk-radios">
                                             <div class="govuk-radios__item">
                                                 <input class="govuk-radios__input" id="endpoint" name="requested_oauth_error_endpoint" type="radio" value="auth">
-                                                <label class="govuk-label govuk-radios__label" for="endpoint">
+                                                <label class="govuk-label govuk-radios__label" for="requested_oauth_error_endpoint">
                                                     Authorization
                                                 </label>
                                             </div>
                                             <div class="govuk-radios__item">
-                                                <input class="govuk-radios__input" id="endpoint_2" name="requested_oauth_error_endpoint" type="radio" value="token">
-                                                <label class="govuk-label govuk-radios__label" for="endpoint_2">
+                                                <input class="govuk-radios__input" id="requested_oauth_error_endpoint_2" name="requested_oauth_error_endpoint" type="radio" value="token">
+                                                <label class="govuk-label govuk-radios__label" for="requested_oauth_error_endpoint_2">
                                                     Access Token
-                                                </label>
-                                            </div>
-                                            <div class="govuk-radios__item">
-                                                <input class="govuk-radios__input" id="endpoint_3" name="requested_oauth_error_endpoint" type="radio" value="credential">
-                                                <label class="govuk-label govuk-radios__label" for="endpoint_3">
-                                                    Credential (User Info)
                                                 </label>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div class="govuk-form-group" id="requested_oauth_error_group" style="display:none">
+                                    <div class="govuk-form-group">
                                         <label class="govuk-label" for="requested_oauth_error">
                                             OAuth error
                                         </label>
@@ -578,27 +572,23 @@
                                         </select>
                                     </div>
 
-                                    <div class="govuk-form-group" id="requested_api_error_group" style="display:none">
-                                        <label class="govuk-label" for="requested_api_error">
-                                            API Error Status Code
-                                        </label>
-                                        <select class="govuk-select" id="requested_api_error" name="requested_api_error">
-                                            <option value="none" selected>none</option>
-                                            <option value="400">400 - Bad Request</option>
-                                            <option value="401">401 - Unauthorised</option>
-                                            <option value="403">403 - Forbidden</option>
-                                            <option value="404">404 - Not Found</option>
-                                            <option value="500">500 - Internal Server Error</option>
-                                            <option value="503">503 - Service Unavailable</option>
-                                        </select>
-                                    </div>
-
                                     <div class="govuk-form-group">
                                         <label class="govuk-label" for="requested_oauth_error_description">
                                             OAuth error description
                                         </label>
                                         <input class="govuk-input" id="requested_oauth_error_description" name="requested_oauth_error_description" type="text" value="This error was triggered manually in the stub CRI">
                                     </div>
+                                    {{#isDocCheckingType}}
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label" for="userinfo_error">
+                                            User Info (Credential) endpoint error
+                                        </label>
+                                        <select class="govuk-select" id="userinfo_error" name="requested_userinfo_error">
+                                            <option value="none" selected>none</option>
+                                            <option value="404">404</option>
+                                        </select>
+                                    </div>
+                                    {{/isDocCheckingType}}
                                 </fieldset>
                             </td>
                         </tr>
@@ -639,17 +629,14 @@
   document.querySelector('form').addEventListener('submit', function(e) {
     const jsonPayload = document.getElementById('jsonPayload').value.trim();
     const oauthError = document.getElementById('requested_oauth_error').value;
-    const apiError = document.getElementById('requested_api_error').value;
-    const authEndpointSelected = document.querySelector('input[id="endpoint"]:checked');
-    const tokenOrCredentialEndpointSelected = document.querySelector('input[id="endpoint_2"]:checked') || document.querySelector('input[id="endpoint_3"]:checked');
+    const oauthErrorEndpoint = document.querySelector('input[name="requested_oauth_error_endpoint"]:checked');
 
     const isJsonPayloadFilled = !!jsonPayload;
-    const areOauthFieldsValid = oauthError !== 'none' && authEndpointSelected;
-    const areApiErrorFieldsValid = apiError !== 'none' && tokenOrCredentialEndpointSelected;
+    const areOauthFieldsValid = oauthError !== 'none' && oauthErrorEndpoint;
 
-    if (!isJsonPayloadFilled && !areOauthFieldsValid && !areApiErrorFieldsValid) {
+    if (!isJsonPayloadFilled && !areOauthFieldsValid) {
       e.preventDefault();
-      alert("Please enter JSON payload data or select an endpoint with a valid error.");
+      alert("Please either enter JSON payload data or select both an OAuth error and an endpoint.");
     }
   });
 </script>
@@ -740,30 +727,6 @@
 
 
 </script>
-<script>
-    const oauthErrorOptions = document.getElementById("requested_oauth_error_group");
-    const apiErrorOptions = document.getElementById("requested_api_error_group");
 
-    const authEndpoint = document.getElementById("endpoint");
-    function displayOauthErrorOptions() {
-        if (authEndpoint.checked) {
-            oauthErrorOptions.style.display = "block";
-            apiErrorOptions.style.display = "none";
-        }
-    }
-    authEndpoint.addEventListener("change", displayOauthErrorOptions);
-
-    const tokenEndpoint = document.getElementById("endpoint_2");
-    const credentialEndpoint = document.getElementById("endpoint_3");
-
-    function displayApiErrorOptions() {
-        if (tokenEndpoint.checked || credentialEndpoint.checked) {
-            oauthErrorOptions.style.display = "none";
-            apiErrorOptions.style.display = "block";
-        }
-    }
-    tokenEndpoint.addEventListener("change", displayApiErrorOptions);
-    credentialEndpoint.addEventListener("change", displayApiErrorOptions);
-</script>
 </body>
 </html>

@@ -12,6 +12,7 @@ import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.id.Issuer;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
+import org.eclipse.jetty.http.HttpStatus;
 import uk.gov.di.ipv.stub.cred.config.ClientConfig;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
 import uk.gov.di.ipv.stub.cred.domain.AuthRequest;
@@ -26,10 +27,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RequestedErrorResponseService {
-    private static final String AUTH = "auth";
-    private static final String TOKEN = "token";
-    private static final String CREDENTIAL = "credential";
-    private static final String NONE = "none";
+    public static final String AUTH = "auth";
+    public static final String TOKEN = "token";
+    public static final String NONE = "none";
 
     private final Map<String, Map<String, String>> errorResponsesRequested;
 
@@ -41,16 +41,17 @@ public class RequestedErrorResponseService {
         if (requestedError == null) {
             return;
         }
-        Map<String, String> paramsValuesMap = new HashMap<>();
-        paramsValuesMap.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, requestedError.error());
-        paramsValuesMap.put(
+        Map<String, String> parmsValuesMap = new HashMap<>();
+        parmsValuesMap.put(RequestParamConstants.REQUESTED_OAUTH_ERROR, requestedError.error());
+        parmsValuesMap.put(
                 RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, requestedError.endpoint());
-        paramsValuesMap.put(
+        parmsValuesMap.put(
                 RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
                 requestedError.description());
-        paramsValuesMap.put(RequestParamConstants.REQUESTED_API_ERROR, requestedError.apiError());
+        parmsValuesMap.put(
+                RequestParamConstants.REQUESTED_USERINFO_ERROR, requestedError.userInfoError());
 
-        errorResponsesRequested.put(authCode, paramsValuesMap);
+        errorResponsesRequested.put(authCode, parmsValuesMap);
     }
 
     public AuthorizationErrorResponse getRequestedAuthErrorResponse(AuthRequest authRequest)
@@ -85,7 +86,7 @@ public class RequestedErrorResponseService {
     public TokenErrorResponse getRequestedAccessTokenErrorResponse(String authCode) {
         Map<String, String> requestedErrorResponse = errorResponsesRequested.get(authCode);
         if (requestedErrorResponse != null) {
-            String error = requestedErrorResponse.get(RequestParamConstants.REQUESTED_API_ERROR);
+            String error = requestedErrorResponse.get(RequestParamConstants.REQUESTED_OAUTH_ERROR);
             String endpoint =
                     requestedErrorResponse.get(
                             RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT);
@@ -95,25 +96,21 @@ public class RequestedErrorResponseService {
                         new ErrorObject(
                                 error,
                                 requestedErrorResponse.get(
-                                        RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION),
-                                Integer.parseInt(error)));
+                                        RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION)));
             }
         }
         return null;
     }
 
-    public void persistUserInfoErrorAgainstAccessToken(String authCode, String accessToken) {
+    public void persistUserInfoErrorAgainstToken(String authCode, String accessToken) {
         Map<String, String> requestedErrorResponse = errorResponsesRequested.get(authCode);
         if (requestedErrorResponse != null) {
-            String error = requestedErrorResponse.get(RequestParamConstants.REQUESTED_API_ERROR);
-            String endpoint =
-                    requestedErrorResponse.get(
-                            RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT);
-            if (error != null && CREDENTIAL.equals(endpoint)) {
-                Map<String, String> paramsValuesMap = new HashMap<>();
-                paramsValuesMap.put(RequestParamConstants.REQUESTED_API_ERROR, error);
-                paramsValuesMap.put(RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, endpoint);
-                errorResponsesRequested.put(accessToken, paramsValuesMap);
+            String error =
+                    requestedErrorResponse.get(RequestParamConstants.REQUESTED_USERINFO_ERROR);
+            if (error != null) {
+                Map<String, String> parmsValuesMap = new HashMap<>();
+                parmsValuesMap.put(RequestParamConstants.REQUESTED_USERINFO_ERROR, error);
+                errorResponsesRequested.put(accessToken, parmsValuesMap);
             }
         }
     }
@@ -121,16 +118,14 @@ public class RequestedErrorResponseService {
     public UserInfoErrorResponse getUserInfoErrorByToken(String accessToken) {
         Map<String, String> requestedErrorResponse = errorResponsesRequested.get(accessToken);
         if (requestedErrorResponse != null) {
-            String error = requestedErrorResponse.get(RequestParamConstants.REQUESTED_API_ERROR);
-            String endpoint =
-                    requestedErrorResponse.get(
-                            RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT);
-            if (error != null && CREDENTIAL.equals(endpoint)) {
+            String error =
+                    requestedErrorResponse.get(RequestParamConstants.REQUESTED_USERINFO_ERROR);
+            if (error.equals("404")) {
                 return new UserInfoErrorResponse(
                         new ErrorObject(
                                 error,
-                                String.format("UserInfo endpoint %s triggered by stub", error),
-                                Integer.parseInt(error)));
+                                "UserInfo endpoint 404 triggered by stub",
+                                HttpStatus.NOT_FOUND_404));
             }
         }
         return null;

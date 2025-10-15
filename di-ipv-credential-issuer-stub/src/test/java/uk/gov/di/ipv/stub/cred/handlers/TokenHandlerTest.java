@@ -54,7 +54,7 @@ import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 @ExtendWith(MockitoExtension.class)
 @ExtendWith(SystemStubsExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class TokenHandlerTest {
+public class TokenHandlerTest {
     private static final String TEST_REDIRECT_URI = "https://example.com";
     private static final String TEST_AUTH_CODE =
             "e2Ln9Vs6bwZ1mDM8gfl256hg8I88i8LLenVfqxKuDEg"; // pragma: allowlist secret
@@ -81,7 +81,7 @@ class TokenHandlerTest {
                     "TEST");
 
     @BeforeAll
-    static void setUp() {
+    public static void setUp() {
         StubSsmClient.setClientConfigParams(CLIENT_CONFIG);
     }
 
@@ -165,7 +165,7 @@ class TokenHandlerTest {
     }
 
     @Test
-    void shouldReturnCorrectErrorResponseIfTokenRequestFailsValidation() {
+    void shouldReturnCorrectErrorResponseIfTokenRequestFailsValidation() throws Exception {
         when(mockValidator.validateTokenRequest(any()))
                 .thenReturn(new ValidationResult(false, OAuth2Error.INVALID_CLIENT));
 
@@ -200,7 +200,7 @@ class TokenHandlerTest {
     }
 
     @Test
-    void shouldReturn400IfClientConfigureForAuthenticationProvidesClientId() {
+    void shouldReturn400IfClientConfigureForAuthenticationProvidesClientId() throws Exception {
         setupMockFormParams(Map.of(RequestParamConstants.CLIENT_ID, "clientIdValid"));
         when(mockValidator.validateTokenRequest(any()))
                 .thenReturn(ValidationResult.createValidResult());
@@ -217,7 +217,7 @@ class TokenHandlerTest {
     }
 
     @Test
-    void shouldReturn400ResponseWhenRedirectUrlsDoNotMatch() {
+    void shouldReturn400ResponseWhenRedirectUrlsDoNotMatch() throws Exception {
         setupMockFormParams(Map.of(RequestParamConstants.CLIENT_ID, "noAuthenticationClient"));
 
         when(mockValidator.validateTokenRequest(any()))
@@ -237,24 +237,25 @@ class TokenHandlerTest {
     }
 
     @Test
-    void shouldReturn403FromRequestedApiError() {
+    void shouldReturn400WithRequestedOAuthError() throws Exception {
         setupMockFormParams(
                 Map.of(
                         RequestParamConstants.AUTH_CODE, "anAuthCode",
+                        RequestParamConstants.REQUESTED_OAUTH_ERROR, "access_denied",
                         RequestParamConstants.REQUESTED_OAUTH_ERROR_ENDPOINT, "token",
-                        RequestParamConstants.REQUESTED_API_ERROR, "403",
                         RequestParamConstants.REQUESTED_OAUTH_ERROR_DESCRIPTION,
                                 "an requestedError description"));
 
         requestedErrorResponseService.persist(
-                "anAuthCode", new RequestedError(null, "an error description", "token", "403"));
+                "anAuthCode",
+                new RequestedError("access_denied", "an error description", "token", null));
 
         tokenHandler.issueAccessToken(mockContext);
 
-        verify(mockContext).status(HttpStatus.FORBIDDEN.getCode());
+        verify(mockContext).status(HttpStatus.BAD_REQUEST.getCode());
         verify(mockContext).json(resultCaptor.capture());
 
-        assertEquals("403", resultCaptor.getValue().get("error"));
+        assertEquals("access_denied", resultCaptor.getValue().get("error"));
         assertEquals("an error description", resultCaptor.getValue().get("error_description"));
     }
 

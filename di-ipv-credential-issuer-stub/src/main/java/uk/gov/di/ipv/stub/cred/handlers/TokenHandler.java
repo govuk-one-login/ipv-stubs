@@ -7,6 +7,7 @@ import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.oauth2.sdk.token.Tokens;
 import io.javalin.http.Context;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
@@ -52,7 +53,7 @@ public class TokenHandler {
         TokenErrorResponse requestedTokenErrorResponse =
                 handleRequestedError(ctx.formParam(RequestParamConstants.AUTH_CODE));
         if (requestedTokenErrorResponse != null) {
-            ctx.status(requestedTokenErrorResponse.getErrorObject().getHTTPStatusCode());
+            ctx.status(HttpStatus.BAD_REQUEST_400);
             ctx.json(requestedTokenErrorResponse.toJSONObject());
             return;
         }
@@ -113,10 +114,7 @@ public class TokenHandler {
         authCodeService.revoke(code);
         tokenService.persist(accessToken, payloadAssociatedWithCode);
 
-        // We need to persist any requested errors against the generated access
-        // token so that it can be accessed at the credentials endpoint where
-        // the access token is available but not the auth code
-        requestedErrorResponseService.persistUserInfoErrorAgainstAccessToken(
+        requestedErrorResponseService.persistUserInfoErrorAgainstToken(
                 code, accessToken.toString());
 
         ctx.json(tokenResponse.toJSONObject());

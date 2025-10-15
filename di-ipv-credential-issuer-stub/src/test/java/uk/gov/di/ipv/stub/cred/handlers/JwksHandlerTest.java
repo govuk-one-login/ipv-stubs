@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.RSA_PRIVATE_KEY_JWK;
 
 @ExtendWith({SystemStubsExtension.class, MockitoExtension.class})
-class JwksHandlerTest {
+public class JwksHandlerTest {
 
     @SystemStub
     private static final EnvironmentVariables ENVIRONMENT_VARIABLES =
