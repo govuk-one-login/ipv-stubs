@@ -287,32 +287,38 @@ public class AuthorizeHandler {
             AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
 
             var credentialsSubject = authRequest.credentialSubjectJson();
+            if (!StringUtils.isBlank(credentialsSubject)) {
+                var credentialAttributesMap = jsonStringToMap(credentialsSubject);
 
-            var credentialAttributesMap = jsonStringToMap(credentialsSubject);
+                Long nbf =
+                        authRequest.nbf() != null
+                                ? authRequest.nbf()
+                                : Instant.now().getEpochSecond();
 
-            Long nbf =
-                    authRequest.nbf() != null ? authRequest.nbf() : Instant.now().getEpochSecond();
+                String signedVcJwt =
+                        verifiableCredentialGenerator
+                                .generate(
+                                        new Credential(
+                                                credentialAttributesMap,
+                                                generateEvidenceMap(authRequest),
+                                                userId,
+                                                clientIdValue,
+                                                nbf))
+                                .serialize();
 
-            String signedVcJwt =
-                    verifiableCredentialGenerator
-                            .generate(
-                                    new Credential(
-                                            credentialAttributesMap,
-                                            generateEvidenceMap(authRequest),
-                                            userId,
-                                            clientIdValue,
-                                            nbf))
-                            .serialize();
+                if (CredentialIssuerConfig.isEnabled(
+                        CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
+                    processMitigatedCIs(userId, authRequest, signedVcJwt);
+                }
 
-            if (CredentialIssuerConfig.isEnabled(
-                    CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
-                processMitigatedCIs(userId, authRequest, signedVcJwt);
+                handleF2fRequests(authRequest.f2f(), userId, state, signedVcJwt);
+
+                persistData(
+                        authRequest,
+                        successResponse.getAuthorizationCode(),
+                        signedVcJwt,
+                        redirectUri);
             }
-
-            handleF2fRequests(authRequest.f2f(), userId, state, signedVcJwt);
-
-            persistData(
-                    authRequest, successResponse.getAuthorizationCode(), signedVcJwt, redirectUri);
 
             return successResponse.toURI().toString();
         } catch (CriStubException e) {
@@ -881,7 +887,7 @@ public class AuthorizeHandler {
         if (f2fDetails == null) {
             return;
         }
-        if (f2fDetails.sendVcToQueue() && !f2fDetails.sendErrorToQueue() && signedVcJwt != null) {
+        if (f2fDetails.sendVcToQueue() && !f2fDetails.sendErrorToQueue()) {
             LOGGER.info("Sending VC to queue");
             F2FEnqueueLambdaRequest enqueueLambdaRequest =
                     new F2FEnqueueLambdaRequest(
