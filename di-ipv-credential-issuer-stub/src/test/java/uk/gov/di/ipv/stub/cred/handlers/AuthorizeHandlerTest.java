@@ -97,7 +97,6 @@ import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_API_KEY;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CIMIT_STUB_URL;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.CLIENT_ID;
-import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.EVIDENCE_JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.JSON_PAYLOAD;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.MITIGATED_CI;
 import static uk.gov.di.ipv.stub.cred.handlers.RequestParamConstants.REQUEST;
@@ -153,7 +152,7 @@ class AuthorizeHandlerTest {
     @Captor ArgumentCaptor<AuthorizationCode> authCoreArgumentCaptor;
 
     @BeforeAll
-    static void beforeAllSetUp() {
+    public static void beforeAllSetUp() {
         StubSsmClient.setClientConfigParams(CLIENT_CONFIG);
     }
 
@@ -827,7 +826,8 @@ class AuthorizeHandlerTest {
         }
 
         @Test
-        void authorizeHandlerShouldPersistApiErrorResponseForTokenEndpoint() throws Exception {
+        void apiAuthorizeShouldAllowRequestedOAuthErrorResponseFromTokenEndpoint()
+                throws Exception {
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
                             new ApiAuthRequest(
@@ -839,10 +839,10 @@ class AuthorizeHandlerTest {
                                     null,
                                     null,
                                     new RequestedError(
-                                            null,
+                                            "invalid_request",
                                             "a bad thing happened at the token endpoint",
                                             "token",
-                                            "400")));
+                                            null)));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
             authorizeHandler.apiAuthorize(mockContext);
@@ -852,14 +852,15 @@ class AuthorizeHandlerTest {
                     requestedErrorResponseService
                             .getRequestedAccessTokenErrorResponse(stringArgumentCaptor.getValue())
                             .getErrorObject();
-            assertEquals("400", tokenErrorResponse.getCode());
+            assertEquals("invalid_request", tokenErrorResponse.getCode());
             assertEquals(
                     "a bad thing happened at the token endpoint",
                     tokenErrorResponse.getDescription());
         }
 
         @Test
-        void authorizeHandlerShouldPersistApiErrorResponseForCredentialEndpoint() throws Exception {
+        void apiAuthorizeShouldAllowRequestedOAuthErrorResponseFromCredentialEndpoint()
+                throws Exception {
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
                             new ApiAuthRequest(
@@ -870,7 +871,7 @@ class AuthorizeHandlerTest {
                                     null,
                                     null,
                                     null,
-                                    new RequestedError(null, null, "credential", "404")));
+                                    new RequestedError(null, null, null, "404")));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
 
             authorizeHandler.apiAuthorize(mockContext);
@@ -945,7 +946,6 @@ class AuthorizeHandlerTest {
 
     private Map<String, String> validGenerateResponseFormParams() {
         Map<String, String> queryParams = new HashMap<>();
-        queryParams.put(EVIDENCE_JSON_PAYLOAD, "{\"test\": \"test-value\"}");
         queryParams.put(JSON_PAYLOAD, "{\"test\": \"test-value\"}");
         queryParams.put(STRENGTH, "2");
         queryParams.put(VALIDITY, "3");
