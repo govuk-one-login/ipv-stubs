@@ -54,6 +54,9 @@ export const getUserIdentity = async (
   });
 
   const validatedResponse = validateUserIdentityResponse(parsedResponse[0]);
+  if (!validatedResponse) {
+    return null;
+  }
 
   const signedJwt = validatedResponse.siJwt;
   let matchedProfile = validatedResponse.maxVot;
@@ -90,11 +93,7 @@ export const getUserIdentity = async (
   return {
     content: siContent,
     vot: validatedResponse.maxVot,
-    isValid: !!(
-      validatedResponse.isValid &&
-      matchedProfile &&
-      matchedProfile != "P0"
-    ),
+    isValid: validatedResponse.isValid,
     // defaulting to false as the ttl is set to the default
     // retention of VCs which is 120 years
     expired: false,
@@ -114,6 +113,7 @@ const validateUserIdentityResponse = (userIdentityResponse: any) => {
 
   if (missingProperties.length != 0) {
     console.info(`Missing required properties: ${missingProperties}`);
+    return null;
   }
 
   return userIdentityResponse;
