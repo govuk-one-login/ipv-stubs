@@ -2,24 +2,12 @@ import { QueryInput } from "@aws-sdk/client-dynamodb";
 import { config } from "../config/config";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import { dynamoClient } from "../clients/dynamodbClient";
-import {
-  StoredIdentityContents,
-  StoredIdentityJwt,
-  UserIdentity,
-} from "../domain/userIdentity";
+import { StoredIdentityJwt, UserIdentity } from "../domain/userIdentity";
 import { getVotForUserIdentity } from "../utils/votHelper";
 import { decodeJwt } from "jose";
+import { createSignedJwt, updateVotOnSiJwt } from "../utils/signedJwtHelper";
 
 const GPG45_RECORD_TYPE = "idrec:gpg45";
-
-const VTM = "https://oidc.account.gov.uk/trustmark";
-
-const IDENTITY_CLAIM = "https://vocab.account.gov.uk/v1/coreIdentity";
-const ADDRESS_CLAIM = "https://vocab.account.gov.uk/v1/address";
-const PASSPORT_CLAIM = "https://vocab.account.gov.uk/v1/passport";
-const DRIVING_PERMIT_CLAIM = "https://vocab.account.gov.uk/v1/drivingPermit";
-const SOCIAL_SECURITY_RECORD_CLAIM =
-  "https://vocab.account.gov.uk/v1/socialSecurityRecord";
 
 export const getUserIdentity = async (
   userId: string,
@@ -58,11 +46,10 @@ export const getUserIdentity = async (
     return null;
   }
 
-  const signedJwt = validatedResponse.siJwt;
+  let signedJwt = validatedResponse.siJwt;
   let matchedProfile = validatedResponse.maxVot;
-  let siContent: StoredIdentityContents | undefined = undefined;
   if (signedJwt && validatedResponse.maxVot) {
-    const decodedSiJwt = decodeJwt<StoredIdentityJwt>(signedJwt);
+    const decodedSiJwt = decodeJwt<StoredIdentityJwt>(validatedResponse.siJwt);
 
     matchedProfile = getVotForUserIdentity(
       validatedResponse.maxVot,
@@ -70,28 +57,12 @@ export const getUserIdentity = async (
       validatedResponse.isValid,
     );
 
-    siContent = {
-      sub: decodedSiJwt.sub,
-      vot: matchedProfile,
-      // We don't check this value so it can be anything
-      vtm: VTM,
-      credentials: decodedSiJwt.credentials,
-      // This should be the list of VC JWTs from the user.
-      // We don't actually use this so to simplify, we will
-      // just return an empty string
-      "https://vocab.account.gov.uk/v1/credentialJWT": [],
-      [IDENTITY_CLAIM]: decodedSiJwt.claims?.[IDENTITY_CLAIM] || undefined,
-      [ADDRESS_CLAIM]: decodedSiJwt.claims?.[ADDRESS_CLAIM] || undefined,
-      [PASSPORT_CLAIM]: decodedSiJwt.claims?.[PASSPORT_CLAIM] || undefined,
-      [DRIVING_PERMIT_CLAIM]:
-        decodedSiJwt.claims?.[DRIVING_PERMIT_CLAIM] || undefined,
-      [SOCIAL_SECURITY_RECORD_CLAIM]:
-        decodedSiJwt.claims?.[SOCIAL_SECURITY_RECORD_CLAIM] || undefined,
-    };
+    const jwt = updateVotOnSiJwt(decodedSiJwt, matchedProfile);
+    signedJwt = await createSignedJwt(jwt);
   }
 
   return {
-    content: siContent,
+    content: signedJwt,
     vot: validatedResponse.maxVot,
     isValid: validatedResponse.isValid,
     // defaulting to false as the ttl is set to the default
