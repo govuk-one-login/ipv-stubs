@@ -5,6 +5,7 @@ export interface StoredIdentityDetails {
   jwt: string;
   vot: Vot;
   metadata?: object;
+  expired?: boolean; // For use through the management API
 }
 
 export type PostIdentityRequest = Omit<PutRequest, "vcs" | "si"> & {
