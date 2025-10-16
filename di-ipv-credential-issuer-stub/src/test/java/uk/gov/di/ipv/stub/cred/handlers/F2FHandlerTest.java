@@ -1,8 +1,10 @@
 package uk.gov.di.ipv.stub.cred.handlers;
 
+import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.OAuth2Error;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken;
+import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
 import com.nimbusds.openid.connect.sdk.claims.UserInfo;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
@@ -16,19 +18,21 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.di.ipv.stub.cred.service.CredentialService;
+import uk.gov.di.ipv.stub.cred.service.RequestedErrorResponseService;
 import uk.gov.di.ipv.stub.cred.service.TokenService;
 import uk.gov.di.ipv.stub.cred.validation.ValidationResult;
 
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
 
 @ExtendWith(MockitoExtension.class)
-public class F2FHandlerTest {
+class F2FHandlerTest {
     private static final String SUBJECT = "urn:uuid:5d6d6833-8512-4e37-b5ea-be7de77948dd";
 
     private static final ValidationResult INVALID_REQUEST =
@@ -39,6 +43,7 @@ public class F2FHandlerTest {
     @Mock private Context mockContext;
     @Mock private TokenService mockTokenService;
     @Mock private CredentialService mockCredentialService;
+    @Mock private RequestedErrorResponseService mockRequestedErrorResponseService;
     @Captor private ArgumentCaptor<JSONObject> resultCaptor;
     private F2FHandler resourceHandler;
     private AccessToken accessToken;
@@ -48,11 +53,13 @@ public class F2FHandlerTest {
     void setup() {
         credential = DCMAW_VC;
         accessToken = new BearerAccessToken();
-        resourceHandler = new F2FHandler(mockCredentialService, mockTokenService);
+        resourceHandler =
+                new F2FHandler(
+                        mockCredentialService, mockTokenService, mockRequestedErrorResponseService);
     }
 
     @Test
-    public void shouldReturn200AndUserInfoWhenValidRequestReceived() throws Exception {
+    void shouldReturn200AndUserInfoWhenValidRequestReceived() throws Exception {
         when(mockTokenService.getPayload(accessToken.toAuthorizationHeader()))
                 .thenReturn(UUID.randomUUID().toString());
         when(mockTokenService.validateAccessToken(Mockito.anyString()))
@@ -75,7 +82,7 @@ public class F2FHandlerTest {
     }
 
     @Test
-    public void shouldReturn400WhenAccessTokenIsNotProvided() throws Exception {
+    void shouldReturn400WhenAccessTokenIsNotProvided() throws Exception {
         when(mockTokenService.validateAccessToken(Mockito.any())).thenReturn(INVALID_REQUEST);
 
         resourceHandler.getResource(mockContext);
@@ -85,8 +92,7 @@ public class F2FHandlerTest {
     }
 
     @Test
-    public void shouldReturn400WhenIssuedAccessTokenDoesNotMatchRequestAccessToken()
-            throws Exception {
+    void shouldReturn400WhenIssuedAccessTokenDoesNotMatchRequestAccessToken() throws Exception {
         when(mockContext.header("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
         when(mockTokenService.validateAccessToken(Mockito.any())).thenReturn(INVALID_CLIENT);
 
@@ -97,7 +103,7 @@ public class F2FHandlerTest {
     }
 
     @Test
-    public void shouldReturn400WhenRequestAccessTokenIsNotValid() throws Exception {
+    void shouldReturn400WhenRequestAccessTokenIsNotValid() throws Exception {
         when(mockContext.header("Authorization")).thenReturn("invalid-token");
         when(mockTokenService.validateAccessToken(Mockito.any())).thenReturn(INVALID_CLIENT);
 
@@ -105,5 +111,27 @@ public class F2FHandlerTest {
 
         verify(mockContext).status(HttpStatus.UNAUTHORIZED.getCode());
         verify(mockContext).result("Client authentication failed");
+    }
+
+    @Test
+    void shouldReturnErrorWhenUserInfoErrorIsRequested() throws Exception {
+        when(mockTokenService.validateAccessToken(Mockito.anyString()))
+                .thenReturn(ValidationResult.createValidResult());
+        when(mockContext.header("Authorization")).thenReturn(accessToken.toAuthorizationHeader());
+
+        var expectedError =
+                new UserInfoErrorResponse(
+                        new ErrorObject(
+                                "404",
+                                String.format("UserInfo endpoint %s triggered by stub", "404"),
+                                Integer.parseInt("404")));
+
+        when(mockRequestedErrorResponseService.getUserInfoErrorByToken(any()))
+                .thenReturn(expectedError);
+
+        resourceHandler.getResource(mockContext);
+
+        verify(mockContext).status(HttpStatus.NOT_FOUND.getCode());
+        verify(mockContext).json(expectedError.getErrorObject().toJSONObject());
     }
 }
