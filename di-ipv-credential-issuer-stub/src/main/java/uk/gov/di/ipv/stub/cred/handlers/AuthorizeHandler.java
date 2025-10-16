@@ -284,7 +284,11 @@ public class AuthorizeHandler {
         String state = claimsSet.getClaim(RequestParamConstants.STATE).toString();
 
         try {
-            var credentialAttributesMap = jsonStringToMap(authRequest.credentialSubjectJson());
+            AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
+
+            var credentialsSubject = authRequest.credentialSubjectJson();
+
+            var credentialAttributesMap = jsonStringToMap(credentialsSubject);
 
             Long nbf =
                     authRequest.nbf() != null ? authRequest.nbf() : Instant.now().getEpochSecond();
@@ -307,7 +311,6 @@ public class AuthorizeHandler {
 
             handleF2fRequests(authRequest.f2f(), userId, state, signedVcJwt);
 
-            AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
             persistData(
                     authRequest, successResponse.getAuthorizationCode(), signedVcJwt, redirectUri);
 
@@ -878,7 +881,7 @@ public class AuthorizeHandler {
         if (f2fDetails == null) {
             return;
         }
-        if (f2fDetails.sendVcToQueue() && !f2fDetails.sendErrorToQueue()) {
+        if (f2fDetails.sendVcToQueue() && !f2fDetails.sendErrorToQueue() && signedVcJwt != null) {
             LOGGER.info("Sending VC to queue");
             F2FEnqueueLambdaRequest enqueueLambdaRequest =
                     new F2FEnqueueLambdaRequest(
