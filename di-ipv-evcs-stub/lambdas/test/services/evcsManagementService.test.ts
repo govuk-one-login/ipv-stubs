@@ -28,6 +28,16 @@ const GPG45_SI_RECORD: EvcsStoredIdentityItem = {
   recordType: StoredIdentityRecordType.GPG45,
   levelOfConfidence: Vot.P2,
   isValid: true,
+  expired: false,
+};
+
+const GPG45_SI_RECORD_EXPIRED: EvcsStoredIdentityItem = {
+  storedIdentity: TEST_VC_STRING,
+  userId: TEST_USER_ID,
+  recordType: StoredIdentityRecordType.GPG45,
+  levelOfConfidence: Vot.P2,
+  isValid: true,
+  expired: true,
 };
 
 const TEST_CREATE_SI_REQUEST = {
@@ -38,6 +48,15 @@ const TEST_CREATE_SI_REQUEST = {
   },
 };
 
+const TEST_CREATE_SI_REQUEST_EXPIRED = {
+  userId: TEST_USER_ID,
+  si: {
+    jwt: TEST_VC_STRING,
+    vot: Vot.P2,
+    expired: true,
+  },
+};
+
 beforeEach(() => {
   dbMock.reset();
 });
@@ -45,7 +64,7 @@ beforeEach(() => {
 describe("processGetStoredIdentity", () => {
   it("should return stored identities with a 200 response for user", async () => {
     // Arrange
-    const expectedResponse = [GPG45_SI_RECORD];
+    const expectedResponse = [GPG45_SI_RECORD_EXPIRED];
     dbMock.on(QueryCommand).resolves(generateQueryResponse(expectedResponse));
 
     // Act
@@ -59,6 +78,32 @@ describe("processGetStoredIdentity", () => {
       },
     });
     expect(res.storedIdentities).toEqual(expectedResponse);
+  });
+
+  it("should default expired to false if it's not in the stored record", async () => {
+    // Arrange
+    const identityMissingExpired = {
+      storedIdentity: TEST_VC_STRING,
+      userId: TEST_USER_ID,
+      recordType: StoredIdentityRecordType.GPG45,
+      levelOfConfidence: Vot.P2,
+      isValid: true,
+    };
+    dbMock
+      .on(QueryCommand)
+      .resolves(generateQueryResponse([identityMissingExpired]));
+
+    // Act
+    const res = await processGetStoredIdentity(TEST_USER_ID);
+
+    // Assert
+    expect(dbMock).toHaveReceivedCommandWith(QueryCommand, {
+      KeyConditionExpression: "userId = :userIdValue",
+      ExpressionAttributeValues: {
+        ":userIdValue": marshall(TEST_USER_ID),
+      },
+    });
+    expect(res.storedIdentities).toEqual([GPG45_SI_RECORD]);
   });
 
   it("should return empty vcs list if no stored identities are found for user", async () => {
@@ -82,6 +127,19 @@ describe("processGetStoredIdentity", () => {
 describe("processCreateStoredIdentity", () => {
   it("should successfully create an SI given a valid request", async () => {
     // Act
+    const res = await processCreateStoredIdentity(
+      TEST_CREATE_SI_REQUEST_EXPIRED,
+    );
+
+    // Assert
+    expect(res.statusCode).toEqual(StatusCodes.Accepted);
+    expect(dbMock).toHaveReceivedCommandWith(PutItemCommand, {
+      Item: marshall(GPG45_SI_RECORD_EXPIRED, { removeUndefinedValues: true }),
+    });
+  });
+
+  it("should default expired to false if it's not supplied", async () => {
+    // Act
     const res = await processCreateStoredIdentity(TEST_CREATE_SI_REQUEST);
 
     // Assert
@@ -92,7 +150,7 @@ describe("processCreateStoredIdentity", () => {
   });
 });
 
-function generateQueryResponse(storedIdentities: EvcsStoredIdentityItem[]) {
+function generateQueryResponse(storedIdentities: object[]) {
   return {
     Items: storedIdentities.map((si) => marshall(si)),
   };

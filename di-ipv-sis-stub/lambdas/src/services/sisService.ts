@@ -44,12 +44,13 @@ export const getUserIdentity = async (
   }
 
   const parsedResponse = response.Items.map((siItem) => {
-    const { storedIdentity, levelOfConfidence, isValid } = unmarshall(siItem);
+    const { storedIdentity, levelOfConfidence, isValid, expired } = unmarshall(siItem);
 
     return {
       siJwt: storedIdentity,
       maxVot: levelOfConfidence,
       isValid,
+      expired,
     };
   });
 
@@ -94,9 +95,7 @@ export const getUserIdentity = async (
     content: siContent,
     vot: validatedResponse.maxVot,
     isValid: validatedResponse.isValid,
-    // defaulting to false as the ttl is set to the default
-    // retention of VCs which is 120 years
-    expired: false,
+    expired: validatedResponse.expired || false,
     // defaulting to true for below as we don't use these
     kidValid: true,
     signatureValid: true,

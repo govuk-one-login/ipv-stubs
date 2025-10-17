@@ -34,6 +34,7 @@ describe("evcs management handlers", () => {
         recordType: StoredIdentityRecordType.GPG45,
         isValid: true,
         levelOfConfidence: Vot.P2,
+        expired: false,
       };
       jest.mocked(processGetStoredIdentity).mockResolvedValue({
         storedIdentities: [expectedGpg45Si],

@@ -36,14 +36,20 @@ export async function processGetStoredIdentity(
   }
 
   const parsedResponse = response.Items.map((siItem) => {
-    const { recordType, storedIdentity, levelOfConfidence, isValid } =
-      unmarshall(siItem);
+    const {
+      recordType,
+      storedIdentity,
+      levelOfConfidence,
+      isValid,
+      expired = false,
+    } = unmarshall(siItem);
     return {
       userId,
       recordType,
       storedIdentity,
       levelOfConfidence,
       isValid,
+      expired,
     };
   });
 
@@ -63,6 +69,7 @@ export async function processCreateStoredIdentity(
       levelOfConfidence: createSiRequest.si.vot,
       metadata: createSiRequest.si.metadata,
       isValid: true,
+      expired: createSiRequest.si.expired || false,
     };
     const putItem = createPutItem(evcsStoredIdentityItem);
 

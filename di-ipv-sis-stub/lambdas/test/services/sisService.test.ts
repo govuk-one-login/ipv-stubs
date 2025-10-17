@@ -31,6 +31,7 @@ const TEST_VTRS = ["P2"];
 const MOCK_USER_IDENTITY = {
   userId: TEST_USER_ID,
   isValid: true,
+  expired: true,
   levelOfConfidence: "P2",
   storedIdentity: TEST_SI_JWT,
 };
@@ -102,7 +103,7 @@ describe("getUserIdentity", () => {
         ],
       },
       vot: MOCK_USER_IDENTITY.levelOfConfidence,
-      expired: false,
+      expired: true,
       isValid: MOCK_USER_IDENTITY.isValid,
       signatureValid: true,
       kidValid: true,
@@ -122,7 +123,7 @@ describe("getUserIdentity", () => {
     expect(res).toEqual({
       content: expect.objectContaining({ vot: "P0" }),
       vot: MOCK_USER_IDENTITY.levelOfConfidence,
-      expired: false,
+      expired: true,
       isValid: false,
       signatureValid: true,
       kidValid: true,
@@ -169,10 +170,79 @@ describe("getUserIdentity", () => {
     expect(res).toEqual({
       content: expect.objectContaining({ vot: "P0" }),
       vot: "P1",
-      expired: false,
+      expired: true,
       kidValid: true,
       signatureValid: true,
       isValid: true,
+    });
+  });
+
+  it("should default expired to false", async () => {
+    // Arrange
+    const { expired, ...mockUserIdentityWithoutExpired } = MOCK_USER_IDENTITY;
+    dbMock.on(QueryCommand).resolves({
+      Items: [marshall({ ...mockUserIdentityWithoutExpired })],
+    });
+
+    // Act
+    const res = await getUserIdentity(TEST_USER_ID, TEST_VTRS);
+
+    // Assert
+    const parsedSi = decodeJwt<StoredIdentityJwt>(TEST_SI_JWT);
+    expect(res).toEqual({
+      content: {
+        sub: parsedSi.sub,
+        vot: "P2",
+        vtm: expect.any(String),
+        credentials: parsedSi.credentials,
+        "https://vocab.account.gov.uk/v1/credentialJWT": [],
+        "https://vocab.account.gov.uk/v1/coreIdentity": {
+          name: [
+            {
+              nameParts: [
+                {
+                  type: "GivenName",
+                  value: "KENNETH",
+                },
+                {
+                  type: "FamilyName",
+                  value: "DECERQUEIRA",
+                },
+              ],
+            },
+          ],
+          birthDate: [
+            {
+              value: "1965-07-08",
+            },
+          ],
+        },
+        "https://vocab.account.gov.uk/v1/address": [
+          {
+            addressCountry: "GB",
+            addressLocality: "BATH",
+            buildingName: "",
+            buildingNumber: "8",
+            postalCode: "BA2 5AA",
+            streetName: "HADLEY ROAD",
+            subBuildingName: "",
+            uprn: 100120012077,
+            validFrom: "1000-01-01",
+          },
+        ],
+        "https://vocab.account.gov.uk/v1/passport": [
+          {
+            documentNumber: "321654987",
+            expiryDate: "2030-01-01",
+            icaoIssuerCode: "GBR",
+          },
+        ],
+      },
+      vot: MOCK_USER_IDENTITY.levelOfConfidence,
+      expired: false,
+      isValid: MOCK_USER_IDENTITY.isValid,
+      signatureValid: true,
+      kidValid: true,
     });
   });
 
@@ -189,7 +259,7 @@ describe("getUserIdentity", () => {
     expect(res).toEqual({
       content: expect.objectContaining({ vot: "P1" }),
       vot: "P2",
-      expired: false,
+      expired: true,
       kidValid: true,
       signatureValid: true,
       isValid: true,
