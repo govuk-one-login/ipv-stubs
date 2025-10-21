@@ -57,6 +57,7 @@ const TEST_SI_TABLE_ITEM_GPG45: EvcsStoredIdentityItem = {
   userId: TEST_USER_ID,
   recordType: StoredIdentityRecordType.GPG45,
   isValid: true,
+  expired: false,
   levelOfConfidence: Vot.P2,
   storedIdentity: TEST_SI_JWT,
 };
@@ -585,6 +586,7 @@ function createStoredIdentityPutItem(putSiDetails: {
           storedIdentity: putSiDetails.storedIdentity,
           levelOfConfidence: putSiDetails.levelOfConfidence,
           isValid: true,
+          expired: false,
           metadata: putSiDetails.metadata,
         },
         { removeUndefinedValues: true },

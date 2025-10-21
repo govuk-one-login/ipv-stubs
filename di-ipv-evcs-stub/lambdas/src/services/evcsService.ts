@@ -163,6 +163,7 @@ export async function processPostIdentityRequest(
         levelOfConfidence: request.si.vot,
         metadata: request.si.metadata,
         isValid: true,
+        expired: false,
       };
       transactItems.push({ Put: createPutItem(storedIdentityItem) });
     }
