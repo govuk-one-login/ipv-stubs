@@ -12,6 +12,7 @@ on:
       - .github/workflows/core-cri-stub.yml
   workflow_dispatch:
 
+
 jobs:
   dockerBuildAndPush:
     name: Docker build and push
