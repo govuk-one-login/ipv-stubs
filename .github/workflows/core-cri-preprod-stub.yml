@@ -77,8 +77,9 @@ jobs:
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
           DT_API_TOKEN: ${{ secrets.DYNATRACE_PAAS_TOKEN }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg DT_API_TOKEN=${DT_API_TOKEN} -f Dockerfile-arm64 .
+          echo "$DT_API_TOKEN" > dt_token.txt
+          docker build --platform="linux/arm64" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --secret id=dt_token,src=./dt_token.txt -f Dockerfile-arm64 .
+          rm dt_token.txt
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           cosign sign --yes --tlog-upload=false --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
