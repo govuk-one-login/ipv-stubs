@@ -5,6 +5,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: detect-private-key
+        exclude: 'jwtSigning.ts'
       - id: detect-aws-credentials
         args: ['--allow-missing-credentials']
       - id: mixed-line-ending

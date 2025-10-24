@@ -1,6 +1,42 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResultV2} from "aws-lambda";
 import {BadRequestError} from "./exceptions";
 import {buildApiResponse, getErrorMessage} from "./apiResponseBuilder";
+import {getCIsForUserID} from "../../common/dataService";
+import {JWTPayload} from "jose";
+import {getCimitComponentId} from "../../common/configService";
+import {signJWT} from "./jwtSigning";
+
+interface Evidence {
+  contraIndicator: ContraIndicator[];
+  type: "SecurityCheck";
+}
+
+export interface VcClaim {
+  evidence: Evidence[];
+  type: ["VerifiableCredential", "SecurityCheckCredential"];
+}
+
+interface MitigatingCredential {
+  issuer: string;
+  validFrom: string;
+  txn: string;
+  id: string;
+}
+
+interface Mitigation {
+  code: string;
+  mitigatingCredential: MitigatingCredential[];
+}
+
+export interface ContraIndicator {
+  code: string;
+  document: string;
+  issuanceDate: string;
+  issuers: string[];
+  mitigation: Mitigation[];
+  incompleteMitigation: Mitigation[];
+  txn: string[]
+}
 
 interface GetContraIndicatorCredentialRequest {
   userId: string;
@@ -17,7 +53,13 @@ export const getContraIndicatorCredentialHandler = async (request: APIGatewayPro
   try {
     const parsedRequest = validateAndParseRequest(request);
 
-    return buildApiResponse(200, {message: "hi"});
+    const contraIdicators = await getCIs(parsedRequest.userId);
+
+    const claimsSet = await makeJWTPayload(contraIdicators, parsedRequest.userId);
+
+    const signedJwt = await signJWT(claimsSet);
+
+    return buildApiResponse(200, {vc: signedJwt});
   } catch (error) {
     console.error(getErrorMessage(error));
 
@@ -58,4 +100,44 @@ const validateAndParseRequest = (request: APIGatewayProxyEvent): GetContraIndica
     govukSigninJourneyId,
     ipAddress
   }
+}
+
+const getCIs = async (userId: string): Promise<ContraIndicator[]> => {
+  const userCis = await getCIsForUserID(userId);
+
+  return userCis.map(ci => ({
+    code: ci.contraIndicatorCode,
+    document: ci.document,
+    issuanceDate: new Date(ci.issuanceDate*1000).toISOString(),
+    issuers: [...new Set([ci.issuer])],
+    mitigation: ci.mitigations.map(mitigationCode => ({
+      code: mitigationCode,
+      mitigatingCredential: [{
+        issuer: "",
+        validFrom: "",
+        txn: "",
+        id: ""
+      }]
+    })),
+    incompleteMitigation: [],
+    txn: [ci.txn]
+  }))
+}
+
+const makeJWTPayload = async (contraIndicators: ContraIndicator[], userId: string): Promise<JWTPayload> => {
+  const vcClaim: VcClaim = {
+      evidence: [
+        { contraIndicator: contraIndicators, type: "SecurityCheck"}
+      ],
+      type: ["VerifiableCredential", "SecurityCheckCredential"]
+    }
+
+    const now = Date.now();
+    return {
+      sub: userId,
+      iss: await getCimitComponentId(),
+      nbf: Math.floor(now / 1000),
+      exp: now + (60*15),
+      vc: vcClaim
+    }
 }
