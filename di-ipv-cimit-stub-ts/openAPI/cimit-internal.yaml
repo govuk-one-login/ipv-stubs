@@ -1,0 +1,245 @@
+---
+openapi: 3.0.3
+info:
+  title: CIMITInternalAPI
+  description: Internal API Gateway
+  version: "1.0"
+security: [{}]
+paths:
+  /contra-indicators:
+    get:
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The user ID of the user making the request.
+        - name: govuk-signin-journey-id
+          in: header
+          required: true
+          schema:
+            type: string
+          description: The GOV.UK Journey ID for the individuals web-journey.
+        - name: ip-address
+          in: header
+          required: true
+          schema:
+            type: string
+          description: The source IP address of the journeys request.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VCResponse"
+        "400":
+          description: Invalid data sent by the client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FailResponse"
+        "500":
+          description: Server side failure within the service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FailResponse"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetContraIndicatorCredentialFunction.Arn}:live/invocations
+
+  /contra-indicators/detect:
+    post:
+      parameters:
+        - name: govuk-signin-journey-id
+          in: header
+          schema:
+            type: string
+          description: The GOV.UK Journey ID for the individuals web-journey.
+        - name: ip-address
+          in: header
+          schema:
+            type: string
+          description: The source IP address of the journeys request.
+      requestBody:
+        required: true
+        description: Request containing one or more signed JWTs
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DetectRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid data sent by the client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FailResponse"
+        "500":
+          description: Server side failure within the service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FailResponse"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PutContraIndicatorsFunction.Arn}:live/invocations
+
+  /contra-indicators/mitigate:
+    post:
+      parameters:
+        - name: govuk-signin-journey-id
+          in: header
+          schema:
+            type: string
+          description: The GOV.UK Journey ID for the individuals web-journey.
+        - name: ip-address
+          in: header
+          schema:
+            type: string
+          description: The source IP address of the journeys request.
+      requestBody:
+        required: true
+        description: Request containing one or more signed JWTs
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MitigateRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid data sent by the client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FailResponse"
+        "500":
+          description: Server side failure within the service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FailResponse"
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostMitigationsFunction.Arn}:live/invocations
+
+  /contra-indicators/healthcheck:
+    get:
+      description: Returns a 200 for health checking
+      responses:
+        200:
+          description: Successful health check response
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "MOCK"
+        requestTemplates:
+          application/json: |
+            {
+              "statusCode": 200
+            }
+        responses:
+          200:
+            statusCode: 200
+            responseTemplates:
+              application/json: |
+                {
+                  "healthcheck": "ok"
+                }
+
+components:
+  schemas:
+    DetectRequest:
+      type: object
+      properties:
+        "signed_jwt":
+          type: string
+          description: Signed Verifiable Credential JWT.
+
+    MitigateRequest:
+      type: object
+      properties:
+        "signed_jwts":
+          type: array
+          maxItems: 20
+          description: Array of Signed Verifiable Credential JWTs.
+          items:
+            type: string
+
+    VCResponse:
+      type: object
+      properties:
+        vc:
+          type: string
+          description: Signed JWT containing the Verifiable Credential.
+      required:
+        - vc
+
+    SuccessResponse:
+      type: object
+      description: Object type returned where there operation succeeds
+      properties:
+        result:
+          type: string
+          description: |
+            The type of the response. Currently this is either a fail or success
+            result.
+          enum:
+            - success
+            - fail
+      required:
+        - result
+
+    FailResponse:
+      type: object
+      description: |
+        Object type returned where there is a failure with the operation
+      properties:
+        result:
+          type: string
+          description: |
+            The type of the response. Currently this is either a fail or success
+            result.
+          enum:
+            - fail
+            - success
+        reason:
+          type: string
+          enum:
+            - BAD_REQUEST
+            - BAD_VC_SIGNATURE
+            - BAD_CI_CODE
+            - BAD_VC_ISSUER
+            - INTERNAL_ERROR
+          description: |
+            * BAD_REQUEST - The provided JWT was invalid
+            * BAD_VC_SIGNATURE - The Verifiable Credential Signature was invalid
+            * BAD_CI_CODE - The Contra Indicator Code was invalid
+            * BAD_VC_ISSUER - The Issuer was invalid
+            * INTERNAL_ERROR - Internal Server error
+        errorMessage:
+          type: string
+      required:
+        - result
+        - reason

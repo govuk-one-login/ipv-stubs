@@ -1,0 +1,37 @@
+{
+  "name": "cimit-stub",
+  "description": "CIMIT stub",
+  "version": "1.0.0",
+  "private": true,
+  "author": "IPVCore",
+  "license": "GDS",
+  "dependencies": {
+    "@aws-lambda-powertools/parameters": "^1.16.0",
+    "@aws-sdk/client-dynamodb": "^3.649.0",
+    "@aws-sdk/lib-dynamodb": "^3.460.0",
+    "esbuild": "0.25.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.3",
+    "@babel/preset-env": "^7.23.3",
+    "@babel/preset-typescript": "^7.23.3",
+    "@types/aws-lambda": "^8.10.109",
+    "@types/jest": "^29.5.10",
+    "@types/node": "^22.14.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.3.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest --config=jest.config.test.js",
+    "compile": "tsc",
+    "format": "eslint --ext=ts . && prettier --list-different .",
+    "fix": "eslint --ext=ts --quiet --fix . && prettier --write .",
+    "lint": "./node_modules/.bin/eslint ."
+  }
+}
