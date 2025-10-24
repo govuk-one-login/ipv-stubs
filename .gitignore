@@ -24,6 +24,7 @@
 hs_err_pid*
 
 .idea
+.vscode
 .gradle
 *.iml
 .DS_Store

@@ -1,0 +1,198 @@
+openapi: 3.0.3
+info:
+  title: "CIMIT Stub External"
+  description: "The external api presented by CIMIT Stub for use by non CIMIT services"
+  version: "1.0.0"
+paths:
+  /healthcheck:
+    get:
+      description: "returns a 200 for Route53 health checks to use"
+      responses:
+        200:
+          description: "A healthcheck response"
+          content:
+            application/json:
+              schema:
+                type: "object"
+      x-amazon-apigateway-integration:
+        type: "MOCK"
+        requestTemplates:
+          application/json: "{\"statusCode\":200}"
+        responses:
+          200:
+            statusCode: 200
+            responseTemplates:
+              application/json: "{\"healthcheck\": \"ok\"}"
+
+  /user/{userId}/cis:
+    post:
+      description: insert new CIs to the Cimit Stub DynamoDB Table
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CisRequestBody"
+      responses:
+        200:
+          description: "Success response "
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StubManagementFunction.Arn}:live/invocations
+        passthroughBehavior: "when_no_match"
+        requestTemplates:
+          application/x-www-form-urlencoded:
+            Fn::Sub: |
+              {
+                "input": “{ \"userId\": \"$input.params('userId')\", \"code\": \"$input.body('code')\", \"issuanceDate\": \"$input.body('issuanceDate')\", \"mitigations\": \"$input.body('mitigations')\ "}"
+              }
+
+    put:
+      description: Update CIs to the Cimit Stub DynamoDB Table
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Success response"
+          content:
+            application/json:
+              schema:
+                type: object
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StubManagementFunction.Arn}:live/invocations
+        passthroughBehavior: "when_no_match"
+        requestTemplates:
+          application/x-www-form-urlencoded:
+            Fn::Sub: |
+              {
+                "input": “{ \"userId\": \"$input.params('userId')\", \"code\": \"$input.body('code')\", \"issuanceDate\": \"$input.body('issuanceDate')\", \"mitigations\": \"$input.body('mitigations')\ "}"
+              }
+
+  /user/{userId}/mitigations/{ci}:
+    post:
+      description: insert mitigations to the Cimit Stub DynamoDB Table
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user
+          schema:
+            type: string
+        - name: ci
+          in: path
+          required: true
+          description: The ContraIndicator (CI) value
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MitigationsRequestBody"
+      responses:
+        200:
+          description: "Success response"
+          content:
+            text/plain:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StubManagementFunction.Arn}:live/invocations
+        passthroughBehavior: "when_no_match"
+        requestTemplates:
+          application/x-www-form-urlencoded:
+            Fn::Sub: |
+              {
+                "input": “{\"userId\": \"$input.params('userId')\", \"ci\": \"$input.params('ci')\", \"mitigations\": \"$input.body\"}"
+              }
+
+    put:
+      description: Update mitigations to the Cimit Stub DynamoDB Table
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user
+          schema:
+            type: string
+        - name: ci
+          in: path
+          required: true
+          description: The ContraIndicator (CI) value
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MitigationsRequestBody"
+      responses:
+        200:
+          description: "Success response"
+          content:
+            text/plain:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StubManagementFunction.Arn}:live/invocations
+        passthroughBehavior: "when_no_match"
+        requestTemplates:
+          application/x-www-form-urlencoded:
+            Fn::Sub: |
+              {
+                "input": “{\"userId\": \"$input.params('userId')\", \"ci\": \"$input.params('ci')\", \"mitigations\": \"$input.body\"}"
+              }
+
+components:
+  schemas:
+    CisRequestBody:
+      description: Request body for CIs (ContraIndicator) updates or additions
+      type: object
+      properties:
+        code:
+          type: string
+          description: The code for CIs data
+        issuanceDate:
+          type: string
+          format: date-time
+          description: An ISO Date representing the issuance dae of the CIS data. If not set, use system data (optional)
+        mitigations:
+          type: array
+          items:
+            type: string
+          description: An array of mitigations (optional)
+    MitigationsRequestBody:
+      description: Request body for mitigations updates or additions
+      type: array
+      items:
+        type: string
