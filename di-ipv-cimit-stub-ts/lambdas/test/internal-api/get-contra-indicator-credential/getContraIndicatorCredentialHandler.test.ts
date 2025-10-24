@@ -6,6 +6,7 @@ import {
 import {
   getContraIndicatorCredentialHandler
 } from "../../../src/internal-api/get-contra-indicator-credential/getContraIndicatorCredentialHandler";
+import { getCimitComponentId, getCimitSigningKey } from "../../../src/common/configService";
 
 const buildGetContraIndicatorCredentialRequest = (
   headers: APIGatewayProxyEventHeaders = {"govuk-signin-journey-id": "someJourneyId", "ip-address": "someIpAddress"},
@@ -17,9 +18,24 @@ const buildGetContraIndicatorCredentialRequest = (
   } as APIGatewayProxyEvent;
 };
 
+jest.mock("../src/common/configService", () => ({
+  getCimitSigningKey: jest.fn(),
+  getCimitComponentId: jest.fn(),
+}));
+
+
+beforeEach(async () => {
+  jest.mocked(getCimitComponentId).mockResolvedValue("https://cimit.stubs.account.gov.uk");
+  jest.mocked(getCimitSigningKey).mockResolvedValue("MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM"); // pragma: allowlist secret
+
+})
+
 test("Should return signed JWT when provided valid request", async () => {
   // Arrange
   const validRequest = buildGetContraIndicatorCredentialRequest();
+
+  // build a datastore service and mock a call to it here
+  // check size and parameters of CIs returned
 
   // Act
   const res = (await getContraIndicatorCredentialHandler(validRequest)) as APIGatewayProxyStructuredResultV2;
@@ -29,29 +45,31 @@ test("Should return signed JWT when provided valid request", async () => {
 
   const expected = {vc: "someVc"};
   expect(res.body).toEqual(JSON.stringify(expected));
+
+  // verify the signature of the JWT
 })
 
-test("Should return unmitigated CI")
+test("Should return unmitigated CI", async () => {})
 
-test("Should return mitigated CI")
+test("Should return mitigated CI", async () => {})
 
-test("Should return two CIs for different documents")
+test("Should return two CIs for different documents", async () => {})
 
-test("Should return two CIs for different documents, with one mitigated")
+test("Should return two CIs for different documents, with one mitigated", async () => {})
 
-test("Should return two CIs for different documents, with both mitigated")
+test("Should return two CIs for different documents, with both mitigated", async () => {})
 
-test("Should return one CI when same document submitted twice, with the same CI")
+test("Should return one CI when same document submitted twice, with the same CI", async () => {})
 
-test("?? Should return two CIs when same document submitted twice, with different CIs")
+test("?? Should return two CIs when same document submitted twice, with different CIs", async () => {})
 
-test("Should return the unmitigated CI, when same document submitted twice with the same CIs but the one is mitigated")
+test("Should return the unmitigated CI, when same document submitted twice with the same CIs but the one is mitigated", async () => {})
 
-test("Should return one mitigated CI, when same document submitted twice with the same CIs and both are mitigated")
+test("Should return one mitigated CI, when same document submitted twice with the same CIs and both are mitigated", async () => {})
 
-test("Should consolidate duplicate non-doc CIs and keep distinct document CIs separate")
+test("Should consolidate duplicate non-doc CIs and keep distinct document CIs separate", async () => {})
 
-test("Should throw 500 for invalid signing key")
+test("Should throw 500 for invalid signing key", async () => {})
 
 test.each([
   {

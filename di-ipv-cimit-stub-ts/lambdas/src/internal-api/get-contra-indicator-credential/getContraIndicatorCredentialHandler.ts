@@ -1,6 +1,7 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResultV2} from "aws-lambda";
 import {BadRequestError} from "./exceptions";
 import {buildApiResponse, getErrorMessage} from "./apiResponseBuilder";
+import { getSsmParameter } from "../../common/configService";
 
 interface GetContraIndicatorCredentialRequest {
   userId: string;
@@ -16,6 +17,8 @@ export const getContraIndicatorCredentialHandler = async (request: APIGatewayPro
   console.info("Function invoked:", "GetContraIndicatorCredential");
   try {
     const parsedRequest = validateAndParseRequest(request);
+    //generate JWT
+
 
     return buildApiResponse(200, {message: "hi"});
   } catch (error) {
