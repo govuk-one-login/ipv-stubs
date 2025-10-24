@@ -4,12 +4,28 @@ import {
   APIGatewayProxyStructuredResultV2
 } from "aws-lambda";
 import {
-  getContraIndicatorCredentialHandler
+  getContraIndicatorCredentialHandler, GetContraIndicatorCredentialResponse, VcClaim
 } from "../../../src/internal-api/get-contra-indicator-credential/getContraIndicatorCredentialHandler";
+import { getCimitComponentId, getCimitSigningKey } from "../../../src/common/configService";
+import { getCIsForUserID} from "../../../src/common/dataService";
+import {decodeJwt, JWTPayload} from "jose";
+
+jest
+  .useFakeTimers()
+  .setSystemTime(new Date('2020-01-01'));
+
+const USER_ID = "user_id";
+const CI_V03 = "V03";
+const ISSUER_1 = "issuer1";
+const MITIGATION_M01 = "M01";
+const TXN_1 = "1";
+const ISSUANCE_DATE_1 = new Date(1577836800).toISOString(); // 01/01/2020 00:00:00
+const DOCUMENT_1 = "document_1"
+const CIMIT_COMPONENT_ID = "https://cimit.stubs.account.gov.uk";
 
 const buildGetContraIndicatorCredentialRequest = (
   headers: APIGatewayProxyEventHeaders = {"govuk-signin-journey-id": "someJourneyId", "ip-address": "someIpAddress"},
-  queryStringParameters: APIGatewayProxyEventQueryStringParameters = {user_id: "someId"},
+  queryStringParameters: APIGatewayProxyEventQueryStringParameters = {user_id: USER_ID},
 ): APIGatewayProxyEvent => {
   return {
     headers,
@@ -17,41 +33,110 @@ const buildGetContraIndicatorCredentialRequest = (
   } as APIGatewayProxyEvent;
 };
 
+jest.mock("../../../src/common/configService", () => ({
+  getCimitSigningKey: jest.fn(),
+  getCimitComponentId: jest.fn(),
+}));
+
+jest.mock("../../../src/common/dataService", () => ({
+  getCIsForUserID: jest.fn()
+}));
+
+beforeEach(async () => {
+  jest.mocked(getCimitComponentId).mockResolvedValue(CIMIT_COMPONENT_ID);
+  jest.mocked(getCimitSigningKey).mockResolvedValue("MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO"); // pragma: allowlist secret
+})
+
 test("Should return signed JWT when provided valid request", async () => {
   // Arrange
+  jest.mocked(getCIsForUserID).mockResolvedValue([{
+    userId: USER_ID,
+    contraIndicatorCode: CI_V03,
+    issuer: ISSUER_1,
+    mitigations: [MITIGATION_M01],
+    txn: TXN_1,
+    issuanceDate: ISSUANCE_DATE_1,
+    document: DOCUMENT_1
+  }])
   const validRequest = buildGetContraIndicatorCredentialRequest();
 
   // Act
-  const res = (await getContraIndicatorCredentialHandler(validRequest)) as APIGatewayProxyStructuredResultV2;
+  const response = (await getContraIndicatorCredentialHandler(validRequest)) as APIGatewayProxyStructuredResultV2;
 
   // Assert
-  expect(res.statusCode).toBe(200);
+  expect(getCimitComponentId).toHaveBeenCalled();
+  expect(getCimitSigningKey).toHaveBeenCalled();
 
-  const expected = {vc: "someVc"};
-  expect(res.body).toEqual(JSON.stringify(expected));
+  expect(response.statusCode).toBe(200);
+  expect(response.body).not.toBeUndefined();
+
+  const parsedBody = (response.body ? JSON.parse(response.body) : {}) as GetContraIndicatorCredentialResponse;
+
+  expect(parsedBody.vc).toBeTruthy();
+
+  const parsedJWT = decodeJwt(parsedBody.vc);
+
+
+
+  // assert claims on JWT returned from body
+  expect(parsedJWT.sub).toEqual(USER_ID);
+  expect(parsedJWT.iss).toEqual(CIMIT_COMPONENT_ID);
+
+  // assert properties on VC claim
+  const vcClaim = parsedJWT.vc as VcClaim;
+  expect(vcClaim.type).toEqual(["VerifiableCredential", "SecurityCheckCredential"])
+
+  const contraIndicators = vcClaim.evidence[0].contraIndicator;
+  expect(contraIndicators.length).toEqual(1);
+
+  const firstContraIndicator = contraIndicators[0];
+  expect(firstContraIndicator.txn).toEqual([TXN_1]);
+
+  const expectedCI = {
+      code: CI_V03,
+      document: DOCUMENT_1,
+      issuanceDate: ISSUANCE_DATE_1,
+      issuers: new Set([ISSUER_1]),
+      mitigation: [{
+        code: MITIGATION_M01,
+        mitigatingCredential: [{
+          issuer: "",
+          validFrom: "",
+          txn: "",
+          id: ""
+        }]
+      }],
+      incompleteMitigation: [],
+      txn: [TXN_1]
+  }
+console.log(firstContraIndicator);
+expect(firstContraIndicator).toEqual(expectedCI);
+  
+
+  // verify the signature of the JWT
 })
 
-test("Should return unmitigated CI")
+test("Should return unmitigated CI", async () => {})
 
-test("Should return mitigated CI")
+test("Should return mitigated CI", async () => {})
 
-test("Should return two CIs for different documents")
+test("Should return two CIs for different documents", async () => {})
 
-test("Should return two CIs for different documents, with one mitigated")
+test("Should return two CIs for different documents, with one mitigated", async () => {})
 
-test("Should return two CIs for different documents, with both mitigated")
+test("Should return two CIs for different documents, with both mitigated", async () => {})
 
-test("Should return one CI when same document submitted twice, with the same CI")
+test("Should return one CI when same document submitted twice, with the same CI", async () => {})
 
-test("?? Should return two CIs when same document submitted twice, with different CIs")
+test("?? Should return two CIs when same document submitted twice, with different CIs", async () => {})
 
-test("Should return the unmitigated CI, when same document submitted twice with the same CIs but the one is mitigated")
+test("Should return the unmitigated CI, when same document submitted twice with the same CIs but the one is mitigated", async () => {})
 
-test("Should return one mitigated CI, when same document submitted twice with the same CIs and both are mitigated")
+test("Should return one mitigated CI, when same document submitted twice with the same CIs and both are mitigated", async () => {})
 
-test("Should consolidate duplicate non-doc CIs and keep distinct document CIs separate")
+test("Should consolidate duplicate non-doc CIs and keep distinct document CIs separate", async () => {})
 
-test("Should throw 500 for invalid signing key")
+test("Should throw 500 for invalid signing key", async () => {})
 
 test.each([
   {
