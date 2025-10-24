@@ -89,7 +89,6 @@ public class GetContraIndicatorCredentialHandler
             var parsedRequest = getParsedRequest(input);
             SignedJWT signedJWT = generateJWT(parsedRequest.getUserId());
             var ciCredential = new GetCiCredentialResponse(signedJWT.serialize());
-
             return generateAPIGatewayProxyResponseEvent(200, ciCredential);
         } catch (FailedToParseRequestException e) {
             LOGGER.error(
