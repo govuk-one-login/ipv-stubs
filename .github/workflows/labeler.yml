@@ -1,6 +1,7 @@
 name: Pull Request Labeler
 on:
   - pull_request_target
+  - push
 
 jobs:
   labeler:
@@ -9,4 +10,7 @@ jobs:
       pull-requests: write
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: '0'
       - uses: actions/labeler@v6
