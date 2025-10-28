@@ -1,32 +1,34 @@
 Lime:
   - changed-files:
       - any-glob-to-any-file:
-        - 'di-ipv-core-stub/*'
-        - 'experian-fraud-stub/*'
+        - 'di-ipv-core-stub/**'
+        - 'experian-fraud-stub/**'
 
 Orange:
   - changed-files:
-      - any-glob-to-any-file: 'di-ipv-core-stub/*'
+      - any-glob-to-any-file:
+        - 'di-ipv-core-stub/**'
 
 IpvCore:
   - changed-files:
       - any-glob-to-any-file:
-        - 'di-ipv-ais-stub/*'
-        - 'di-ipv-cimit-stub/*'
-        - 'di-ipv-sis-stub/*'
-        - 'di-ipv-evcs-stub/*'
-        - 'di-ipv-ticf-stub/*'
-        - 'di-ipv-credential-issuers-stub/*'
-        - 'di-ipv-dcmaw-async-stub/*'
-        - 'di-ipv-queue-stub/*'
-        - 'public-jwk-creator/*'
+        - 'di-ipv-ais-stub/**'
+        - 'di-ipv-cimit-stub/**'
+        - 'di-ipv-sis-stub/**'
+        - 'di-ipv-evcs-stub/**'
+        - 'di-ipv-ticf-stub/**'
+        - 'di-ipv-credential-issuers-stub/**'
+        - 'di-ipv-dcmaw-async-stub/**'
+        - 'di-ipv-queue-stub/**'
+        - 'public-jwk-creator/**'
 
 TrustAndReuse:
   - changed-files:
-      - any-glob-to-any-file: 'di-ipv-evcs-stub/*'
+      - any-glob-to-any-file:
+        - 'di-ipv-evcs-stub/**'
 
 IdentitySRE:
   - changed-files:
       - any-glob-to-any-file:
-        - 'update-ecs-env-vars/*'
-        - 'public-jwk-creator/*'
+        - 'update-ecs-env-vars/**'
+        - 'public-jwk-creator/**'
