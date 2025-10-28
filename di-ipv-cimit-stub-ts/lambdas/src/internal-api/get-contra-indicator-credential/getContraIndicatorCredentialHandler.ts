@@ -2,8 +2,9 @@ import {APIGatewayProxyEvent, APIGatewayProxyResultV2} from "aws-lambda";
 import {BadRequestError} from "./exceptions";
 import {buildApiResponse, getErrorMessage} from "./apiResponseBuilder";
 import {getCIsForUserID} from "../../common/dataService";
-import { JWTPayload, SignJWT, importPKCS8 } from "jose";
-import { getCimitComponentId, getCimitSigningKey } from "../../common/configService";
+import {JWTPayload} from "jose";
+import {getCimitComponentId} from "../../common/configService";
+import {signJWT} from "./jwtSigning";
 
 interface Evidence {
   contraIndicator: ContraIndicator[];
@@ -27,11 +28,11 @@ interface Mitigation {
   mitigatingCredential: MitigatingCredential[];
 }
 
-interface ContraIndicator {
+export interface ContraIndicator {
   code: string;
   document: string;
   issuanceDate: string;
-  issuers: Set<string>;
+  issuers: string[];
   mitigation: Mitigation[];
   incompleteMitigation: Mitigation[];
   txn: string[]
@@ -51,52 +52,12 @@ export const getContraIndicatorCredentialHandler = async (request: APIGatewayPro
   console.info("Function invoked:", "GetContraIndicatorCredential");
   try {
     const parsedRequest = validateAndParseRequest(request);
-    const userCis = await getCIsForUserID(parsedRequest.userId);
 
-    const parsedCis: ContraIndicator[] = userCis.map(ci => ({
-      code: ci.contraIndicatorCode,
-      document: ci.document,
-      issuanceDate: new Date(ci.issuanceDate).toISOString(),
-      issuers: new Set([ci.issuer]),
-      mitigation: ci.mitigations.map(mitigationCode => ({
-        code: mitigationCode,
-        mitigatingCredential: [{
-          issuer: "",
-          validFrom: "",
-          txn: "",
-          id: ""
-        }]
-      })),
-      incompleteMitigation: [],
-      txn: [ci.txn]
-    }))
+    const contraIdicators = await getCIs(parsedRequest.userId);
 
-    console.log(parsedCis);
+    const claimsSet = await makeJWTPayload(contraIdicators, parsedRequest.userId);
 
-    const vcClaim: VcClaim = {
-      evidence: [
-        { contraIndicator: parsedCis, type: "SecurityCheck"}
-      ],
-      type: ["VerifiableCredential", "SecurityCheckCredential"]
-    }
-
-    const now = Date.now();
-    const claimsSet: JWTPayload = {
-      sub: parsedRequest.userId,
-      iss: await getCimitComponentId(),
-      nbf: now,
-      exp: now + (60*15*1000),
-      vc: vcClaim
-    }
-    const formattedSigningKey = await importPKCS8(
-      `-----BEGIN PRIVATE KEY-----\n${await getCimitSigningKey()}\n-----END PRIVATE KEY-----`, // pragma: allowlist secret
-      "ES256",
-    );
-    const signedJwt = await new SignJWT(claimsSet)
-      .setProtectedHeader({ alg: "ES256", typ: "JWT" })
-      .sign(formattedSigningKey);
-
-    // generate VC claim
+    const signedJwt = await signJWT(claimsSet);
 
     return buildApiResponse(200, {vc: signedJwt});
   } catch (error) {
@@ -139,4 +100,44 @@ const validateAndParseRequest = (request: APIGatewayProxyEvent): GetContraIndica
     govukSigninJourneyId,
     ipAddress
   }
+}
+
+const getCIs = async (userId: string): Promise<ContraIndicator[]> => {
+  const userCis = await getCIsForUserID(userId);
+
+  return userCis.map(ci => ({
+    code: ci.contraIndicatorCode,
+    document: ci.document,
+    issuanceDate: new Date(ci.issuanceDate*1000).toISOString(),
+    issuers: [...new Set([ci.issuer])],
+    mitigation: ci.mitigations.map(mitigationCode => ({
+      code: mitigationCode,
+      mitigatingCredential: [{
+        issuer: "",
+        validFrom: "",
+        txn: "",
+        id: ""
+      }]
+    })),
+    incompleteMitigation: [],
+    txn: [ci.txn]
+  }))
+}
+
+const makeJWTPayload = async (contraIndicators: ContraIndicator[], userId: string): Promise<JWTPayload> => {
+  const vcClaim: VcClaim = {
+      evidence: [
+        { contraIndicator: contraIndicators, type: "SecurityCheck"}
+      ],
+      type: ["VerifiableCredential", "SecurityCheckCredential"]
+    }
+
+    const now = Date.now();
+    return {
+      sub: userId,
+      iss: await getCimitComponentId(),
+      nbf: Math.floor(now / 1000),
+      exp: now + (60*15),
+      vc: vcClaim
+    }
 }
