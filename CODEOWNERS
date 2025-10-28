@@ -11,3 +11,16 @@
 /di-ipv-ticf-stub/ @govuk-one-login/core-team
 /experian-fraud-stub/ @govuk-one-login/cri-lime-team
 /update-ecs-env-vars/ @govuk-one-login/identity-sre
+
+# Github workflows
+/.github/actions/deploy-evcs-stub/ @govuk-one-login/core-team @govuk-one-login/trust-and-reuse-leads @govuk-one-login/trust-and-reuse-team
+/.github/workflows/ @govuk-one-login/core-team
+/.github/workflows/core-cri-3rdparty-stub.yml @govuk-one-login/cri-lime-team @govuk-one-login/cri-orange-team
+/.github/workflows/core-cri-preprod-stub.yml @govuk-one-login/cri-lime-team @govuk-one-login/cri-orange-team
+/.github/workflows/core-cri-stub.yml @govuk-one-login/cri-lime-team @govuk-one-login/cri-orange-team
+/.github/workflows/core-passport-stub.yml @govuk-one-login/cri-lime-team @govuk-one-login/cri-orange-team
+/.github/workflows/deploy-update-ecs-env-vars.yml @govuk-one-login/identity-sre
+/.github/workflows/evcs-stub.yml @govuk-one-login/core-team @govuk-one-login/trust-and-reuse-leads @govuk-one-login/trust-and-reuse-team
+/.github/workflows/gradle_graph.yml @govuk-one-login/identity-sre
+/.github/workflows/public-jwk-creator.yml @govuk-one-login/identity-sre
+/.github/workflows/template_checks.yml @govuk-one-login/identity-sre
