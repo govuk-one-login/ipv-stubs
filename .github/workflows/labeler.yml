@@ -1,7 +1,7 @@
 name: Pull Request Labeler
 on:
-  - pull_request_target
-  - push
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 
 jobs:
   labeler:
@@ -11,6 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: '0'
       - uses: actions/labeler@v6
+        with:
+          sync-labels: 'true'
