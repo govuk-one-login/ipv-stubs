@@ -143,16 +143,21 @@ const getCIs = async (userId: string): Promise<ContraIndicator[]> => {
   const deduplicatedCis: ContraIndicator[] = [];
   mappedCis.forEach((parsedCi, idx) => {
     if (idx === 0) {
+      console.log("first element");
       deduplicatedCis.push(parsedCi);
     } else {
       deduplicatedCis.forEach((checkedCi) => {
+        console.log(checkedCi);
         if (ciCodeAndDocumentsMatch(parsedCi, checkedCi)) {
+          console.log("if");
           checkedCi.issuers.push(parsedCi.issuers[0]);
           checkedCi.mitigation = parsedCi.mitigation;
           checkedCi.issuanceDate = parsedCi.issuanceDate;
           checkedCi.txn = parsedCi.txn;
         } else {
+          console.log("else");
           deduplicatedCis.push(parsedCi);
+          //console.log(parsedCi, idx, deduplicatedCis, checkedCi);
         }
       });
     }
