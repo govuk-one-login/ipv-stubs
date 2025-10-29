@@ -3,7 +3,7 @@ import { QueryInput } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 
 // TODO get rid of this parameter if not used by story's end
-interface UserContraIndicatorsItem {
+export interface UserContraIndicatorsItem {
   userId: string;
   //sortKey: string;
   contraIndicatorCode: string;
