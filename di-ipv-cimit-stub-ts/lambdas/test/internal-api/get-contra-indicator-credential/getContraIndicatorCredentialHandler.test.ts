@@ -59,7 +59,7 @@ beforeEach(async () => {
     );
 });
 
-test("Should return signed JWT when provided valid request", async () => {
+test("Should return signed JWT containing single mitigation when provided valid request", async () => {
   // Arrange
   jest.mocked(getCIsForUserID).mockResolvedValue([
     {
@@ -149,9 +149,55 @@ test("Should return signed JWT when provided valid request", async () => {
   expect(await verifyJwtSignature()).toEqual("JWT verified");
 });
 
-test("Should return unmitigated CI", async () => {});
+test("Should return unmitigated CI", async () => {
+  // Arrange
+  jest.mocked(getCIsForUserID).mockResolvedValue([
+    {
+      userId: USER_ID,
+      contraIndicatorCode: CI_V03,
+      issuer: ISSUER_1,
+      mitigations: [],
+      txn: TXN_1,
+      issuanceDate: ISSUANCE_DATE_1,
+      document: DOCUMENT_1,
+    },
+  ]);
 
-test("Should return mitigated CI", async () => {});
+  const validRequest = buildGetContraIndicatorCredentialRequest();
+
+  // Act
+  const response = (await getContraIndicatorCredentialHandler(
+    validRequest,
+  )) as APIGatewayProxyStructuredResultV2;
+
+  // Assert
+  expect(response.statusCode).toBe(200);
+
+  const parsedBody = (
+    response.body ? JSON.parse(response.body) : {}
+  ) as GetContraIndicatorCredentialResponse;
+
+  const parsedJWT = decodeJwt(parsedBody.vc);
+
+  // assert properties on VC claim
+  const vcClaim = parsedJWT.vc as VcClaim;
+
+  const contraIndicators = vcClaim.evidence[0].contraIndicator;
+  expect(contraIndicators.length).toEqual(1);
+
+  const firstContraIndicator = contraIndicators[0];
+
+  const expectedCI: ContraIndicator = {
+    code: CI_V03,
+    document: DOCUMENT_1,
+    issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+    issuers: [ISSUER_1],
+    mitigation: [],
+    incompleteMitigation: [],
+    txn: [TXN_1],
+  };
+  expect(firstContraIndicator).toEqual(expectedCI);
+});
 
 test("Should return two CIs for different documents", async () => {});
 
