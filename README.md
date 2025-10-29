@@ -25,8 +25,8 @@ These stubs are owned by the IPV Core team.
 ## DCMAW-Async stub
 `di-ipv-dcmaw-async-stub` [/di-ipv-dcmaw-async-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-dcmaw-async-stub)
 
-This is the stub for the V2 app. It doesn't need a user interface like the old DCMAW CRI stub as interactions with this CRI are different so is in its own directory outside of `di-ipv-credential-issuer-stub`.
-To test a full user journey with this stub, see [here](https://govukverify.atlassian.net/wiki/spaces/DID/pages/5448237347/How+to+go+through+a+v2+App+MAM+Journey+in+a+dev+environment) for instructions on running the full user flow, including priming the stub to return a VC.
+This is the stub for the V2 app. It doesn't need a user interface like the old DCMAW CRI stub as interactions with this CRI are different and so is in its own directory outside of `di-ipv-credential-issuer-stub`.
+See [here](https://govukverify.atlassian.net/wiki/spaces/DID/pages/5448237347/How+to+go+through+a+v2+App+MAM+Journey+in+a+dev+environment) for instructions on running the full user flow, including priming the stub to return a VC.
 
 This stub is owned by the IPV Core team.
 
@@ -72,14 +72,14 @@ This stub is owned by the IPV Core team.
 
 `di-ipv-queue-stub` [/di-ipv-queue-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-queue-stub)
 
-This defines the lambda which pushes messages onto anSQS queue. This is currently used for testing F2F asynchronous VC returns.
+This defines the lambda which pushes messages onto an SQS queue. This is currently used for testing asynchronous VC returns.
 
 This stub is owned by the IPV Core team.
 
 ## IPV Core Stubs
 `di-ipv-core-stub` [/di-ipv-core-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-core-stub)
 
-This stubs out the IPV Core system for the Orange team (responsible for Address and Experian KBV CRIs) and Lime team (responsible for Fraud, Driving Licence and Passport CRIs).
+This stubs out the IPV Core system for the Orange team (responsible for Address and Experian KBV CRIs) and Lime team (responsible for Fraud, Driving Licence and Passport CRIs) and so they are the owners of this stub.
 
 ## Pre-Commit Checking / Verification
 
