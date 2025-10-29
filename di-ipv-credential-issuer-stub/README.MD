@@ -1,7 +1,7 @@
 # Digital Identity IPV Credential Issuer Stub
 
 `di-ipv-credential-issuer-stub`
-This is a test change
+
 
 
 A Credential Issuer stub using Spark Java
