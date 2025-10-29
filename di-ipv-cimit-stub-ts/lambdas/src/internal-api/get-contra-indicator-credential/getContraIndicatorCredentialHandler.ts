@@ -1,10 +1,10 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResultV2} from "aws-lambda";
-import {BadRequestError} from "./exceptions";
-import {buildApiResponse, getErrorMessage} from "./apiResponseBuilder";
-import {getCIsForUserID} from "../../common/dataService";
-import {JWTPayload} from "jose";
-import {getCimitComponentId} from "../../common/configService";
-import {signJWT} from "./jwtSigning";
+import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
+import { BadRequestError } from "./exceptions";
+import { buildApiResponse, getErrorMessage } from "./apiResponseBuilder";
+import { getCIsForUserID } from "../../common/dataService";
+import { JWTPayload } from "jose";
+import { getCimitComponentId } from "../../common/configService";
+import { signJWT } from "./jwtSigning";
 
 interface Evidence {
   contraIndicator: ContraIndicator[];
@@ -35,7 +35,7 @@ export interface ContraIndicator {
   issuers: string[];
   mitigation: Mitigation[];
   incompleteMitigation: Mitigation[];
-  txn: string[]
+  txn: string[];
 }
 
 interface GetContraIndicatorCredentialRequest {
@@ -48,18 +48,23 @@ export interface GetContraIndicatorCredentialResponse {
   vc: string;
 }
 
-export const getContraIndicatorCredentialHandler = async (request: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> => {
+export const getContraIndicatorCredentialHandler = async (
+  request: APIGatewayProxyEvent,
+): Promise<APIGatewayProxyResultV2> => {
   console.info("Function invoked:", "GetContraIndicatorCredential");
   try {
     const parsedRequest = validateAndParseRequest(request);
 
     const contraIdicators = await getCIs(parsedRequest.userId);
 
-    const claimsSet = await makeJWTPayload(contraIdicators, parsedRequest.userId);
+    const claimsSet = await makeJWTPayload(
+      contraIdicators,
+      parsedRequest.userId,
+    );
 
     const signedJwt = await signJWT(claimsSet);
 
-    return buildApiResponse(200, {vc: signedJwt});
+    return buildApiResponse(200, { vc: signedJwt });
   } catch (error) {
     console.error(getErrorMessage(error));
 
@@ -73,9 +78,11 @@ export const getContraIndicatorCredentialHandler = async (request: APIGatewayPro
       message: getErrorMessage(error),
     });
   }
-}
+};
 
-const validateAndParseRequest = (request: APIGatewayProxyEvent): GetContraIndicatorCredentialRequest => {
+const validateAndParseRequest = (
+  request: APIGatewayProxyEvent,
+): GetContraIndicatorCredentialRequest => {
   const userId = request.queryStringParameters?.["user_id"];
 
   if (!userId) {
@@ -98,46 +105,77 @@ const validateAndParseRequest = (request: APIGatewayProxyEvent): GetContraIndica
   return {
     userId,
     govukSigninJourneyId,
-    ipAddress
-  }
-}
+    ipAddress,
+  };
+};
 
 const getCIs = async (userId: string): Promise<ContraIndicator[]> => {
-  const userCis = await getCIsForUserID(userId);
+  const userCis = (await getCIsForUserID(userId)).sort(
+    (ci1, ci2) => ci1.issuanceDate - ci2.issuanceDate,
+  );
 
-  return userCis.map(ci => ({
+  const mappedCis = userCis.map((ci) => ({
     code: ci.contraIndicatorCode,
     document: ci.document,
-    issuanceDate: new Date(ci.issuanceDate*1000).toISOString(),
+    issuanceDate: new Date(ci.issuanceDate * 1000).toISOString(),
     issuers: [...new Set([ci.issuer])],
-    mitigation: ci.mitigations.map(mitigationCode => ({
+    mitigation: ci.mitigations.map((mitigationCode) => ({
       code: mitigationCode,
-      mitigatingCredential: [{
-        issuer: "",
-        validFrom: "",
-        txn: "",
-        id: ""
-      }]
+      mitigatingCredential: [
+        {
+          issuer: "",
+          validFrom: "",
+          txn: "",
+          id: "",
+        },
+      ],
     })),
     incompleteMitigation: [],
-    txn: [ci.txn]
-  }))
-}
+    txn: [ci.txn],
+  }));
 
-const makeJWTPayload = async (contraIndicators: ContraIndicator[], userId: string): Promise<JWTPayload> => {
+  const ciCodeAndDocumentsMatch = (
+    ci1: ContraIndicator,
+    ci2: ContraIndicator,
+  ) => ci1.code === ci2.code && ci1.document === ci2.document;
+
+  // Create list of CIs from userCis
+  const deduplicatedCis: ContraIndicator[] = [];
+  mappedCis.forEach((parsedCi, idx) => {
+    if (idx === 0) {
+      deduplicatedCis.push(parsedCi);
+    } else {
+      deduplicatedCis.forEach((checkedCi) => {
+        if (ciCodeAndDocumentsMatch(parsedCi, checkedCi)) {
+          checkedCi.issuers.push(parsedCi.issuers[0]);
+          checkedCi.mitigation = parsedCi.mitigation;
+          checkedCi.issuanceDate = parsedCi.issuanceDate;
+          checkedCi.txn = parsedCi.txn;
+        } else {
+          deduplicatedCis.push(parsedCi);
+        }
+      });
+    }
+  });
+
+  return deduplicatedCis;
+};
+
+const makeJWTPayload = async (
+  contraIndicators: ContraIndicator[],
+  userId: string,
+): Promise<JWTPayload> => {
   const vcClaim: VcClaim = {
-      evidence: [
-        { contraIndicator: contraIndicators, type: "SecurityCheck"}
-      ],
-      type: ["VerifiableCredential", "SecurityCheckCredential"]
-    }
+    evidence: [{ contraIndicator: contraIndicators, type: "SecurityCheck" }],
+    type: ["VerifiableCredential", "SecurityCheckCredential"],
+  };
 
-    const now = Date.now();
-    return {
-      sub: userId,
-      iss: await getCimitComponentId(),
-      nbf: Math.floor(now / 1000),
-      exp: now + (60*15),
-      vc: vcClaim
-    }
-}
+  const now = Date.now();
+  return {
+    sub: userId,
+    iss: await getCimitComponentId(),
+    nbf: Math.floor(now / 1000),
+    exp: now + 60 * 15,
+    vc: vcClaim,
+  };
+};
