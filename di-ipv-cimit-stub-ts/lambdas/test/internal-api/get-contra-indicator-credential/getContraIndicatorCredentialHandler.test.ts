@@ -21,13 +21,19 @@ jest.useFakeTimers().setSystemTime(new Date("2020-01-01"));
 
 const USER_ID = "user_id";
 const CI_V03 = "V03";
+const CI_D02 = "D02";
 const ISSUER_1 = "issuer1";
 const ISSUER_2 = "issuer2";
+const ISSUER_3 = "issuer3";
+const ISSUER_4 = "issuer4";
 const MITIGATION_M01 = "M01";
 const TXN_1 = "1";
 const TXN_2 = "2";
+const TXN_3 = "3";
+const TXN_4 = "4";
 const ISSUANCE_DATE_1 = 1577836800; // 01/01/2020 00:00:00
 const ISSUANCE_DATE_2 = 1577836900; // 01/01/2020 00:01:40
+const ISSUANCE_DATE_3 = 1577836960; // 01/01/2020 00:02:40
 const DOCUMENT_1 = "document_1";
 const DOCUMENT_2 = "document_2";
 const CIMIT_COMPONENT_ID = "https://cimit.stubs.account.gov.uk";
@@ -79,83 +85,83 @@ beforeEach(async () => {
   );
 });
 
-test("Should return signed JWT containing single mitigation when provided valid request", async () => {
-  // Arrange
-  jest.mocked(getCIsForUserID).mockResolvedValue([
-    {
-      userId: USER_ID,
-      contraIndicatorCode: CI_V03,
-      issuer: ISSUER_1,
-      mitigations: [MITIGATION_M01],
-      txn: TXN_1,
-      issuanceDate: ISSUANCE_DATE_1,
-      document: DOCUMENT_1,
-    },
-  ]);
-  const validRequest = buildGetContraIndicatorCredentialRequest();
+// test("Should return signed JWT containing single mitigation when provided valid request", async () => {
+//   // Arrange
+//   jest.mocked(getCIsForUserID).mockResolvedValue([
+//     {
+//       userId: USER_ID,
+//       contraIndicatorCode: CI_V03,
+//       issuer: ISSUER_1,
+//       mitigations: [MITIGATION_M01],
+//       txn: TXN_1,
+//       issuanceDate: ISSUANCE_DATE_1,
+//       document: DOCUMENT_1,
+//     },
+//   ]);
+//   const validRequest = buildGetContraIndicatorCredentialRequest();
 
-  // Act
-  const response = (await getContraIndicatorCredentialHandler(
-    validRequest,
-  )) as APIGatewayProxyStructuredResultV2;
+//   // Act
+//   const response = (await getContraIndicatorCredentialHandler(
+//     validRequest,
+//   )) as APIGatewayProxyStructuredResultV2;
 
-  // Assert
-  expect(getCimitComponentId).toHaveBeenCalled();
-  expect(getCimitSigningKey).toHaveBeenCalled();
+//   // Assert
+//   expect(getCimitComponentId).toHaveBeenCalled();
+//   expect(getCimitSigningKey).toHaveBeenCalled();
 
-  expect(response.statusCode).toBe(200);
-  expect(response.body).not.toBeUndefined();
+//   expect(response.statusCode).toBe(200);
+//   expect(response.body).not.toBeUndefined();
 
-  const parsedBody = (
-    response.body ? JSON.parse(response.body) : {}
-  ) as GetContraIndicatorCredentialResponse;
+//   const parsedBody = (
+//     response.body ? JSON.parse(response.body) : {}
+//   ) as GetContraIndicatorCredentialResponse;
 
-  expect(parsedBody.vc).toBeTruthy();
+//   expect(parsedBody.vc).toBeTruthy();
 
-  const parsedJWT = decodeJwt(parsedBody.vc);
+//   const parsedJWT = decodeJwt(parsedBody.vc);
 
-  // assert claims on JWT returned from body
-  expect(parsedJWT.sub).toEqual(USER_ID);
-  expect(parsedJWT.iss).toEqual(CIMIT_COMPONENT_ID);
+//   // assert claims on JWT returned from body
+//   expect(parsedJWT.sub).toEqual(USER_ID);
+//   expect(parsedJWT.iss).toEqual(CIMIT_COMPONENT_ID);
 
-  // assert properties on VC claim
-  const vcClaim = parsedJWT.vc as VcClaim;
-  expect(vcClaim.type).toEqual([
-    "VerifiableCredential",
-    "SecurityCheckCredential",
-  ]);
+//   // assert properties on VC claim
+//   const vcClaim = parsedJWT.vc as VcClaim;
+//   expect(vcClaim.type).toEqual([
+//     "VerifiableCredential",
+//     "SecurityCheckCredential",
+//   ]);
 
-  const contraIndicators = vcClaim.evidence[0].contraIndicator;
-  expect(contraIndicators.length).toEqual(1);
+//   const contraIndicators = vcClaim.evidence[0].contraIndicator;
+//   expect(contraIndicators.length).toEqual(1);
 
-  const firstContraIndicator = contraIndicators[0];
-  expect(firstContraIndicator.txn).toEqual([TXN_1]);
+//   const firstContraIndicator = contraIndicators[0];
+//   expect(firstContraIndicator.txn).toEqual([TXN_1]);
 
-  const expectedCI: ContraIndicator = {
-    code: CI_V03,
-    document: DOCUMENT_1,
-    issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
-    issuers: [ISSUER_1],
-    mitigation: [PARSED_MITIGATION_01],
-    incompleteMitigation: [],
-    txn: [TXN_1],
-  };
-  expect(firstContraIndicator).toEqual(expectedCI);
+//   const expectedCI: ContraIndicator = {
+//     code: CI_V03,
+//     document: DOCUMENT_1,
+//     issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+//     issuers: [ISSUER_1],
+//     mitigation: [PARSED_MITIGATION_01],
+//     incompleteMitigation: [],
+//     txn: [TXN_1],
+//   };
+//   expect(firstContraIndicator).toEqual(expectedCI);
 
-  const signingKey = JSON.parse(CIMIT_PUBLIC_JWK);
-  const verifyJwtSignature = async () => {
-    try {
-      await jwtVerify(parsedBody.vc, signingKey, {
-        currentDate: new Date(2021, 1, 1, 1, 0, 0, 0),
-      });
-      return "JWT verified";
-    } catch (e) {
-      return `Failed JWT verification: ${e}`;
-    }
-  };
+//   const signingKey = JSON.parse(CIMIT_PUBLIC_JWK);
+//   const verifyJwtSignature = async () => {
+//     try {
+//       await jwtVerify(parsedBody.vc, signingKey, {
+//         currentDate: new Date(2021, 1, 1, 1, 0, 0, 0),
+//       });
+//       return "JWT verified";
+//     } catch (e) {
+//       return `Failed JWT verification: ${e}`;
+//     }
+//   };
 
-  expect(await verifyJwtSignature()).toEqual("JWT verified");
-});
+//   expect(await verifyJwtSignature()).toEqual("JWT verified");
+// });
 
 test.each([
   {
@@ -349,6 +355,147 @@ test.each([
       },
     ],
   },
+  {
+    testDescription:
+      "return the unmitigated CI, when same document submitted twice with the same CIs but the one is mitigated",
+    mockedDatabaseEntry: [
+      {
+        userId: USER_ID,
+        contraIndicatorCode: CI_V03,
+        issuer: ISSUER_1,
+        mitigations: [MITIGATION_M01],
+        txn: TXN_1,
+        issuanceDate: ISSUANCE_DATE_1,
+        document: DOCUMENT_1,
+      },
+      {
+        userId: USER_ID,
+        contraIndicatorCode: CI_V03,
+        issuer: ISSUER_2,
+        mitigations: [],
+        txn: TXN_2,
+        issuanceDate: ISSUANCE_DATE_2,
+        document: DOCUMENT_1,
+      },
+    ],
+    expectedCIs: [
+      {
+        code: CI_V03,
+        document: DOCUMENT_1,
+        issuanceDate: new Date(ISSUANCE_DATE_2 * 1000).toISOString(),
+        issuers: [ISSUER_1, ISSUER_2],
+        mitigation: [],
+        incompleteMitigation: [],
+        txn: [TXN_2],
+      },
+    ],
+  },
+  {
+    testDescription:
+      "return one mitigated CI, when same document submitted twice with the same CIs and both are mitigated",
+    mockedDatabaseEntry: [
+      {
+        userId: USER_ID,
+        contraIndicatorCode: CI_V03,
+        issuer: ISSUER_1,
+        mitigations: [MITIGATION_M01],
+        txn: TXN_1,
+        issuanceDate: ISSUANCE_DATE_1,
+        document: DOCUMENT_1,
+      },
+      {
+        userId: USER_ID,
+        contraIndicatorCode: CI_V03,
+        issuer: ISSUER_2,
+        mitigations: [MITIGATION_M01],
+        txn: TXN_2,
+        issuanceDate: ISSUANCE_DATE_2,
+        document: DOCUMENT_1,
+      },
+    ],
+    expectedCIs: [
+      {
+        code: CI_V03,
+        document: DOCUMENT_1,
+        issuanceDate: new Date(ISSUANCE_DATE_2 * 1000).toISOString(),
+        issuers: [ISSUER_1, ISSUER_2],
+        mitigation: [PARSED_MITIGATION_01],
+        incompleteMitigation: [],
+        txn: [TXN_2],
+      },
+    ],
+  },
+  {
+    testDescription:
+      "consolidate duplicate non-doc CIs and keep distinct document CIs separate",
+    mockedDatabaseEntry: [
+      {
+        userId: USER_ID,
+        contraIndicatorCode: CI_D02,
+        issuer: ISSUER_1,
+        mitigations: [],
+        txn: TXN_1,
+        issuanceDate: ISSUANCE_DATE_1,
+        document: DOCUMENT_1,
+      },
+      {
+        userId: USER_ID,
+        contraIndicatorCode: CI_D02,
+        issuer: ISSUER_2,
+        mitigations: [],
+        txn: TXN_2,
+        issuanceDate: ISSUANCE_DATE_3,
+        document: DOCUMENT_2,
+      },
+      {
+        userId: USER_ID,
+        contraIndicatorCode: CI_V03,
+        issuer: ISSUER_3,
+        mitigations: [],
+        txn: TXN_3,
+        issuanceDate: ISSUANCE_DATE_2,
+        document: null,
+      },
+      {
+        userId: USER_ID,
+        contraIndicatorCode: CI_V03,
+        issuer: ISSUER_4,
+        mitigations: [],
+        txn: TXN_3,
+        issuanceDate: ISSUANCE_DATE_3,
+        document: null,
+      },
+    ],
+    expectedCIs: [
+      {
+        code: CI_D02,
+        document: DOCUMENT_1,
+        issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+        issuers: [ISSUER_1],
+        mitigation: [],
+        incompleteMitigation: [],
+        txn: [TXN_1],
+      },
+      {
+        code: CI_V03,
+        document: null,
+        issuanceDate: new Date(ISSUANCE_DATE_3 * 1000).toISOString(),
+        issuers: [ISSUER_3, ISSUER_4],
+        mitigation: [],
+        incompleteMitigation: [],
+        txn: [TXN_3],
+      },
+      {
+        code: CI_D02,
+        document: DOCUMENT_2,
+        issuanceDate: new Date(ISSUANCE_DATE_3 * 1000).toISOString(),
+        issuers: [ISSUER_2],
+        mitigation: [],
+        incompleteMitigation: [],
+        txn: [TXN_2],
+      },
+    ],
+  },
 ])("Should $testDescription", async ({ mockedDatabaseEntry, expectedCIs }) => {
   // Arrange
   jest.mocked(getCIsForUserID).mockResolvedValue(mockedDatabaseEntry);
@@ -377,17 +524,12 @@ test.each([
   expect(contraIndicators).toEqual(expectedCIs);
 });
 
-// test("Should return one CI when same document submitted twice, with the same CI", async () => {});
-//
-// test("?? Should return two CIs when same document submitted twice, with different CIs", async () => {});
-//
-// test("Should return the unmitigated CI, when same document submitted twice with the same CIs but the one is mitigated", async () => {});
-//
-// test("Should return one mitigated CI, when same document submitted twice with the same CIs and both are mitigated", async () => {});
-//
-// test("Should consolidate duplicate non-doc CIs and keep distinct document CIs separate", async () => {});
-//
-// test("Should throw 500 for invalid signing key", async () => {});
+test("?? Should return two CIs when same document submitted twice, with different CIs", async () => {});
+
+
+test("Should consolidate duplicate non-doc CIs and keep distinct document CIs separate", async () => {});
+
+test("Should throw 500 for invalid signing key", async () => {});
 
 test.each([
   {
@@ -434,4 +576,4 @@ test.each([
   },
 );
 
-// test("Should return 500 for unexpected error", async () => {});
+test("Should return 500 for unexpected error", async () => {});

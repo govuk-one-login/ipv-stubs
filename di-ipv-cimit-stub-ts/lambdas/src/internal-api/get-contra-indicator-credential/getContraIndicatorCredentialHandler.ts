@@ -134,32 +134,46 @@ const getCIs = async (userId: string): Promise<ContraIndicator[]> => {
     txn: [ci.txn],
   }));
 
+
+  // Create list of CIs from userCis
+
+  return ciDeduplicator(mappedCis);
+};
+
+const ciDeduplicator = (mappedCis: ContraIndicator[]): ContraIndicator[] => {
+  const deduplicatedCis: ContraIndicator[] = [];
+
   const ciCodeAndDocumentsMatch = (
     ci1: ContraIndicator,
     ci2: ContraIndicator,
   ) => ci1.code === ci2.code && ci1.document === ci2.document;
 
-  // Create list of CIs from userCis
-  const deduplicatedCis: ContraIndicator[] = [];
-  mappedCis.forEach((parsedCi, idx) => {
-    if (idx === 0) {
-      deduplicatedCis.push(parsedCi);
-    } else {
-      deduplicatedCis.forEach((checkedCi) => {
-        if (ciCodeAndDocumentsMatch(parsedCi, checkedCi)) {
-          checkedCi.issuers.push(parsedCi.issuers[0]);
-          checkedCi.mitigation = parsedCi.mitigation;
-          checkedCi.issuanceDate = parsedCi.issuanceDate;
-          checkedCi.txn = parsedCi.txn;
-        } else {
-          deduplicatedCis.push(parsedCi);
-        }
-      });
-    }
-  });
 
-  return deduplicatedCis;
-};
+  if (mappedCis.length === 0) return [];
+
+  const uniqueCIs = mappedCis.filter((ci, i, self) =>
+    i === self.findIndex(o =>
+      (o.code === ci.code && o.document === ci.document))
+  );
+
+  const duplicateCIs = mappedCis.filter((ci, i, self) =>
+    i !== self.findIndex(o =>
+      (o.code === ci.code && o.document === ci.document))
+  );
+
+  duplicateCIs.forEach((dupCI) => {
+    uniqueCIs.forEach((uniqueCI) => {
+      if (ciCodeAndDocumentsMatch(dupCI, uniqueCI)) {
+        uniqueCI.issuers.push(dupCI.issuers[0]);
+        uniqueCI.mitigation = dupCI.mitigation;
+        uniqueCI.issuanceDate = dupCI.issuanceDate;
+        uniqueCI.txn = dupCI.txn;
+      }
+    })
+  })
+
+  return uniqueCIs;
+}
 
 const makeJWTPayload = async (
   contraIndicators: ContraIndicator[],
