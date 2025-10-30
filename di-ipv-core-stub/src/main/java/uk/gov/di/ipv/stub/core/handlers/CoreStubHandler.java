@@ -433,7 +433,6 @@ public class CoreStubHandler {
             (Request request, Response response) -> {
                 var credentialIssuerId =
                         Objects.requireNonNull(request.queryParams("cri"), "cri required");
-                boolean isHmrcKbvCri = credentialIssuerId.contains("hmrc-kbv-cri");
                 var credentialIssuer = handlerHelper.findCredentialIssuer(credentialIssuerId);
                 String rowNumber = request.queryParams("rowNumber");
                 Identity identity = fetchOrCreateIdentity(rowNumber, credentialIssuerId);
@@ -453,9 +452,7 @@ public class CoreStubHandler {
                                 "addressMap",
                                 addressMap,
                                 "rowNumber",
-                                Optional.ofNullable(rowNumber).orElse("0"),
-                                "isHmrcKbvCri",
-                                isHmrcKbvCri),
+                                Optional.ofNullable(rowNumber).orElse("0")),
                         "edit-user.mustache");
             };
 
