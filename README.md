@@ -18,14 +18,14 @@ To turn off HTTP basic authentication override the `OrchestratorBasicAuthEnable`
 ## Credential Issuer Stubs
 `di-ipv-credential-issuer-stub` [/di-ipv-credential-issuer-stub](/di-ipv-credential-issuer-stub)
 
-The Credential Issuer Stubs can be used as an endpoint for testing Credential Issuer OAuth flows from the IPV Core system. It provides an `/authorize`, `/token` and `/credentials/issue` endpoint to access the protected resource.
+The Credential Issuer Stubs can be used as an endpoint for testing Credential Issuer OAuth flows from the IPV Core system. They provide an `/authorize`, `/token` and `/credentials/issue` endpoint to access the protected resource.
 
 These stubs are owned by the IPV Core team.
 
 ## DCMAW-Async stub
 `di-ipv-dcmaw-async-stub` [/di-ipv-dcmaw-async-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-dcmaw-async-stub)
 
-This is the stub for the V2 app. It doesn't need a user interface like the old DCMAW CRI stub as interactions with this CRI are different and so is in its own directory outside of `di-ipv-credential-issuer-stub`.
+This is the stub for the V2 app. It doesn't need a user interface like the old DCMAW CRI stub as interactions with this CRI are different and so it is in its own directory outside of `di-ipv-credential-issuer-stub`.
 See [here](https://govukverify.atlassian.net/wiki/spaces/DID/pages/5448237347/How+to+go+through+a+v2+App+MAM+Journey+in+a+dev+environment) for instructions on running the full user flow, including priming the stub to return a VC.
 
 This stub is owned by the IPV Core team.
@@ -48,7 +48,7 @@ This stub is owned by the IPV Core team.
 ## EVCS Stub
 `di-ipv-evcs-stub` [/di-ipv-evcs-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-evcs-stub)
 
-The Encrypted Verifiable Credential Store (EVCS) is where VCs attained by a user during their IPV journey is persisted for long-term store.
+The Encrypted Verifiable Credential Store (EVCS) is where VCs attained by a user during their IPV journey are persisted for long-term store.
 For more information on how IPV Core uses this service, see the [team manual doc](https://team-manual.account.gov.uk/teams/IPV-Core-team/How-IPV-Core-Works/understanding-vc-storage/#encrypted-vc-storage-evcs).
 
 This stubs out that service and is owned by the IPV Core and Trust and Reuse teams.
