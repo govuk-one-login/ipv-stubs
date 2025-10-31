@@ -281,22 +281,7 @@
 
                 <input class="govuk-input govuk-input--width-5" id="addressCountry" name="addressCountry"
                        type="text" aria-required="false" maxlength="10" value="{{addressMap.0.addressCountry}}">
-
             </div>
-
-            {{#isHmrcKbvCri}}
-
-                <div class="govuk-form-group">
-                    <label class="govuk-label" id="nationalInsuranceNumber-label" for="nationalInsuranceNumber">
-                                National Insurance Number
-                     </label>
-
-                    <input class="govuk-input govuk-input--width-20" id="nationalInsuranceNumber" name="nationalInsuranceNumber" type="text"
-                                   maxlength="9" value="{{sharedClaims.socialSecurityRecords.personalNumber}}">
-
-                </div>
-            {{/isHmrcKbvCri}}
-
 
             <details class="govuk-details" data-module="govuk-details">
                 <summary class="govuk-details__summary">
