@@ -2,6 +2,8 @@
 This will create stubs for the CIMIT lambdas getContraIndicatorCredential,
 putContraIndicators, postMitigations and stubManagement.
 
+This comment is to test out the labeler. Please remove if you see it.
+
 Sample postMitigations POST request should look like
 ```
 headers:
