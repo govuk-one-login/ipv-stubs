@@ -1,24 +1,85 @@
 # Digital Identity IPV Stubs
 `di-ipv-stubs`
 
-This is the home for application stubs used be the Identity Proofing and Verification (IPV) system within the GDS digital identity platform, GOV.UK Sign In.
+This is the home for application stubs used be the Identity Proofing and Verification (IPV) system within the GDS digital identity platform, GOV.UK OneLogin.
 
 ## Orchestrator Stub
 `di-ipv-orchestrator-stub` [/di-ipv-orchestrator-stub](/di-ipv-orchestrator-stub)
 
-Starting point for manual testing and demonstrating IPV journeys.
+Owned by the IPV Core team, this is the starting point for manual testing and demonstrating IPV journeys.
 
-The Orchestrator Stub allows the user to select desired attributes then initiate an OAuth user journey with the IPV system. The users will be redirected to the IPV system to complete the IPV process and returned to the Orchestrator Stub.
+The Orchestrator Stub allows the user to select desired attributes then initiate an OAuth user journey with the IPV system. The users will be redirected through IPV Core to complete the IPV process and returned to the Orchestrator Stub.
 
-On completion of the user journey the Orchestrator Stub receives an authorisation code which it will exchange for an access token and in turn use to access the protected resource in the IPV system. Finally the Orchestrator Stub will display the contents of the protected resource.
+On completion of the user journey the Orchestrator Stub receives an authorisation code which it will exchange for an access token. The stub will then use this token to access the protected resource from IPV Core. Finally, the Orchestrator Stub will display the contents of the protected resource.
 
-By default the orchestrator stub is protected by HTTP basic authentication. The username and password are configured in SSM under `/stubs/<environment>/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME` and`/stubs/<environment>/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSOWRD`.
+By default, the orchestrator stub is protected by HTTP basic authentication. The username and password are configured in SSM under `/stubs/<environment>/orch/env/ORCHESTRATOR_BASIC_AUTH_USERNAME` and`/stubs/<environment>/orch/env/ORCHESTRATOR_BASIC_AUTH_PASSOWRD`.
 To turn off HTTP basic authentication override the `OrchestratorBasicAuthEnable` deployment template parameter with the value `false` (note that the SSM username and password value must still exist even when HTTP basic authentication is disabled or deployments will fail.)
 
-## Credential Issuer Stub
+## Credential Issuer Stubs
 `di-ipv-credential-issuer-stub` [/di-ipv-credential-issuer-stub](/di-ipv-credential-issuer-stub)
 
-The Credential Issuer Stub can be used as an endpoint for testing Credential Issuer OAuth flows from the core IPV system. It provides an '/authorize' user endpoint, token exchange and access to a protected resource.
+The Credential Issuer Stubs can be used as an endpoint for testing Credential Issuer OAuth flows from the IPV Core system. They provide an `/authorize`, `/token` and `/credentials/issue` endpoint to access the protected resource.
+
+These stubs are owned by the IPV Core team.
+
+## DCMAW-Async stub
+`di-ipv-dcmaw-async-stub` [/di-ipv-dcmaw-async-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-dcmaw-async-stub)
+
+This is the stub for the V2 app. It doesn't need a user interface like the old DCMAW CRI stub as interactions with this CRI are different and so it is in its own directory outside of `di-ipv-credential-issuer-stub`.
+See [here](https://govukverify.atlassian.net/wiki/spaces/DID/pages/5448237347/How+to+go+through+a+v2+App+MAM+Journey+in+a+dev+environment) for instructions on running the full user flow, including priming the stub to return a VC.
+
+This stub is owned by the IPV Core team.
+
+## TICF Stub
+
+`di-ipv-ticf-stub` [/di-ipv-ticf-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-ticf-stub)
+
+This stubs out the Threat Intelligence and Counter Fraud (TICF) system for IPV Core. TICF is called at the end of every user journey as an added form of risk-assessment (see [here](https://team-manual.account.gov.uk/teams/IPV-Core-team/How-IPV-Core-Works/understanding-ticf-issuer/) for more details).
+
+This stub is owned by the IPV Core team.
+
+## CIMIT Stub
+`di-ipv-cimit-stub` [/di-ipv-cimit-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-cimit-stub)
+
+This is the stub for the Contra-Indicators and Mitigations (CIMIT) system which IPV Core uses to record contra-indicators (CIs) and mitigations against a user during the IPV process.
+
+This stub is owned by the IPV Core team.
+
+## EVCS Stub
+`di-ipv-evcs-stub` [/di-ipv-evcs-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-evcs-stub)
+
+The Encrypted Verifiable Credential Store (EVCS) is where VCs attained by a user during their IPV journey are persisted for long-term store.
+For more information on how IPV Core uses this service, see the [team manual doc](https://team-manual.account.gov.uk/teams/IPV-Core-team/How-IPV-Core-Works/understanding-vc-storage/#encrypted-vc-storage-evcs).
+
+This stubs out that service and is owned by the IPV Core and Trust and Reuse teams.
+
+## AIS Stub
+`di-ipv-ais-stub` [/di-ipv-ais-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-ais-stub)
+
+This is a stub for the Account Intervention Service (AIS) which receives signals that indicate suspicious activity with a user and their IPV journey. IPV Core integrates with this service
+at the beginning and end of a user journey and routes the user accordingly depending on the interventions returned by AIS.
+
+This stub is owned by the IPV Core team.
+
+## SIS Stub
+`di-ipv-sis-stub` [/di-sis-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-sis-stub)
+
+The Stored Identity Service (SIS) returns the stored identity for a given user. IPV Core temporarily integrates with this service in order to check that the stored identities created by IPV Core and stored in EVCS are accurate and representative of the VCs a user holds.
+
+This stub is owned by the IPV Core team.
+
+## Queue Stub
+
+`di-ipv-queue-stub` [/di-ipv-queue-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-queue-stub)
+
+This defines the lambda which pushes messages onto an SQS queue. This is currently used for testing asynchronous VC returns.
+
+This stub is owned by the IPV Core team.
+
+## IPV Core Stubs
+`di-ipv-core-stub` [/di-ipv-core-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-core-stub)
+
+This stubs out the IPV Core system for the Orange team (responsible for Address and Experian KBV CRIs) and Lime team (responsible for Fraud, Driving Licence and Passport CRIs) and so they are the owners of this stub.
 
 ## Pre-Commit Checking / Verification
 
@@ -94,11 +155,11 @@ needs to be updated to point at these dev-deployed stubs instead of those in pro
 
 ### Using the dev-deploy tool
 The [dev-deploy](https://github.com/govuk-one-login/ipv-core-common-infra/tree/main/utils/dev-deploy) tool can be used to
-update the configs automatically using the `--use-dev` or `-ud` option:
+update the credential issuer configs automatically using the `--use-dev` or `-ud` option:
 ```
 dev-deploy update -u <user> -s <service> -ud <dev-stub>
 ```
-This automatically updates the API invoke URLs for the specified stub to use the custom dev domains as well as
+This automatically updates the API invoke URLs for the specified CRI stub to use the custom dev domains as well as
 api keys, if required (for more info on this option see [here](https://github.com/govuk-one-login/ipv-core-common-infra/blob/main/utils/dev-deploy/docs/cli-userguide.md#update)).
 Other parts of the ipv core config can still be overridden by updating the user dev-deploy config (see below).
 
@@ -123,7 +184,7 @@ parameters:
     secrets-manager:
        dev/core/credentialIssuers/ticf/connections/stub/apiKey: "my-dev-ticf-api-key" # pragma: allowlist secret
     ssm:
-       dev/core/credentialIssuers/ticf/connections/stub: '{
+       core/credentialIssuers/ticf/connections/stub: '{
                 "credentialUrl": "https://ticf-dev-theab.02.core.dev.stubs.account.gov.uk/risk-assessment",
                 "signingKey": "the-signing-key",
                 "componentId": "https://ticf.stubs.account.gov.uk",
