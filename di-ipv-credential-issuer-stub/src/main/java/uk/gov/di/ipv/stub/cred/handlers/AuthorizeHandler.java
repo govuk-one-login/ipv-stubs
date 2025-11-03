@@ -36,7 +36,6 @@ import uk.gov.di.ipv.stub.cred.data.CriStubDataDwpKbv;
 import uk.gov.di.ipv.stub.cred.data.CriStubDataExperianKbv;
 import uk.gov.di.ipv.stub.cred.data.CriStubDataF2f;
 import uk.gov.di.ipv.stub.cred.data.CriStubDataFraud;
-import uk.gov.di.ipv.stub.cred.data.CriStubDataHmrcKbv;
 import uk.gov.di.ipv.stub.cred.data.CriStubDataNino;
 import uk.gov.di.ipv.stub.cred.data.CriStubDataUkPassport;
 import uk.gov.di.ipv.stub.cred.data.IdentityCheckSubjectCriStubData;
@@ -757,9 +756,6 @@ public class AuthorizeHandler {
                 break;
             case "Fraud Check (Stub)":
                 data = CriStubDataFraud.Data;
-                break;
-            case "HMRC Knowledge Based Verification (Stub)":
-                data = CriStubDataHmrcKbv.Data;
                 break;
             case "National Insurance Number (Stub)":
                 data = CriStubDataNino.Data;

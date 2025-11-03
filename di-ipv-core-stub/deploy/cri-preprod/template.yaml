@@ -54,10 +54,6 @@ Parameters:
     Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
     Type: AWS::SSM::Parameter::Value<String>
     Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_PASSPORTA_PRE_PROD" #pragma: allowlist secret
-  ApiKeyCriHmrcKbvPreProd:
-    Description: "Environment Variables for ECS - Retrieved from SSM Parameter Store"
-    Type: AWS::SSM::Parameter::Value<String>
-    Default: "/stubs/core/cri-preprod/env/API_KEY_CRI_HMRC_KBV_PRE_PROD" #pragma: allowlist secret
   CodeSigningConfigArn:
     Type: String
     Description: >
