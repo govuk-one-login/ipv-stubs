@@ -9,7 +9,7 @@ export interface VcDetails {
 
 export type StoredIdentityResponse = {
   si: Omit<VCIncludingStateAndMetadata, "state">;
-  vcs: VCIncludingStateAndMetadata[];
+  vcs: Omit<VCIncludingStateAndMetadata, "unsignedVot">[];
 };
 
 export interface VCIncludingStateAndMetadata {
@@ -17,4 +17,5 @@ export interface VCIncludingStateAndMetadata {
   vc: string;
   metadata?: Record<string, unknown>;
   signature?: string;
+  unsignedVot?: string;
 }
