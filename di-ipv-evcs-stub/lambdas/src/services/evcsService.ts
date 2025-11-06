@@ -227,7 +227,10 @@ export async function processGetIdentityRequest(
   });
 
   const response: StoredIdentityResponse = {
-    si: { vc: getItemResponse.Item.storedIdentity.S },
+    si: {
+      vc: getItemResponse.Item.storedIdentity.S,
+      unsignedVot: getItemResponse.Item.levelOfConfidence.S,
+    },
     vcs:
       value.Items?.map((vc) => ({
         vc: vc.vc.S || "",

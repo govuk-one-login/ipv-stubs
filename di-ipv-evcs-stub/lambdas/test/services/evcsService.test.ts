@@ -361,6 +361,9 @@ describe("processGetIdentityRequest", () => {
           isValid: {
             BOOL: true,
           },
+          levelOfConfidence: {
+            S: "P3",
+          },
         },
       } satisfies GetItemCommandOutput)
       .on(QueryCommand)
@@ -376,6 +379,7 @@ describe("processGetIdentityRequest", () => {
       response: {
         si: {
           vc: TEST_SI_JWT,
+          unsignedVot: "P3",
         },
         vcs: [],
       },
@@ -393,6 +397,9 @@ describe("processGetIdentityRequest", () => {
           },
           isValid: {
             BOOL: false,
+          },
+          levelOfConfidence: {
+            S: "P3",
           },
         },
       } satisfies GetItemCommandOutput)
@@ -423,6 +430,9 @@ describe("processGetIdentityRequest", () => {
           },
           isValid: {
             BOOL: true,
+          },
+          levelOfConfidence: {
+            S: "P3",
           },
         },
       } satisfies GetItemCommandOutput)
@@ -455,6 +465,7 @@ describe("processGetIdentityRequest", () => {
       response: {
         si: {
           vc: TEST_SI_JWT,
+          unsignedVot: "P3",
         },
         vcs: [
           {
