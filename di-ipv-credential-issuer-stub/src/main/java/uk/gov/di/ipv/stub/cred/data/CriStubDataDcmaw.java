@@ -110,6 +110,11 @@ public class CriStubDataDcmaw {
                             BirthDates.KENNETH_DECERQUEIRA,
                             DrivingLicences.KENNETH_DECERQUEIRA_DVLA_INVALID),
                     createData(
+                            "Kenneth Decerqueira (Invalid) DVLA Licence 2",
+                            Names.Kenneth_Decerqueira,
+                            BirthDates.KENNETH_DECERQUEIRA,
+                            DrivingLicences.KENNETH_DECERQUEIRA_DVLA_2_INVALID),
+                    createData(
                             "Kenneth Decerqueira (International)",
                             Names.Kenneth_Decerqueira,
                             BirthDates.KENNETH_DECERQUEIRA,

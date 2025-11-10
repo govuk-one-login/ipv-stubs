@@ -31,6 +31,14 @@ public class DrivingLicences {
                     "DVLA",
                     "17",
                     "8 HADLEY ROAD BATH BA2 5AA");
+    public static final DrivingPermitDetails KENNETH_DECERQUEIRA_DVLA_2_INVALID =
+            createDrivingPermit(
+                    "DECER607085K99AE",
+                    "2025-05-03",
+                    "2025-05-02",
+                    "DVLA",
+                    "17",
+                    "8 HADLEY ROAD BATH BA2 5AA");
     public static final DrivingPermitDetails KENNETH_DECERQUEIRA_DVLA_INVALID =
             createDrivingPermit(
                     "", "2025-04-27", "2023-08-22", "DVLA", "11", "8 HADLEY ROAD BATH BR2 5LP");
