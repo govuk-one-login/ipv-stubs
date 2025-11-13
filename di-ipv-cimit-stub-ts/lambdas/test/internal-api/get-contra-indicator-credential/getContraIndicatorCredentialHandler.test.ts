@@ -85,7 +85,7 @@ beforeEach(async () => {
   );
 });
 
-// test("Should return signed JWT containing single mitigation when provided valid request", async () => {
+// test("It returns signed JWT containing single mitigation when provided valid request", async () => {
 //   // Arrange
 //   jest.mocked(getCIsForUserID).mockResolvedValue([
 //     {
@@ -526,10 +526,30 @@ test.each([
 
 test("?? Should return two CIs when same document submitted twice, with different CIs", async () => {});
 
+test("Should return 500 for invalid signing key", async () => {
+  // Arrange
+  jest.mocked(getCIsForUserID).mockResolvedValue([
+    {
+      userId: USER_ID,
+      contraIndicatorCode: CI_V03,
+      issuer: ISSUER_1,
+      mitigations: [MITIGATION_M01],
+      txn: TXN_1,
+      issuanceDate: ISSUANCE_DATE_1,
+      document: DOCUMENT_1,
+    },
+  ]);
+  jest.mocked(getCimitSigningKey).mockResolvedValue("Invalid CIMIT signing key");
+  const validRequest = buildGetContraIndicatorCredentialRequest();
 
-test("Should consolidate duplicate non-doc CIs and keep distinct document CIs separate", async () => {});
+  // Act
+  const response = (await getContraIndicatorCredentialHandler(
+    validRequest,
+  )) as APIGatewayProxyStructuredResultV2;
 
-test("Should throw 500 for invalid signing key", async () => {});
+  // Assert
+  expect(response.statusCode).toBe(500);
+});
 
 test.each([
   {
