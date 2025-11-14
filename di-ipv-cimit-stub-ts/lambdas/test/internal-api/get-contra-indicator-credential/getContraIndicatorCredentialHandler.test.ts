@@ -496,6 +496,50 @@ test.each([
       },
     ],
   },
+  {
+    testDescription:
+      "return two CIs when same document submitted twice, with different CIs",
+    mockedDatabaseEntry: [
+      {
+        userId: USER_ID,
+        contraIndicatorCode: CI_D02,
+        issuer: ISSUER_1,
+        mitigations: [],
+        txn: TXN_1,
+        issuanceDate: ISSUANCE_DATE_1,
+        document: DOCUMENT_1,
+      },
+      {
+        userId: USER_ID,
+        contraIndicatorCode: CI_V03,
+        issuer: ISSUER_1,
+        mitigations: [],
+        txn: TXN_1,
+        issuanceDate: ISSUANCE_DATE_1,
+        document: DOCUMENT_1,
+      },
+    ],
+    expectedCIs: [
+      {
+        code: CI_D02,
+        document: DOCUMENT_1,
+        issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+        issuers: [ISSUER_1],
+        mitigation: [],
+        incompleteMitigation: [],
+        txn: [TXN_1],
+      },
+      {
+        code: CI_V03,
+        document: DOCUMENT_1,
+        issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+        issuers: [ISSUER_1],
+        mitigation: [],
+        incompleteMitigation: [],
+        txn: [TXN_1],
+      },
+    ],
+  },
 ])("Should $testDescription", async ({ mockedDatabaseEntry, expectedCIs }) => {
   // Arrange
   jest.mocked(getCIsForUserID).mockResolvedValue(mockedDatabaseEntry);
@@ -523,8 +567,6 @@ test.each([
 
   expect(contraIndicators).toEqual(expectedCIs);
 });
-
-test("?? Should return two CIs when same document submitted twice, with different CIs", async () => {});
 
 test("Should return 500 for invalid signing key", async () => {
   // Arrange
