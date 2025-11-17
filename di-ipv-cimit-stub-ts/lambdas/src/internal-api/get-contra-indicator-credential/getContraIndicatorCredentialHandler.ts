@@ -5,48 +5,7 @@ import { getCIsForUserID } from "../../common/dataService";
 import { JWTPayload } from "jose";
 import { getCimitComponentId } from "../../common/configService";
 import { signJWT } from "./jwtSigning";
-
-interface Evidence {
-  contraIndicator: ContraIndicator[];
-  type: "SecurityCheck";
-}
-
-export interface VcClaim {
-  evidence: Evidence[];
-  type: ["VerifiableCredential", "SecurityCheckCredential"];
-}
-
-interface MitigatingCredential {
-  issuer: string;
-  validFrom: string;
-  txn: string;
-  id: string;
-}
-
-interface Mitigation {
-  code: string;
-  mitigatingCredential: MitigatingCredential[];
-}
-
-export interface ContraIndicator {
-  code: string;
-  document: string;
-  issuanceDate: string;
-  issuers: string[];
-  mitigation: Mitigation[];
-  incompleteMitigation: Mitigation[];
-  txn: string[];
-}
-
-interface GetContraIndicatorCredentialRequest {
-  userId: string;
-  govukSigninJourneyId: string;
-  ipAddress: string;
-}
-
-export interface GetContraIndicatorCredentialResponse {
-  vc: string;
-}
+import { GetContraIndicatorCredentialRequest, ContraIndicator, VcClaim } from "../../common/contraIndicatorTypes";
 
 export const getContraIndicatorCredentialHandler = async (
   request: APIGatewayProxyEvent,
@@ -54,17 +13,15 @@ export const getContraIndicatorCredentialHandler = async (
   console.info("Function invoked:", "GetContraIndicatorCredential");
   try {
     const parsedRequest = validateAndParseRequest(request);
-
     const contraIdicators = await getCIs(parsedRequest.userId);
-
     const claimsSet = await makeJWTPayload(
       contraIdicators,
       parsedRequest.userId,
     );
-
     const signedJwt = await signJWT(claimsSet);
 
     return buildApiResponse(200, { vc: signedJwt });
+
   } catch (error) {
     console.error(getErrorMessage(error));
 
@@ -84,7 +41,6 @@ const validateAndParseRequest = (
   request: APIGatewayProxyEvent,
 ): GetContraIndicatorCredentialRequest => {
   const userId = request.queryStringParameters?.["user_id"];
-
   if (!userId) {
     console.error("Missing userId from request");
     throw new BadRequestError("Missing userId from request");
@@ -113,7 +69,6 @@ const getCIs = async (userId: string): Promise<ContraIndicator[]> => {
   const userCis = (await getCIsForUserID(userId)).sort(
     (ci1, ci2) => ci1.issuanceDate - ci2.issuanceDate,
   );
-
   const mappedCis = userCis.map((ci) => ({
     code: ci.contraIndicatorCode,
     document: ci.document,
@@ -134,45 +89,38 @@ const getCIs = async (userId: string): Promise<ContraIndicator[]> => {
     txn: [ci.txn],
   }));
 
-
-  // Create list of CIs from userCis
-
   return ciDeduplicator(mappedCis);
 };
 
 const ciDeduplicator = (mappedCis: ContraIndicator[]): ContraIndicator[] => {
-  const deduplicatedCis: ContraIndicator[] = [];
-
-  const ciCodeAndDocumentsMatch = (
+  const cisAreFunctionallySame = (
     ci1: ContraIndicator,
     ci2: ContraIndicator,
   ) => ci1.code === ci2.code && ci1.document === ci2.document;
 
-
   if (mappedCis.length === 0) return [];
 
-  const uniqueCIs = mappedCis.filter((ci, i, self) =>
-    i === self.findIndex(o =>
-      (o.code === ci.code && o.document === ci.document))
+  const distinctCIs = mappedCis.filter((ci, i, self) =>
+    i === self.findIndex(ciToCompare =>
+      (cisAreFunctionallySame(ci, ciToCompare)))
+  );
+  const cisThatMatchADistinctOne = mappedCis.filter((ci, i, self) =>
+    i !== self.findIndex(ciToCompare =>
+      (cisAreFunctionallySame(ci, ciToCompare)))
   );
 
-  const duplicateCIs = mappedCis.filter((ci, i, self) =>
-    i !== self.findIndex(o =>
-      (o.code === ci.code && o.document === ci.document))
-  );
-
-  duplicateCIs.forEach((dupCI) => {
-    uniqueCIs.forEach((uniqueCI) => {
-      if (ciCodeAndDocumentsMatch(dupCI, uniqueCI)) {
-        uniqueCI.issuers.push(dupCI.issuers[0]);
-        uniqueCI.mitigation = dupCI.mitigation;
-        uniqueCI.issuanceDate = dupCI.issuanceDate;
-        uniqueCI.txn = dupCI.txn;
+  cisThatMatchADistinctOne.forEach((duplicateCI) => {
+    distinctCIs.forEach((distinctCI) => {
+      if (cisAreFunctionallySame(duplicateCI, distinctCI)) {
+        distinctCI.issuers.push(duplicateCI.issuers[0]);
+        distinctCI.mitigation = duplicateCI.mitigation;
+        distinctCI.issuanceDate = duplicateCI.issuanceDate;
+        distinctCI.txn = duplicateCI.txn;
       }
     })
   })
 
-  return uniqueCIs;
+  return distinctCIs;
 }
 
 const makeJWTPayload = async (
@@ -183,7 +131,6 @@ const makeJWTPayload = async (
     evidence: [{ contraIndicator: contraIndicators, type: "SecurityCheck" }],
     type: ["VerifiableCredential", "SecurityCheckCredential"],
   };
-
   const now = Date.now();
   return {
     sub: userId,

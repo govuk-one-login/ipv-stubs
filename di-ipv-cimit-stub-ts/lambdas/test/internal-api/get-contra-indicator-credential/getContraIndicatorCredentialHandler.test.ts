@@ -6,9 +6,11 @@ import {
 } from "aws-lambda";
 import {
   getContraIndicatorCredentialHandler,
-  GetContraIndicatorCredentialResponse,
-  VcClaim,
 } from "../../../src/internal-api/get-contra-indicator-credential/getContraIndicatorCredentialHandler";
+import {
+  GetContraIndicatorCredentialResponse,
+  VcClaim
+} from "../../../src/common/contraIndicatorTypes";
 import {
   getCimitComponentId,
   getCimitSigningKey,
