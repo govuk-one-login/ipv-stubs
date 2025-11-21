@@ -23,12 +23,12 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: '0'
 
       - name: Checkout config repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: govuk-one-login/ipv-config
           token: ${{ secrets.IPV_CONFIG_PAT }}

@@ -10,7 +10,7 @@ jobs:
     permissions: write-all
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: stubs Scan
         uses: aws-actions/sustainability-scanner@v1
