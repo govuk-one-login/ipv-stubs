@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
 import { BadRequestError } from "./exceptions";
-import { buildApiResponse, getErrorMessage } from "./apiResponseBuilder";
+import { buildApiResponse, getErrorMessage } from "../../common/apiResponseBuilder";
 import { getCIsForUserID } from "../../common/dataService";
 import { JWTPayload } from "jose";
 import { getCimitComponentId } from "../../common/configService";
