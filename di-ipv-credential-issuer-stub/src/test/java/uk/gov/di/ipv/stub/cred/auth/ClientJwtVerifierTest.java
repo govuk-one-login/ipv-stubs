@@ -175,10 +175,8 @@ public class ClientJwtVerifierTest {
                         () -> jwtAuthenticationService.authenticateClient(mockContext));
 
         assertTrue(
-                exception
-                        .getMessage()
-                        .contains(
-                                "Bad / expired JWT claims: JWT audience rejected: [NOT_THE_AUDIENCE_YOU_ARE_LOOKING_FOR]"));
+                exception.getMessage().contains("Bad / expired JWT claims: JWT aud claim rejected"),
+                String.format("Received error: %s", exception.getMessage()));
     }
 
     @Test
