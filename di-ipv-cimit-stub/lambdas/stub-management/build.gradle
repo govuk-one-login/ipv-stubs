@@ -16,7 +16,7 @@ java {
 dependencies {
 	implementation "com.amazonaws:aws-lambda-java-core:1.4.0",
 			"com.amazonaws:aws-lambda-java-events:3.16.1",
-			"software.amazon.awssdk:dynamodb-enhanced:2.39.2",
+			"software.amazon.awssdk:dynamodb-enhanced:2.40.2",
 			"com.fasterxml.jackson.core:jackson-annotations:2.20",
 			"com.fasterxml.jackson.core:jackson-databind:2.20.1",
 			"org.apache.logging.log4j:log4j-api:2.25.2",
