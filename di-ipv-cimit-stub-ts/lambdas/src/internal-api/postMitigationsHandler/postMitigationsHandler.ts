@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Context } from "aws-lambda";
 import { buildApiResponse, getErrorMessage } from "../../common/apiResponseBuilder";
-import { FailedToParseRequestError } from "./exceptions";
+import { FailedToParseRequestError } from "../../common/exceptions";
 import { decodeJwt, JWTPayload } from "jose";
 
 const FAILURE_RESPONSE = "fail";
