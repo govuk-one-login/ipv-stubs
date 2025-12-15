@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Context } from "aws-lambda";
 import { buildApiResponse, getErrorMessage } from "../../common/apiResponseBuilder";
 import { FailedToParseRequestError } from "../../common/exceptions";
+import { addUserCIs } from "../../common/contraIndicatorsService";
 
 
 const FAILURE_RESPONSE = "fail";
@@ -12,18 +13,23 @@ export const putContraIndicatorsHandler = async (
 ): Promise<APIGatewayProxyResultV2> => {
     try {
         const parsedRequest = parseRequest(request);
-
+        addUserCIs(parsedRequest);
         return buildApiResponse(200, {result: SUCCESS_RESPONSE});
     }
     catch (error) {
+      if (error instanceof FailedToParseRequestError) {
         console.error(getErrorMessage(error));
-
         return buildApiResponse(400, {
             result: FAILURE_RESPONSE,
             errorMessage: getErrorMessage(error),
-
         });
-
+      } else {
+        console.error(getErrorMessage(error));
+        return buildApiResponse(500, {
+            result: FAILURE_RESPONSE,
+            errorMessage: getErrorMessage(error),
+        });
+      }
     }
 
 }
@@ -49,8 +55,9 @@ const parseRequest = (
   };
 }
 
-interface PutContraIndicatorRequest {
+export interface PutContraIndicatorRequest {
   govuk_signin_journey_id?: string;
   ip_address?: string
   signed_jwt: string;
 }
+

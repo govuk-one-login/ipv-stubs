@@ -3,7 +3,12 @@ import {
   APIGatewayProxyEventHeaders,
   Context,
 } from "aws-lambda";
-import { putContraIndicatorsHandler } from "../../../src/internal-api/put-contra-indicators/putContraIndicatorsHandler";
+import {
+  putContraIndicatorsHandler,
+} from "../../../src/internal-api/put-contra-indicators/putContraIndicatorsHandler";
+import {
+  addUserCIs,
+} from "../../../src/common/contraIndicatorsService";
 
 const mockCimitStubItemService = {};
 const mockContext = jest.fn() as unknown as Context;
@@ -11,7 +16,9 @@ const mockContext = jest.fn() as unknown as Context;
 const SUCCESS_RESPONSE = "{\"result\":\"success\"}";
 const FAILURE_RESPONSE = "{\"result\":\"fail\"}";
 
-
+jest.mock("../../../src/common/contraIndicatorsService", () => ({
+  addUserCIs: jest.fn(),
+}));
 
 const buildPutContraIndicatorsRequest = (
   headers: APIGatewayProxyEventHeaders = {
@@ -74,19 +81,20 @@ test("the handler should error if the request body is empty", async () => {
   expect(response.statusCode).toBe(400);
 });
 
-// test.each([
-//   { case: "no body", body: null },
-//   { case: "an empty body", body: {} },
-// ])("should fail with - $case", async ({ body }) => {
-//   // Arrange
-//   const headers = {};
-//   const request = buildPutContraIndicatorsRequest(
-//     headers,
-//     body,
-//   );
-//   // Act
-//   const response = await putContraIndicatorsHandler(request, mockContext);
-//   // Assert
-//   expect(JSON.parse(response.body).errorMessage).toBe("Missing request body");
-//   expect(response.statusCode).toBe(400);
-// });
+test("the handler should return exception when cimit service throws one", async () => {
+  // Arrange
+  jest.mocked(addUserCIs).mockImplementation(() => {
+      throw new Error("CI Codes could not be inserted into the Cimit Stub Table.");
+    });
+  const headers = {};
+  const body = { signed_jwt: "signed_jwt" };
+  const request = buildPutContraIndicatorsRequest(
+    headers,
+    body
+  );
+  // Act
+  const response = await putContraIndicatorsHandler(request, mockContext);
+  // Assert
+  expect(JSON.parse(response.body).errorMessage).toBe("CI Codes could not be inserted into the Cimit Stub Table.");
+  expect(response.statusCode).toBe(500);
+});
