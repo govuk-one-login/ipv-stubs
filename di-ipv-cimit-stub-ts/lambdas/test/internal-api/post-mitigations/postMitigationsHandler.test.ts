@@ -9,7 +9,7 @@ import {
   postMitigationsHandler,
   postMitigationsRequestBody,
   PostMitigationsResponse,
- } from "../../../src/internal-api/postMitigationsHandler/postMitigationsHandler";
+} from "../../../src/internal-api/postMitigationsHandler/postMitigationsHandler";
 
 const mockPendingMitigationService = {
   completePendingMitigation: jest.fn(),
@@ -32,10 +32,11 @@ const mockContext = jest.fn() as unknown as Context;
 //   succeed: ""
 // };
 
-const VALID_JWT = "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1cm46dXVpZDo1ODg5MTg3NS02OWIzLTRjYzUtYWU3OS1hOTMxMzI0NTk3NDIiLCJhdWQiOiJodHRwczpcL1wvaWRlbnRpdHkuYnVpbGQuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE2OTgwNzYwNDMsImlzcyI6Imh0dHBzOlwvXC9hZGRyZXNzLWNyaS5zdHVicy5hY2NvdW50Lmdvdi51ayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJJZGVudGl0eUNoZWNrQ3JlZGVudGlhbCJdLCJjcmVkZW50aWFsU3ViamVjdCI6eyJuYW1lIjpbeyJuYW1lUGFydHMiOlt7InR5cGUiOiJHaXZlbk5hbWUiLCJ2YWx1ZSI6Iktlbm5ldGgifSx7InR5cGUiOiJGYW1pbHlOYW1lIiwidmFsdWUiOiJEZWNlcnF1ZWlyYSJ9XX1dLCJiaXJ0aERhdGUiOlt7InZhbHVlIjoiMTk2NS0wNy0wOCJ9XSwiYWRkcmVzcyI6W3siYWRkcmVzc0NvdW50cnkiOiJHQiIsImJ1aWxkaW5nTmFtZSI6IiIsInN0cmVldE5hbWUiOiJIQURMRVkgUk9BRCIsInBvc3RhbENvZGUiOiJCQTIgNUFBIiwiYnVpbGRpbmdOdW1iZXIiOiI4IiwiYWRkcmVzc0xvY2FsaXR5IjoiQkFUSCIsInZhbGlkRnJvbSI6IjIwMDAtMDEtMDEifV19fSwianRpIjoidXJuOnV1aWQ6NmZhNTViZTAtODAwNC00YzdhLThiZWEtOGM2ODgwNmJjMWNjIn0.kEugKcCb1KNU-rDjaJ6jDcsPWtSHPbsM7PXm7N2o1OGT506-lFj23qEVxRQac-BSHKcVCk1FTKcE8FJwghRUEA"; // pragma: allowlist secret
+const VALID_JWT =
+  "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1cm46dXVpZDo1ODg5MTg3NS02OWIzLTRjYzUtYWU3OS1hOTMxMzI0NTk3NDIiLCJhdWQiOiJodHRwczpcL1wvaWRlbnRpdHkuYnVpbGQuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE2OTgwNzYwNDMsImlzcyI6Imh0dHBzOlwvXC9hZGRyZXNzLWNyaS5zdHVicy5hY2NvdW50Lmdvdi51ayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJJZGVudGl0eUNoZWNrQ3JlZGVudGlhbCJdLCJjcmVkZW50aWFsU3ViamVjdCI6eyJuYW1lIjpbeyJuYW1lUGFydHMiOlt7InR5cGUiOiJHaXZlbk5hbWUiLCJ2YWx1ZSI6Iktlbm5ldGgifSx7InR5cGUiOiJGYW1pbHlOYW1lIiwidmFsdWUiOiJEZWNlcnF1ZWlyYSJ9XX1dLCJiaXJ0aERhdGUiOlt7InZhbHVlIjoiMTk2NS0wNy0wOCJ9XSwiYWRkcmVzcyI6W3siYWRkcmVzc0NvdW50cnkiOiJHQiIsImJ1aWxkaW5nTmFtZSI6IiIsInN0cmVldE5hbWUiOiJIQURMRVkgUk9BRCIsInBvc3RhbENvZGUiOiJCQTIgNUFBIiwiYnVpbGRpbmdOdW1iZXIiOiI4IiwiYWRkcmVzc0xvY2FsaXR5IjoiQkFUSCIsInZhbGlkRnJvbSI6IjIwMDAtMDEtMDEifV19fSwianRpIjoidXJuOnV1aWQ6NmZhNTViZTAtODAwNC00YzdhLThiZWEtOGM2ODgwNmJjMWNjIn0.kEugKcCb1KNU-rDjaJ6jDcsPWtSHPbsM7PXm7N2o1OGT506-lFj23qEVxRQac-BSHKcVCk1FTKcE8FJwghRUEA"; // pragma: allowlist secret
 
-const SUCCESS_RESPONSE = "{\"result\":\"success\"}";
-const FAILURE_RESPONSE = "{\"result\":\"fail\"}";
+const SUCCESS_RESPONSE = '{"result":"success"}';
+const FAILURE_RESPONSE = '{"result":"fail"}';
 
 const buildPostMitigationsRequest = (
   headers: APIGatewayProxyEventHeaders = {
@@ -79,22 +80,30 @@ beforeEach(() => {
 test.each([
   // { case: "with ip-address only", headers: { "ip-address": "ip-address" } },
   // { case: "with govuk-signin-journey-id only", headers: { "govuk-signin-journey-id": "journeyId" } },
-  { case: "with both headers", headers: { "govuk-signin-journey-id": "journeyId", "ip-address": "ip-address" } },
+  {
+    case: "with both headers",
+    headers: {
+      "govuk-signin-journey-id": "journeyId",
+      "ip-address": "ip-address",
+    },
+  },
   // { case: "with no headers", headers: {} },
-])("should post mitigations given valid request - $case", async ({ headers }) => {
-  // Arrange
-  const request = buildPostMitigationsRequest(
-    headers,
-    { signed_jwts: [VALID_JWT] }
-  );
+])(
+  "should post mitigations given valid request - $case",
+  async ({ headers }) => {
+    // Arrange
+    const request = buildPostMitigationsRequest(headers, {
+      signed_jwts: [VALID_JWT],
+    });
 
-  // Act
-  const response = await postMitigationsHandler(request, mockContext);
+    // Act
+    const response = await postMitigationsHandler(request, mockContext);
 
-  // Assert
-  expect(response.body).toBe(SUCCESS_RESPONSE);
-  expect(response.statusCode).toBe(200);
-});
+    // Assert
+    expect(response.body).toBe(SUCCESS_RESPONSE);
+    expect(response.statusCode).toBe(200);
+  },
+);
 
 //  // These cases align with the Java ones
 // test.each([

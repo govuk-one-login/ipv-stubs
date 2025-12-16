@@ -4,12 +4,10 @@ import {
   APIGatewayProxyEventQueryStringParameters,
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
-import {
-  getContraIndicatorCredentialHandler,
-} from "../../../src/internal-api/get-contra-indicator-credential/getContraIndicatorCredentialHandler";
+import { getContraIndicatorCredentialHandler } from "../../../src/internal-api/get-contra-indicator-credential/getContraIndicatorCredentialHandler";
 import {
   GetContraIndicatorCredentialResponse,
-  VcClaim
+  VcClaim,
 } from "../../../src/common/contraIndicatorTypes";
 import {
   getCimitComponentId,
@@ -83,7 +81,8 @@ beforeEach(async () => {
 });
 
 test.each([
-  {case: "return single unmitigated CI",
+  {
+    case: "return single unmitigated CI",
     mockedDatabaseEntry: [
       {
         userId: USER_ID,
@@ -107,7 +106,8 @@ test.each([
       },
     ],
   },
-  {case: "return two CIs for different documents",
+  {
+    case: "return two CIs for different documents",
     mockedDatabaseEntry: [
       {
         userId: USER_ID,
@@ -149,7 +149,8 @@ test.each([
       },
     ],
   },
-  {case: "return two CIs for different documents, with one mitigated",
+  {
+    case: "return two CIs for different documents, with one mitigated",
     mockedDatabaseEntry: [
       {
         userId: USER_ID,
@@ -191,7 +192,8 @@ test.each([
       },
     ],
   },
-  {case: "return two CIs for different documents, with both mitigated",
+  {
+    case: "return two CIs for different documents, with both mitigated",
     mockedDatabaseEntry: [
       {
         userId: USER_ID,
@@ -233,7 +235,8 @@ test.each([
       },
     ],
   },
-  {case: "return one CI when same document submitted twice, with the same CI",
+  {
+    case: "return one CI when same document submitted twice, with the same CI",
     mockedDatabaseEntry: [
       {
         userId: USER_ID,
@@ -266,7 +269,8 @@ test.each([
       },
     ],
   },
-  {case: "return the unmitigated CI, when same document submitted twice with the same CIs but the one is mitigated",
+  {
+    case: "return the unmitigated CI, when same document submitted twice with the same CIs but the one is mitigated",
     mockedDatabaseEntry: [
       {
         userId: USER_ID,
@@ -299,7 +303,8 @@ test.each([
       },
     ],
   },
-  {case: "return one mitigated CI, when same document submitted twice with the same CIs and both are mitigated",
+  {
+    case: "return one mitigated CI, when same document submitted twice with the same CIs and both are mitigated",
     mockedDatabaseEntry: [
       {
         userId: USER_ID,
@@ -332,7 +337,8 @@ test.each([
       },
     ],
   },
-  {case: "consolidate duplicate non-doc CIs and keep distinct document CIs separate",
+  {
+    case: "consolidate duplicate non-doc CIs and keep distinct document CIs separate",
     mockedDatabaseEntry: [
       {
         userId: USER_ID,
@@ -401,7 +407,8 @@ test.each([
       },
     ],
   },
-  {case: "return two CIs when same document submitted twice, with different CIs",
+  {
+    case: "return two CIs when same document submitted twice, with different CIs",
     mockedDatabaseEntry: [
       {
         userId: USER_ID,
@@ -484,7 +491,9 @@ test("Should return 500 for invalid signing key", async () => {
       document: DOCUMENT_1,
     },
   ]);
-  jest.mocked(getCimitSigningKey).mockResolvedValue("Invalid CIMIT signing key");
+  jest
+    .mocked(getCimitSigningKey)
+    .mockResolvedValue("Invalid CIMIT signing key");
   const validRequest = buildGetContraIndicatorCredentialRequest();
 
   // Act
@@ -497,7 +506,8 @@ test("Should return 500 for invalid signing key", async () => {
 });
 
 test.each([
-  {case: "missing ip-address",
+  {
+    case: "missing ip-address",
     headers: {
       "govuk-signin-journey-id": "someJourneyId",
     } as APIGatewayProxyEventHeaders,
@@ -505,7 +515,8 @@ test.each([
       user_id: "someId",
     } as APIGatewayProxyEventQueryStringParameters,
   },
-  {case: "missing govuk-signin-journey-id",
+  {
+    case: "missing govuk-signin-journey-id",
     headers: {
       "ip-address": "someIpAddress",
     } as APIGatewayProxyEventHeaders,
@@ -513,13 +524,15 @@ test.each([
       user_id: "someId",
     } as APIGatewayProxyEventQueryStringParameters,
   },
-  {case: "missing userId",
+  {
+    case: "missing userId",
     headers: {
       "ip-address": "someIpAddress",
     } as APIGatewayProxyEventHeaders,
     queryStringParameters: {} as APIGatewayProxyEventQueryStringParameters,
   },
-])("Should return 400 for invalid request - $case",
+])(
+  "Should return 400 for invalid request - $case",
   async ({ headers, queryStringParameters }) => {
     // Arrange
     const input = buildGetContraIndicatorCredentialRequest(

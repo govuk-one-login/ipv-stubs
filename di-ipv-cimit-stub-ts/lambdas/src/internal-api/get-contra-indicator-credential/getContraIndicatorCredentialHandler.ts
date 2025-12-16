@@ -1,11 +1,18 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
 import { BadRequestError } from "./exceptions";
-import { buildApiResponse, getErrorMessage } from "../../common/apiResponseBuilder";
+import {
+  buildApiResponse,
+  getErrorMessage,
+} from "../../common/apiResponseBuilder";
 import { getCIsForUserID } from "../../common/dataService";
 import { JWTPayload } from "jose";
 import { getCimitComponentId } from "../../common/configService";
 import { signJWT } from "./jwtSigning";
-import { GetContraIndicatorCredentialRequest, ContraIndicator, VcClaim } from "../../common/contraIndicatorTypes";
+import {
+  GetContraIndicatorCredentialRequest,
+  ContraIndicator,
+  VcClaim,
+} from "../../common/contraIndicatorTypes";
 
 export const getContraIndicatorCredentialHandler = async (
   request: APIGatewayProxyEvent,
@@ -21,7 +28,6 @@ export const getContraIndicatorCredentialHandler = async (
     const signedJwt = await signJWT(claimsSet);
 
     return buildApiResponse(200, { vc: signedJwt });
-
   } catch (error) {
     console.error(getErrorMessage(error));
 
@@ -93,20 +99,20 @@ const getCIs = async (userId: string): Promise<ContraIndicator[]> => {
 };
 
 const ciDeduplicator = (mappedCis: ContraIndicator[]): ContraIndicator[] => {
-  const cisAreFunctionallySame = (
-    ci1: ContraIndicator,
-    ci2: ContraIndicator,
-  ) => ci1.code === ci2.code && ci1.document === ci2.document;
+  const cisAreFunctionallySame = (ci1: ContraIndicator, ci2: ContraIndicator) =>
+    ci1.code === ci2.code && ci1.document === ci2.document;
 
   if (mappedCis.length === 0) return [];
 
-  const distinctCIs = mappedCis.filter((ci, i, self) =>
-    i === self.findIndex(ciToCompare =>
-      (cisAreFunctionallySame(ci, ciToCompare)))
+  const distinctCIs = mappedCis.filter(
+    (ci, i, self) =>
+      i ===
+      self.findIndex((ciToCompare) => cisAreFunctionallySame(ci, ciToCompare)),
   );
-  const cisThatMatchADistinctOne = mappedCis.filter((ci, i, self) =>
-    i !== self.findIndex(ciToCompare =>
-      (cisAreFunctionallySame(ci, ciToCompare)))
+  const cisThatMatchADistinctOne = mappedCis.filter(
+    (ci, i, self) =>
+      i !==
+      self.findIndex((ciToCompare) => cisAreFunctionallySame(ci, ciToCompare)),
   );
 
   cisThatMatchADistinctOne.forEach((duplicateCI) => {
@@ -117,11 +123,11 @@ const ciDeduplicator = (mappedCis: ContraIndicator[]): ContraIndicator[] => {
         distinctCI.issuanceDate = duplicateCI.issuanceDate;
         distinctCI.txn = duplicateCI.txn;
       }
-    })
-  })
+    });
+  });
 
   return distinctCIs;
-}
+};
 
 const makeJWTPayload = async (
   contraIndicators: ContraIndicator[],

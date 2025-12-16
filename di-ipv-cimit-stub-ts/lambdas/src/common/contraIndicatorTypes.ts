@@ -39,3 +39,15 @@ export interface GetContraIndicatorCredentialRequest {
 export interface GetContraIndicatorCredentialResponse {
   vc: string;
 }
+
+export interface CimitStubItem {
+  userId: string;
+  sortKey: string;
+  contraIndicatorCode: string;
+  issuer: string;
+  issuanceDate: string;
+  ttl: number;
+  mitigations: string[];
+  document: string;
+  txn: string;
+}

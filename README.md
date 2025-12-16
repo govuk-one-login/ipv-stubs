@@ -45,6 +45,9 @@ This is the stub for the Contra-Indicators and Mitigations (CIMIT) system which 
 
 This stub is owned by the IPV Core team.
 
+`di-ipv-cimit-stub-ts` [/di-ipv-cimit-stub-ts]
+To build this stub you need to make a copy of `.npmrc.template`, saving it as `.npmrc`, and generate a github token with read-packages permission.
+
 ## EVCS Stub
 `di-ipv-evcs-stub` [/di-ipv-evcs-stub](https://github.com/govuk-one-login/ipv-stubs/tree/main/di-ipv-evcs-stub)
 

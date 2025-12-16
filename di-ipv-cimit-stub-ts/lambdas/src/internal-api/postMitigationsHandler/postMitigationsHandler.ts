@@ -1,5 +1,12 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResultV2, Context } from "aws-lambda";
-import { buildApiResponse, getErrorMessage } from "../../common/apiResponseBuilder";
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResultV2,
+  Context,
+} from "aws-lambda";
+import {
+  buildApiResponse,
+  getErrorMessage,
+} from "../../common/apiResponseBuilder";
 import { FailedToParseRequestError } from "../../common/exceptions";
 import { decodeJwt, JWTPayload } from "jose";
 
@@ -7,26 +14,26 @@ const FAILURE_RESPONSE = "fail";
 const SUCCESS_RESPONSE = "success";
 
 export const postMitigationsHandler = async (
-  request: APIGatewayProxyEvent, context: Context
+  request: APIGatewayProxyEvent,
+  context: Context,
 ): Promise<APIGatewayProxyResultV2> => {
   console.info("Function invoked:", "PostMitigations");
   try {
     const postMitigationsRequest = buildParsedRequest(request);
-    var accumulator = [];
-    postMitigationsRequest.signed_jwts?.forEach(vc => {
-      var payload = decodeJwt(vc) as JWTPayload;
+    const accumulator = [];
+    postMitigationsRequest.signed_jwts?.forEach((vc) => {
+      const payload = decodeJwt(vc) as JWTPayload;
       const subject = payload.sub;
       const jwtid = payload.jti;
       accumulator.push(payload);
-    })
+    });
 
-    return buildApiResponse(200, {result: accumulator});
+    return buildApiResponse(200, { result: accumulator });
   } catch (error) {
     return buildApiResponse(500, {
-          message: getErrorMessage(error),
-        });
+      message: getErrorMessage(error),
+    });
   }
-
 
   // extract necessary information from incoming request
 
@@ -57,7 +64,7 @@ export interface PostMitigationsResponse {
 
 export interface PostMitigationsRequest {
   govuk_signin_journey_id?: string;
-  ip_address?: string
+  ip_address?: string;
   signed_jwts?: string[];
 }
 
@@ -84,4 +91,4 @@ const buildParsedRequest = (
     ip_address: headers["ip-address"],
     signed_jwts: signedJwts,
   };
-}
+};
