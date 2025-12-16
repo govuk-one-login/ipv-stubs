@@ -1,7 +1,7 @@
-import { config } from "../common/config";
+import { isRunningLocally} from "../common/configService";
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
 
-export const dynamoClient = config.isLocalDev
+export const dynamoDBClient= config.isLocalDev
   ? new DynamoDB({
       endpoint: config.localDynamoDbEndpoint,
       region: config.region,

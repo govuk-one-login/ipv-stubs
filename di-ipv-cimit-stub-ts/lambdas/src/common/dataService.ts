@@ -1,4 +1,4 @@
-import { dynamoClient } from "../clients/dynamoDBClient";
+import { dynamoDBClient } from "../clients/dynamoDBClient";
 import { QueryInput } from "@aws-sdk/client-dynamodb";
 import { unmarshall } from "@aws-sdk/util-dynamodb";
 
@@ -29,7 +29,7 @@ export const getCIsForUserID = async (
     ExpressionAttributeValues: expressionAttributeValues,
   };
 
-  const userCIItems = (await dynamoClient.query(userCIQuery)).Items ?? [];
+  const userCIItems = (await dynamoDBClient.query(userCIQuery)).Items ?? [];
 
   return userCIItems
     .map((item) => unmarshall(item))
