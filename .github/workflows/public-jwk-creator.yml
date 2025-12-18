@@ -12,7 +12,12 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-and-build.yml
+    permissions:
+      packages: read
   dockerBuildAndPush:
+    needs: test
     name: Docker build and push
     runs-on: ubuntu-latest
     timeout-minutes: 15

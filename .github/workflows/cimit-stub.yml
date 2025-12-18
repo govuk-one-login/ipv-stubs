@@ -10,7 +10,12 @@ on:
       - .github/workflows/cimit-stub.yml
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-and-build.yml
+    permissions:
+      packages: read
   buildAndPush:
+    needs: test
     name: Build and push
     runs-on: ubuntu-latest
     timeout-minutes: 15

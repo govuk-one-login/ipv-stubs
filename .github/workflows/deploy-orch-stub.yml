@@ -9,7 +9,12 @@ on:
       - .github/workflows/deploy-orch-stub.yml
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-and-build.yml
+    permissions:
+      packages: read
   dockerBuildAndPush:
+    needs: test
     name: Docker build and push
     runs-on: ubuntu-22.04-arm
     timeout-minutes: 15

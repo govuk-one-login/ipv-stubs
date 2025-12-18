@@ -13,7 +13,13 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-and-build.yml
+    permissions:
+      packages: read
+
   ipvConfigReaderApp:
+    needs: test
     runs-on: ubuntu-22.04-arm
     environment: ipv-config-reader-app
     outputs:
