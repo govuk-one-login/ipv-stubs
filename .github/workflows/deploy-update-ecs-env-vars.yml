@@ -9,7 +9,12 @@ on:
       - .github/workflows/deploy-update-ecs-env-vars.yml
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-and-build.yml
+    permissions:
+      packages: read
   buildAndPush:
+    needs: test
     name: Build and push
     runs-on: ubuntu-latest
     timeout-minutes: 15
