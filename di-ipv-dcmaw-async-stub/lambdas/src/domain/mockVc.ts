@@ -3,6 +3,7 @@ import {
   TestUser,
   DocumentType,
   EvidenceType,
+  isDrivingPermitCredentialSubject,
 } from "./managementEnqueueRequest";
 import getConfig from "../common/config";
 
@@ -17,23 +18,31 @@ export async function buildMockVc(
   const config = await getConfig();
   const timestamp = Math.round(new Date().getTime() / 1000);
 
-  const baseCredentialSubject: any = {
+  const documentDetails = documentClaims[documentType];
+  const baseCredentialSubject = {
     ...testUserClaims[testUser],
-    ...documentClaims[documentType],
+    ...documentDetails,
   };
 
-  const credentialSubject =
-    documentType === DocumentType.drivingPermit && drivingPermitExpiryDate
-      ? {
-          ...baseCredentialSubject,
-          drivingPermit: [
-            {
-              ...baseCredentialSubject.drivingPermit?.[0],
-              expiryDate: drivingPermitExpiryDate,
-            },
-          ],
-        }
-      : baseCredentialSubject;
+  let credentialSubject;
+  if (isDrivingPermitCredentialSubject(documentDetails)) {
+    // Create a default future date, 30 days ahead of the VC issued at date
+    const futureDate = new Date((timestamp + 30 * 24 * 60 * 60) * 1000)
+      .toISOString()
+      .split("T")[0];
+
+    credentialSubject = {
+      ...baseCredentialSubject,
+      drivingPermit: [
+        {
+          ...documentDetails.drivingPermit[0],
+          expiryDate: drivingPermitExpiryDate ?? futureDate,
+        },
+      ],
+    };
+  } else {
+    credentialSubject = baseCredentialSubject;
+  }
 
   return {
     jti: crypto.randomUUID(),
@@ -129,7 +138,7 @@ const documentClaims = {
         issuedBy: "DVLA",
         fullAddress: "8 HADLEY ROAD BATH BA2 5AA",
         personalNumber: "DECER607085K9123",
-        issueDate: "2023-01-18"
+        issueDate: "2023-01-18",
       },
     ],
   },

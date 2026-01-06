@@ -63,6 +63,28 @@ export interface ManagementEnqueueErrorRequest {
   delay_seconds?: number;
 }
 
+interface DrivingPermitDetails {
+  expiryDate: string;
+  issueNumber: string;
+  issuedBy: string;
+  fullAddress: string;
+  personalNumber: string;
+  issueDate: string;
+}
+
+interface DrivingPermitCredentialSubject {
+  drivingPermit: DrivingPermitDetails[];
+}
+
+export function isDrivingPermitCredentialSubject(
+  documentDetails: unknown,
+): documentDetails is DrivingPermitCredentialSubject {
+  return (
+    (documentDetails as DrivingPermitCredentialSubject)["drivingPermit"] !==
+    null
+  );
+}
+
 export enum TestUser {
   kennethD = "kennethD",
 }
