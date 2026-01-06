@@ -11,10 +11,30 @@ export async function buildMockVc(
   testUser: TestUser,
   documentType: DocumentType,
   evidenceType: EvidenceType,
+  drivingPermitExpiryDate?: string,
   ci: string[] = [],
 ) {
   const config = await getConfig();
   const timestamp = Math.round(new Date().getTime() / 1000);
+
+  const baseCredentialSubject: any = {
+    ...testUserClaims[testUser],
+    ...documentClaims[documentType],
+  };
+
+  const credentialSubject =
+    documentType === DocumentType.drivingPermit && drivingPermitExpiryDate
+      ? {
+          ...baseCredentialSubject,
+          drivingPermit: [
+            {
+              ...baseCredentialSubject.drivingPermit?.[0],
+              expiryDate: drivingPermitExpiryDate,
+            },
+          ],
+        }
+      : baseCredentialSubject;
+
   return {
     jti: crypto.randomUUID(),
     iss: config.vcIssuer,
@@ -28,10 +48,7 @@ export async function buildMockVc(
         "https://vocab.account.gov.uk/contexts/identity-v1.jsonld",
       ],
       type: ["VerifiableCredential", "IdentityCheckCredential"],
-      credentialSubject: {
-        ...testUserClaims[testUser],
-        ...documentClaims[documentType],
-      },
+      credentialSubject,
       evidence: [
         {
           ...evidence[documentType][evidenceType],
@@ -104,6 +121,18 @@ const documentClaims = {
       },
     ],
   },
+  [DocumentType.drivingPermit]: {
+    drivingPermit: [
+      {
+        expiryDate: "2033-01-18",
+        issueNumber: "5",
+        issuedBy: "DVLA",
+        fullAddress: "8 HADLEY ROAD BATH BA2 5AA",
+        personalNumber: "DECER607085K9123",
+        issueDate: "2023-01-18"
+      },
+    ],
+  },
 };
 
 const evidence = {
@@ -112,6 +141,41 @@ const evidence = {
       type: "IdentityCheck",
       strengthScore: 4,
       validityScore: 3,
+      checkDetails: [
+        {
+          checkMethod: "vcrypt",
+          identityCheckPolicy: "published",
+          activityFrom: null,
+        },
+        {
+          checkMethod: "bvr",
+          biometricVerificationProcessLevel: 3,
+        },
+      ],
+    },
+    [EvidenceType.fail]: {
+      type: "IdentityCheck",
+      strengthScore: 4,
+      validityScore: 0,
+      failedCheckDetails: [
+        {
+          checkMethod: "vcrypt",
+          identityCheckPolicy: "published",
+          activityFrom: null,
+        },
+        {
+          checkMethod: "bvr",
+          biometricVerificationProcessLevel: 3,
+        },
+      ],
+    },
+  },
+  [DocumentType.drivingPermit]: {
+    [EvidenceType.success]: {
+      type: "IdentityCheck",
+      strengthScore: 3,
+      validityScore: 2,
+      activityHistoryScore: 1,
       checkDetails: [
         {
           checkMethod: "vcrypt",

@@ -16,6 +16,7 @@ export interface ManagementEnqueueVcRequestIndividualDetails
   test_user: TestUser;
   document_type: DocumentType;
   evidence_type: EvidenceType;
+  driving_permit_expiry_date?: string;
   ci?: string[];
 }
 
@@ -68,6 +69,7 @@ export enum TestUser {
 
 export enum DocumentType {
   ukChippedPassport = "ukChippedPassport",
+  drivingPermit = "drivingPermit",
 }
 
 export enum EvidenceType {
