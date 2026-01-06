@@ -1,9 +1,4 @@
-import {
-  buildMockVc,
-  documentClaims,
-  evidence,
-  testUserClaims,
-} from "../../src/domain/mockVc";
+import { buildMockVc } from "../../src/domain/mockVc";
 import {
   DocumentType,
   DrivingPermitCredentialSubject,
@@ -11,6 +6,9 @@ import {
   PassportCredentialSubject,
   TestUser,
 } from "../../src/domain/managementEnqueueRequest";
+import { USER_CLAIMS } from "../../src/data/vcUserClaims";
+import { DOCUMENT_CLAIMS } from "../../src/data/vcDocumentClaims";
+import { EVIDENCE_CLAIMS } from "../../src/data/vcEvidenceClaims";
 
 jest.useFakeTimers().setSystemTime(new Date("2023-01-01"));
 
@@ -42,22 +40,22 @@ describe("buildMockVc", () => {
 
     const credentials = vc.vc
       .credentialSubject as DrivingPermitCredentialSubject;
-    expect(credentials["name"]).toEqual(testUserClaims[TestUser.kennethD].name);
+    expect(credentials["name"]).toEqual(USER_CLAIMS[TestUser.kennethD].name);
     expect(credentials["birthDate"]).toEqual(
-      testUserClaims[TestUser.kennethD].birthDate,
+      USER_CLAIMS[TestUser.kennethD].birthDate,
     );
 
     const expectedExpiryDate = "2023-01-31";
     expect(credentials.drivingPermit).toEqual([
       {
-        ...documentClaims[DocumentType.drivingPermit].drivingPermit[0],
+        ...DOCUMENT_CLAIMS[DocumentType.drivingPermit].drivingPermit[0],
         expiryDate: expectedExpiryDate,
       },
     ]);
 
     expect(vc.vc.evidence[0]).toEqual(
       expect.objectContaining({
-        ...evidence[DocumentType.drivingPermit][EvidenceType.success],
+        ...EVIDENCE_CLAIMS[DocumentType.drivingPermit][EvidenceType.success],
         ci: ["CI1", "CI2"],
         txn: expect.any(String),
       }),
@@ -83,21 +81,21 @@ describe("buildMockVc", () => {
 
     const credentials = vc.vc
       .credentialSubject as DrivingPermitCredentialSubject;
-    expect(credentials["name"]).toEqual(testUserClaims[TestUser.kennethD].name);
+    expect(credentials["name"]).toEqual(USER_CLAIMS[TestUser.kennethD].name);
     expect(credentials["birthDate"]).toEqual(
-      testUserClaims[TestUser.kennethD].birthDate,
+      USER_CLAIMS[TestUser.kennethD].birthDate,
     );
 
     expect(credentials.drivingPermit).toEqual([
       {
-        ...documentClaims[DocumentType.drivingPermit].drivingPermit[0],
+        ...DOCUMENT_CLAIMS[DocumentType.drivingPermit].drivingPermit[0],
         expiryDate: expectedExpiryDate,
       },
     ]);
 
     expect(vc.vc.evidence[0]).toEqual(
       expect.objectContaining({
-        ...evidence[DocumentType.drivingPermit][EvidenceType.success],
+        ...EVIDENCE_CLAIMS[DocumentType.drivingPermit][EvidenceType.success],
         ci: [],
         txn: expect.any(String),
       }),
@@ -119,18 +117,20 @@ describe("buildMockVc", () => {
     expect(vc.sub).toEqual(TEST_USER_ID);
 
     const credentials = vc.vc.credentialSubject as PassportCredentialSubject;
-    expect(credentials["name"]).toEqual(testUserClaims[TestUser.kennethD].name);
+    expect(credentials["name"]).toEqual(USER_CLAIMS[TestUser.kennethD].name);
     expect(credentials["birthDate"]).toEqual(
-      testUserClaims[TestUser.kennethD].birthDate,
+      USER_CLAIMS[TestUser.kennethD].birthDate,
     );
 
     expect(credentials.passport).toEqual([
-      documentClaims[DocumentType.ukChippedPassport].passport[0],
+      DOCUMENT_CLAIMS[DocumentType.ukChippedPassport].passport[0],
     ]);
 
     expect(vc.vc.evidence[0]).toEqual(
       expect.objectContaining({
-        ...evidence[DocumentType.ukChippedPassport][EvidenceType.success],
+        ...EVIDENCE_CLAIMS[DocumentType.ukChippedPassport][
+          EvidenceType.success
+        ],
         ci: ["CI1", "CI2"],
         txn: expect.any(String),
       }),

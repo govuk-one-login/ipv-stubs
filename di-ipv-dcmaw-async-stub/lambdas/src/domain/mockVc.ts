@@ -6,6 +6,9 @@ import {
   isDrivingPermitCredentialSubject,
 } from "./managementEnqueueRequest";
 import getConfig from "../common/config";
+import { DOCUMENT_CLAIMS } from "../data/vcDocumentClaims";
+import { USER_CLAIMS } from "../data/vcUserClaims";
+import { EVIDENCE_CLAIMS } from "../data/vcEvidenceClaims";
 
 export async function buildMockVc(
   userId: string,
@@ -18,31 +21,22 @@ export async function buildMockVc(
   const config = await getConfig();
   const timestamp = Math.round(new Date().getTime() / 1000);
 
-  const documentDetails = documentClaims[documentType];
-  const baseCredentialSubject = {
-    ...testUserClaims[testUser],
-    ...documentDetails,
+  const documentDetails = DOCUMENT_CLAIMS[documentType];
+  const credentialSubject = {
+    ...USER_CLAIMS[testUser],
+    ...(isDrivingPermitCredentialSubject(documentDetails)
+      ? {
+          drivingPermit: [
+            {
+              ...documentDetails.drivingPermit[0],
+              expiryDate:
+                drivingPermitExpiryDate ??
+                getFutureExpiryDateStringFromIssuedAt(timestamp),
+            },
+          ],
+        }
+      : documentDetails),
   };
-
-  let credentialSubject;
-  if (isDrivingPermitCredentialSubject(documentDetails)) {
-    // Create a default future date, 30 days ahead of the VC issued at date
-    const futureDate = new Date((timestamp + 30 * 24 * 60 * 60) * 1000)
-      .toISOString()
-      .split("T")[0];
-
-    credentialSubject = {
-      ...baseCredentialSubject,
-      drivingPermit: [
-        {
-          ...documentDetails.drivingPermit[0],
-          expiryDate: drivingPermitExpiryDate ?? futureDate,
-        },
-      ],
-    };
-  } else {
-    credentialSubject = baseCredentialSubject;
-  }
 
   return {
     jti: crypto.randomUUID(),
@@ -60,7 +54,7 @@ export async function buildMockVc(
       credentialSubject,
       evidence: [
         {
-          ...evidence[documentType][evidenceType],
+          ...EVIDENCE_CLAIMS[documentType][evidenceType],
           txn: crypto.randomUUID(),
           ci,
         },
@@ -96,122 +90,9 @@ export async function buildMockVcFromSubjectAndEvidence(
   };
 }
 
-export const testUserClaims = {
-  [TestUser.kennethD]: {
-    name: [
-      {
-        nameParts: [
-          {
-            value: "Kenneth",
-            type: "GivenName",
-          },
-          {
-            value: "Decerqueira",
-            type: "FamilyName",
-          },
-        ],
-      },
-    ],
-    birthDate: [
-      {
-        value: "1965-07-08",
-      },
-    ],
-  },
-};
-
-export const documentClaims = {
-  [DocumentType.ukChippedPassport]: {
-    passport: [
-      {
-        documentNumber: "321654987",
-        expiryDate: "2030-01-01",
-        icaoIssuerCode: "GBR",
-      },
-    ],
-  },
-  [DocumentType.drivingPermit]: {
-    drivingPermit: [
-      {
-        expiryDate: "2033-01-18",
-        issueNumber: "5",
-        issuedBy: "DVLA",
-        fullAddress: "8 HADLEY ROAD BATH BA2 5AA",
-        personalNumber: "DECER607085K9123",
-        issueDate: "2023-01-18",
-      },
-    ],
-  },
-};
-
-export const evidence = {
-  [DocumentType.ukChippedPassport]: {
-    [EvidenceType.success]: {
-      type: "IdentityCheck",
-      strengthScore: 4,
-      validityScore: 3,
-      checkDetails: [
-        {
-          checkMethod: "vcrypt",
-          identityCheckPolicy: "published",
-          activityFrom: null,
-        },
-        {
-          checkMethod: "bvr",
-          biometricVerificationProcessLevel: 3,
-        },
-      ],
-    },
-    [EvidenceType.fail]: {
-      type: "IdentityCheck",
-      strengthScore: 4,
-      validityScore: 0,
-      failedCheckDetails: [
-        {
-          checkMethod: "vcrypt",
-          identityCheckPolicy: "published",
-          activityFrom: null,
-        },
-        {
-          checkMethod: "bvr",
-          biometricVerificationProcessLevel: 3,
-        },
-      ],
-    },
-  },
-  [DocumentType.drivingPermit]: {
-    [EvidenceType.success]: {
-      type: "IdentityCheck",
-      strengthScore: 3,
-      validityScore: 2,
-      activityHistoryScore: 1,
-      checkDetails: [
-        {
-          checkMethod: "vcrypt",
-          identityCheckPolicy: "published",
-          activityFrom: null,
-        },
-        {
-          checkMethod: "bvr",
-          biometricVerificationProcessLevel: 3,
-        },
-      ],
-    },
-    [EvidenceType.fail]: {
-      type: "IdentityCheck",
-      strengthScore: 4,
-      validityScore: 0,
-      failedCheckDetails: [
-        {
-          checkMethod: "vcrypt",
-          identityCheckPolicy: "published",
-          activityFrom: null,
-        },
-        {
-          checkMethod: "bvr",
-          biometricVerificationProcessLevel: 3,
-        },
-      ],
-    },
-  },
-};
+function getFutureExpiryDateStringFromIssuedAt(issuedAt: number): string {
+  // Create a default future date, 30 days ahead of the VC issued at date
+  return new Date((issuedAt + 30 * 24 * 60 * 60) * 1000)
+    .toISOString()
+    .split("T")[0];
+}
