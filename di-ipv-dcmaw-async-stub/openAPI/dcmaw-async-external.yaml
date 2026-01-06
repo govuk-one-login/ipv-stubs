@@ -286,12 +286,16 @@ components:
           description: The name/id of the test user to generate a VC for
         document_type:
           type: string
-          enum: [ukChippedPassport]
+          enum: [ukChippedPassport, drivingPermit]
           description: The document type of the VC
         evidence_type:
           type: string
           enum: [success, fail]
           description: The evidence type of the VC
+        # Optional driving permit expiry override
+        driving_permit_expiry_date:
+          type: string
+          description: Optional override for driving permit expiry date (YYYY-MM-DD)
         ci:
           type: array
           description: Optional array of CI codes
