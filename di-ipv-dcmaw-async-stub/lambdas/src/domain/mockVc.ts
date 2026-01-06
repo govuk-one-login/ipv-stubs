@@ -96,7 +96,7 @@ export async function buildMockVcFromSubjectAndEvidence(
   };
 }
 
-const testUserClaims = {
+export const testUserClaims = {
   [TestUser.kennethD]: {
     name: [
       {
@@ -120,7 +120,7 @@ const testUserClaims = {
   },
 };
 
-const documentClaims = {
+export const documentClaims = {
   [DocumentType.ukChippedPassport]: {
     passport: [
       {
@@ -144,7 +144,7 @@ const documentClaims = {
   },
 };
 
-const evidence = {
+export const evidence = {
   [DocumentType.ukChippedPassport]: {
     [EvidenceType.success]: {
       type: "IdentityCheck",

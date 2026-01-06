@@ -72,17 +72,23 @@ interface DrivingPermitDetails {
   issueDate: string;
 }
 
-interface DrivingPermitCredentialSubject {
+export interface DrivingPermitCredentialSubject extends BaseCredentialSubject {
   drivingPermit: DrivingPermitDetails[];
+}
+
+export interface PassportCredentialSubject extends BaseCredentialSubject {
+  passport: object;
 }
 
 export function isDrivingPermitCredentialSubject(
   documentDetails: unknown,
 ): documentDetails is DrivingPermitCredentialSubject {
-  return (
-    (documentDetails as DrivingPermitCredentialSubject)["drivingPermit"] !==
-    null
-  );
+  return "drivingPermit" in (documentDetails as DrivingPermitCredentialSubject);
+}
+
+interface BaseCredentialSubject {
+  name: object;
+  birthDate: object;
 }
 
 export enum TestUser {
