@@ -1,6 +1,6 @@
-import { CimitStubItem } from "../../common/contraIndicatorTypes";
-import { dynamoDBClient } from "../../clients/dynamoDBClient";
-import * as config from "../../common/configService";
+import { CimitStubItem } from "./contraIndicatorTypes";
+import { dynamoDBClient } from "../clients/dynamoDBClient";
+import * as config from "./configService";
 import { marshall } from "@aws-sdk/util-dynamodb";
 
 const tableName = config.getCimitStubTableName();

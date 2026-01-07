@@ -12,7 +12,7 @@ import {
   calculateSortKey,
   calculateTtl,
   persistCimitStubItem,
-} from "../internal-api/put-contra-indicators/cimitStubItemService";
+} from "./cimitStubItemService";
 
 export const addUserCIs = async (
   request: PutContraIndicatorRequest,
