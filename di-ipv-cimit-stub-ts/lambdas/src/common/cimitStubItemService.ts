@@ -1,34 +1,83 @@
 import { CimitStubItem } from "./contraIndicatorTypes";
 import { dynamoDBClient } from "../clients/dynamoDBClient";
 import * as config from "./configService";
-import { marshall } from "@aws-sdk/util-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
-const tableName = config.getCimitStubTableName();
+export async function getCIsForUserId(
+  userId: string,
+): Promise<CimitStubItem[]> {
+  const result = await dynamoDBClient.query({
+    TableName: config.getCimitStubTableName(),
+    KeyConditionExpression: "userId = :userId",
+    ExpressionAttributeValues: marshall({ ":userId": userId }),
+  });
 
-export const persistCimitStubItem = async (
+  return (result.Items || []).map((item) => unmarshall(item) as CimitStubItem);
+}
+
+export async function getCiForUserId(
+  userId: string,
+  ci: string,
+): Promise<CimitStubItem[]> {
+  const result = await dynamoDBClient.query({
+    TableName: config.getCimitStubTableName(),
+    KeyConditionExpression:
+      "userId = :userId AND begins_with(sortKey, :prefix)",
+    ExpressionAttributeValues: marshall({
+      ":userId": userId,
+      ":prefix": ci,
+    }),
+  });
+
+  return (result.Items || []).map((item) => unmarshall(item) as CimitStubItem);
+}
+
+export async function persistCimitStubItem(
   cimitStubItem: CimitStubItem,
-): Promise<void> => {
-  cimitStubItem.ttl = await calculateTtl();
-  cimitStubItem.sortKey = calculateSortKey(
-    cimitStubItem.contraIndicatorCode,
-    cimitStubItem.issuanceDate,
-  );
+): Promise<void> {
+  await setDynamoProperties(cimitStubItem);
 
   await dynamoDBClient.putItem({
-    TableName: tableName,
+    TableName: config.getCimitStubTableName(),
     Item: marshall(cimitStubItem, {
       removeUndefinedValues: true,
     }),
   });
-};
+}
 
-const calculateSortKey = (code: string, issuanceDate: string): string => {
-  return code + "#" + issuanceDate;
-};
+export async function updateCimitStubItem(
+  cimitStubItem: CimitStubItem,
+): Promise<void> {
+  await setDynamoProperties(cimitStubItem);
 
-const calculateTtl = async (): Promise<number> => {
-  const now = new Date();
-  const nowInSeconds = Math.floor(now.getTime() / 1000);
-  const ttl = await config.getCimitStubTtl();
-  return nowInSeconds + ttl;
-};
+  await dynamoDBClient.putItem({
+    TableName: config.getCimitStubTableName(),
+    Item: marshall(cimitStubItem, {
+      removeUndefinedValues: true,
+    }),
+  });
+}
+
+export async function deleteCimitStubItem(
+  userId: string,
+  sortKey: string,
+): Promise<void> {
+  await dynamoDBClient.deleteItem({
+    TableName: config.getCimitStubTableName(),
+    Key: marshall({
+      userId,
+      sortKey,
+    }),
+  });
+}
+
+async function setDynamoProperties(
+  cimitStubItem: CimitStubItem,
+): Promise<void> {
+  cimitStubItem.sortKey =
+    cimitStubItem.contraIndicatorCode + "#" + cimitStubItem.issuanceDate;
+
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  const ttlSeconds = await config.getCimitStubTtl();
+  cimitStubItem.ttl = nowInSeconds + ttlSeconds;
+}
