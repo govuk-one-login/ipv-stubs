@@ -8,11 +8,7 @@ import {
   ResidencePermitDetailsClass,
   SocialSecurityRecordDetailsClass,
 } from "@govuk-one-login/data-vocab/credentials";
-import {
-  calculateSortKey,
-  calculateTtl,
-  persistCimitStubItem,
-} from "./cimitStubItemService";
+import { persistCimitStubItem } from "./cimitStubItemService";
 
 export const addUserCIs = async (
   request: PutContraIndicatorRequest,
@@ -38,7 +34,6 @@ export const addUserCIs = async (
       ? new Date(signedJwt.nbf * 1000)
       : new Date();
     const issuanceDateString = issuanceDate.toISOString();
-    const ttl = await calculateTtl();
 
     const dbItems = ci.map((ci) => {
       const code = ci.toUpperCase();
@@ -50,8 +45,8 @@ export const addUserCIs = async (
         mitigations: [],
         document: getDocument(vc),
         txn: vc.evidence[0].txn || "",
-        ttl: ttl,
-        sortKey: calculateSortKey(code, issuanceDateString),
+        ttl: 0, // TODO: This and sortKey are set in persistCimitStubItem so we don't need to set them here.
+        sortKey: "",
       };
     });
 

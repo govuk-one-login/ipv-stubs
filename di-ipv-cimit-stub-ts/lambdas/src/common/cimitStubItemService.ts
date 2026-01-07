@@ -8,6 +8,12 @@ const tableName = config.getCimitStubTableName();
 export const persistCimitStubItem = async (
   cimitStubItem: CimitStubItem,
 ): Promise<void> => {
+  cimitStubItem.ttl = await calculateTtl();
+  cimitStubItem.sortKey = calculateSortKey(
+    cimitStubItem.contraIndicatorCode,
+    cimitStubItem.issuanceDate,
+  );
+
   await dynamoDBClient.putItem({
     TableName: tableName,
     Item: marshall(cimitStubItem, {
@@ -16,14 +22,11 @@ export const persistCimitStubItem = async (
   });
 };
 
-export const calculateSortKey = (
-  code: string,
-  issuanceDate: string,
-): string => {
+const calculateSortKey = (code: string, issuanceDate: string): string => {
   return code + "#" + issuanceDate;
 };
 
-export const calculateTtl = async (): Promise<number> => {
+const calculateTtl = async (): Promise<number> => {
   const now = new Date();
   const nowInSeconds = Math.floor(now.getTime() / 1000);
   const ttl = await config.getCimitStubTtl();
