@@ -1,0 +1,7 @@
+ignore-scripts=true
+save-exact=true
+engine-strict=true
+; Some govuk-one-login packages are currently not being published to github.com and return E404. To update those packages you need to comment out the line below, update the package and then re-instate the line.
+; Hopefully soon all govuk-one-login packages will be published to github.com and this comment can be deleted.
+@govuk-one-login:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=TOKEN_WITH_READ_PACKAGE_PERMISSION

@@ -1,9 +1,12 @@
-import { config } from "../common/config";
+import { isRunningLocally } from "../common/configService";
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
 
-export const dynamoClient = config.isLocalDev
+const LOCALHOST_URI = "http://localhost:4567";
+const REGION = "eu-west-2";
+
+export const dynamoDBClient = isRunningLocally
   ? new DynamoDB({
-      endpoint: config.localDynamoDbEndpoint,
-      region: config.region,
+      endpoint: LOCALHOST_URI,
+      region: REGION,
     })
-  : new DynamoDB({ region: config.region });
+  : new DynamoDB({ region: REGION });

@@ -1,9 +1,9 @@
-import { APIGatewayProxyResultV2 } from "aws-lambda";
+import { APIGatewayProxyStructuredResultV2 } from "aws-lambda";
 
 export function buildApiResponse(
   statusCode: number = 200,
   body?: object,
-): APIGatewayProxyResultV2 {
+): APIGatewayProxyStructuredResultV2 {
   return {
     statusCode,
     body: body && JSON.stringify(body),
