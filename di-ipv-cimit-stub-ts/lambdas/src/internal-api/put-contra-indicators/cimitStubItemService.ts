@@ -3,9 +3,6 @@ import { dynamoDBClient } from "../../clients/dynamoDBClient";
 import * as config from "../../common/configService";
 import { marshall } from "@aws-sdk/util-dynamodb";
 
-// a bunch of cleanup needed in here
-// and maybe move the package.json and package-lock.json
-
 const tableName = config.getCimitStubTableName();
 
 export const persistCimitStubItem = async (
