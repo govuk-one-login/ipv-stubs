@@ -2,6 +2,7 @@ import { CimitStubItem } from "./contraIndicatorTypes";
 import { dynamoDBClient } from "../clients/dynamoDBClient";
 import * as config from "./configService";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
+import { UserCisRequest } from "../external-api/stub-management/service/userService";
 
 export async function getCIsForUserId(
   userId: string,
@@ -45,6 +46,7 @@ export async function persistCimitStubItem(
   });
 }
 
+// TODO: consolidate with persistCimitStubItem()
 export async function updateCimitStubItem(
   cimitStubItem: CimitStubItem,
 ): Promise<void> {
@@ -80,4 +82,21 @@ async function setDynamoProperties(
   const nowInSeconds = Math.floor(Date.now() / 1000);
   const ttlSeconds = await config.getCimitStubTtl();
   cimitStubItem.ttl = nowInSeconds + ttlSeconds;
+}
+
+export function fromUserCisRequest(
+  ciRequest: UserCisRequest,
+  userId: string,
+): CimitStubItem {
+  return {
+    userId,
+    contraIndicatorCode: ciRequest.code.toUpperCase(),
+    issuer: ciRequest.issuer,
+    issuanceDate: ciRequest.issuanceDate || new Date().toISOString(),
+    mitigations: ciRequest.mitigations?.map((m) => m.toUpperCase()) || [],
+    document: ciRequest.document || "",
+    txn: ciRequest.txn || "",
+    sortKey: "",
+    ttl: 0,
+  };
 }
