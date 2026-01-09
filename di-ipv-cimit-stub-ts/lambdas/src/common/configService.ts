@@ -19,7 +19,10 @@ export const getCimitSigningKey = async () =>
 export const getCimitComponentId = async () =>
   getSsmParameter(process.env.CIMIT_PARAM_BASE_PATH + CIMIT_COMPONENT_ID_PARAM);
 export const getCimitStubTableName = () =>
-  process.env.CIMIT_STUB_TABLE_NAME || "table name not found";
+  process.env.CIMIT_STUB_TABLE_NAME || "cimmit stub table name not found";
+export const getPendingMitigationsTableName = () =>
+  process.env.PENDING_MITIGATIONS_TABLE ||
+  "pending mitigations table name not found";
 export const getCimitStubTtl = async () =>
   parseInt(
     await getSsmParameter(process.env.CIMIT_PARAM_BASE_PATH + CIMIT_STUB_TTL),

@@ -7,7 +7,7 @@ jest.mock("../../../src/common/configService", () => ({
   isRunningLocally: false,
 }));
 
-import * as cimitStubItemService from "../../../src/internal-api/put-contra-indicators/cimitStubItemService";
+import * as cimitStubItemService from "../../../src/common/cimitStubItemService";
 import { addUserCIs } from "../../../src/common/contraIndicatorsService";
 import { PutContraIndicatorRequest } from "../../../src/internal-api/put-contra-indicators/putContraIndicatorsHandler";
 

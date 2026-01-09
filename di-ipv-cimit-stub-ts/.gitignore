@@ -9,6 +9,8 @@ build
 .idea
 .vscode
 
+.npmrc
+
 lambdas/node_modules
 lambdas/coverage
 lambdas/lib
