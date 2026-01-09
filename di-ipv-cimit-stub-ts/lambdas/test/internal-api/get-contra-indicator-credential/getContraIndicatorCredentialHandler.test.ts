@@ -35,6 +35,8 @@ const ISSUANCE_DATE_3 = 1577836960; // 01/01/2020 00:02:40
 const DOCUMENT_1 = "document_1";
 const DOCUMENT_2 = "document_2";
 const CIMIT_COMPONENT_ID = "https://cimit.stubs.account.gov.uk";
+const SORT_KEY = "sort_key";
+const TTL = 1577836960;
 
 const PARSED_MITIGATION_01 = {
   code: MITIGATION_M01,
@@ -92,6 +94,8 @@ test.each([
         txn: TXN_1,
         issuanceDate: ISSUANCE_DATE_1,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
     ],
     expectedCIs: [
@@ -117,6 +121,8 @@ test.each([
         txn: TXN_1,
         issuanceDate: ISSUANCE_DATE_1,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
       {
         userId: USER_ID,
@@ -126,6 +132,8 @@ test.each([
         txn: TXN_2,
         issuanceDate: ISSUANCE_DATE_2,
         document: DOCUMENT_2,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
     ],
     expectedCIs: [
@@ -160,6 +168,8 @@ test.each([
         txn: TXN_1,
         issuanceDate: ISSUANCE_DATE_1,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
       {
         userId: USER_ID,
@@ -169,6 +179,8 @@ test.each([
         txn: TXN_2,
         issuanceDate: ISSUANCE_DATE_2,
         document: DOCUMENT_2,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
     ],
     expectedCIs: [
@@ -203,6 +215,8 @@ test.each([
         txn: TXN_1,
         issuanceDate: ISSUANCE_DATE_1,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
       {
         userId: USER_ID,
@@ -212,6 +226,8 @@ test.each([
         txn: TXN_2,
         issuanceDate: ISSUANCE_DATE_2,
         document: DOCUMENT_2,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
     ],
     expectedCIs: [
@@ -246,6 +262,8 @@ test.each([
         txn: TXN_1,
         issuanceDate: ISSUANCE_DATE_1,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
       {
         userId: USER_ID,
@@ -255,6 +273,8 @@ test.each([
         txn: TXN_2,
         issuanceDate: ISSUANCE_DATE_2,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
     ],
     expectedCIs: [
@@ -280,6 +300,8 @@ test.each([
         txn: TXN_1,
         issuanceDate: ISSUANCE_DATE_1,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
       {
         userId: USER_ID,
@@ -289,6 +311,8 @@ test.each([
         txn: TXN_2,
         issuanceDate: ISSUANCE_DATE_2,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
     ],
     expectedCIs: [
@@ -314,6 +338,8 @@ test.each([
         txn: TXN_1,
         issuanceDate: ISSUANCE_DATE_1,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
       {
         userId: USER_ID,
@@ -323,6 +349,8 @@ test.each([
         txn: TXN_2,
         issuanceDate: ISSUANCE_DATE_2,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
     ],
     expectedCIs: [
@@ -348,6 +376,8 @@ test.each([
         txn: TXN_1,
         issuanceDate: ISSUANCE_DATE_1,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
       {
         userId: USER_ID,
@@ -357,6 +387,8 @@ test.each([
         txn: TXN_2,
         issuanceDate: ISSUANCE_DATE_3,
         document: DOCUMENT_2,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
       {
         userId: USER_ID,
@@ -366,6 +398,8 @@ test.each([
         txn: TXN_3,
         issuanceDate: ISSUANCE_DATE_2,
         document: null,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
       {
         userId: USER_ID,
@@ -375,6 +409,8 @@ test.each([
         txn: TXN_3,
         issuanceDate: ISSUANCE_DATE_3,
         document: null,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
     ],
     expectedCIs: [
@@ -418,6 +454,8 @@ test.each([
         txn: TXN_1,
         issuanceDate: ISSUANCE_DATE_1,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
       {
         userId: USER_ID,
@@ -427,6 +465,8 @@ test.each([
         txn: TXN_1,
         issuanceDate: ISSUANCE_DATE_1,
         document: DOCUMENT_1,
+        sortKey: SORT_KEY,
+        ttl: TTL,
       },
     ],
     expectedCIs: [
@@ -489,6 +529,8 @@ test("Should return 500 for invalid signing key", async () => {
       txn: TXN_1,
       issuanceDate: ISSUANCE_DATE_1,
       document: DOCUMENT_1,
+      sortKey: SORT_KEY,
+      ttl: TTL,
     },
   ]);
   jest
