@@ -8,7 +8,8 @@ import {
   ResidencePermitDetailsClass,
   SocialSecurityRecordDetailsClass,
 } from "@govuk-one-login/data-vocab/credentials";
-import { persistCimitStubItem } from "./cimitStubItemService";
+import { createStubItem, persistCimitStubItem } from "./cimitStubItemService";
+import { CimitStubItem } from "./contraIndicatorTypes";
 
 export const addUserCIs = async (
   request: PutContraIndicatorRequest,
@@ -24,8 +25,8 @@ export const addUserCIs = async (
       console.info("No evidence in VC");
       return;
     }
-    const ci = vc.evidence[0].ci;
-    if (!ci || ci.length === 0) {
+    const cis = vc.evidence[0].ci;
+    if (!cis || cis.length === 0) {
       console.info("No CI in evidence");
       return;
     }
@@ -35,20 +36,19 @@ export const addUserCIs = async (
       : new Date();
     const issuanceDateString = issuanceDate.toISOString();
 
-    const dbItems = ci.map((ci) => {
-      const code = ci.toUpperCase();
-      return {
-        userId: signedJwt.sub || "",
-        contraIndicatorCode: code,
-        issuer: signedJwt.iss || "",
-        issuanceDate: issuanceDateString,
-        mitigations: [],
-        document: getDocument(vc),
-        txn: vc.evidence[0].txn || "",
-        ttl: 0, // TODO: This and sortKey are set in persistCimitStubItem so we don't need to set them here.
-        sortKey: "",
-      };
-    });
+    const dbItems: CimitStubItem[] = [];
+    for (const ci of cis) {
+      const item = await createStubItem(
+        signedJwt.sub,
+        ci.toUpperCase(),
+        signedJwt.iss,
+        issuanceDateString,
+        [],
+        getDocument(vc),
+        vc.evidence[0].txn,
+      );
+      dbItems.push(item);
+    }
 
     for (const item of dbItems) {
       await persistCimitStubItem(item);

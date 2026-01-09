@@ -44,7 +44,7 @@ test("addUserCis should insert", async () => {
     issuanceDate: "2023-08-17T10:20:53.000Z",
     mitigations: [],
     document: "",
-    sortKey: "",
+    sortKey: "V03#2023-08-17T10:20:53.000Z",
     txn: "18fbfe93-2e71-44bb-88c5-0f7de60fbe80",
     ttl: expect.any(Number),
   };

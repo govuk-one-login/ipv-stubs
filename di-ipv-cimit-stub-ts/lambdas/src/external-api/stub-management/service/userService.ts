@@ -15,10 +15,7 @@ export async function addUserCis(
   userCisRequests: UserCisRequest[],
 ): Promise<void> {
   for (const ciRequest of userCisRequests) {
-    const cimitStubItem = cimitStubItemService.fromUserCisRequest(
-      ciRequest,
-      userId,
-    );
+    const cimitStubItem = await fromUserCisRequest(ciRequest, userId);
     await cimitStubItemService.persistCimitStubItem(cimitStubItem);
   }
 
@@ -36,10 +33,7 @@ export async function updateUserCis(
   }
 
   for (const ciRequest of userCisRequests) {
-    const cimitStubItem = cimitStubItemService.fromUserCisRequest(
-      ciRequest,
-      userId,
-    );
+    const cimitStubItem = await fromUserCisRequest(ciRequest, userId);
     await cimitStubItemService.persistCimitStubItem(cimitStubItem);
   }
 }
@@ -50,4 +44,19 @@ async function deleteCimitStubItems(
   for (const item of cimitStubItems) {
     await cimitStubItemService.deleteCimitStubItem(item.userId, item.sortKey);
   }
+}
+
+async function fromUserCisRequest(
+  ciRequest: UserCisRequest,
+  userId: string,
+): Promise<CimitStubItem> {
+  return cimitStubItemService.createStubItem(
+    userId,
+    ciRequest.code.toUpperCase(),
+    ciRequest.issuer,
+    ciRequest.issuanceDate,
+    ciRequest.mitigations?.map((m) => m.toUpperCase()),
+    ciRequest.document,
+    ciRequest.txn,
+  );
 }

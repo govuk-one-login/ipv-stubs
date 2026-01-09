@@ -2,7 +2,6 @@ import { CimitStubItem } from "./contraIndicatorTypes";
 import { dynamoDBClient } from "../clients/dynamoDBClient";
 import * as config from "./configService";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
-import { UserCisRequest } from "../external-api/stub-management/service/userService";
 
 export async function getCIsForUserId(
   userId: string,
@@ -70,19 +69,27 @@ async function setDynamoProperties(
   cimitStubItem.ttl = nowInSeconds + ttlSeconds;
 }
 
-export function fromUserCisRequest(
-  ciRequest: UserCisRequest,
-  userId: string,
-): CimitStubItem {
-  return {
-    userId,
-    contraIndicatorCode: ciRequest.code.toUpperCase(),
-    issuer: ciRequest.issuer,
-    issuanceDate: ciRequest.issuanceDate || new Date().toISOString(),
-    mitigations: ciRequest.mitigations?.map((m) => m.toUpperCase()) || [],
-    document: ciRequest.document || "",
-    txn: ciRequest.txn || "",
+export async function createStubItem(
+  userId: string | undefined,
+  contraIndicatorCode: string,
+  issuer: string | undefined,
+  issuanceDate: string | undefined,
+  mitigations: string[],
+  document: string | undefined,
+  txn: string | undefined,
+): Promise<CimitStubItem> {
+  const stubItem = {
+    userId: userId || "",
+    contraIndicatorCode,
+    issuer: issuer || "",
+    issuanceDate: issuanceDate || new Date().toISOString(),
+    mitigations,
+    document: document || "",
+    txn: txn || "",
+    // The two properties below are set in setDynamoProperties
     sortKey: "",
     ttl: 0,
   };
+  await setDynamoProperties(stubItem);
+  return stubItem;
 }

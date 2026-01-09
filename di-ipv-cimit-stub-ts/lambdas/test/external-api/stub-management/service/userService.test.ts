@@ -1,10 +1,14 @@
+jest.mock("../../../../src/common/configService", () => ({
+  getCimitStubTtl: jest.fn().mockResolvedValue(1800),
+}));
+
 jest.mock("../../../../src/common/cimitStubItemService", () => ({
   persistCimitStubItem: jest.fn(),
   getCIsForUserId: jest.fn(),
   deleteCimitStubItem: jest.fn(),
-  fromUserCisRequest: jest.requireActual(
+  createStubItem: jest.requireActual(
     "../../../../src/common/cimitStubItemService",
-  ).fromUserCisRequest,
+  ).createStubItem,
 }));
 
 import * as userService from "../../../../src/external-api/stub-management/service/userService";
