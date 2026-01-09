@@ -82,7 +82,7 @@ export async function completePendingMitigation(
       );
   }
 
-  await cimitStubItemService.updateCimitStubItem(itemToMitigate);
+  await cimitStubItemService.persistCimitStubItem(itemToMitigate);
   console.log("CI mitigated", {
     jwtId,
     userId,

@@ -110,7 +110,7 @@ describe("persistCimitStubItem", () => {
   });
 });
 
-describe("updateCimitStubItem", () => {
+describe("persistCimitStubItem", () => {
   it("should update CimitStubItem with new TTL", async () => {
     const item: CimitStubItem = {
       userId: USER_ID,
@@ -124,7 +124,7 @@ describe("updateCimitStubItem", () => {
       txn: "",
     };
 
-    await cimitStubItemService.updateCimitStubItem(item);
+    await cimitStubItemService.persistCimitStubItem(item);
 
     expect(dynamoDBClient.putItem).toHaveBeenCalledTimes(1);
     const callArgs = (dynamoDBClient.putItem as jest.Mock).mock.calls[0][0];

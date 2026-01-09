@@ -46,20 +46,6 @@ export async function persistCimitStubItem(
   });
 }
 
-// TODO: consolidate with persistCimitStubItem()
-export async function updateCimitStubItem(
-  cimitStubItem: CimitStubItem,
-): Promise<void> {
-  await setDynamoProperties(cimitStubItem);
-
-  await dynamoDBClient.putItem({
-    TableName: config.getCimitStubTableName(),
-    Item: marshall(cimitStubItem, {
-      removeUndefinedValues: true,
-    }),
-  });
-}
-
 export async function deleteCimitStubItem(
   userId: string,
   sortKey: string,

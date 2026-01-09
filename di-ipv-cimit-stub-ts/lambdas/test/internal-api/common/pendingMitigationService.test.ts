@@ -14,7 +14,7 @@ jest.mock("../../../src/clients/dynamoDBClient", () => ({
 
 jest.mock("../../../src/common/cimitStubItemService", () => ({
   getCiForUserId: jest.fn(),
-  updateCimitStubItem: jest.fn(),
+  persistCimitStubItem: jest.fn(),
 }));
 
 import { dynamoDBClient } from "../../../src/clients/dynamoDBClient";
@@ -97,9 +97,11 @@ describe("pendingMitigationService", () => {
         "aUserId",
         "CI",
       );
-      expect(cimitStubItemService.updateCimitStubItem).toHaveBeenCalledTimes(1);
+      expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledTimes(
+        1,
+      );
       const updatedItem = (
-        cimitStubItemService.updateCimitStubItem as jest.Mock
+        cimitStubItemService.persistCimitStubItem as jest.Mock
       ).mock.calls[0][0];
       expect(updatedItem.mitigations).toEqual(["M01", "M02"]);
     });
@@ -127,9 +129,11 @@ describe("pendingMitigationService", () => {
         "aUserId",
         "CI",
       );
-      expect(cimitStubItemService.updateCimitStubItem).toHaveBeenCalledTimes(1);
+      expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledTimes(
+        1,
+      );
       const updatedItem = (
-        cimitStubItemService.updateCimitStubItem as jest.Mock
+        cimitStubItemService.persistCimitStubItem as jest.Mock
       ).mock.calls[0][0];
       expect(updatedItem.mitigations).toEqual(["M01", "M02", "M03"]);
     });
@@ -155,9 +159,11 @@ describe("pendingMitigationService", () => {
         "aUserId",
         "CI",
       );
-      expect(cimitStubItemService.updateCimitStubItem).toHaveBeenCalledTimes(1);
+      expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledTimes(
+        1,
+      );
       const updatedItem = (
-        cimitStubItemService.updateCimitStubItem as jest.Mock
+        cimitStubItemService.persistCimitStubItem as jest.Mock
       ).mock.calls[0][0];
       expect(updatedItem.mitigations).toEqual(["M01", "M02"]);
     });
@@ -185,9 +191,11 @@ describe("pendingMitigationService", () => {
         "aUserId",
         "CI",
       );
-      expect(cimitStubItemService.updateCimitStubItem).toHaveBeenCalledTimes(1);
+      expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledTimes(
+        1,
+      );
       const updatedItem = (
-        cimitStubItemService.updateCimitStubItem as jest.Mock
+        cimitStubItemService.persistCimitStubItem as jest.Mock
       ).mock.calls[0][0];
       expect(updatedItem.mitigations).toEqual(["M01", "M02"]);
     });
@@ -205,7 +213,7 @@ describe("pendingMitigationService", () => {
         Key: { vcJti: { S: "aJwtId" } },
       });
       expect(cimitStubItemService.getCiForUserId).not.toHaveBeenCalled();
-      expect(cimitStubItemService.updateCimitStubItem).not.toHaveBeenCalled();
+      expect(cimitStubItemService.persistCimitStubItem).not.toHaveBeenCalled();
     });
 
     it("should do nothing if no CI found", async () => {
@@ -229,7 +237,7 @@ describe("pendingMitigationService", () => {
         "aUserId",
         "CI",
       );
-      expect(cimitStubItemService.updateCimitStubItem).not.toHaveBeenCalled();
+      expect(cimitStubItemService.persistCimitStubItem).not.toHaveBeenCalled();
     });
 
     it("should throw if unsupported method", async () => {
