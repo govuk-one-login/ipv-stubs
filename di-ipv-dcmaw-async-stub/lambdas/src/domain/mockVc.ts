@@ -3,18 +3,41 @@ import {
   TestUser,
   DocumentType,
   EvidenceType,
+  isDrivingPermitCredentialSubject,
 } from "./managementEnqueueRequest";
 import getConfig from "../common/config";
+import { DOCUMENT_CLAIMS } from "../data/vcDocumentClaims";
+import { USER_CLAIMS } from "../data/vcUserClaims";
+import { EVIDENCE_CLAIMS } from "../data/vcEvidenceClaims";
 
 export async function buildMockVc(
   userId: string,
   testUser: TestUser,
   documentType: DocumentType,
   evidenceType: EvidenceType,
+  drivingPermitExpiryDate?: string,
   ci: string[] = [],
 ) {
   const config = await getConfig();
   const timestamp = Math.round(new Date().getTime() / 1000);
+
+  const documentDetails = DOCUMENT_CLAIMS[documentType];
+  const credentialSubject = {
+    ...USER_CLAIMS[testUser],
+    ...(isDrivingPermitCredentialSubject(documentDetails)
+      ? {
+          drivingPermit: [
+            {
+              ...documentDetails.drivingPermit[0],
+              expiryDate:
+                drivingPermitExpiryDate ??
+                getFutureExpiryDateStringFromIssuedAt(timestamp),
+            },
+          ],
+        }
+      : documentDetails),
+  };
+
   return {
     jti: crypto.randomUUID(),
     iss: config.vcIssuer,
@@ -28,13 +51,10 @@ export async function buildMockVc(
         "https://vocab.account.gov.uk/contexts/identity-v1.jsonld",
       ],
       type: ["VerifiableCredential", "IdentityCheckCredential"],
-      credentialSubject: {
-        ...testUserClaims[testUser],
-        ...documentClaims[documentType],
-      },
+      credentialSubject,
       evidence: [
         {
-          ...evidence[documentType][evidenceType],
+          ...EVIDENCE_CLAIMS[documentType][evidenceType],
           txn: crypto.randomUUID(),
           ci,
         },
@@ -70,75 +90,9 @@ export async function buildMockVcFromSubjectAndEvidence(
   };
 }
 
-const testUserClaims = {
-  [TestUser.kennethD]: {
-    name: [
-      {
-        nameParts: [
-          {
-            value: "Kenneth",
-            type: "GivenName",
-          },
-          {
-            value: "Decerqueira",
-            type: "FamilyName",
-          },
-        ],
-      },
-    ],
-    birthDate: [
-      {
-        value: "1965-07-08",
-      },
-    ],
-  },
-};
-
-const documentClaims = {
-  [DocumentType.ukChippedPassport]: {
-    passport: [
-      {
-        documentNumber: "321654987",
-        expiryDate: "2030-01-01",
-        icaoIssuerCode: "GBR",
-      },
-    ],
-  },
-};
-
-const evidence = {
-  [DocumentType.ukChippedPassport]: {
-    [EvidenceType.success]: {
-      type: "IdentityCheck",
-      strengthScore: 4,
-      validityScore: 3,
-      checkDetails: [
-        {
-          checkMethod: "vcrypt",
-          identityCheckPolicy: "published",
-          activityFrom: null,
-        },
-        {
-          checkMethod: "bvr",
-          biometricVerificationProcessLevel: 3,
-        },
-      ],
-    },
-    [EvidenceType.fail]: {
-      type: "IdentityCheck",
-      strengthScore: 4,
-      validityScore: 0,
-      failedCheckDetails: [
-        {
-          checkMethod: "vcrypt",
-          identityCheckPolicy: "published",
-          activityFrom: null,
-        },
-        {
-          checkMethod: "bvr",
-          biometricVerificationProcessLevel: 3,
-        },
-      ],
-    },
-  },
-};
+function getFutureExpiryDateStringFromIssuedAt(issuedAt: number): string {
+  // Create a default future date, 30 days ahead of the VC issued at date
+  return new Date((issuedAt + 30 * 24 * 60 * 60) * 1000)
+    .toISOString()
+    .split("T")[0];
+}

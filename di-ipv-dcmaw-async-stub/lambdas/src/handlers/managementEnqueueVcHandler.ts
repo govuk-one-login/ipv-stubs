@@ -42,6 +42,7 @@ export async function handler(
         requestBody.test_user,
         requestBody.document_type,
         requestBody.evidence_type,
+        requestBody.driving_permit_expiry_date,
         requestBody.ci,
       );
     } else if (isManagementEnqueueVcRequestEvidenceAndSubject(requestBody)) {

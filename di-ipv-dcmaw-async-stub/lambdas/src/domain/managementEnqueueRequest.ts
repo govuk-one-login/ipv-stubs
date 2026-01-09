@@ -16,6 +16,7 @@ export interface ManagementEnqueueVcRequestIndividualDetails
   test_user: TestUser;
   document_type: DocumentType;
   evidence_type: EvidenceType;
+  driving_permit_expiry_date?: string;
   ci?: string[];
 }
 
@@ -62,12 +63,41 @@ export interface ManagementEnqueueErrorRequest {
   delay_seconds?: number;
 }
 
+interface DrivingPermitDetails {
+  expiryDate: string;
+  issueNumber: string;
+  issuedBy: string;
+  fullAddress: string;
+  personalNumber: string;
+  issueDate: string;
+}
+
+export interface DrivingPermitCredentialSubject extends BaseCredentialSubject {
+  drivingPermit: DrivingPermitDetails[];
+}
+
+export interface PassportCredentialSubject extends BaseCredentialSubject {
+  passport: object;
+}
+
+export function isDrivingPermitCredentialSubject(
+  documentDetails: unknown,
+): documentDetails is DrivingPermitCredentialSubject {
+  return "drivingPermit" in (documentDetails as DrivingPermitCredentialSubject);
+}
+
+interface BaseCredentialSubject {
+  name: object;
+  birthDate: object;
+}
+
 export enum TestUser {
   kennethD = "kennethD",
 }
 
 export enum DocumentType {
   ukChippedPassport = "ukChippedPassport",
+  drivingPermit = "drivingPermit",
 }
 
 export enum EvidenceType {
