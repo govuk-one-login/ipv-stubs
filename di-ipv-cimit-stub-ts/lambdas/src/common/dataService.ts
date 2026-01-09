@@ -10,7 +10,7 @@ export interface UserContraIndicatorsItem {
   issuanceDate: number;
   ttl: number;
   mitigations: string[];
-  document: string;
+  document: string | null;
   txn: string;
 }
 
