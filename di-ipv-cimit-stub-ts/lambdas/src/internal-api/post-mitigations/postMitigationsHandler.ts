@@ -1,38 +1,44 @@
-import {
-  APIGatewayProxyEvent,
-  APIGatewayProxyResultV2,
-  Context,
-} from "aws-lambda";
+import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
 import {
   buildApiResponse,
   getErrorMessage,
 } from "../../common/apiResponseBuilder";
 import { FailedToParseRequestError } from "../../common/exceptions";
 import { decodeJwt, JWTPayload } from "jose";
+import { completePendingMitigation } from "../../common/pendingMitigationService";
 
 const FAILURE_RESPONSE = "fail";
 const SUCCESS_RESPONSE = "success";
 
 export const postMitigationsHandler = async (
   request: APIGatewayProxyEvent,
-  context: Context,
 ): Promise<APIGatewayProxyResultV2> => {
   console.info("Function invoked:", "PostMitigations");
   try {
     const postMitigationsRequest = buildParsedRequest(request);
-    const accumulator = [];
     postMitigationsRequest.signed_jwts?.forEach((vc) => {
       const payload = decodeJwt(vc) as JWTPayload;
-      const subject = payload.sub;
-      const jwtid = payload.jti;
-      accumulator.push(payload);
-    });
+      console.log("decoding complete");
 
-    return buildApiResponse(200, { result: accumulator });
-  } catch (error) {
-    return buildApiResponse(500, {
-      message: getErrorMessage(error),
+      const subject = payload.sub || "";
+      const jwtid = payload.jti || "";
+      completePendingMitigation(jwtid, subject);
     });
+    return buildApiResponse(200, { result: SUCCESS_RESPONSE });
+  } catch (error) {
+    if (error instanceof FailedToParseRequestError) {
+      console.error(getErrorMessage(error));
+      return buildApiResponse(400, {
+        result: FAILURE_RESPONSE,
+        errorMessage: getErrorMessage(error),
+      });
+    } else {
+      console.error(getErrorMessage(error));
+      return buildApiResponse(500, {
+        result: FAILURE_RESPONSE,
+        errorMessage: getErrorMessage(error),
+      });
+    }
   }
 
   // extract necessary information from incoming request
@@ -77,7 +83,7 @@ const buildParsedRequest = (
     throw new FailedToParseRequestError("Missing request body");
   }
   const signedJwts = JSON.parse(requestBody).signed_jwts;
-  if (!signedJwts) {
+  if (!signedJwts || signedJwts.length === 0) {
     console.error("signed_jwts is empty");
     throw new FailedToParseRequestError("signed_jwts is empty");
   }
