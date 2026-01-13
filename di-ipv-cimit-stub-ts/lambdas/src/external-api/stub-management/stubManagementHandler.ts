@@ -24,7 +24,7 @@ export const handler = async (
 
   try {
     const path = decodeURIComponent(event.path);
-    console.log(`Received '${httpMethod}' event with path '${path}'`);
+    console.info(`Received '${httpMethod}' event with path '${path}'`);
 
     if (!SUPPORTED_HTTP_METHODS.includes(httpMethod)) {
       return buildErrorResponse("Http Method is not supported.", 400);

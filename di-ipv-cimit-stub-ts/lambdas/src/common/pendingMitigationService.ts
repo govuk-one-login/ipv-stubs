@@ -22,7 +22,7 @@ export async function persistPendingMitigation(
   ci: string,
   method: string,
 ): Promise<void> {
-  console.log("Creating pending mitigation", {
+  console.info("Creating pending mitigation", {
     request: userMitigationRequest,
     ci,
     requestMethod: method,
@@ -43,7 +43,7 @@ export async function completePendingMitigation(
   const pendingMitigationItem = await getPendingMitigationItem(jwtId);
 
   if (!pendingMitigationItem) {
-    console.log("No pending mitigations found", { jwtId, userId });
+    console.info("No pending mitigations found", { jwtId, userId });
     return;
   }
 
@@ -83,7 +83,7 @@ export async function completePendingMitigation(
   }
 
   await cimitStubItemService.persistCimitStubItem(itemToMitigate);
-  console.log("CI mitigated", {
+  console.info("CI mitigated", {
     jwtId,
     userId,
     ci: pendingMitigationItem.mitigatedCi,
