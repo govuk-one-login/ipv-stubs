@@ -19,39 +19,37 @@ export async function buildMockVc(
   ci: string[] = [],
 ) {
   const config = await getConfig();
-  const timestamp = Math.round(new Date().getTime() / 1000);
-
+  const currentTimestamp = Math.round(new Date().getTime() / 1000);
   const documentDetails = DOCUMENT_CLAIMS[documentType];
-  const credentialSubject = {
-    ...USER_CLAIMS[testUser],
-    ...(isDrivingPermitCredentialSubject(documentDetails)
-      ? {
-          drivingPermit: [
-            {
-              ...documentDetails.drivingPermit[0],
-              expiryDate:
-                drivingPermitExpiryDate ??
-                getFutureExpiryDateStringFromIssuedAt(timestamp),
-            },
-          ],
-        }
-      : documentDetails),
-  };
 
   return {
     jti: crypto.randomUUID(),
     iss: config.vcIssuer,
     aud: config.vcAudience,
     sub: userId,
-    iat: timestamp,
-    nbf: timestamp,
+    iat: currentTimestamp,
+    nbf: currentTimestamp,
     vc: {
       "@context": [
         "https://www.w3.org/2018/credentials/v1",
         "https://vocab.account.gov.uk/contexts/identity-v1.jsonld",
       ],
       type: ["VerifiableCredential", "IdentityCheckCredential"],
-      credentialSubject,
+      credentialSubject: {
+        ...USER_CLAIMS[testUser],
+        ...(isDrivingPermitCredentialSubject(documentDetails)
+          ? {
+              drivingPermit: [
+                {
+                  ...documentDetails.drivingPermit[0],
+                  expiryDate:
+                    drivingPermitExpiryDate ??
+                    getFutureExpiryDateStringFromIssuedAt(currentTimestamp),
+                },
+              ],
+            }
+          : documentDetails),
+      },
       evidence: [
         {
           ...EVIDENCE_CLAIMS[documentType][evidenceType],
