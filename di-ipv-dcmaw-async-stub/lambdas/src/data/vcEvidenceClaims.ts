@@ -55,7 +55,7 @@ export const EVIDENCE_CLAIMS = {
     },
     [EvidenceType.fail]: {
       type: "IdentityCheck",
-      strengthScore: 4,
+      strengthScore: 3,
       validityScore: 0,
       failedCheckDetails: [
         {
