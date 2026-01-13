@@ -129,7 +129,7 @@ class UserServiceTest {
                 BadRequestException.class,
                 () -> userService.updateUserCis(userId, userCisRequests));
 
-        verify(cimitStubItemService, never()).updateCimitStubItem(any());
+        verify(cimitStubItemService, never()).persistCimitStubItem(any());
     }
 
     @Test
