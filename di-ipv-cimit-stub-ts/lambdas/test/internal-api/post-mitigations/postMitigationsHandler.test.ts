@@ -88,7 +88,6 @@ test.each([
   },
 );
 
-//  These cases align with the Java ones
 test.each([
   {
     case: "missing signed_jwts",
@@ -114,7 +113,6 @@ test.each([
     },
     body: undefined,
   },
-  // This test aligns with the Java versions
 ])(
   "should return 400 with fail result when given invalid request - $case",
   async ({ headers, body }) => {

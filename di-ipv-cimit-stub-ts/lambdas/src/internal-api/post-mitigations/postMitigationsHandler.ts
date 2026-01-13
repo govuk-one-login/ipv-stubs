@@ -18,8 +18,6 @@ export const postMitigationsHandler = async (
     const postMitigationsRequest = buildParsedRequest(request);
     postMitigationsRequest.signed_jwts?.forEach((vc) => {
       const payload = decodeJwt(vc) as JWTPayload;
-      console.log("decoding complete");
-
       const subject = payload.sub || "";
       const jwtid = payload.jti || "";
       completePendingMitigation(jwtid, subject);
@@ -40,26 +38,6 @@ export const postMitigationsHandler = async (
       });
     }
   }
-
-  // extract necessary information from incoming request
-
-  // for each of the VCs (string) in the request (in the list SignedJwtVCs)
-  //    parse the VC
-
-  //    get the corresponding JWTClaimsSet
-  //    completePendingMitigation using
-  //      JWTID from the JWTClaimsSet
-  //      Subject from the JWTClaimsSet
-  //      and the CimitStubItemService
-  // steps in completePendingMitigation
-  //    retrieve a PendingMitigationItem from DB by jwtId
-  //    (check an item actuallly came back)
-  //    get a list of CimitStubItems from DB by userID and CI
-  //    (check the list isn't null/empty)
-  //    add/set mitigations to the most recent CimitStubItem in the list (getIssuanceDate)
-  //    update the CimitStubItem in the DB
-  //        set the ttl in the CimitStubItem
-  //        then call the DB with the CimitStubItem
 };
 
 export interface PostMitigationsResponse {

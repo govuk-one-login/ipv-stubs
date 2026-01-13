@@ -19,7 +19,7 @@ export async function addUserCis(
     await cimitStubItemService.persistCimitStubItem(cimitStubItem);
   }
 
-  console.log("Inserted User CI data to the Cimit Stub DynamoDB Table.");
+  console.info("Inserted User CI data to the Cimit Stub DynamoDB Table.");
 }
 
 export async function updateUserCis(
