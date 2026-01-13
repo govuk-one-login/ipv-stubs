@@ -138,6 +138,47 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
+  PostMitigationsFunctionTS:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    DependsOn:
+      - "PostMitigationsFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "postMitigations-ts-${Environment}"
+      CodeUri: "../../di-ipv-cimit-stub-ts/lambdas/src/internal-api/post-mitigations"
+      Handler: postMitigationsHandler.postMitigationsHandler
+      Runtime: nodejs22.x
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
+          PENDING_MITIGATIONS_TABLE: !Ref PendingMitigationsTable
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt CimitLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/*
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CimitStubTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PendingMitigationsTable
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+      AutoPublishAlias: live
+
   PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -187,6 +228,46 @@ Resources:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
 
+  PutContraIndicatorsFunctionTS:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    DependsOn:
+      - "PutContraIndicatorsFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "putContraIndicators-ts-${Environment}"
+      CodeUri: "../../di-ipv-cimit-stub-ts/lambdas/src/internal-api/put-contra-indicators"
+      Handler: putContraIndicatorsHandler.putContraIndicatorsHandler
+      Runtime: nodejs22.x
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
+          IS_LOCAL: false
+          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt CimitLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/*
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CimitStubTable
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+      AutoPublishAlias: live
+
   PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -208,6 +289,45 @@ Resources:
       CodeUri: "../lambdas/get-contra-indicator-credential"
       Handler: uk.gov.di.ipv.core.getcontraindicatorcredential.GetContraIndicatorCredentialHandler::handleRequest
       Runtime: java21
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
+          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt CimitLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/cimit/*
+        - DynamoDBReadPolicy:
+            TableName: !Ref CimitStubTable
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+      AutoPublishAlias: live
+
+  GetContraIndicatorCredentialFunctionTS:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    DependsOn:
+      - "GetContraIndicatorCredentialFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "getContraIndicatorCredential-ts-${Environment}"
+      CodeUri: "../../di-ipv-cimit-stub-ts/lambdas/src/internal-api/get-contra-indicator-credential"
+      Handler: getContraIndicatorCredentialHandler.getContraIndicatorCredentialHandler
+      Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -311,6 +431,49 @@ Resources:
             RestApiId: !Ref RestApiGateway
             Path: /user/{userId}/mitigations/{ci}
             Method: PUT
+
+  StubManagementFunctionTS:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    DependsOn:
+      - "StubManagementFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "stubManagement-ts-${Environment}"
+      CodeUri: "../../di-ipv-cimit-stub-ts/lambdas/src/external-api/stub-management"
+      Handler: stubManagementHandler.handler
+      Runtime: nodejs22.x
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
+          IS_LOCAL: false
+          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
+          PENDING_MITIGATIONS_TABLE: !Ref PendingMitigationsTable
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt CimitLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/cimit/*
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CimitStubTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PendingMitigationsTable
+      AutoPublishAlias: live
 
   PostMitigationsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
