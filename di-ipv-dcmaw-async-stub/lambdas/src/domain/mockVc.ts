@@ -44,7 +44,7 @@ export async function buildMockVc(
                   ...documentDetails.drivingPermit[0],
                   expiryDate:
                     drivingPermitExpiryDate ??
-                    getFutureExpiryDateStringFromIssuedAt(currentTimestamp),
+                    getFutureExpiryDateStringFromNbf(currentTimestamp),
                 },
               ],
             }
@@ -88,7 +88,7 @@ export async function buildMockVcFromSubjectAndEvidence(
   };
 }
 
-function getFutureExpiryDateStringFromIssuedAt(issuedAt: number): string {
+function getFutureExpiryDateStringFromNbf(issuedAt: number): string {
   // Create a default future date, 30 days ahead of the VC issued at date
   return new Date((issuedAt + 30 * 24 * 60 * 60) * 1000)
     .toISOString()
