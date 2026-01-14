@@ -40,8 +40,14 @@ HTTP/1.1 201 Created
 }
 ```
 
-### Additionally a management endpoint is exposed, which can be hit manually (for example via curl).
+## Management Endpoints
+Additionally, a management endpoint is exposed, which can be hit manually (for example via curl).
+
+See `openAPI/dcmaw-async-external.yaml` for the shape of the requests and expected responses. The user id provided must be that of an already initialised DCMAW session (via the `async/credential` request). The oauth state value passed in the original `async/credential` request will have been stored against the user id so that it can be provided in the VC queue message.
+
+### `management/enqueueVc`
 The `management/enqueueVc` endpoint will build and sign a VC based on the inputs provided and push a VC message onto the CRI response queue (via the queue stub lambda).
+
 The message will look something like this:
 ```
 {
@@ -52,11 +58,31 @@ The message will look something like this:
 }
 ```
 
+Whilst it is possible to send an evidence and credential subject block in the request body:
+```
+{
+  "credential_subject": {...},
+  "evidence": {...}
+}
+```
+
+It's also possible to enqueue a VC with pre-defined claims to avoid having to create the credential and evidence blocks manually:
+```
+{
+  "userId": "a-user-id",
+  "test_user": "kennethD", # Check the api spec to see what values we support for this
+  "document_type": "drivingPermit", # Check the api spec to see what values we support for this
+  "evidence_type": "success", # Check the api spec to see what values we support for this
+  "driving_permit_expiry_date": "2030-01-01" # An optional parameter which overrides the expiry date of the driving permit set by the stub (by default, it is 30 days after the issued at date ie when the VC was generated),
+  "ci": ["CI1"]
+}
+```
+
+### `management/generateVc`
 The `management/generateVc` endpoint will build and sign a VC based on the inputs provided and return it directly.
 
+### `management/enqueueError`
 The `management/enqueueError` endpoint will push an error message onto the CRI response queue, for example to simulate an "access-denied" error scenario.
-
-See `openAPI/dcmaw-async-external.yaml` for the shape of the requests and expected responses. The user id provided must be that of an already initialised DCMAW session (via the `async/credential` request). The oauth state value passed in the original `async/credential` request will have been stored against the user id so that it can be provided in the VC queue message.
 
 ### Currently, following SSM parameters are used to control VC structure.
 To save hits to SSM we have a single config value in the form of a JSON string
