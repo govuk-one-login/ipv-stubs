@@ -25,14 +25,14 @@ jobs:
       id-token: write
       contents: read
     steps:
-    - name: Generate app token
-      id: app-token
-      uses: actions/create-github-app-token@v1
-      with:
-        app-id: ${{ env.IPV_CONFIG_CLONE_APP_ID }}
-        private-key: ${env.IPV_CONFIG_CLONE_APP_SECRET}
-        owner: govuk-one-login
-        repositories: ipv-config
+     - name: Generate app token
+       id: app-token
+       uses: actions/create-github-app-token@v1
+       with:
+         app-id: ${{ env.IPV_CONFIG_CLONE_APP_ID }}
+         private-key: ${env.IPV_CONFIG_CLONE_APP_SECRET}
+         owner: govuk-one-login
+         repositories: ipv-config
 
      - uses: actions/checkout@v6
        with:
