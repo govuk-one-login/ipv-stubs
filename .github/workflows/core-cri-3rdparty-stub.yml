@@ -25,107 +25,107 @@ jobs:
       id-token: write
       contents: read
     steps:
-     - name: Generate app token
-       id: app-token
-       uses: actions/create-github-app-token@v1
+    - name: Generate app token
+      id: app-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ env.IPV_CONFIG_CLONE_APP_ID }}
+        private-key: ${env.IPV_CONFIG_CLONE_APP_SECRET}
+        owner: govuk-one-login
+        repositories: ipv-config
+
+     - uses: actions/checkout@v6
        with:
-         app-id: ${{ env.IPV_CONFIG_CLONE_APP_ID }}
-         private-key: ${env.IPV_CONFIG_CLONE_APP_SECRET}
-         owner: govuk-one-login
-         repositories: ipv-config
+         fetch-depth: '0'
 
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: '0'
-
-      - name: Checkout config repo
-        uses: actions/checkout@v6
-        with:
+     - name: Checkout config repo through App Token
+       uses: actions/checkout@v6
+       with:
           repository: govuk-one-login/ipv-config
           token: ${{ steps.app-token.outputs.token }}
           path: ./di-ipv-config
           fetch-depth: '0'
           ref: 'refs/heads/main'
 
-      - name: Set up AWS creds
-        uses: aws-actions/configure-aws-credentials@v5.1.1
-        with:
+     - name: Set up AWS creds
+       uses: aws-actions/configure-aws-credentials@v5.1.1
+       with:
           role-to-assume: ${{ secrets.CORE_CRI_3P_GH_ACTIONS_ROLE_ARN }}
           aws-region: eu-west-2
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+     - name: Login to Amazon ECR
+       id: login-ecr
+       uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Login to GDS Dev Dynatrace Container Registry
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
-        with:
+     - name: Login to GDS Dev Dynatrace Container Registry
+       uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+       with:
           registry: khw46367.live.dynatrace.com
           username: khw46367
           password: ${{ secrets.DYNATRACE_PAAS_TOKEN }}
 
-      - name: Create tag
-        id: create-tag
-        run: |
-          IMAGE_TAG="${{ github.sha }}-$(date +'%Y-%m-%d-%H%M%S')"
-          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+     - name: Create tag
+       id: create-tag
+       run: |
+         IMAGE_TAG="${{ github.sha }}-$(date +'%Y-%m-%d-%H%M%S')"
+         echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
-        with:
-          cosign-release: 'v2.5.1'
+     - name: Install Cosign
+       uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
+       with:
+         cosign-release: 'v2.5.1'
 
-      - name: Copy Core Config into place
-        id: copy-config-to-stub
-        run: cp -rpfv ./di-ipv-config/stubs/di-ipv-core-stub ./di-ipv-core-stub/config
+     - name: Copy Core Config into place
+       id: copy-config-to-stub
+       run: cp -rpfv ./di-ipv-config/stubs/di-ipv-core-stub ./di-ipv-core-stub/config
 
-      - name: Build, tag, sign and push image to Amazon ECR
-        working-directory: ./di-ipv-core-stub
-        env:
+     - name: Build, tag, sign and push image to Amazon ECR
+       working-directory: ./di-ipv-core-stub
+       env:
           CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.CORE_CRI_3P_ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
           DT_API_TOKEN: ${{ secrets.DYNATRACE_PAAS_TOKEN }}
-        run: |
+       run: |
           echo "$DT_API_TOKEN" > dt_token.txt
           docker build --platform="linux/arm64" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --secret id=dt_token,src=./dt_token.txt -f Dockerfile-arm64 .
           rm dt_token.txt
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           cosign sign --yes --tlog-upload=false --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Setup SAM
-        uses: aws-actions/setup-sam@c71dd89d980e49367c70391e8ada4353f52f2800
-        with:
-          use-installer: true
-          version: "1.134.0"
+     - name: Setup SAM
+       uses: aws-actions/setup-sam@c71dd89d980e49367c70391e8ada4353f52f2800
+       with:
+         use-installer: true
+         version: "1.134.0"
 
-      - name: SAM Validate
-        working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
-        run: sam validate --region ${{ env.AWS_REGION }}
+     - name: SAM Validate
+       working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
+       run: sam validate --region ${{ env.AWS_REGION }}
 
-      - name: SAM Package
-        working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
-        env:
-          ARTIFACT_BUCKET: ${{ secrets.CORE_CRI_3P_ARTIFACT_BUCKET_NAME }}
-        run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
+     - name: SAM Package
+       working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
+       env:
+         ARTIFACT_BUCKET: ${{ secrets.CORE_CRI_3P_ARTIFACT_BUCKET_NAME }}
+       run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
 
-      - name: Update SAM template with ECR image
-        working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.CORE_CRI_3P_ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
-        run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
+     - name: Update SAM template with ECR image
+       working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
+       env:
+         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+         ECR_REPOSITORY: ${{ secrets.CORE_CRI_3P_ECR_REPOSITORY }}
+         IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
+       run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
 
-      - name: SAM build and test
-        working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
-        run: sam build -t cf-template.yaml
+     - name: SAM build and test
+       working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
+       run: sam build -t cf-template.yaml
 
-      - name: Deploy SAM app
-        uses: govuk-one-login/devplatform-upload-action@v3.9
-        with:
-          artifact-bucket-name: ${{ secrets.CORE_CRI_3P_ARTIFACT_BUCKET_NAME }}
-          signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-          working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
-          template-file: cf-template.yaml
+     - name: Deploy SAM app
+       uses: govuk-one-login/devplatform-upload-action@v3.9
+       with:
+         artifact-bucket-name: ${{ secrets.CORE_CRI_3P_ARTIFACT_BUCKET_NAME }}
+         signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+         working-directory: ./di-ipv-core-stub/deploy/cri-3rdparty
+         template-file: cf-template.yaml
