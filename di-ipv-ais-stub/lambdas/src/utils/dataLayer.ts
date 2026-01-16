@@ -9,7 +9,7 @@ export default async function persistFutureAisResponse(
   userId: string,
   userManagementRequest: UserManagementRequest,
 ): Promise<void> {
-  const { statusCode, responseDelay, intervention } = userManagementRequest;
+  const { statusCode, responseDelay, intervention, state } = userManagementRequest;
 
   console.info("Build response.");
   const response: Response = {
@@ -17,7 +17,10 @@ export default async function persistFutureAisResponse(
     statusCode: statusCode || 200,
     ttl: await getTtl(),
     responseDelay: responseDelay || 0,
-    responseBody: cases[intervention],
+    responseBody: {
+      ...cases[intervention],
+      ...(state ? {state} : {})
+    },
   };
 
   console.info("Store response.");

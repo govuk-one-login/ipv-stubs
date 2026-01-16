@@ -306,6 +306,22 @@ components:
           type: "integer"
           minimum: 400
           maximum: 599
+        state:
+          type: object
+          required: false
+          properties:
+            blocked:
+              type: "boolean"
+              required: true
+            suspended:
+              type: "boolean"
+              required: true
+            resetPassword:
+              type: "boolean"
+              required: true
+            reproveIdentity:
+              type: "boolean"
+              required: true
 
   parameters:
     UserId:

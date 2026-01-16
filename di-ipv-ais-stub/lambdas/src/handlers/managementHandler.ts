@@ -55,5 +55,20 @@ function parseAndValidateRequest(
     );
   }
 
+  if (body.state) {
+    const requiredProperties = [
+      "blocked",
+      "suspended",
+      "reproveIdentity",
+      "resetPassword",
+    ];
+    const state = body.state;
+    if (!requiredProperties.every((property) => property in state)) {
+      throw new BadRequestError(
+        `If supplying a custom state block, the following properties are required: blocked, suspended, reproveIdentity, resetPassword`,
+      );
+    }
+  }
+
   return body;
 }
