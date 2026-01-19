@@ -134,6 +134,14 @@ Resources:
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: true
+        EntryPoints:
+          - postMitigationsHandler.ts
 
   PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
@@ -223,6 +231,14 @@ Resources:
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: true
+        EntryPoints:
+          - putContraIndicatorsHandler.ts
 
   PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
@@ -310,6 +326,14 @@ Resources:
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: true
+        EntryPoints:
+          - getContraIndicatorCredentialHandler.ts
 
   GetContraIndicatorCredentialLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
@@ -430,6 +454,14 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref PendingMitigationsTable
       AutoPublishAlias: live
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Sourcemap: true
+        EntryPoints:
+          - stubManagementHandler.ts
 
   PostMitigationsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
