@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - di-ipv-cimit-stub/**
+      - di-ipv-cimit-stub-ts/**
       - .github/workflows/cimit-stub.yml
 
 jobs:
@@ -18,6 +19,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v6
         with:
@@ -42,6 +44,29 @@ jobs:
 
       - name: Set up SAM cli
         uses: aws-actions/setup-sam@v2
+
+      - name: Set up esbuild
+        run: curl -fsSL https://esbuild.github.io/dl/latest | sh
+
+      - name: add esbuild to path
+        run: echo "${GITHUB_WORKSPACE}" >> $GITHUB_PATH
+
+      - name: check esbuild works
+        run: esbuild --version
+
+      - name: Setup .npmrc
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        run: |
+          cp .npmrc.template .npmrc && \
+          sed -i s/TOKEN_WITH_READ_PACKAGE_PERMISSION/${{ secrets.GITHUB_TOKEN }}/ .npmrc
+
+      - name: npm install
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        run: npm ci
+
+      - name: npm test
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        run: npm run test
 
       - name: SAM Validate
         working-directory: ./di-ipv-cimit-stub/deploy
