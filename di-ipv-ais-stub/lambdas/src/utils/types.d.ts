@@ -23,7 +23,7 @@ interface Intervention {
   accountDeletedAt: number;
 }
 
-interface State {
+export interface State {
   blocked: boolean;
   suspended: boolean;
   reproveIdentity: boolean;
@@ -46,4 +46,5 @@ export type UserManagementRequest = Pick<
   "statusCode" | "responseDelay"
 > & {
   intervention: keyof typeof cases;
+  state?: State;
 };

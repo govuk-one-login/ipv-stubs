@@ -8,17 +8,24 @@ This will set up an API gateway in front of a lambda to return account intervent
 `POST /management/user/{userId}` artificially primes a user with an account intervention response.
 
 This endpoint takes a request body which references the intervention description. E.g.:
-```json
+```
 {
   "statusCode": 200,
   "intervention": "AIS_NO_INTERVENTION",
-  "responseDelay": 0
+  "responseDelay": 0,
+  "state": {
+    "blocked": "false",
+    "suspended": "false",
+    "resetPassword": "false", // pragma: allowlist secret
+    "reproveIdentity": "false"
+  }
 }
 ```
 
 - `statusCode` set on the response.
 - `intervention` mapped to a response body in `/lambdas/src/data`.
 - `responseDelay` delays the response when called.
+- `state` can be optionally provided to override the default state block associated with an `intervention` in `/lambdas/src/data`
 
 ## AIS Endpoint
 
@@ -31,7 +38,7 @@ It returns a response with code and body primed by the management endpoint after
 In order to test it works, you can run the following on the deployed environment. It shows the call to the management endpoint to stub the account interventions, followed by the call to get account interventions. In this example, we are using the `dev-mikec` environment:
 
 ```bash
-curl \                                                                                                       
+curl \
    -d '{ "intervention": "AIS_NO_INTERVENTION" }' \
    -H "Content-Type: application/json" \
    -X POST https://ais-dev-mikec.02.core.dev.stubs.account.gov.uk/management/user/urn:uuid:42810001-5786-4a2d-a8ee-6d54cc386881
