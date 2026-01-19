@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - IPS-1670-Migrate-PAT-to-App
     paths:
       - di-ipv-core-stub/deploy/cri-preprod/**
       - di-ipv-core-stub/gradle/**
