@@ -8,7 +8,7 @@ This will set up an API gateway in front of a lambda to return account intervent
 `POST /management/user/{userId}` artificially primes a user with an account intervention response.
 
 This endpoint takes a request body which references the intervention description. E.g.:
-```json
+```
 {
   "statusCode": 200,
   "intervention": "AIS_NO_INTERVENTION",
