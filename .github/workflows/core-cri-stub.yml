@@ -63,7 +63,7 @@ jobs:
           GH_TOKEN: ${{steps.restore.outputs.GH_TOKEN}}
         with:
           repository: govuk-one-login/ipv-config
-          token: ${GH_TOKEN}
+          token: "$GH_TOKEN"
           path: ./di-ipv-config
           fetch-depth: '0'
           ref: 'refs/heads/main'
