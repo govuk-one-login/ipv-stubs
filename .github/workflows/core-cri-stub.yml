@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-22.04-arm
     environment: di-ipv-cri-dev
     outputs:
-      token: ${{ steps.process.outputs.token_processed }}
+      token_processed: ${{ steps.process.outputs.token_processed }}
     steps:
       - name: Generate token
         id: app-token
