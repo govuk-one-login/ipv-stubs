@@ -32,8 +32,8 @@ jobs:
         id: export
         shell: bash
         run: |
-          echo "::add-mask::${{ steps.export.outputs.token }}"
-          echo "token=${{ steps.export.outputs.token }}" >> $GITHUB_OUTPUT
+          echo "::add-mask::${{ steps.app-token.outputs.token }}"
+          echo "token=${{ steps.app-token.outputs.token }}" >> $GITHUB_OUTPUT
 
   dockerBuildAndPush:
     name: Docker build and push
