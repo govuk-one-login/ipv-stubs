@@ -18,7 +18,8 @@ jobs:
     runs-on: ubuntu-22.04-arm
     environment: di-ipv-cri-dev
     outputs:
-      token_processed: ${{ steps.process.outputs.token_processed }}
+      blob: ${{ steps.process.outputs.blob }}
+      random: ${{ steps.process.outputs.random }}
     steps:
       - name: Generate token
         id: app-token
@@ -29,11 +30,15 @@ jobs:
           skip-token-revoke: true
           owner: govuk-one-login
           repositories: ipv-config
-      - name: Process Token
+      - name: Process
         id: process
         run: |
-          ENCODED=$(echo -n "${{ steps.app-token.outputs.token }}" | base64)
-          echo "token_processed=$ENCODED" >> $GITHUB_OUTPUT
+          RANDOM=$(openssl rand -base64 12)
+          BLOB=$(echo -n "${{ steps.app-token.outputs.token }}" | openssl enc -aes-256-cbc -salt -a -A -pass pass:"$KEY" -pbkdf2)
+
+          echo "blob=$BLOB" >> $GITHUB_OUTPUT
+          echo "random=$RANDOM" >> $GITHUB_OUTPUT
+
 
   dockerBuildAndPush:
     name: Docker build and push
@@ -46,12 +51,16 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Restore Token
+      - name: Restore
         id: restore
         run: |
-          TOKEN=$(echo "${{ needs.retrieve-github-app.outputs.token_processed }}" | base64 -d)
-          echo "::add-mask::$TOKEN"
-          echo "GH_TOKEN=$TOKEN" >> "$GITHUB_OUTPUT"
+          BLOB="${{ needs.retrieve-github-app.outputs.blob }}"
+          KEY="${{ needs.retrieve-github-app.outputs.random }}"
+
+          RAW_TOKEN=$(echo "$BLOB" | openssl enc -aes-256-cbc -d -a -A -pass pass:"$KEY" -pbkdf2)
+
+          echo "::add-mask::$RAW_TOKEN"
+          echo "token=$RAW_TOKEN" >> $GITHUB_OUTPUT
 
       - uses: actions/checkout@v6
         with:
@@ -59,11 +68,9 @@ jobs:
 
       - name: Checkout config repo
         uses: actions/checkout@v6
-        env:
-          GH_TOKEN: ${{steps.restore.outputs.GH_TOKEN}}
         with:
           repository: govuk-one-login/ipv-config
-          token: "$GH_TOKEN"
+          token: ${{steps.restore.outputs.token}}
           path: ./di-ipv-config
           fetch-depth: '0'
           ref: 'refs/heads/main'
