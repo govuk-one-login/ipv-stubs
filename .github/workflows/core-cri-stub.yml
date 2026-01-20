@@ -33,11 +33,11 @@ jobs:
       - name: Process
         id: process
         run: |
-          RANDOM=$(openssl rand -base64 12)
-          BLOB=$(echo -n "${{ steps.app-token.outputs.token }}" | openssl enc -aes-256-cbc -salt -a -A -pass pass:"$KEY" -pbkdf2)
+          RAND=$(openssl rand -base64 12)
+          BLOB=$(echo -n "${{ steps.app-token.outputs.token }}" | openssl enc -aes-256-cbc -salt -a -A -pass pass:"$RAND" -pbkdf2)
 
           echo "blob=$BLOB" >> $GITHUB_OUTPUT
-          echo "random=$RANDOM" >> $GITHUB_OUTPUT
+          echo "random=$RAND" >> $GITHUB_OUTPUT
 
 
   dockerBuildAndPush:
