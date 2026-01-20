@@ -20,7 +20,7 @@ jobs:
     outputs:
       token: ${{ steps.export.outputs.token }}
     steps:
-      - name: Generate app token
+      - name: Generate token
         id: app-token
         uses: actions/create-github-app-token@v1
         with:
