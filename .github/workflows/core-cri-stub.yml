@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-22.04-arm
     environment: di-ipv-cri-dev
     outputs:
-      token: ${{ steps.app-token.outputs.token }}
+      token: ${{ steps.obfuscate.outputs.token_encoded }}
     steps:
       - name: Generate token
         id: app-token
@@ -29,6 +29,11 @@ jobs:
           skip-token-revoke: true
           owner: govuk-one-login
           repositories: ipv-config
+      - name: Obfuscate Token
+        id: obfuscate
+        run: |
+          ENCODED=$(echo -n "${{ steps.app-token.outputs.token }}" | base64)
+          echo "token_encoded=$ENCODED" >> $GITHUB_OUTPUT
 
   dockerBuildAndPush:
     name: Docker build and push
@@ -41,15 +46,24 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Restore Token
+        id: restore
+        run: |
+          TOKEN=$(echo "${{ needs.retrieve-github-app.outputs.token_encoded }}" | base64 -d)
+          echo "::add-mask::$TOKEN"
+          echo "GH_TOKEN=$TOKEN" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: '0'
 
       - name: Checkout config repo
         uses: actions/checkout@v6
+        env:
+          GH_TOKEN: ${{steps.restore.outputs.GH_TOKEN}}
         with:
           repository: govuk-one-login/ipv-config
-          token: ${{ needs.retrieve-github-app.outputs.token }}
+          token: ${GH_TOKEN}
           path: ./di-ipv-config
           fetch-depth: '0'
           ref: 'refs/heads/main'
