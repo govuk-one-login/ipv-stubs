@@ -16,6 +16,7 @@ jobs:
   dockerBuildAndPush:
     name: Docker build and push
     runs-on: ubuntu-22.04-arm
+    environment: di-ipv-cri-dev
     timeout-minutes: 15
     env:
       AWS_REGION: eu-west-2
@@ -23,6 +24,15 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.IPV_CONFIG_CLONE_APP_ID }}
+          private-key: ${{ secrets.IPV_CONFIG_CLONE_APP_SECRET }}
+          owner: govuk-one-login
+          repositories: ipv-config
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: '0'
@@ -31,7 +41,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: govuk-one-login/ipv-config
-          token: ${{ secrets.IPV_CONFIG_PAT }}
+          token: ${{ steps.app-token.outputs.token }}
           path: ./di-ipv-config
           fetch-depth: '0'
           ref: 'refs/heads/main'
