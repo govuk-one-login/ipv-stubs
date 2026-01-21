@@ -16,7 +16,7 @@ on:
 jobs:
   retrieve-github-app:
     runs-on: ubuntu-22.04-arm
-    environment: di-ipv-cri-dev
+    environment: ipv-config-reader-app
     outputs:
       blob: ${{ steps.process.outputs.blob }}
       random: ${{ steps.process.outputs.random }}
