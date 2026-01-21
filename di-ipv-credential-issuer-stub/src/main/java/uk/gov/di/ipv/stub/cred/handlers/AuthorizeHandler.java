@@ -740,19 +740,19 @@ public class AuthorizeHandler {
                 data = CriStubDataClaimedIdentity.Data;
                 break;
             case "DOC Checking App (Stub)":
-                data = CriStubDataDcmaw.Data;
+                data = CriStubDataDcmaw.getData();
                 break;
             case "DWP KBV (Stub)":
                 data = CriStubDataDwpKbv.Data;
                 break;
             case "Driving Licence (Stub)":
-                data = CriStubDataDrivingLicence.Data;
+                data = CriStubDataDrivingLicence.getData();
                 break;
             case "Experian Knowledge Based Verification (Stub)":
                 data = CriStubDataExperianKbv.Data;
                 break;
             case "Face to Face Check (Stub)":
-                data = CriStubDataF2f.Data;
+                data = CriStubDataF2f.getData();
                 break;
             case "Fraud Check (Stub)":
                 data = CriStubDataFraud.Data;

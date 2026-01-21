@@ -16,53 +16,54 @@ public class CriStubDataF2f {
         // Replace default public constructor
     }
 
-    public static final List<IdentityCheckSubjectCriStubData> Data =
-            List.of(
-                    createData(
-                            "Alice Parker (Valid) DVLA Licence",
-                            Names.Alice_Jane_Parker,
-                            BirthDates.ALICE_PARKER,
-                            DrivingLicences.ALICE_PARKER_DVLA),
-                    createData(
-                            "Claire Aarts DVLA Licence (DWP)",
-                            Names.Claire_Aarts,
-                            BirthDates.CLAIRE_AARTS,
-                            DrivingLicences.CLAIRE_AARTS_DVLA),
-                    createData(
-                            "Kabir Singh DVLA Licence (DWP)",
-                            Names.Kabir_Singh,
-                            BirthDates.KABIR_SINGH,
-                            DrivingLicences.KABIR_SINGH_DVLA),
-                    createData(
-                            "Kenneth Decerqueira (Valid Passport)",
-                            Names.Kenneth_Decerqueira,
-                            BirthDates.KENNETH_DECERQUEIRA,
-                            Passports.KENNETH_DECERQUEIRA_PASSPORT),
-                    createData(
-                            "Nora Porter DVLA Licence (DWP)",
-                            Names.Nora_Porter,
-                            BirthDates.NORA_PORTER,
-                            DrivingLicences.NORA_PORTER_DVLA),
-                    createData(
-                            "Mary Watson (Valid Passport)",
-                            Names.Mary_Watson,
-                            BirthDates.MARY_WATSON,
-                            Passports.MARY_WATSON_F2F_PASSPORT),
-                    createData(
-                            "Saul Goodman BRC",
-                            Names.Saul_Goodman,
-                            BirthDates.SAUL_GOODMAN,
-                            ResidencePermits.SAUL_GOODMAN_BRC),
-                    createData(
-                            "Saul Goodman (Valid EEA Card)",
-                            Names.Saul_Goodman,
-                            BirthDates.SAUL_GOODMAN,
-                            IdCards.EEA_VALID),
-                    createData(
-                            "Tom Hardy DVLA Licence (DWP)",
-                            Names.Tom_Hardy,
-                            BirthDates.TOM_HARDY,
-                            DrivingLicences.TOM_HARDY_DVLA));
+    public static List<IdentityCheckSubjectCriStubData> getData() {
+        return List.of(
+                createData(
+                        "Alice Parker (Valid) DVLA Licence",
+                        Names.Alice_Jane_Parker,
+                        BirthDates.ALICE_PARKER,
+                        DrivingLicences.getAliceParkerDvla()),
+                createData(
+                        "Claire Aarts DVLA Licence (DWP)",
+                        Names.Claire_Aarts,
+                        BirthDates.CLAIRE_AARTS,
+                        DrivingLicences.getClaireAartsDvla()),
+                createData(
+                        "Kabir Singh DVLA Licence (DWP)",
+                        Names.Kabir_Singh,
+                        BirthDates.KABIR_SINGH,
+                        DrivingLicences.getKabirSinghDvla()),
+                createData(
+                        "Kenneth Decerqueira (Valid Passport)",
+                        Names.Kenneth_Decerqueira,
+                        BirthDates.KENNETH_DECERQUEIRA,
+                        Passports.KENNETH_DECERQUEIRA_PASSPORT),
+                createData(
+                        "Nora Porter DVLA Licence (DWP)",
+                        Names.Nora_Porter,
+                        BirthDates.NORA_PORTER,
+                        DrivingLicences.getNoraPorterDvla()),
+                createData(
+                        "Mary Watson (Valid Passport)",
+                        Names.Mary_Watson,
+                        BirthDates.MARY_WATSON,
+                        Passports.MARY_WATSON_F2F_PASSPORT),
+                createData(
+                        "Saul Goodman BRC",
+                        Names.Saul_Goodman,
+                        BirthDates.SAUL_GOODMAN,
+                        ResidencePermits.SAUL_GOODMAN_BRC),
+                createData(
+                        "Saul Goodman (Valid EEA Card)",
+                        Names.Saul_Goodman,
+                        BirthDates.SAUL_GOODMAN,
+                        IdCards.EEA_VALID),
+                createData(
+                        "Tom Hardy DVLA Licence (DWP)",
+                        Names.Tom_Hardy,
+                        BirthDates.TOM_HARDY,
+                        DrivingLicences.getTomHardyDvla()));
+    }
 
     private static IdentityCheckSubjectCriStubData createData(
             String label, Name name, BirthDate birthDate, DrivingPermitDetails drivingLicences) {
