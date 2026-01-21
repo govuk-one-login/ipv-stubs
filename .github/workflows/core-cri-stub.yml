@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  retrieve-github-app:
+  retrieveGithubApp:
     runs-on: ubuntu-22.04-arm
     environment: ipv-config-reader-app
     outputs:
@@ -41,7 +41,7 @@ jobs:
 
   dockerBuildAndPush:
     name: Docker build and push
-    needs: retrieve-github-app
+    needs: retrieveGithubApp
     runs-on: ubuntu-22.04-arm
     timeout-minutes: 15
     env:
@@ -53,8 +53,8 @@ jobs:
       - name: Restore
         id: restore
         run: |
-          BLOB="${{ needs.retrieve-github-app.outputs.blob }}"
-          KEY="${{ needs.retrieve-github-app.outputs.random }}"
+          BLOB="${{ needs.retrieveGithubApp.outputs.blob }}"
+          KEY="${{ needs.retrieveGithubApp.outputs.random }}"
 
           RAW_TOKEN=$(echo "$BLOB" | openssl enc -aes-256-cbc -d -a -A -pass pass:"$KEY" -pbkdf2)
 
