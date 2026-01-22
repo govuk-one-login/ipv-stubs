@@ -54,9 +54,11 @@ repos:
   - repo: https://github.com/bridgecrewio/checkov.git
     rev: '3.2.452'
     hooks:
-      - id: checkov
-        args: ['--framework', 'cloudformation', '--quiet']
-        files: ^(.*/)?template\.(yml|yaml)$
+      - id: checkov_diff
+        args:
+          - '--framework'
+          - 'cloudformation'
+          - '-f'
 
   - repo: https://github.com/lovesegfault/beautysh
     rev: 'v6.2.1'
