@@ -98,18 +98,6 @@ Resources:
       Policies:
         - VPCAccessPolicy: { }
         - Statement:
-            - Sid: EnforceStayinSpecificVpc
-              Effect: Allow
-              Action:
-                - 'lambda:CreateFunction'
-                - 'lambda:UpdateFunctionConfiguration'
-              Resource:
-                - "*"
-              Condition:
-                StringEquals:
-                  "lambda:VpcIds":
-                    - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
-        - Statement:
             - Sid: AllowSQS
               Effect: Allow
               Action:
@@ -179,18 +167,6 @@ Resources:
           - !GetAtt QueueStubLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
-        - Statement:
-            - Sid: EnforceStayinSpecificVpc
-              Effect: Allow
-              Action:
-                - 'lambda:CreateFunction'
-                - 'lambda:UpdateFunctionConfiguration'
-              Resource:
-                - "*"
-              Condition:
-                StringEquals:
-                  "lambda:VpcIds":
-                    - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
         - Statement:
             - Sid: AllowSQS
               Effect: Allow
@@ -377,18 +353,6 @@ Resources:
           - !GetAtt QueueStubLambdaSecurityGroup.GroupId
       Policies:
         - VPCAccessPolicy: { }
-        - Statement:
-            - Sid: EnforceStayinSpecificVpc
-              Effect: Allow
-              Action:
-                - 'lambda:CreateFunction'
-                - 'lambda:UpdateFunctionConfiguration'
-              Resource:
-                - "*"
-              Condition:
-                StringEquals:
-                  "lambda:VpcIds":
-                    - Fn::ImportValue: !Sub ${VpcStackName}-VpcId
         - Statement:
             - Sid: ListQueues
               Effect: Allow
