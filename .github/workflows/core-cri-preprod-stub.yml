@@ -13,9 +13,34 @@ on:
   workflow_dispatch:
 
 jobs:
+  ipvConfigReaderApp:
+    runs-on: ubuntu-22.04-arm
+    environment: ipv-config-reader-app
+    outputs:
+      blob: ${{ steps.process.outputs.blob }}
+      random: ${{ steps.process.outputs.random }}
+    steps:
+      - name: Generate token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.IPV_CONFIG_CLONE_APP_ID }}
+          private-key: ${{ secrets.IPV_CONFIG_CLONE_APP_SECRET }}
+          skip-token-revoke: true
+          owner: govuk-one-login
+          repositories: ipv-config
+      - name: Process
+        id: process
+        run: |
+          RAND=$(openssl rand -base64 12)
+          BLOB=$(echo -n "${{ steps.app-token.outputs.token }}" | openssl enc -aes-256-cbc -salt -a -A -pass pass:"$RAND" -pbkdf2)
+
+          echo "blob=$BLOB" >> $GITHUB_OUTPUT
+          echo "random=$RAND" >> $GITHUB_OUTPUT
+
   dockerBuildAndPush:
     name: Docker build and push
-    environment: di-ipv-cri-dev
+    needs: ipvConfigReaderApp
     runs-on: ubuntu-22.04-arm
     timeout-minutes: 15
     env:
@@ -24,24 +49,26 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Generate app token
-        id: app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.IPV_CONFIG_CLONE_APP_ID }}
-          private-key: ${{ secrets.IPV_CONFIG_CLONE_APP_SECRET }}
-          owner: govuk-one-login
-          repositories: ipv-config
-
       - uses: actions/checkout@v6
         with:
           fetch-depth: '0'
+
+      - name: Restore
+        id: restore
+        run: |
+          BLOB="${{ needs.ipvConfigReaderApp.outputs.blob }}"
+          KEY="${{ needs.ipvConfigReaderApp.outputs.random }}"
+
+          RAW_TOKEN=$(echo "$BLOB" | openssl enc -aes-256-cbc -d -a -A -pass pass:"$KEY" -pbkdf2)
+
+          echo "::add-mask::$RAW_TOKEN"
+          echo "token=$RAW_TOKEN" >> $GITHUB_OUTPUT
 
       - name: Checkout config repo
         uses: actions/checkout@v6
         with:
           repository: govuk-one-login/ipv-config
-          token: ${{ steps.app-token.outputs.token }}
+          token: ${{steps.restore.outputs.token}}
           path: ./di-ipv-config
           fetch-depth: '0'
           ref: 'refs/heads/main'
