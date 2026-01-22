@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  retrieveGithubApp:
+  ipvConfigReaderApp:
     runs-on: ubuntu-22.04-arm
     environment: ipv-config-reader-app
     outputs:
@@ -40,7 +40,7 @@ jobs:
 
   dockerBuildAndPush:
     name: Docker build and push
-    needs: retrieveGithubApp
+    needs: ipvConfigReaderApp
     runs-on: ubuntu-22.04-arm
     timeout-minutes: 15
     env:
@@ -52,8 +52,8 @@ jobs:
       - name: Restore
         id: restore
         run: |
-          BLOB="${{ needs.retrieveGithubApp.outputs.blob }}"
-          KEY="${{ needs.retrieveGithubApp.outputs.random }}"
+          BLOB="${{ needs.ipvConfigReaderApp.outputs.blob }}"
+          KEY="${{ needs.ipvConfigReaderApp.outputs.random }}"
 
           RAW_TOKEN=$(echo "$BLOB" | openssl enc -aes-256-cbc -d -a -A -pass pass:"$KEY" -pbkdf2)
 
