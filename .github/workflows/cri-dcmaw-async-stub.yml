@@ -9,7 +9,12 @@ on:
       - .github/workflows/cri-dcmaw-async-stub.yml
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-and-build.yml
+    permissions:
+      packages: read
   buildAndPush:
+    needs: test
     name: Build and push
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -48,6 +53,14 @@ jobs:
       - name: npm install
         working-directory: ./di-ipv-dcmaw-async-stub/lambdas
         run: npm ci
+
+      - name: TypeScript type check
+        working-directory: ./di-ipv-dcmaw-async-stub/lambdas
+        run: npm run build
+
+      - name: npm test
+        working-directory: ./di-ipv-dcmaw-async-stub/lambdas
+        run: npm run test
 
       - name: SAM build and test
         working-directory: ./di-ipv-dcmaw-async-stub/deploy
