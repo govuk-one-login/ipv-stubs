@@ -18,6 +18,7 @@ export interface ManagementEnqueueVcRequestIndividualDetails
   evidence_type: EvidenceType;
   driving_permit_expiry_date?: string;
   ci?: string[];
+  nbf?: number;
 }
 
 export function isManagementEnqueueVcRequestIndividualDetails(

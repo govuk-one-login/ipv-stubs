@@ -74,7 +74,8 @@ It's also possible to enqueue a VC with pre-defined claims to avoid having to cr
   "document_type": "drivingPermit", # Check the api spec to see what values we support for this
   "evidence_type": "success", # Check the api spec to see what values we support for this
   "driving_permit_expiry_date": "2030-01-01" # An optional parameter which overrides the expiry date of the driving permit set by the stub (by default, it is 30 days after the issued at date ie when the VC was generated),
-  "ci": ["CI1"]
+  "ci": ["CI1"], # An optional parameter. If not empty, the provided contra-indicators will be added to the evidence section of the VC.
+  "nbf": 1672531200 # An optional parameter to allow overriding the default nbf (set to the current datetime in epoch seconds)
 }
 ```
 
