@@ -102,3 +102,24 @@ jobs:
       - name: Test
         working-directory: ./di-ipv-ais-stub/lambdas
         run: npm run test
+  build-cimit-stub:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Setup .npmrc
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        run: |
+          cp .npmrc.template .npmrc && \
+          sed -i s/TOKEN_WITH_READ_PACKAGE_PERMISSION/${{ secrets.GITHUB_TOKEN }}/ .npmrc
+      - name: Install
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        run: npm ci
+      - name: Build
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        run: npm run build
+      - name: Test
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        run: npm run test
