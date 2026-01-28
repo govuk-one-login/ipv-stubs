@@ -54,6 +54,10 @@ jobs:
         working-directory: ./di-ipv-ais-stub/lambdas
         run: npm ci
 
+      - name: TypeScript type check
+        working-directory: ./di-ipv-ais-stub/lambdas
+        run: npm run build
+
       - name: npm test
         working-directory: ./di-ipv-ais-stub/lambdas
         run: npm run test

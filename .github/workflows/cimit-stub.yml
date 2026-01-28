@@ -69,6 +69,10 @@ jobs:
         working-directory: ./di-ipv-cimit-stub-ts/lambdas
         run: npm ci
 
+      - name: TypeScript type check
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        run: npm run build
+
       - name: npm test
         working-directory: ./di-ipv-cimit-stub-ts/lambdas
         run: npm run test
