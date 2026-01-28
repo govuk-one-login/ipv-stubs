@@ -44,6 +44,7 @@ export async function handler(
         requestBody.evidence_type,
         requestBody.driving_permit_expiry_date,
         requestBody.ci,
+        requestBody.nbf,
       );
     } else if (isManagementEnqueueVcRequestEvidenceAndSubject(requestBody)) {
       vc = await buildMockVcFromSubjectAndEvidence(

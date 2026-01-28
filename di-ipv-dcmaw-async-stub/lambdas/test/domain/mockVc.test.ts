@@ -37,6 +37,7 @@ describe("buildMockVc", () => {
 
     // Assert
     expect(vc.sub).toEqual(TEST_USER_ID);
+    expect(vc.nbf).toEqual(1672531200); // 2023-01-01T00:00:00
 
     const credentials = vc.vc
       .credentialSubject as DrivingPermitCredentialSubject;
@@ -132,6 +133,47 @@ describe("buildMockVc", () => {
           EvidenceType.success
         ],
         ci: ["CI1", "CI2"],
+        txn: expect.any(String),
+      }),
+    );
+  });
+
+  test("returns mock driving licence with custom nbf", async () => {
+    // Act
+    const expectedNbf = 1769587200; // 2026-01-28T08:00:00
+    const vc = await buildMockVc(
+      TEST_USER_ID,
+      TestUser.kennethD,
+      DocumentType.drivingPermit,
+      EvidenceType.success,
+      undefined,
+      undefined,
+      expectedNbf,
+    );
+
+    // Assert
+    expect(vc.sub).toEqual(TEST_USER_ID);
+    expect(vc.nbf).toEqual(expectedNbf);
+
+    const credentials = vc.vc
+      .credentialSubject as DrivingPermitCredentialSubject;
+    expect(credentials["name"]).toEqual(USER_CLAIMS[TestUser.kennethD].name);
+    expect(credentials["birthDate"]).toEqual(
+      USER_CLAIMS[TestUser.kennethD].birthDate,
+    );
+
+    const expectedExpiryDate = "2023-01-31";
+    expect(credentials.drivingPermit).toEqual([
+      {
+        ...DOCUMENT_CLAIMS[DocumentType.drivingPermit].drivingPermit[0],
+        expiryDate: expectedExpiryDate,
+      },
+    ]);
+
+    expect(vc.vc.evidence[0]).toEqual(
+      expect.objectContaining({
+        ...EVIDENCE_CLAIMS[DocumentType.drivingPermit][EvidenceType.success],
+        ci: [],
         txn: expect.any(String),
       }),
     );

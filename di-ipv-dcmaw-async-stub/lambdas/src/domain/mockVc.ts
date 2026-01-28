@@ -17,6 +17,7 @@ export async function buildMockVc(
   evidenceType: EvidenceType,
   drivingPermitExpiryDate?: string,
   ci: string[] = [],
+  nbf?: number,
 ) {
   const config = await getConfig();
   const currentTimestamp = Math.round(new Date().getTime() / 1000);
@@ -28,7 +29,7 @@ export async function buildMockVc(
     aud: config.vcAudience,
     sub: userId,
     iat: currentTimestamp,
-    nbf: currentTimestamp,
+    nbf: nbf || currentTimestamp,
     vc: {
       "@context": [
         "https://www.w3.org/2018/credentials/v1",
