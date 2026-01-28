@@ -22,7 +22,7 @@ interface Mitigation {
 
 export interface ContraIndicator {
   code: string;
-  document: string;
+  document: string | null;
   issuanceDate: string;
   issuers: string[];
   mitigation: Mitigation[];
