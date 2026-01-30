@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - di-ipv-dcmaw-async-stub/**
-      - .github/workflows/cri-dcmaw-async-stub.yml
+      - .github/workflows/dcmaw-async-stub.yml
 
 jobs:
   buildAndPush:
