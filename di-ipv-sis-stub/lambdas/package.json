@@ -29,7 +29,7 @@
     "@babel/preset-env": "^7.23.3",
     "@babel/preset-typescript": "^7.23.3",
     "@eslint/js": "^9.34.0",
-    "@shelf/jest-dynamodb": "^3.5.0",
+    "@shelf/jest-dynamodb": "^4.0.1",
     "@types/aws-lambda": "^8.10.109",
     "@types/jest": "^29.5.10",
     "@types/node": "^20.11.20",
