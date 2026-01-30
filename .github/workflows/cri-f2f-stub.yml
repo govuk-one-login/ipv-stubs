@@ -1,15 +1,7 @@
 name: Face to Face CRI Stub - Secure Pipeline build, push & Ship
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - di-ipv-credential-issuer-stub/deploy/face-to-face/*
-      - di-ipv-credential-issuer-stub/gradle/**
-      - di-ipv-credential-issuer-stub/src/**
-      - di-ipv-credential-issuer-stub/*
-      - .github/workflows/cri-f2f-stub.yml
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   dockerBuildAndPush:

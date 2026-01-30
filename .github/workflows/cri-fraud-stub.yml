@@ -1,15 +1,7 @@
 name: Fraud CRI Stub - Secure Pipeline build, push & Ship
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - di-ipv-credential-issuer-stub/deploy/fraud/*
-      - di-ipv-credential-issuer-stub/gradle/**
-      - di-ipv-credential-issuer-stub/src/**
-      - di-ipv-credential-issuer-stub/*
-      - .github/workflows/cri-fraud-stub.yml
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   dockerBuildAndPush:

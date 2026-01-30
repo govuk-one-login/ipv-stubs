@@ -1,15 +1,7 @@
 name: Claimed Identity Collector CRI Stub - Secure Pipeline build, push & Ship
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - di-ipv-credential-issuer-stub/deploy/claimed-identity/*
-      - di-ipv-credential-issuer-stub/gradle/**
-      - di-ipv-credential-issuer-stub/src/**
-      - di-ipv-credential-issuer-stub/*
-      - .github/workflows/cri-claimed-identity-stub.yml
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   dockerBuildAndPush:

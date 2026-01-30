@@ -10,7 +10,13 @@ on:
       - .github/workflows/cimit-stub.yml
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-java-project.yml
+    with:
+      folder: 'di-ipv-cimit-stub'
+
   buildAndPush:
+    needs: test
     name: Build and push
     runs-on: ubuntu-latest
     timeout-minutes: 15

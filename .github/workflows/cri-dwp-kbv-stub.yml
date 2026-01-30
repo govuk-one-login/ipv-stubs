@@ -1,15 +1,7 @@
 name: DWP KBV CRI Stub - Secure Pipeline build, push & Ship
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - di-ipv-credential-issuer-stub/deploy/dwp-kbv/*
-      - di-ipv-credential-issuer-stub/gradle/**
-      - di-ipv-credential-issuer-stub/src/**
-      - di-ipv-credential-issuer-stub/*
-      - .github/workflows/cri-dwp-kbv-stub.yml
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   dockerBuildAndPush:
