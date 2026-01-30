@@ -9,26 +9,7 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      packages: read
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Set up JDK 21
-        uses: actions/setup-java@v5
-        with:
-          java-version: '21'
-          distribution: 'corretto'
-          cache: gradle
-      - name: Build
-        run: ./gradlew clean build
-  build-evcs-stub:
+  test-ais-stub:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -36,31 +17,53 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Install
-        working-directory: ./di-ipv-evcs-stub/lambdas
+        working-directory: ./di-ipv-ais-stub/lambdas
         run: npm ci
       - name: Build
-        working-directory: ./di-ipv-evcs-stub/lambdas
+        working-directory: ./di-ipv-ais-stub/lambdas
         run: npm run build
       - name: Test
-        working-directory: ./di-ipv-evcs-stub/lambdas
+        working-directory: ./di-ipv-ais-stub/lambdas
         run: npm run test
-  build-ticf-stub:
+
+  test-core-stub:
+    uses: ./.github/workflows/test-java-project.yml
+    with:
+      folder: 'di-ipv-core-stub'
+
+  test-cimit-stub-java:
+    uses: ./.github/workflows/test-java-project.yml
+    with:
+      folder: 'di-ipv-cimit-stub'
+
+  test-cimit-stub-typescript:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Setup .npmrc
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        run: |
+          cp .npmrc.template .npmrc && \
+          sed -i s/TOKEN_WITH_READ_PACKAGE_PERMISSION/${{ secrets.GITHUB_TOKEN }}/ .npmrc
       - name: Install
-        working-directory: ./di-ipv-ticf-stub/lambdas
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
         run: npm ci
       - name: Build
-        working-directory: ./di-ipv-ticf-stub/lambdas
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
         run: npm run build
       - name: Test
-        working-directory: ./di-ipv-ticf-stub/lambdas
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
         run: npm run test
-  build-dcmaw-async-stub:
+
+  test-cri-stub:
+    uses: ./.github/workflows/test-java-project.yml
+    with:
+      folder: 'di-ipv-credential-issuer-stub'
+
+  test-dcmaw-async-stub:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -76,7 +79,42 @@ jobs:
       - name: Test
         working-directory: ./di-ipv-dcmaw-async-stub/lambdas
         run: npm run test
-  build-sis-stub:
+
+  test-evcs-stub:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install
+        working-directory: ./di-ipv-evcs-stub/lambdas
+        run: npm ci
+      - name: Build
+        working-directory: ./di-ipv-evcs-stub/lambdas
+        run: npm run build
+      - name: Test
+        working-directory: ./di-ipv-evcs-stub/lambdas
+        run: npm run test
+
+  test-experian-fraud-stub:
+    uses: ./.github/workflows/test-java-project.yml
+    with:
+      folder: 'experian-fraud-stub'
+
+  test-orchestrator-stub:
+    uses: ./.github/workflows/test-java-project.yml
+    with:
+      folder: 'di-ipv-orchestrator-stub'
+
+  test-public-jwk-creator:
+    uses: ./.github/workflows/test-java-project.yml
+    with:
+      folder: 'public-jwk-creator'
+
+  # di-ipv-queue-stub currently has no tests
+
+  test-sis-stub:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -92,7 +130,8 @@ jobs:
       - name: Test
         working-directory: ./di-ipv-sis-stub/lambdas
         run: npm run test
-  build-ais-stub:
+
+  test-ticf-stub:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -100,11 +139,25 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Install
-        working-directory: ./di-ipv-ais-stub/lambdas
+        working-directory: ./di-ipv-ticf-stub/lambdas
         run: npm ci
       - name: Build
-        working-directory: ./di-ipv-ais-stub/lambdas
+        working-directory: ./di-ipv-ticf-stub/lambdas
         run: npm run build
       - name: Test
-        working-directory: ./di-ipv-ais-stub/lambdas
+        working-directory: ./di-ipv-ticf-stub/lambdas
+        run: npm run test
+
+  test-update-ecs-env-vars:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install
+        working-directory: ./update-ecs-env-vars
+        run: npm ci
+      - name: Test
+        working-directory: ./update-ecs-env-vars
         run: npm run test
