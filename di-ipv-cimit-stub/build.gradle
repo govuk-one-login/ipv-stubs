@@ -7,6 +7,10 @@ repositories {
 	mavenCentral()
 }
 
+subprojects.each { subproject ->
+	build.dependsOn subproject.tasks.matching { it.name == 'build' }
+}
+
 java {
 	sourceCompatibility = JavaVersion.VERSION_21
 	targetCompatibility = JavaVersion.VERSION_21

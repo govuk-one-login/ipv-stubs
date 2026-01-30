@@ -1,104 +1,20 @@
 name: Bank account verification CRI Stub - Secure Pipeline build, push & Ship
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - di-ipv-credential-issuer-stub/deploy/bav/*
-      - di-ipv-credential-issuer-stub/gradle/**
-      - di-ipv-credential-issuer-stub/src/**
-      - di-ipv-credential-issuer-stub/*
-      - .github/workflows/cri-bav-stub.yml
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   dockerBuildAndPush:
-    name: Docker build and push
-    runs-on: ubuntu-22.04-arm
-    timeout-minutes: 15
-    env:
-      AWS_REGION: eu-west-2
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: ./.github/workflows/cri-stub-build-and-push.yml
     permissions:
       id-token: write
       contents: read
       packages: read
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: '0'
-
-      - name: Set up AWS creds
-        uses: aws-actions/configure-aws-credentials@v5.1.1
-        with:
-          role-to-assume: ${{ secrets.CRI_BAV_GH_ACTIONS_ROLE_ARN }}
-          aws-region: eu-west-2
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Login to GDS Dev Dynatrace Container Registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
-        with:
-          registry: khw46367.live.dynatrace.com
-          username: khw46367
-          password: ${{ secrets.DYNATRACE_PAAS_TOKEN }}
-
-      - name: Create tag
-        id: create-tag
-        run: |
-          IMAGE_TAG="${{ github.sha }}-$(date +'%Y-%m-%d-%H%M%S')"
-          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
-        with:
-          cosign-release: 'v2.5.1'
-
-      - name: Build, tag, sign and push image to Amazon ECR
-        working-directory: ./di-ipv-credential-issuer-stub
-        env:
-          CONTAINER_SIGN_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.CRI_BAV_ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
-          DT_API_TOKEN: ${{ secrets.DYNATRACE_PAAS_TOKEN }}
-        run: |
-          docker build --secret id=GITHUB_TOKEN,env=GITHUB_TOKEN -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg DT_API_TOKEN=${DT_API_TOKEN} --build-arg GITHUB_ACTOR=${GITHUB_ACTOR} -f Dockerfile-arm64 .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          cosign sign --yes --tlog-upload=false --key awskms:///${CONTAINER_SIGN_KEY} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-      - name: Set up SAM cli
-        uses: aws-actions/setup-sam@v2
-
-      - name: sam fix https://github.com/aws/aws-sam-cli/issues/4527
-        run: $(dirname $(readlink $(which sam)))/pip install --force-reinstall "cryptography==38.0.4"
-
-      - name: SAM Validate
-        working-directory: ./di-ipv-credential-issuer-stub/deploy/bav
-        run: sam validate --region ${{ env.AWS_REGION }}
-
-      - name: SAM Package
-        working-directory: ./di-ipv-credential-issuer-stub/deploy/bav
-        env:
-          ARTIFACT_BUCKET: ${{ secrets.CRI_BAV_ARTIFACT_BUCKET_NAME }}
-        run: sam package --s3-bucket="$ARTIFACT_BUCKET" --output-template-file=cf-template.yaml
-
-      - name: Update SAM template with ECR image
-        working-directory: ./di-ipv-credential-issuer-stub/deploy/bav
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.CRI_BAV_ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ steps.create-tag.outputs.image_tag }}
-        run: sed -i "s|CONTAINER-IMAGE-PLACEHOLDER|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|" cf-template.yaml
-
-      - name: Compress Template
-        working-directory: ./di-ipv-credential-issuer-stub/deploy/bav
-        run: zip template.zip cf-template.yaml
-
-      - name: Upload Compressed CloudFormation artifacts to S3
-        working-directory: ./di-ipv-credential-issuer-stub/deploy/bav
-        env:
-          ARTIFACT_BUCKET: ${{ secrets.CRI_BAV_ARTIFACT_BUCKET_NAME }}
-        run: aws s3 cp template.zip "s3://$ARTIFACT_BUCKET/template.zip" --metadata "repository=$GITHUB_REPOSITORY,commitsha=$GITHUB_SHA"
+    with:
+      WORKING_DIRECTORY: ./di-ipv-credential-issuer-stub/deploy/bav
+    secrets:
+      ARTIFACT_BUCKET_NAME: ${{ secrets.CRI_BAV_ARTIFACT_BUCKET_NAME }}
+      CONTAINER_SIGN_KMS_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
+      DYNATRACE_PAAS_TOKEN: ${{ secrets.DYNATRACE_PAAS_TOKEN }}
+      ECR_REPOSITORY: ${{ secrets.CRI_BAV_ECR_REPOSITORY }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.CRI_BAV_GH_ACTIONS_ROLE_ARN }}

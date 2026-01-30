@@ -6,4 +6,5 @@ include "di-ipv-core-stub",
 		"di-ipv-cimit-stub:lambdas:put-contra-indicators",
 		"di-ipv-cimit-stub:lambdas:get-contra-indicator-credential",
 		"di-ipv-cimit-stub:lambdas:stub-management",
-		"di-ipv-cimit-stub:lib"
+		"di-ipv-cimit-stub:lib",
+        "public-jwk-creator"
