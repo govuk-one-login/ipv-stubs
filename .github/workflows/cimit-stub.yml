@@ -8,9 +8,16 @@ on:
       - di-ipv-cimit-stub/**
       - di-ipv-cimit-stub-ts/**
       - .github/workflows/cimit-stub.yml
+      - .github/workflows/test-java-project.yml
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-java-project.yml
+    with:
+      folder: 'di-ipv-cimit-stub'
+
   buildAndPush:
+    needs: test
     name: Build and push
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -63,6 +70,10 @@ jobs:
       - name: npm install
         working-directory: ./di-ipv-cimit-stub-ts/lambdas
         run: npm ci
+
+      - name: check for tsc compile errors
+        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        run: npm run build
 
       - name: npm test
         working-directory: ./di-ipv-cimit-stub-ts/lambdas

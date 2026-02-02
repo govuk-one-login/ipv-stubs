@@ -23,6 +23,14 @@ jobs:
         with:
           fetch-depth: '0'
 
+      - name: Install
+        working-directory: ./update-ecs-env-vars
+        run: npm ci
+
+      - name: Test
+        working-directory: ./update-ecs-env-vars
+        run: npm run test
+
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v5.1.1
         with:

@@ -49,6 +49,10 @@ jobs:
         working-directory: ./di-ipv-ais-stub/lambdas
         run: npm ci
 
+      - name: check for tsc compile errors
+        working-directory: ./di-ipv-ais-stub/lambdas
+        run: npm run build
+
       - name: npm test
         working-directory: ./di-ipv-ais-stub/lambdas
         run: npm run test

@@ -11,7 +11,10 @@ repositories {
 	mavenCentral()
 }
 
-sourceCompatibility = 17
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
 
 dependencies {
 	implementation  'com.sparkjava:spark-core:2.9.4',

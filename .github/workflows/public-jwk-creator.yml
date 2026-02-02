@@ -9,10 +9,17 @@ on:
       - public-jwk-creator/src/**
       - public-jwk-creator/*
       - .github/workflows/public-jwk-creator.yml
+      - .github/workflows/test-java-project.yml
   workflow_dispatch:
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-java-project.yml
+    with:
+      folder: 'public-jwk-creator'
+
   dockerBuildAndPush:
+    needs: test
     name: Docker build and push
     runs-on: ubuntu-latest
     timeout-minutes: 15

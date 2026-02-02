@@ -10,10 +10,17 @@ on:
       - di-ipv-core-stub/src/**
       - di-ipv-core-stub/*
       - .github/workflows/core-cri-preprod-stub.yml
+      - .github/workflows/test-java-project.yml
   workflow_dispatch:
 
 jobs:
+  test:
+    uses: ./.github/workflows/test-java-project.yml
+    with:
+      folder: 'di-ipv-core-stub'
+
   ipvConfigReaderApp:
+    needs: test
     runs-on: ubuntu-22.04-arm
     environment: ipv-config-reader-app
     outputs:
