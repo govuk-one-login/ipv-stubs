@@ -8,6 +8,7 @@ on:
       - di-ipv-cimit-stub/**
       - di-ipv-cimit-stub-ts/**
       - .github/workflows/cimit-stub.yml
+      - .github/workflows/test-java-project.yml
 
 jobs:
   test:

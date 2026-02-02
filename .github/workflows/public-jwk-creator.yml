@@ -9,6 +9,7 @@ on:
       - public-jwk-creator/src/**
       - public-jwk-creator/*
       - .github/workflows/public-jwk-creator.yml
+      - .github/workflows/test-java-project.yml
   workflow_dispatch:
 
 jobs:
