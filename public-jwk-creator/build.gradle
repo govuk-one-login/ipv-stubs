@@ -21,6 +21,13 @@ dependencies {
 			'com.sparkjava:spark-template-mustache:2.7.1',
 			'com.nimbusds:nimbus-jose-jwt:9.37.4',
 			'org.slf4j:slf4j-simple:1.7.36'
+
+	constraints {
+		implementation("org.eclipse.jetty:jetty-server:9.4.58.v20250814") {
+			because "older versions introduce a vulnerability"
+		}
+	}
+
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 }
