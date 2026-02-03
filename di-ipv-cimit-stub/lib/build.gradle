@@ -9,9 +9,9 @@ repositories {
 }
 
 dependencies {
-	implementation "software.amazon.awssdk:dynamodb-enhanced:2.41.19",
+	implementation "software.amazon.awssdk:dynamodb-enhanced:2.41.20",
 			"software.amazon.lambda:powertools-parameters:1.20.2",
-			"software.amazon.awssdk:kms:2.41.19",
+			"software.amazon.awssdk:kms:2.41.20",
 			"org.apache.logging.log4j:log4j-api:2.25.3",
 			"org.apache.logging.log4j:log4j-core:2.25.3",
 			"com.amazonaws:aws-lambda-java-events:3.16.1"
