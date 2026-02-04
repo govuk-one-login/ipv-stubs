@@ -26,6 +26,10 @@ dependencies {
 		implementation("org.eclipse.jetty:jetty-server:9.4.58.v20250814") {
 			because "older versions introduce a vulnerability"
 		}
+
+		implementation("org.eclipse.jetty:jetty-xml:9.4.52.v20230823") {
+			because "older versions introduce a vulnerability"
+		}
 	}
 
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
