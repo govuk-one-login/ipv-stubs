@@ -831,14 +831,14 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       RetentionInDays: 14
-      LogGroupName: !Sub "/aws/lambda/restApi-${Environment}"
+      LogGroupName: !Sub "/aws/apigateway/cimitStubExternalApi-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
   InternalRestApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      RetentionInDays: 1
-      LogGroupName: !Sub "/aws/lambda/internalRestApi-${Environment}"
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/apigateway/cimitStubInternalApi-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
 
 Outputs:
