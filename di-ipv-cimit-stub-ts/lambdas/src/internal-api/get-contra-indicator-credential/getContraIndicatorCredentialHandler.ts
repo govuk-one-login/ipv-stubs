@@ -139,13 +139,14 @@ const makeJWTPayload = async (
     evidence: [{ contraIndicator: contraIndicators, type: "SecurityCheck" }],
     type: ["VerifiableCredential", "SecurityCheckCredential"],
   };
-  const now = Date.now();
+  const nowInSeconds = Math.floor(Date.now() / 1000);
   const secondsUntilExpiry = 60 * 15;
   return {
     sub: userId,
     iss: await getCimitComponentId(),
-    nbf: Math.floor(now / 1000),
-    exp: now + secondsUntilExpiry,
+    nbf: nowInSeconds,
+    exp: nowInSeconds + secondsUntilExpiry,
     vc: vcClaim,
   };
 };
+
