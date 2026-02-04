@@ -25,6 +25,12 @@ dependencies {
 			"com.nimbusds:oauth2-oidc-sdk:11.32",
 			project(":di-ipv-cimit-stub:lib")
 
+	constraints {
+		implementation("io.netty:netty-codec-http:4.2.8.Final") {
+			because "older versions introduced a CRLF Injection vulnerability"
+		}
+	}
+
 	compileOnly "org.projectlombok:lombok:1.18.42"
 	annotationProcessor "org.projectlombok:lombok:1.18.42"
 
