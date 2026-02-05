@@ -73,12 +73,14 @@ const validateAndParseRequest = (
 
 const getCIs = async (userId: string): Promise<ContraIndicator[]> => {
   const userCis = (await getCIsForUserID(userId)).sort(
-    (ci1, ci2) => ci1.issuanceDate - ci2.issuanceDate,
+    (ci1, ci2) =>
+      new Date(ci1.issuanceDate).getTime() -
+      new Date(ci2.issuanceDate).getTime(),
   );
   const mappedCis = userCis.map((ci) => ({
     code: ci.contraIndicatorCode,
     document: ci.document,
-    issuanceDate: new Date(ci.issuanceDate * 1000).toISOString(),
+    issuanceDate: ci.issuanceDate,
     issuers: [...new Set([ci.issuer])],
     mitigation: ci.mitigations.map((mitigationCode) => ({
       code: mitigationCode,
@@ -130,8 +132,8 @@ const ciDeduplicator = (mappedCis: ContraIndicator[]): ContraIndicator[] => {
 };
 
 const makeJWTPayload = async (
-  contraIndicators: ContraIndicator[],
-  userId: string,
+    contraIndicators: ContraIndicator[],
+    userId: string,
 ): Promise<JWTPayload> => {
   const vcClaim: VcClaim = {
     evidence: [{ contraIndicator: contraIndicators, type: "SecurityCheck" }],

@@ -41,10 +41,10 @@ test("addUserCis should insert", async () => {
     userId: "urn:uuid:c23ec166-2c32-4f00-bdfe-b29398e36801",
     contraIndicatorCode: "V03",
     issuer: "https://kbv-cri.stubs.account.gov.uk",
-    issuanceDate: "2023-08-17T10:20:53.000Z",
+    issuanceDate: "2023-08-17T10:20:53Z",
     mitigations: [],
     document: "",
-    sortKey: "V03#2023-08-17T10:20:53.000Z",
+    sortKey: "V03#2023-08-17T10:20:53Z",
     txn: "18fbfe93-2e71-44bb-88c5-0f7de60fbe80",
     ttl: expect.any(Number),
   };

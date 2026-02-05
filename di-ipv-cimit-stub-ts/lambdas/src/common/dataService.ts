@@ -7,7 +7,7 @@ export interface UserContraIndicatorsItem {
   sortKey: string;
   contraIndicatorCode: string;
   issuer: string;
-  issuanceDate: number;
+  issuanceDate: string;
   ttl: number;
   mitigations: string[];
   document: string | null;

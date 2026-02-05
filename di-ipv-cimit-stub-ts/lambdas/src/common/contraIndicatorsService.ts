@@ -34,7 +34,9 @@ export const addUserCIs = async (
     const issuanceDate = signedJwt.nbf
       ? new Date(signedJwt.nbf * 1000)
       : new Date();
-    const issuanceDateString = issuanceDate.toISOString();
+    let issuanceDateString = issuanceDate.toISOString();
+    issuanceDateString =
+      issuanceDateString.slice(0, issuanceDateString.length - 5) + "Z";
 
     const dbItems: CimitStubItem[] = [];
     for (const ci of cis) {
