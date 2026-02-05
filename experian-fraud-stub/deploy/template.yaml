@@ -194,6 +194,14 @@ Resources:
             Condition:
               Bool:
                 "aws:SecureTransport": false
+          - Effect: Deny
+            Resource:
+              - !GetAtt AccessLogsBucket.Arn
+              - !Sub "${AccessLogsBucket.Arn}/*"
+            Principal: "*"
+            Action:
+              - "s3:*"
+            Condition:
               NumericLessThan:
                 "s3:TlsVersion": "1.2"
 
