@@ -159,6 +159,7 @@ Resources:
         # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
         Variables:
           ENVIRONMENT: !Sub "${Environment}"
+          CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
           CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
           PENDING_MITIGATIONS_TABLE: !Ref PendingMitigationsTable
       VpcConfig:
