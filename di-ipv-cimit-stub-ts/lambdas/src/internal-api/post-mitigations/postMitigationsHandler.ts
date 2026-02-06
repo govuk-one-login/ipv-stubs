@@ -16,12 +16,13 @@ export const postMitigationsHandler = async (
   console.info("Function invoked:", "PostMitigations");
   try {
     const postMitigationsRequest = buildParsedRequest(request);
-    postMitigationsRequest.signed_jwts?.forEach((vc) => {
+    for (const vc of postMitigationsRequest.signed_jwts ?? []) {
       const payload = decodeJwt(vc) as JWTPayload;
-      const subject = payload.sub || "";
-      const jwtid = payload.jti || "";
-      completePendingMitigation(jwtid, subject);
-    });
+      const subject = payload.sub ?? "";
+      const jwtid = payload.jti ?? "";
+
+      await completePendingMitigation(jwtid, subject);
+    }
     return buildApiResponse(200, { result: SUCCESS_RESPONSE });
   } catch (error) {
     if (error instanceof FailedToParseRequestError) {

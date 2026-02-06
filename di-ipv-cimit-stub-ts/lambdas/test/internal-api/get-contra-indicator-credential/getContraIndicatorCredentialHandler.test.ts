@@ -29,9 +29,9 @@ const MITIGATION_M01 = "M01";
 const TXN_1 = "1";
 const TXN_2 = "2";
 const TXN_3 = "3";
-const ISSUANCE_DATE_1 = 1577836800; // 01/01/2020 00:00:00
-const ISSUANCE_DATE_2 = 1577836900; // 01/01/2020 00:01:40
-const ISSUANCE_DATE_3 = 1577836960; // 01/01/2020 00:02:40
+const ISSUANCE_DATE_1 = "2020-01-01T00:00:00Z";
+const ISSUANCE_DATE_2 = "2020-01-01T00:01:40Z";
+const ISSUANCE_DATE_3 = "2020-01-01T00:02:40Z";
 const DOCUMENT_1 = "document_1";
 const DOCUMENT_2 = "document_2";
 const CIMIT_COMPONENT_ID = "https://cimit.stubs.account.gov.uk";
@@ -102,7 +102,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_1,
-        issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_1,
         issuers: [ISSUER_1],
         mitigation: [],
         incompleteMitigation: [],
@@ -140,7 +140,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_1,
-        issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_1,
         issuers: [ISSUER_1],
         mitigation: [],
         incompleteMitigation: [],
@@ -149,7 +149,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_2,
-        issuanceDate: new Date(ISSUANCE_DATE_2 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_2,
         issuers: [ISSUER_2],
         mitigation: [],
         incompleteMitigation: [],
@@ -187,7 +187,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_1,
-        issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_1,
         issuers: [ISSUER_1],
         mitigation: [],
         incompleteMitigation: [],
@@ -196,7 +196,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_2,
-        issuanceDate: new Date(ISSUANCE_DATE_2 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_2,
         issuers: [ISSUER_2],
         mitigation: [PARSED_MITIGATION_01],
         incompleteMitigation: [],
@@ -234,7 +234,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_1,
-        issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_1,
         issuers: [ISSUER_1],
         mitigation: [PARSED_MITIGATION_01],
         incompleteMitigation: [],
@@ -243,7 +243,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_2,
-        issuanceDate: new Date(ISSUANCE_DATE_2 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_2,
         issuers: [ISSUER_2],
         mitigation: [PARSED_MITIGATION_01],
         incompleteMitigation: [],
@@ -281,7 +281,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_1,
-        issuanceDate: new Date(ISSUANCE_DATE_2 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_2,
         issuers: [ISSUER_1, ISSUER_2],
         mitigation: [],
         incompleteMitigation: [],
@@ -319,7 +319,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_1,
-        issuanceDate: new Date(ISSUANCE_DATE_2 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_2,
         issuers: [ISSUER_1, ISSUER_2],
         mitigation: [],
         incompleteMitigation: [],
@@ -357,7 +357,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_1,
-        issuanceDate: new Date(ISSUANCE_DATE_2 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_2,
         issuers: [ISSUER_1, ISSUER_2],
         mitigation: [PARSED_MITIGATION_01],
         incompleteMitigation: [],
@@ -417,7 +417,7 @@ test.each([
       {
         code: CI_D02,
         document: DOCUMENT_1,
-        issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_1,
         issuers: [ISSUER_1],
         mitigation: [],
         incompleteMitigation: [],
@@ -426,7 +426,7 @@ test.each([
       {
         code: CI_V03,
         document: null,
-        issuanceDate: new Date(ISSUANCE_DATE_3 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_3,
         issuers: [ISSUER_3, ISSUER_4],
         mitigation: [],
         incompleteMitigation: [],
@@ -435,7 +435,7 @@ test.each([
       {
         code: CI_D02,
         document: DOCUMENT_2,
-        issuanceDate: new Date(ISSUANCE_DATE_3 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_3,
         issuers: [ISSUER_2],
         mitigation: [],
         incompleteMitigation: [],
@@ -473,7 +473,7 @@ test.each([
       {
         code: CI_D02,
         document: DOCUMENT_1,
-        issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_1,
         issuers: [ISSUER_1],
         mitigation: [],
         incompleteMitigation: [],
@@ -482,7 +482,7 @@ test.each([
       {
         code: CI_V03,
         document: DOCUMENT_1,
-        issuanceDate: new Date(ISSUANCE_DATE_1 * 1000).toISOString(),
+        issuanceDate: ISSUANCE_DATE_1,
         issuers: [ISSUER_1],
         mitigation: [],
         incompleteMitigation: [],
