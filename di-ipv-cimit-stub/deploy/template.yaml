@@ -191,7 +191,7 @@ Resources:
   PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunction } ]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PostMitigationsFunctionTS } ]
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/mitigate"
@@ -288,7 +288,7 @@ Resources:
   PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunctionTS } ]
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/detect"
@@ -383,7 +383,7 @@ Resources:
   GetContraIndicatorCredentialLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunctionTS } ]
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/GET/contra-indicators"
@@ -431,31 +431,6 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref PendingMitigationsTable
       AutoPublishAlias: live
-      Events:
-        PostCis:
-          Type: Api
-          Properties:
-            RestApiId: !Ref RestApiGateway
-            Path: /user/{userId}/cis
-            Method: POST
-        PutCis:
-          Type: Api
-          Properties:
-            RestApiId: !Ref RestApiGateway
-            Path: /user/{userId}/cis
-            Method: PUT
-        PostMitigations:
-          Type: Api
-          Properties:
-            RestApiId: !Ref RestApiGateway
-            Path: /user/{userId}/mitigations/{ci}
-            Method: POST
-        PutMitigations:
-          Type: Api
-          Properties:
-            RestApiId: !Ref RestApiGateway
-            Path: /user/{userId}/mitigations/{ci}
-            Method: PUT
 
   StubManagementFunctionTS:
     Type: AWS::Serverless::Function
@@ -499,6 +474,31 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref PendingMitigationsTable
       AutoPublishAlias: live
+      Events:
+        PostCisTS:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/cis
+            Method: POST
+        PutCisTS:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/cis
+            Method: PUT
+        PostMitigationsTS:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/mitigations/{ci}
+            Method: POST
+        PutMitigationsTS:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/mitigations/{ci}
+            Method: PUT
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -783,9 +783,9 @@ Resources:
   InternalRestApiGateway:
     Type: AWS::Serverless::Api
     DependsOn:
-      - GetContraIndicatorCredentialFunction
-      - PostMitigationsFunction
-      - PutContraIndicatorsFunction
+      - GetContraIndicatorCredentialFunctionTS
+      - PostMitigationsFunctionTS
+      - PutContraIndicatorsFunctionTS
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
       Name: !Sub Internal CIMIT API Gateway ${Environment}
@@ -836,7 +836,7 @@ Resources:
 
   RestApiGateway:
     Type: AWS::Serverless::Api
-    DependsOn: StubManagementFunction
+    DependsOn: StubManagementFunctionTS
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
       Name: !Sub CIMIT API Gateway ${Environment}
