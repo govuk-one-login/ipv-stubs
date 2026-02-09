@@ -50,7 +50,7 @@ paths:
         type: "aws_proxy"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetContraIndicatorCredentialFunctionTS.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetContraIndicatorCredentialFunction.Arn}:live/invocations
 
   /contra-indicators/detect:
     post:
@@ -95,7 +95,7 @@ paths:
         type: "aws_proxy"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PutContraIndicatorsFunctionTS.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PutContraIndicatorsFunction.Arn}:live/invocations
 
   /contra-indicators/mitigate:
     post:
@@ -140,7 +140,7 @@ paths:
         type: "aws_proxy"
         httpMethod: "POST"
         uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostMitigationsFunctionTS.Arn}:live/invocations
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostMitigationsFunction.Arn}:live/invocations
 
   /contra-indicators/healthcheck:
     get:
