@@ -147,7 +147,7 @@ Resources:
   PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunction }]
+      FunctionName: !Sub ["${function}:live", { function: !Ref PostMitigationsFunctionTS }]
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/mitigate"
@@ -244,7 +244,7 @@ Resources:
   PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunction } ]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref PutContraIndicatorsFunctionTS } ]
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/POST/contra-indicators/detect"
@@ -339,7 +339,7 @@ Resources:
   GetContraIndicatorCredentialLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunction } ]
+      FunctionName: !Sub [ "${function}:live", { function: !Ref GetContraIndicatorCredentialFunctionTS } ]
       Action: "lambda:InvokeFunction"
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${InternalRestApiGateway}/*/GET/contra-indicators"
@@ -357,6 +357,49 @@ Resources:
       CodeUri: "../lambdas/stub-management"
       Handler: uk.gov.di.ipv.core.stubmanagement.StubManagementHandler::handleRequest
       Runtime: java21
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
+          IS_LOCAL: false
+          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
+          PENDING_MITIGATIONS_TABLE: !Ref PendingMitigationsTable
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt CimitLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/cimit/*
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CimitStubTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PendingMitigationsTable
+      AutoPublishAlias: live
+
+  StubManagementFunctionTS:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    DependsOn:
+      - "StubManagementFunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "stubManagement-ts-${Environment}"
+      CodeUri: "../../di-ipv-cimit-stub-ts/lambdas/src/external-api/stub-management"
+      Handler: stubManagementHandler.handler
+      Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -412,49 +455,6 @@ Resources:
             RestApiId: !Ref RestApiGateway
             Path: /user/{userId}/mitigations/{ci}
             Method: PUT
-
-  StubManagementFunctionTS:
-    Type: AWS::Serverless::Function
-    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
-    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
-    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
-    DependsOn:
-      - "StubManagementFunctionLogGroup"
-    Properties:
-      FunctionName: !Sub "stubManagement-ts-${Environment}"
-      CodeUri: "../../di-ipv-cimit-stub-ts/lambdas/src/external-api/stub-management"
-      Handler: stubManagementHandler.handler
-      Runtime: nodejs22.x
-      PackageType: Zip
-      Architectures:
-        - arm64
-      MemorySize: 2048
-      Tracing: Active
-      Environment:
-        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
-        Variables:
-          ENVIRONMENT: !Sub "${Environment}"
-          CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
-          IS_LOCAL: false
-          CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
-          PENDING_MITIGATIONS_TABLE: !Ref PendingMitigationsTable
-      VpcConfig:
-        SubnetIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-        SecurityGroupIds:
-          - !GetAtt CimitLambdaSecurityGroup.GroupId
-      Policies:
-        - VPCAccessPolicy: { }
-        - SSMParameterReadPolicy:
-            ParameterName: stubs/core/cimit/*
-        - KMSDecryptPolicy:
-            KeyId: !Ref DynamoDBKmsKey
-        - DynamoDBCrudPolicy:
-            TableName: !Ref CimitStubTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref PendingMitigationsTable
-      AutoPublishAlias: live
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -738,9 +738,9 @@ Resources:
   InternalRestApiGateway:
     Type: AWS::Serverless::Api
     DependsOn:
-      - GetContraIndicatorCredentialFunction
-      - PostMitigationsFunction
-      - PutContraIndicatorsFunction
+      - GetContraIndicatorCredentialFunctionTS
+      - PostMitigationsFunctionTS
+      - PutContraIndicatorsFunctionTS
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
       Name: !Sub Internal CIMIT API Gateway ${Environment}
@@ -791,7 +791,7 @@ Resources:
 
   RestApiGateway:
     Type: AWS::Serverless::Api
-    DependsOn: StubManagementFunction
+    DependsOn: StubManagementFunctionTS
     Properties:
       # checkov:skip=CKV_AWS_120: We are not implementing API Gateway caching at the time.
       Name: !Sub CIMIT API Gateway ${Environment}
