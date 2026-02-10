@@ -81,7 +81,7 @@ jobs:
           ref: 'refs/heads/main'
 
      - name: Set up AWS creds
-       uses: aws-actions/configure-aws-credentials@v5.1.1
+       uses: aws-actions/configure-aws-credentials@v6.0.0
        with:
           role-to-assume: ${{ secrets.CORE_CRI_3P_GH_ACTIONS_ROLE_ARN }}
           aws-region: eu-west-2
