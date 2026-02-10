@@ -28,12 +28,7 @@ jobs:
     with:
       folder: 'di-ipv-core-stub'
 
-  test-cimit-stub-java:
-    uses: ./.github/workflows/test-java-project.yml
-    with:
-      folder: 'di-ipv-cimit-stub'
-
-  test-cimit-stub-typescript:
+  test-cimit-stub:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -41,18 +36,18 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
       - name: Setup .npmrc
-        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        working-directory: ./di-ipv-cimit-stub/lambdas
         run: |
           cp .npmrc.template .npmrc && \
           sed -i s/TOKEN_WITH_READ_PACKAGE_PERMISSION/${{ secrets.GITHUB_TOKEN }}/ .npmrc
       - name: Install
-        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        working-directory: ./di-ipv-cimit-stub/lambdas
         run: npm ci
       - name: Build
-        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        working-directory: ./di-ipv-cimit-stub/lambdas
         run: npm run build
       - name: Test
-        working-directory: ./di-ipv-cimit-stub-ts/lambdas
+        working-directory: ./di-ipv-cimit-stub/lambdas
         run: npm run test
 
   test-cri-stub:
