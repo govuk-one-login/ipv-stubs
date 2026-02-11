@@ -133,8 +133,8 @@ const ciDeduplicator = (mappedCis: ContraIndicator[]): ContraIndicator[] => {
 };
 
 const makeJWTPayload = async (
-    contraIndicators: ContraIndicator[],
-    userId: string,
+  contraIndicators: ContraIndicator[],
+  userId: string,
 ): Promise<JWTPayload> => {
   const vcClaim: VcClaim = {
     evidence: [{ contraIndicator: contraIndicators, type: "SecurityCheck" }],
@@ -150,4 +150,3 @@ const makeJWTPayload = async (
     vc: vcClaim,
   };
 };
-
