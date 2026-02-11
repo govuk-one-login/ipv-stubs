@@ -4,7 +4,7 @@ import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 import * as cimitStubItemService from "./cimitStubItemService";
 import { CimitStubItem } from "./contraIndicatorTypes";
 
-interface UserMitigationRequest {
+export interface UserMitigationRequest {
   mitigations: string[];
   vcJti: string;
 }

@@ -6,11 +6,7 @@ import {
 } from "./service/userService";
 import * as cimitStubItemService from "../../common/cimitStubItemService";
 import * as pendingMitigationService from "../../common/pendingMitigationService";
-
-interface UserMitigationRequest {
-  mitigations: string[];
-  vcJti: string;
-}
+import { UserMitigationRequest } from "../../common/pendingMitigationService";
 
 const CIS_PATTERN = /^\/user\/[-a-zA-Z0-9_:]+\/cis$/;
 const CIS_MITIGATIONS =
