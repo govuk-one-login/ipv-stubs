@@ -23,7 +23,7 @@ dependencies {
 			'org.slf4j:slf4j-simple:1.7.36'
 
 	constraints {
-		implementation("org.eclipse.jetty:jetty-server:9.4.58.v20250814") {
+		implementation("org.eclipse.jetty:jetty-server:10.0.26") {
 			because "older versions introduce a vulnerability"
 		}
 
