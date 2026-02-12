@@ -13,6 +13,7 @@ import {
   ContraIndicator,
   VcClaim,
 } from "../../common/contraIndicatorTypes";
+import { HEADER_IP_ADDRESS, HEADER_JOURNER_ID } from "../../common/constants";
 
 export const getContraIndicatorCredentialHandler = async (
   request: APIGatewayProxyEvent,
@@ -52,13 +53,13 @@ const validateAndParseRequest = (
     throw new BadRequestError("Missing userId from request");
   }
 
-  const govukSigninJourneyId = request.headers["govuk-signin-journey-id"];
+  const govukSigninJourneyId = request.headers[HEADER_JOURNER_ID];
   if (!govukSigninJourneyId) {
     console.error("Missing govukSigninJourneyId from request");
     throw new BadRequestError("Missing govukSigninJourneyId from request");
   }
 
-  const ipAddress = request.headers["ip-address"];
+  const ipAddress = request.headers[HEADER_IP_ADDRESS];
   if (!ipAddress) {
     console.error("Missing ipAddress from request");
     throw new BadRequestError("Missing ipAddress from request");

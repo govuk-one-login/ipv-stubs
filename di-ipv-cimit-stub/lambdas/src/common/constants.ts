@@ -1,0 +1,2 @@
+export const HEADER_JOURNER_ID = "govuk-signin-journey-id";
+export const HEADER_IP_ADDRESS = "ip-address";
