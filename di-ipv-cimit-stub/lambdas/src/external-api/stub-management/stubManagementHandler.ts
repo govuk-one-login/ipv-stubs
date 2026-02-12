@@ -6,11 +6,15 @@ import {
 } from "./service/userService";
 import * as cimitStubItemService from "../../common/cimitStubItemService";
 import * as pendingMitigationService from "../../common/pendingMitigationService";
+import * as preMitigationService from "../../common/preMitigationService";
 import { UserMitigationRequest } from "../../common/pendingMitigationService";
+import { UserPreMitigationRequest } from "../../common/preMitigationService";
 
 const CIS_PATTERN = /^\/user\/[-a-zA-Z0-9_:]+\/cis$/;
 const CIS_MITIGATIONS =
   /^\/user\/[-a-zA-Z0-9_:]+\/mitigations\/[-a-zA-Z0-9_]+$/;
+const PRE_MITIGATIONS_PATTERN =
+  /^\/user\/[-a-zA-Z0-9_:]+\/premitigations\/[-a-zA-Z0-9_]+$/;
 const SUPPORTED_HTTP_METHODS = ["POST", "PUT"];
 
 export const handler = async (
@@ -66,6 +70,21 @@ export const handler = async (
         userMitigationRequest,
         ci,
         httpMethod,
+      );
+    } else if (PRE_MITIGATIONS_PATTERN.test(path)) {
+      const ci = pathParameters.ci || "";
+
+      let userPreMitigationRequest: UserPreMitigationRequest;
+      try {
+        userPreMitigationRequest = JSON.parse(event.body || "");
+      } catch {
+        return buildErrorResponse("Invalid request body", 400);
+      }
+
+      await preMitigationService.persistPreMitigation(
+        userId,
+        ci,
+        userPreMitigationRequest,
       );
     } else {
       return buildErrorResponse("Invalid URI.", 400);

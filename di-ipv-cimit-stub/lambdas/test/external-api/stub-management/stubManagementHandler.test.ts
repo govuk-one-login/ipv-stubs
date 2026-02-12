@@ -19,11 +19,16 @@ jest.mock("../../../src/common/pendingMitigationService", () => ({
   persistPendingMitigation: jest.fn(),
 }));
 
+jest.mock("../../../src/common/preMitigationService", () => ({
+  persistPreMitigation: jest.fn(),
+}));
+
 import { APIGatewayProxyEvent } from "aws-lambda";
 import { handler } from "../../../src/external-api/stub-management/stubManagementHandler";
 import * as userService from "../../../src/external-api/stub-management/service/userService";
 import * as cimitStubItemService from "../../../src/common/cimitStubItemService";
 import * as pendingMitigationService from "../../../src/common/pendingMitigationService";
+import * as preMitigationService from "../../../src/common/preMitigationService";
 
 describe("stubManagementHandler", () => {
   beforeEach(() => {
@@ -347,6 +352,70 @@ describe("stubManagementHandler", () => {
           "456",
         );
       });
+    });
+  });
+
+  describe("Pre mitigation requests", () => {
+    it("should add pre mitigation when valid pre mitigation request", async () => {
+      const userId = "123";
+      const ci = "456";
+      const userMitigationRequest = { mitigations: ["V01"] };
+
+      const event = createEvent(
+        "PUT",
+        `/user/${userId}/premitigations/${ci}`,
+        { userId, ci },
+        userMitigationRequest,
+      );
+      const response = await handler(event);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toContain("success");
+      expect(preMitigationService.persistPreMitigation).toHaveBeenCalledWith(
+        userId,
+        ci,
+        userMitigationRequest,
+      );
+    });
+
+    it("should return bad request when invalid request body for prem itigation", async () => {
+      const userId = "123";
+      const ci = "456";
+
+      const event = createEvent(
+        "PUT",
+        `/user/${userId}/premitigations/${ci}`,
+        { userId, ci },
+      );
+      event.body = "invalid json";
+
+      const response = await handler(event);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toContain("Invalid request body");
+    });
+
+    it("should handle default user ID format in pre mitigations pattern", async () => {
+      const userId = "urn%3Auuid%3Ac08630f8-330e-43f8-a782-21432a197fc5";
+      const decodedUserId = "urn:uuid:c08630f8-330e-43f8-a782-21432a197fc5";
+      const ci = "456";
+      const userMitigationRequest = { mitigations: ["V01"] };
+
+      const event = createEvent(
+        "PUT",
+        `/user/${userId}/premitigations/${ci}`,
+        { userId, ci },
+        userMitigationRequest,
+      );
+      const response = await handler(event);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toContain("success");
+      expect(preMitigationService.persistPreMitigation).toHaveBeenCalledWith(
+        decodedUserId,
+        ci,
+        userMitigationRequest,
+      );
     });
   });
 

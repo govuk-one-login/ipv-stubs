@@ -294,6 +294,12 @@ Resources:
             RestApiId: !Ref RestApiGateway
             Path: /user/{userId}/mitigations/{ci}
             Method: PUT
+        PutPreMitigations:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /user/{userId}/premitigations/{ci}
+            Method: PUT
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
