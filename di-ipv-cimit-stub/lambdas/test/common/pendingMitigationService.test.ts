@@ -1,26 +1,26 @@
-jest.mock("../../../src/common/configService", () => ({
+jest.mock("../../src/common/configService", () => ({
   getCimitStubTtl: jest.fn().mockResolvedValue(1800),
   getPendingMitigationsTableName: jest
     .fn()
     .mockReturnValue("mock-pending-table"),
 }));
 
-jest.mock("../../../src/clients/dynamoDBClient", () => ({
+jest.mock("../../src/clients/dynamoDBClient", () => ({
   dynamoDBClient: {
     putItem: jest.fn(),
     getItem: jest.fn(),
   },
 }));
 
-jest.mock("../../../src/common/cimitStubItemService", () => ({
+jest.mock("../../src/common/cimitStubItemService", () => ({
   getCiForUserId: jest.fn(),
   persistCimitStubItem: jest.fn(),
 }));
 
-import { dynamoDBClient } from "../../../src/clients/dynamoDBClient";
-import * as pendingMitigationService from "../../../src/common/pendingMitigationService";
-import * as cimitStubItemService from "../../../src/common/cimitStubItemService";
-import { CimitStubItem } from "../../../src/common/contraIndicatorTypes";
+import { dynamoDBClient } from "../../src/clients/dynamoDBClient";
+import * as pendingMitigationService from "../../src/common/pendingMitigationService";
+import * as cimitStubItemService from "../../src/common/cimitStubItemService";
+import { CimitStubItem } from "../../src/common/contraIndicatorTypes";
 
 describe("pendingMitigationService", () => {
   beforeEach(() => {
