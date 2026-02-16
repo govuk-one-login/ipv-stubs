@@ -117,7 +117,7 @@ Update a CI with a pending mitigation
 curl -X POST -d '{"mitigations": ["M02", "M03"], "vcJti": "<jti from mitigating VC>"}' -H "x-api-key: <API gateway API key>" https://<cimit-stub-domain>/user/<userId>/mitigations/<CiCode>
 ```
 
-#### PUT or POST to `/user/<userId>/premitigations/<ciCode>`
+#### POST to `/user/<userId>/premitigations/<ciCode>`
 
 This is a management endpoint for setting up pre-mitigations that will be automatically applied to CIs when they are created.
 This is needed to simulate scenarios where the CI is mitigated by a VC that CIMIT has received previously.

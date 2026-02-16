@@ -173,6 +173,49 @@ paths:
                 "input": “{\"userId\": \"$input.params('userId')\", \"ci\": \"$input.params('ci')\", \"mitigations\": \"$input.body\"}"
               }
 
+  /user/{userId}/premitigations/{ci}:
+    post:
+      description: Configure pre-mitigations for an upcoming CI
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: The ID of the user
+          schema:
+            type: string
+        - name: ci
+          in: path
+          required: true
+          description: The CI that should be mitigated when it's received
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MitigationsRequestBody"
+      responses:
+        200:
+          description: "Success response"
+          content:
+            text/plain:
+              schema:
+                type: string
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: "POST"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StubManagementFunction.Arn}:live/invocations
+        passthroughBehavior: "when_no_match"
+        requestTemplates:
+          application/x-www-form-urlencoded:
+            Fn::Sub: |
+              {
+                "input": "{\"userId\": \"$input.params('userId')\", \"ci\": \"$input.params('ci')\", \"mitigations\": \"$input.body\"}"
+              }
+
+
 components:
   schemas:
     CisRequestBody:
