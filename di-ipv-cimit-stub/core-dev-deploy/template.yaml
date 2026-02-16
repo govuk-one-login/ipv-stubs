@@ -674,6 +674,13 @@ Resources:
       ApiKeySourceType: HEADER #pragma: allowlist secret
       Auth:
         ApiKeyRequired: true #pragma: allowlist secret
+        ResourcePolicy:
+          CustomStatements:
+            - Action: 'execute-api:Invoke'
+              Effect: Allow
+              Principal: '*'
+              Resource:
+                - 'execute-api:/*'
         UsagePlan:
           CreateUsagePlan: PER_API
           UsagePlanName: "CIMIT Usage Plan"
