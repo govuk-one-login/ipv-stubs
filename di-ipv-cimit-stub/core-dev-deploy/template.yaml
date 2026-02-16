@@ -61,8 +61,8 @@ Resources:
     # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     Properties:
       FunctionName: !Sub "postMitigations-${Environment}"
-      CodeUri: "../lambdas/src/internal-api/post-mitigations"
-      Handler: postMitigationsHandler.postMitigationsHandler
+      CodeUri: "../lambdas"
+      Handler: src/internal-api/post-mitigations/postMitigationsHandler.postMitigationsHandler
       Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
@@ -100,7 +100,7 @@ Resources:
         Target: "es2022"
         Sourcemap: true
         EntryPoints:
-          - postMitigationsHandler.ts
+          - src/internal-api/post-mitigations/postMitigationsHandler.ts
 
   PostMitigationsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
@@ -119,8 +119,8 @@ Resources:
     # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     Properties:
       FunctionName: !Sub "putContraIndicators-${Environment}"
-      CodeUri: "../lambdas/src/internal-api/put-contra-indicators"
-      Handler: putContraIndicatorsHandler.putContraIndicatorsHandler
+      CodeUri: "../lambdas"
+      Handler: src/internal-api/put-contra-indicators/putContraIndicatorsHandler.putContraIndicatorsHandler
       Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
@@ -159,7 +159,7 @@ Resources:
         Target: "es2022"
         Sourcemap: true
         EntryPoints:
-          - putContraIndicatorsHandler.ts
+          - src/internal-api/put-contra-indicators/putContraIndicatorsHandler.ts
 
   PutContraIndicatorsLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
@@ -178,8 +178,8 @@ Resources:
     # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     Properties:
       FunctionName: !Sub "getContraIndicatorCredential-${Environment}"
-      CodeUri: "../lambdas/src/internal-api/get-contra-indicator-credential"
-      Handler: getContraIndicatorCredentialHandler.getContraIndicatorCredentialHandler
+      CodeUri: "../lambdas"
+      Handler: src/internal-api/get-contra-indicator-credential/getContraIndicatorCredentialHandler.getContraIndicatorCredentialHandler
       Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
@@ -214,7 +214,7 @@ Resources:
         Target: "es2022"
         Sourcemap: true
         EntryPoints:
-          - getContraIndicatorCredentialHandler.ts
+          - src/internal-api/get-contra-indicator-credential/getContraIndicatorCredentialHandler.ts
 
   GetContraIndicatorCredentialLiveAliasFunctionInternalRestApiInvokePermission:
     Type: AWS::Lambda::Permission
@@ -233,8 +233,8 @@ Resources:
     # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
     Properties:
       FunctionName: !Sub "stubManagement-${Environment}"
-      CodeUri: "../lambdas/src/external-api/stub-management"
-      Handler: stubManagementHandler.handler
+      CodeUri: "../lambdas"
+      Handler: src/external-api/stub-management/stubManagementHandler.handler
       Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
@@ -307,7 +307,7 @@ Resources:
         Target: "es2022"
         Sourcemap: true
         EntryPoints:
-          - stubManagementHandler.ts
+          - src/external-api/stub-management/stubManagementHandler.ts
 
   PostMitigationsFunctionLogGroup:
     Type: AWS::Logs::LogGroup

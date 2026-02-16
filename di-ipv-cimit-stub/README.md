@@ -24,7 +24,7 @@ mitigate an existing CI.
 
 This endpoint returns a VC containing details of any current CIs and mitigations for the user.
 
-### Stub beahviour
+### Stub behaviour
 
 #### PutContraIndicators
 
