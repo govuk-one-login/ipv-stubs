@@ -17,7 +17,7 @@ a VC it has seen previously.
 
 #### PostMitigations
 
-This endpoint accepts an array of VCs (although core normally only sends one at a time) and checks them to see if they
+This endpoint accepts an array of VCs (the new VC plus any others in the core IPV sesssion) and checks them to see if they
 mitigate an existing CI.
 
 #### GetContraIndicators
