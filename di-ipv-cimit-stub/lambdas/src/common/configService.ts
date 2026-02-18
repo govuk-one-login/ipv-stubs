@@ -23,6 +23,9 @@ export const getCimitStubTableName = () =>
 export const getPendingMitigationsTableName = () =>
   process.env.PENDING_MITIGATIONS_TABLE ||
   "pending mitigations table name not found";
+export const getPreMitigationsTableName = () =>
+  process.env.PRE_MITIGATIONS_TABLE ||
+  "pending pre mitigations table name not found";
 export const getCimitStubTtl = async () =>
   parseInt(
     await getSsmParameter(process.env.CIMIT_PARAM_BASE_PATH + CIMIT_STUB_TTL),

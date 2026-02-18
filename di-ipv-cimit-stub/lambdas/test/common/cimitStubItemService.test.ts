@@ -1,9 +1,9 @@
-jest.mock("../../../src/common/configService", () => ({
+jest.mock("../../src/common/configService", () => ({
   getCimitStubTableName: jest.fn().mockReturnValue("mock-table"),
   getCimitStubTtl: jest.fn().mockResolvedValue(1800),
 }));
 
-jest.mock("../../../src/clients/dynamoDBClient", () => ({
+jest.mock("../../src/clients/dynamoDBClient", () => ({
   dynamoDBClient: {
     query: jest.fn(),
     putItem: jest.fn(),
@@ -11,9 +11,9 @@ jest.mock("../../../src/clients/dynamoDBClient", () => ({
   },
 }));
 
-import { dynamoDBClient } from "../../../src/clients/dynamoDBClient";
-import * as cimitStubItemService from "../../../src/common/cimitStubItemService";
-import { CimitStubItem } from "../../../src/common/contraIndicatorTypes";
+import { dynamoDBClient } from "../../src/clients/dynamoDBClient";
+import * as cimitStubItemService from "../../src/common/cimitStubItemService";
+import { CimitStubItem } from "../../src/common/contraIndicatorTypes";
 import { marshall } from "@aws-sdk/util-dynamodb";
 
 const USER_ID = "user-id-1";

@@ -8,6 +8,7 @@ import {
 } from "../../common/apiResponseBuilder";
 import { FailedToParseRequestError } from "../../common/exceptions";
 import { addUserCIs } from "../../common/contraIndicatorsService";
+import { HEADER_IP_ADDRESS, HEADER_JOURNEY_ID } from "../../common/constants";
 
 const FAILURE_RESPONSE = "fail";
 const SUCCESS_RESPONSE = "success";
@@ -51,8 +52,8 @@ const parseRequest = (
   }
   const headers = request.headers;
   return {
-    govuk_signin_journey_id: headers["govuk_signin_journey_id"],
-    ip_address: headers["ip-address"],
+    govuk_signin_journey_id: headers[HEADER_JOURNEY_ID],
+    ip_address: headers[HEADER_IP_ADDRESS],
     signed_jwt: signedJwt,
   };
 };

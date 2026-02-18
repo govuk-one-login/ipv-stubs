@@ -6,6 +6,7 @@ import {
 import { FailedToParseRequestError } from "../../common/exceptions";
 import { decodeJwt, JWTPayload } from "jose";
 import { completePendingMitigation } from "../../common/pendingMitigationService";
+import { HEADER_IP_ADDRESS, HEADER_JOURNEY_ID } from "../../common/constants";
 
 const FAILURE_RESPONSE = "fail";
 const SUCCESS_RESPONSE = "success";
@@ -72,8 +73,8 @@ const buildParsedRequest = (
     throw new FailedToParseRequestError("No headers present in request");
   }
   return {
-    govuk_signin_journey_id: headers["govuk_signin_journey_id"],
-    ip_address: headers["ip-address"],
+    govuk_signin_journey_id: headers[HEADER_JOURNEY_ID],
+    ip_address: headers[HEADER_IP_ADDRESS],
     signed_jwts: signedJwts,
   };
 };

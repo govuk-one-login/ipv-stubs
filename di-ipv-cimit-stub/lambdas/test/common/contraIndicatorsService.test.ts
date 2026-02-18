@@ -1,5 +1,5 @@
 // This mock has to be set up before we import anything that might use config.
-jest.mock("../../../src/common/configService", () => ({
+jest.mock("../../src/common/configService", () => ({
   getCimitSigningKey: jest.fn().mockResolvedValue("mock-signing-key"),
   getCimitComponentId: jest.fn().mockResolvedValue("mock-component-id"),
   getCimitStubTableName: jest.fn().mockReturnValue("mock-table"),
@@ -7,9 +7,12 @@ jest.mock("../../../src/common/configService", () => ({
   isRunningLocally: false,
 }));
 
-import * as cimitStubItemService from "../../../src/common/cimitStubItemService";
-import { addUserCIs } from "../../../src/common/contraIndicatorsService";
-import { PutContraIndicatorRequest } from "../../../src/internal-api/put-contra-indicators/putContraIndicatorsHandler";
+import * as cimitStubItemService from "../../src/common/cimitStubItemService";
+import { addUserCIs } from "../../src/common/contraIndicatorsService";
+import { PutContraIndicatorRequest } from "../../src/internal-api/put-contra-indicators/putContraIndicatorsHandler";
+import * as preMitigationService from "../../src/common/preMitigationService";
+
+jest.mock("../../src/common/preMitigationService");
 
 const SIGNED_CRI_VC_WITH_ONE_CI =
   "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1cm46dXVpZDpjMjNlYzE2Ni0yYzMyLTRmMDAtYmRmZS1iMjkzOThlMzY4MDEiLCJhdWQiOiJodHRwczpcL1wvaWRlbnRpdHkuYnVpbGQuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE2OTIyNjc2NTMsImlzcyI6Imh0dHBzOlwvXC9rYnYtY3JpLnN0dWJzLmFjY291bnQuZ292LnVrIiwidmMiOnsidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsIklkZW50aXR5Q2hlY2tDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidHlwZSI6IkdpdmVuTmFtZSIsInZhbHVlIjoiTWFyeSJ9LHsidHlwZSI6IkZhbWlseU5hbWUiLCJ2YWx1ZSI6IldhdHNvbiJ9XX1dLCJiaXJ0aERhdGUiOlt7InZhbHVlIjoiMTkzMi0wMi0yNSJ9XSwiYWRkcmVzcyI6W3siYnVpbGRpbmdOYW1lIjoiMjIxQiIsInN0cmVldE5hbWUiOiJCQUtFUiBTVFJFRVQiLCJwb3N0YWxDb2RlIjoiTlcxIDZYRSIsImFkZHJlc3NMb2NhbGl0eSI6IkxPTkRPTiIsInZhbGlkRnJvbSI6IjE4ODctMDEtMDEifV19LCJldmlkZW5jZSI6W3sidmVyaWZpY2F0aW9uU2NvcmUiOjAsImNpIjpbIlYwMyJdLCJ0eG4iOiIxOGZiZmU5My0yZTcxLTQ0YmItODhjNS0wZjdkZTYwZmJlODAiLCJ0eXBlIjoiSWRlbnRpdHlDaGVjayJ9XX0sImp0aSI6Ijg2ZTc3NmQxLTVjNmMtNDIzYy05OWNmLWUyZjYxOTQyYzY0YiJ9.TO4mRYGbD9QPxI3W8_gKmB87qTcIehhWXQ2RQgPvWrVbYynai0JDuphYRclXraLIBOAh_XK2mtBCpFnK9Rj0OQ"; // pragma: allowlist secret
@@ -130,5 +133,21 @@ test("addUserCisShouldStoreDrivingPermitIdentifierIfPresent", async () => {
   expect(mockPersist).toHaveBeenCalledTimes(1);
   expect(mockPersist).toHaveBeenCalledWith(
     expect.objectContaining(expectedCiRecordValues),
+  );
+});
+
+test("addUserCisShouldApplyPreMitigations", async () => {
+  const putContraIndicatorsRequest: PutContraIndicatorRequest = {
+    govuk_signin_journey_id: "govuk_signin_journey_id",
+    ip_address: "ip_address",
+    signed_jwt: SIGNED_CRI_VC_WITH_ONE_CI,
+  };
+
+  await addUserCIs(putContraIndicatorsRequest);
+
+  expect(preMitigationService.applyPreMitigationsToItems).toHaveBeenCalledTimes(1);
+  expect(preMitigationService.applyPreMitigationsToItems).toHaveBeenCalledWith(
+    "urn:uuid:c23ec166-2c32-4f00-bdfe-b29398e36801",
+    expect.any(Array),
   );
 });
