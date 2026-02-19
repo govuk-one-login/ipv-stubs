@@ -20,7 +20,7 @@ dependencies {
 	implementation  'com.sparkjava:spark-core:2.9.4',
 			'com.sparkjava:spark-template-mustache:2.7.1',
 			'com.nimbusds:nimbus-jose-jwt:10.7',
-			'org.slf4j:slf4j-simple:1.7.36'
+			'org.slf4j:slf4j-simple:2.0.17'
 
 	constraints {
 		implementation("org.eclipse.jetty:jetty-server:10.0.26") {
