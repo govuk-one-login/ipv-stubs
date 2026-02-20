@@ -60,6 +60,38 @@
       }
     },
     {
+      "criType": "Fraud Check (Stub)",
+      "label": "Failed fraud check (Mortality) (M1C)",
+      "payload": {
+        "type": "IdentityCheck",
+        "identityFraudScore": 0,
+        "checkDetails": [
+          {
+            "checkMethod": "data",
+            "fraudCheck": "applicable_authoritative_source"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "available_authoritative_source"
+          }
+        ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data",
+            "fraudCheck": "mortality_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "identity_theft_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "synthetic_identity_check"
+          }
+        ]
+      }
+    },
+    {
       "criType": "Experian Knowledge Based Verification (Stub)",
       "label": "Passed verification (M1A) with checkDetails",
       "payload": {
