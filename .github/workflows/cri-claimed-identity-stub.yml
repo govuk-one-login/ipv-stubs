@@ -2,6 +2,17 @@ name: Claimed Identity Collector CRI Stub - Secure Pipeline build, push & Ship
 on:
   workflow_dispatch:
   workflow_call:
+    secrets:
+      CRI_CI_ARTIFACT_BUCKET_NAME:
+        required: true
+      CONTAINER_SIGN_KMS_KEY:
+        required: true
+      DYNATRACE_PAAS_TOKEN:
+        required: true
+      CRI_CI_ECR_REPOSITORY:
+        required: true
+      CRI_CI_GH_ACTIONS_ROLE_ARN:
+        required: true
 
 jobs:
   dockerBuildAndPush:
