@@ -2,6 +2,17 @@ name: Bank account verification CRI Stub - Secure Pipeline build, push & Ship
 on:
   workflow_dispatch:
   workflow_call:
+    secrets:
+      CRI_BAV_ARTIFACT_BUCKET_NAME:
+        required: true
+      CONTAINER_SIGN_KMS_KEY:
+        required: true
+      DYNATRACE_PAAS_TOKEN:
+        required: true
+      CRI_BAV_ECR_REPOSITORY:
+        required: true
+      CRI_BAV_GH_ACTIONS_ROLE_ARN:
+        required: true
 
 jobs:
   dockerBuildAndPush:
