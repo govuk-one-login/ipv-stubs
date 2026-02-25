@@ -70,7 +70,7 @@ headers:
 
 #### POST to `/user/<userId>/cis`
 
-This is a management endpoint. It accepts data about CIs in the form of an array of `UserCisRequest`s for a user and writes it to `CIMIT_STUB_TABLE_NAME`. This data can
+This is a management endpoint (it is on the external API). It accepts data about CIs in the form of an array of `UserCisRequest`s for a user and writes it to `CIMIT_STUB_TABLE_NAME`. This data can
 include mitigations on the CIs.
 
 ##### Examples
@@ -105,7 +105,7 @@ body:
 
 #### PUT or POST to `/user/<userId>/mitigations/<ciCode>`
 
-This is a management endpoint. The body of this call should be a `UserMitigationRequest` and contains a JWT ID (JTI) for the VC that should trigger a mitigation, and the list of mitigations to use.
+This is a management endpoint (it is on the external API). The body of this call should be a `UserMitigationRequest` and contains a JWT ID (JTI) for the VC that should trigger a mitigation, and the list of mitigations to use.
 The `UserId` and CI code are passed in the URL.
 This data is put into a `PendingMitigationItem` and stored in the dynamo table specified by `PENDING_MITIGATIONS_TABLE`.
 
@@ -119,7 +119,7 @@ curl -X POST -d '{"mitigations": ["M02", "M03"], "vcJti": "<jti from mitigating 
 
 #### POST to `/user/<userId>/premitigations/<ciCode>`
 
-This is a management endpoint for setting up pre-mitigations that will be automatically applied to CIs when they are created.
+This is a management endpoint (it is on the external API) for setting up pre-mitigations that will be automatically applied to CIs when they are created.
 This is needed to simulate scenarios where the CI is mitigated by a VC that CIMIT has received previously.
 
 The request body should be a `UserPreMitigationRequest` containing the list of mitigations to apply.
