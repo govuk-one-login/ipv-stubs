@@ -64,6 +64,7 @@
       "label": "Failed fraud check (Mortality) (M1C)",
       "payload": {
         "type": "IdentityCheck",
+        "activityHistoryScore": 0,
         "identityFraudScore": 0,
         "checkDetails": [
           {
