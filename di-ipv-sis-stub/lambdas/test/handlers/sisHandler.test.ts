@@ -77,9 +77,9 @@ describe("getUserIdentityHandler", () => {
       isValid: true,
       expired: false,
     };
-    vi
-      .mocked(getUserIdentity)
-      .mockResolvedValue(expectedUserIdentity as UserIdentity);
+    vi.mocked(getUserIdentity).mockResolvedValue(
+      expectedUserIdentity as UserIdentity,
+    );
     vi.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
 
     // Act
@@ -192,9 +192,9 @@ describe("getUserIdentityHandler", () => {
 
   it("should return 401 if getUserIdFromBearerToken throws InvalidAuthHeader", async () => {
     // Arrange
-    vi
-      .mocked(getUserIdFromBearerToken)
-      .mockRejectedValue(new InvalidAuthHeader("Missing Authorization header"));
+    vi.mocked(getUserIdFromBearerToken).mockRejectedValue(
+      new InvalidAuthHeader("Missing Authorization header"),
+    );
 
     // Act
     const res = (await postUserIdentityHandler(
@@ -208,11 +208,9 @@ describe("getUserIdentityHandler", () => {
 
   it("should return 403 if getUserIdFromBearerToken throws InvalidAccessToken", async () => {
     // Arrange
-    vi
-      .mocked(getUserIdFromBearerToken)
-      .mockRejectedValue(
-        new InvalidAccessToken("Failed to verify bearer token"),
-      );
+    vi.mocked(getUserIdFromBearerToken).mockRejectedValue(
+      new InvalidAccessToken("Failed to verify bearer token"),
+    );
 
     // Act
     const res = (await postUserIdentityHandler(
@@ -226,9 +224,9 @@ describe("getUserIdentityHandler", () => {
 
   it("should return 500 if unknown error is thrown", async () => {
     // Arrange
-    vi
-      .mocked(getUserIdFromBearerToken)
-      .mockRejectedValue(new Error("Failed to get parameter from SSM"));
+    vi.mocked(getUserIdFromBearerToken).mockRejectedValue(
+      new Error("Failed to get parameter from SSM"),
+    );
 
     // Act
     const res = (await postUserIdentityHandler(
