@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest --config=jest.config.test.js",
+    "test": "vitest --config=vitest.config.ts",
     "compile": "tsc",
     "format": "eslint --ext=ts . && prettier --list-different .",
     "fix": "eslint --ext=ts --quiet --fix . && prettier --write .",
@@ -36,6 +36,7 @@
     "@types/uuid": "^9.0.7",
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "aws-sdk-client-mock": "^4.1.0",
     "aws-sdk-client-mock-jest": "^4.1.0",
     "eslint": "^8.57.1",
@@ -44,6 +45,7 @@
     "globals": "^16.3.0",
     "jest": "^29.7.0",
     "typescript": "^5.3.2",
-    "typescript-eslint": "^8.41.0"
+    "typescript-eslint": "^8.41.0",
+    "vitest": "^4.0.18"
   }
 }
