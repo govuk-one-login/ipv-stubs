@@ -4,7 +4,6 @@ module.exports = {
     es6: true,
     es2020: true,
     browser: true,
-    jest: true,
   },
   globals: {
     expect: true,
