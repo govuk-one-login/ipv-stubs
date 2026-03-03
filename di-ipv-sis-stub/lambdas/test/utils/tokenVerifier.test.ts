@@ -1,4 +1,4 @@
-import { jwtVerify, JWTVerifyResult, ResolvedKey, KeyLike } from "jose";
+import { jwtVerify, JWTVerifyResult, ResolvedKey } from "jose";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { getUserIdFromBearerToken } from "../../src/utils/tokenVerifier";
 import {
@@ -25,7 +25,7 @@ describe("getUserIdFromBearerToken", () => {
       payload: {
         sub: TEST_USER_ID,
       },
-    } as JWTVerifyResult<unknown> & ResolvedKey<KeyLike>;
+    } as JWTVerifyResult<unknown> & ResolvedKey;
     vi.mocked(getParameter).mockResolvedValue("some-key");
     vi.mocked(jwtVerify).mockResolvedValue(jwtPayload);
 
@@ -40,7 +40,7 @@ describe("getUserIdFromBearerToken", () => {
     // Arrange
     const jwtPayload = {
       payload: {},
-    } as JWTVerifyResult<unknown> & ResolvedKey<KeyLike>;
+    } as JWTVerifyResult<unknown> & ResolvedKey;
     vi.mocked(getParameter).mockResolvedValue("some-key");
     vi.mocked(jwtVerify).mockResolvedValue(jwtPayload);
 
