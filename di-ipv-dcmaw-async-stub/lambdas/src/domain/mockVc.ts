@@ -24,7 +24,7 @@ export async function buildMockVc(
   const documentDetails = DOCUMENT_CLAIMS[documentType];
 
   return {
-    jti: crypto.randomUUID(),
+    jti: `urn:uuid:${crypto.randomUUID()}`,
     iss: config.vcIssuer,
     aud: config.vcAudience,
     sub: userId,
@@ -71,7 +71,7 @@ export async function buildMockVcFromSubjectAndEvidence(
   const config = await getConfig();
   const timestamp = Math.round(new Date().getTime() / 1000);
   return {
-    jti: crypto.randomUUID(),
+    jti: `urn:uuid:${crypto.randomUUID()}`,
     iss: config.vcIssuer,
     aud: config.vcAudience,
     sub: userId,
