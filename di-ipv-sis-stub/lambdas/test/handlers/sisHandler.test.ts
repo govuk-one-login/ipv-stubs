@@ -21,12 +21,12 @@ import {
   UserIdentity,
 } from "../../src/domain/userIdentity";
 
-jest.mock("../../src/services/sisService", () => ({
-  getUserIdentity: jest.fn(),
+vi.mock("../../src/services/sisService", () => ({
+  getUserIdentity: vi.fn(),
 }));
 
-jest.mock("../../src/utils/tokenVerifier", () => ({
-  getUserIdFromBearerToken: jest.fn(),
+vi.mock("../../src/utils/tokenVerifier", () => ({
+  getUserIdFromBearerToken: vi.fn(),
 }));
 
 const TEST_USER_ID = "userId";
@@ -58,8 +58,8 @@ describe("getUserIdentityHandler", () => {
       kidValid: true,
       signatureValid: true,
     };
-    jest.mocked(getUserIdentity).mockResolvedValue(expectedUserIdentity);
-    jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
+    vi.mocked(getUserIdentity).mockResolvedValue(expectedUserIdentity);
+    vi.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
 
     // Act
     const res = (await postUserIdentityHandler(
@@ -77,10 +77,10 @@ describe("getUserIdentityHandler", () => {
       isValid: true,
       expired: false,
     };
-    jest
-      .mocked(getUserIdentity)
-      .mockResolvedValue(expectedUserIdentity as UserIdentity);
-    jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
+    vi.mocked(getUserIdentity).mockResolvedValue(
+      expectedUserIdentity as UserIdentity,
+    );
+    vi.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
 
     // Act
     const res = (await postUserIdentityHandler(
@@ -94,8 +94,8 @@ describe("getUserIdentityHandler", () => {
 
   it("should return 404 if no SI record is found for user or if si record if malformed", async () => {
     // Arrange
-    jest.mocked(getUserIdentity).mockResolvedValue(null);
-    jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
+    vi.mocked(getUserIdentity).mockResolvedValue(null);
+    vi.mocked(getUserIdFromBearerToken).mockResolvedValueOnce(TEST_USER_ID);
 
     // Act
     const res = (await postUserIdentityHandler(
@@ -132,7 +132,7 @@ describe("getUserIdentityHandler", () => {
     "should return 400 if given $case",
     async ({ testBody, expectErrorMessage }) => {
       // Arrange
-      jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce("userId");
+      vi.mocked(getUserIdFromBearerToken).mockResolvedValueOnce("userId");
 
       // Act
       const res = (await postUserIdentityHandler({
@@ -150,7 +150,7 @@ describe("getUserIdentityHandler", () => {
 
   it("should return 400 if no userId found", async () => {
     // Arrange
-    jest.mocked(getUserIdFromBearerToken).mockResolvedValueOnce("");
+    vi.mocked(getUserIdFromBearerToken).mockResolvedValueOnce("");
 
     // Act
     const res = (await postUserIdentityHandler(
@@ -192,9 +192,9 @@ describe("getUserIdentityHandler", () => {
 
   it("should return 401 if getUserIdFromBearerToken throws InvalidAuthHeader", async () => {
     // Arrange
-    jest
-      .mocked(getUserIdFromBearerToken)
-      .mockRejectedValue(new InvalidAuthHeader("Missing Authorization header"));
+    vi.mocked(getUserIdFromBearerToken).mockRejectedValue(
+      new InvalidAuthHeader("Missing Authorization header"),
+    );
 
     // Act
     const res = (await postUserIdentityHandler(
@@ -208,11 +208,9 @@ describe("getUserIdentityHandler", () => {
 
   it("should return 403 if getUserIdFromBearerToken throws InvalidAccessToken", async () => {
     // Arrange
-    jest
-      .mocked(getUserIdFromBearerToken)
-      .mockRejectedValue(
-        new InvalidAccessToken("Failed to verify bearer token"),
-      );
+    vi.mocked(getUserIdFromBearerToken).mockRejectedValue(
+      new InvalidAccessToken("Failed to verify bearer token"),
+    );
 
     // Act
     const res = (await postUserIdentityHandler(
@@ -226,9 +224,9 @@ describe("getUserIdentityHandler", () => {
 
   it("should return 500 if unknown error is thrown", async () => {
     // Arrange
-    jest
-      .mocked(getUserIdFromBearerToken)
-      .mockRejectedValue(new Error("Failed to get parameter from SSM"));
+    vi.mocked(getUserIdFromBearerToken).mockRejectedValue(
+      new Error("Failed to get parameter from SSM"),
+    );
 
     // Act
     const res = (await postUserIdentityHandler(
