@@ -27,7 +27,7 @@ dependencies {
 			because "older versions introduce a vulnerability"
 		}
 
-		implementation("org.eclipse.jetty:jetty-xml:9.4.52.v20230823") {
+		implementation("org.eclipse.jetty:jetty-xml:12.1.6") {
 			because "older versions introduce a vulnerability"
 		}
 	}
