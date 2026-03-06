@@ -7,15 +7,16 @@ import { StoredIdentityJwt } from "../../src/domain/userIdentity";
 
 const dbMock = mockClient(DynamoDB);
 
-vi.mock("../../src/utils/ssmParameter", () => {
-  const module = vi.importActual("../../src/utils/ssmParameter");
+jest.mock("../../src/utils/ssmParameter", () => {
+  const module = jest.requireActual("../../src/utils/ssmParameter");
   return {
+    __esModule: true,
     ...module,
-    getSsmParameter: vi.fn(),
+    getSsmParameter: jest.fn(),
   };
 });
 
-vi.mock("../../src/config/config", () => ({
+jest.mock("../../src/config/config", () => ({
   config: {
     sisParamsBasePath: "/some/base",
   },
@@ -37,7 +38,7 @@ const MOCK_USER_IDENTITY = {
 
 beforeEach(() => {
   dbMock.reset();
-  vi.resetAllMocks();
+  jest.resetAllMocks();
 });
 
 describe("getUserIdentity", () => {
@@ -178,13 +179,9 @@ describe("getUserIdentity", () => {
 
   it("should default expired to false", async () => {
     // Arrange
+    const { expired, ...mockUserIdentityWithoutExpired } = MOCK_USER_IDENTITY;
     dbMock.on(QueryCommand).resolves({
-      Items: [
-        marshall(
-          { ...MOCK_USER_IDENTITY, expired: undefined },
-          { removeUndefinedValues: true },
-        ),
-      ],
+      Items: [marshall({ ...mockUserIdentityWithoutExpired })],
     });
 
     // Act
