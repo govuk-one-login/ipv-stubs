@@ -44,7 +44,8 @@ export const getUserIdentity = async (
   }
 
   const parsedResponse = response.Items.map((siItem) => {
-    const { storedIdentity, levelOfConfidence, isValid, expired } = unmarshall(siItem);
+    const { storedIdentity, levelOfConfidence, isValid, expired } =
+      unmarshall(siItem);
 
     return {
       siJwt: storedIdentity,
