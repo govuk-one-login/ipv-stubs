@@ -144,7 +144,7 @@ Resources:
     Properties:
       FunctionName: !Sub "sisPostUserIdentity-${Environment}"
       CodeUri: "../lambdas"
-      Handler: sisHandler.postUserIdentityHandler
+      Handler: src/handlers/sisHandler.postUserIdentityHandler
       Runtime: nodejs22.x
       PackageType: Zip
       Architectures:
@@ -197,7 +197,11 @@ Resources:
         Minify: true
         Target: "es2022"
         Format: esm
+        OutExtension:
+          - .js=.mjs
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         EntryPoints:
           - src/handlers/sisHandler.ts
 
