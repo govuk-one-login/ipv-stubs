@@ -1,4 +1,4 @@
-import { jwtVerify, JWTVerifyResult, ResolvedKey } from "jose";
+import { jwtVerify, JWTVerifyResult, ResolvedKey, KeyLike } from "jose";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { getUserIdFromBearerToken } from "../../src/utils/tokenVerifier";
 import {
@@ -6,13 +6,13 @@ import {
   InvalidAuthHeader,
 } from "../../src/domain/exceptions";
 
-vi.mock("jose", () => ({
-  jwtVerify: vi.fn(),
-  importSPKI: vi.fn(),
+jest.mock("jose", () => ({
+  jwtVerify: jest.fn(),
+  importSPKI: jest.fn(),
 }));
 
-vi.mock("@aws-lambda-powertools/parameters/ssm", () => ({
-  getParameter: vi.fn(),
+jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
+  getParameter: jest.fn(),
 }));
 
 const TEST_USER_ID = "userId";
@@ -25,9 +25,9 @@ describe("getUserIdFromBearerToken", () => {
       payload: {
         sub: TEST_USER_ID,
       },
-    } as JWTVerifyResult<unknown> & ResolvedKey;
-    vi.mocked(getParameter).mockResolvedValue("some-key");
-    vi.mocked(jwtVerify).mockResolvedValue(jwtPayload);
+    } as JWTVerifyResult<unknown> & ResolvedKey<KeyLike>;
+    jest.mocked(getParameter).mockResolvedValue("some-key");
+    jest.mocked(jwtVerify).mockResolvedValue(jwtPayload);
 
     // Act
     const res = await getUserIdFromBearerToken(TEST_AUTH_HEADER);
@@ -40,9 +40,9 @@ describe("getUserIdFromBearerToken", () => {
     // Arrange
     const jwtPayload = {
       payload: {},
-    } as JWTVerifyResult<unknown> & ResolvedKey;
-    vi.mocked(getParameter).mockResolvedValue("some-key");
-    vi.mocked(jwtVerify).mockResolvedValue(jwtPayload);
+    } as JWTVerifyResult<unknown> & ResolvedKey<KeyLike>;
+    jest.mocked(getParameter).mockResolvedValue("some-key");
+    jest.mocked(jwtVerify).mockResolvedValue(jwtPayload);
 
     // Act
     const res = await getUserIdFromBearerToken(TEST_AUTH_HEADER);
@@ -53,8 +53,10 @@ describe("getUserIdFromBearerToken", () => {
 
   it("should throw is token verification fails", async () => {
     // Arrange
-    vi.mocked(getParameter).mockResolvedValue("some-key");
-    vi.mocked(jwtVerify).mockRejectedValue(new Error("Failed to verify token"));
+    jest.mocked(getParameter).mockResolvedValue("some-key");
+    jest
+      .mocked(jwtVerify)
+      .mockRejectedValue(new Error("Failed to verify token"));
 
     // Act/Assert
     await expect(getUserIdFromBearerToken(TEST_AUTH_HEADER)).rejects.toThrow(
