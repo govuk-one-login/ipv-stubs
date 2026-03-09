@@ -11,8 +11,7 @@ export function isManagementEnqueueVcRequest(
   return underTest.user_id !== undefined;
 }
 
-export interface ManagementEnqueueVcRequestIndividualDetails
-  extends ManagementEnqueueVcRequest {
+export interface ManagementEnqueueVcRequestIndividualDetails extends ManagementEnqueueVcRequest {
   test_user: TestUser;
   document_type: DocumentType;
   evidence_type: EvidenceType;
@@ -33,8 +32,7 @@ export function isManagementEnqueueVcRequestIndividualDetails(
   );
 }
 
-export interface ManagementEnqueueVcRequestEvidenceAndSubject
-  extends ManagementEnqueueVcRequest {
+export interface ManagementEnqueueVcRequestEvidenceAndSubject extends ManagementEnqueueVcRequest {
   credential_subject: object;
   evidence: object;
   nbf?: number;
