@@ -5,8 +5,8 @@
     "private": true,
     "devDependencies": {
         "@aws-sdk/client-sqs": "^3.1004.0",
-        "@types/aws-lambda": "^8.10.142",
-        "@types/node": "^20.14.8",
-        "typescript": "^5.5.4"
+        "@types/aws-lambda": "^8.10.161",
+        "@types/node": "^20.19.37",
+        "typescript": "^5.9.3"
     }
 }
