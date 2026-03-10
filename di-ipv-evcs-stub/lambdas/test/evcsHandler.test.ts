@@ -28,18 +28,19 @@ import {
   PostIdentityRequest,
 } from "../src/domain/requests";
 import { Vot } from "../src/domain/enums/vot";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
-jest.mock("../src/services/evcsService", () => ({
-  processGetUserVCsRequest: jest.fn(),
-  processPatchUserVCsRequest: jest.fn(),
-  processPostUserVCsRequest: jest.fn(),
-  processGetIdentityRequest: jest.fn(),
-  processPostIdentityRequest: jest.fn(),
-  invalidateUserSi: jest.fn(),
+vi.mock("../src/services/evcsService", () => ({
+  processGetUserVCsRequest: vi.fn(),
+  processPatchUserVCsRequest: vi.fn(),
+  processPostUserVCsRequest: vi.fn(),
+  processGetIdentityRequest: vi.fn(),
+  processPostIdentityRequest: vi.fn(),
+  invalidateUserSi: vi.fn(),
 }));
 
-jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
-  getParameter: jest.fn(),
+vi.mock("@aws-lambda-powertools/parameters/ssm", () => ({
+  getParameter: vi.fn(),
 }));
 
 const EVCS_VERIFY_KEY =
@@ -173,11 +174,15 @@ const createEvent = <T>(
     body: JSON.stringify(requestBody),
   }) as APIGatewayProxyEvent;
 
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
 describe("evcs handlers", () => {
   describe("create handler", () => {
     it("should return 202 for a valid request", async () => {
       // arrange
-      jest.mocked(processPostUserVCsRequest).mockResolvedValueOnce({
+      vi.mocked(processPostUserVCsRequest).mockResolvedValueOnce({
         statusCode: 202,
         response: {},
       });
@@ -235,7 +240,7 @@ describe("evcs handlers", () => {
   describe("update handler", () => {
     it("should return 200 for a valid request", async () => {
       // arrange
-      jest.mocked(processPatchUserVCsRequest).mockResolvedValueOnce({
+      vi.mocked(processPatchUserVCsRequest).mockResolvedValueOnce({
         statusCode: 200,
         response: {},
       });
@@ -305,7 +310,7 @@ describe("evcs handlers", () => {
 
     it("should return BadRequest if the credentials do not contain a subject", async () => {
       await expect(
-        getIdentityHandler(buildGetIdentityRequest(TEST_HEADERS_NO_SUBJECT))
+        getIdentityHandler(buildGetIdentityRequest(TEST_HEADERS_NO_SUBJECT)),
       ).resolves.toStrictEqual({
         body: '{"message":"JWT does not include subject"}',
         headers: {
@@ -316,7 +321,7 @@ describe("evcs handlers", () => {
     });
 
     it("should return Ok if the method passes", async () => {
-      jest.mocked(processGetIdentityRequest).mockResolvedValue({
+      vi.mocked(processGetIdentityRequest).mockResolvedValue({
         statusCode: 200,
         response: {},
       });
@@ -336,7 +341,7 @@ describe("evcs handlers", () => {
   describe("post identity handler", () => {
     it("should return 202 for a valid request", async () => {
       // arrange
-      jest.mocked(processPostIdentityRequest).mockResolvedValue({
+      vi.mocked(processPostIdentityRequest).mockResolvedValue({
         statusCode: 202,
         response: {},
       });
@@ -354,7 +359,7 @@ describe("evcs handlers", () => {
 
     it("should return a 500 if saving to EVCS fails", async () => {
       // arrange
-      jest.mocked(processPostIdentityRequest).mockResolvedValue({
+      vi.mocked(processPostIdentityRequest).mockResolvedValue({
         statusCode: 500,
         response: {},
       });
@@ -426,7 +431,7 @@ describe("evcs handlers", () => {
   describe("invalidate stored identity handler", () => {
     it("should return 204 for valid request", async () => {
       // Arrange
-      jest.mocked(invalidateUserSi).mockResolvedValue({
+      vi.mocked(invalidateUserSi).mockResolvedValue({
         statusCode: 204,
       });
 
@@ -461,7 +466,7 @@ describe("evcs handlers", () => {
 
     it("should return 500 if processing fails", async () => {
       // Arrange
-      jest.mocked(invalidateUserSi).mockResolvedValue({
+      vi.mocked(invalidateUserSi).mockResolvedValue({
         statusCode: 500,
       });
 
@@ -479,11 +484,11 @@ describe("evcs handlers", () => {
     it("should return 200 for a valid request with encoded state values", async () => {
       // arrange
       const testResult = { vcs: [] };
-      jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
+      vi.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
         statusCode: 200,
         response: testResult,
       });
-      jest.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+      vi.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
 
       // act
       const response = (await getHandler({
@@ -505,11 +510,11 @@ describe("evcs handlers", () => {
     it("should return 200 for a valid request with not encoded state values", async () => {
       // arrange
       const testResult = { vcs: [] };
-      jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
+      vi.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
         statusCode: 200,
         response: testResult,
       });
-      jest.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+      vi.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
 
       // act
       const response = (await getHandler({
@@ -531,11 +536,11 @@ describe("evcs handlers", () => {
     it("should return 200 for a valid request with all states", async () => {
       // arrange
       const testResult = { vcs: [] };
-      jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
+      vi.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
         statusCode: 200,
         response: testResult,
       });
-      jest.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+      vi.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
 
       // act
       const response = (await getHandler({
@@ -562,11 +567,11 @@ describe("evcs handlers", () => {
     it("should return 200 for a migration request with no access token", async () => {
       // arrange
       const testResult = { vcs: [] };
-      jest.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
+      vi.mocked(processGetUserVCsRequest).mockResolvedValueOnce({
         statusCode: 200,
         response: testResult,
       });
-      jest.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+      vi.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
 
       const event = {
         pathParameters: TEST_PATH_PARAM,

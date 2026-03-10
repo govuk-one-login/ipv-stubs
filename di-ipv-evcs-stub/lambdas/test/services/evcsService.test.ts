@@ -1,4 +1,4 @@
-import { beforeEach } from "@jest/globals";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   DynamoDB,
@@ -17,21 +17,20 @@ import {
 } from "../../src/services/evcsService";
 import { PostIdentityRequest, PutRequest } from "../../src/domain/requests";
 import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
-import "aws-sdk-client-mock-jest";
 import { config } from "../../src/common/config";
 import { Vot } from "../../src/domain/enums/vot";
 import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
 import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
 
-jest.useFakeTimers().setSystemTime(new Date("2025-01-01"));
+vi.useFakeTimers().setSystemTime(new Date("2025-01-01"));
 
-jest.mock("../../src/common/ssmParameter", () => {
-  const module = jest.requireActual("../../src/common/ssmParameter");
-
+vi.mock("../../src/common/ssmParameter", async () => {
+  const module = (await vi.importActual(
+    "../../src/common/ssmParameter",
+  )) as object;
   return {
-    __esModule: true,
     ...module,
-    getSsmParameter: jest.fn(),
+    getSsmParameter: vi.fn(),
   };
 });
 
@@ -74,7 +73,7 @@ const MOCK_TTL = "3600";
 describe("processPostIdentityRequest", () => {
   beforeEach(() => {
     dbMock.reset();
-    jest.mocked(getSsmParameter).mockResolvedValue(MOCK_TTL);
+    vi.mocked(getSsmParameter).mockResolvedValue(MOCK_TTL);
   });
 
   it("should return 200 response when provided just an SI object", async () => {
@@ -92,9 +91,11 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).not.toHaveReceivedCommand(QueryCommand);
+    expect(dbMock.commandCalls(TransactWriteItemsCommand)).toHaveLength(1);
 
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+    expect(
+      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
+    ).toMatchObject({
       TransactItems: [
         createStoredIdentityPutItem({
           recordType: StoredIdentityRecordType.GPG45,
@@ -128,9 +129,11 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
+    expect(dbMock.commandCalls(QueryCommand)).toHaveLength(1);
 
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+    expect(
+      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
+    ).toMatchObject({
       TransactItems: [
         createStubUserVcPutItem({
           vcSignature: TEST_VC1_SIGNATURE,
@@ -179,9 +182,11 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
+    expect(dbMock.commandCalls(QueryCommand)).toHaveLength(1);
 
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+    expect(
+      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
+    ).toMatchObject({
       TransactItems: [
         createStubUserVcPutItem({
           vcSignature: TEST_VC1_SIGNATURE,
@@ -219,9 +224,11 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
+    expect(dbMock.commandCalls(QueryCommand)).toHaveLength(1);
 
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+    expect(
+      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
+    ).toMatchObject({
       TransactItems: [
         createStubUserVcPutItem({
           vcSignature: TEST_VC1_SIGNATURE,
@@ -260,9 +267,11 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
+    expect(dbMock.commandCalls(QueryCommand)).toHaveLength(1);
 
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+    expect(
+      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
+    ).toMatchObject({
       TransactItems: [
         createUserVcUpdateItem({
           vcSignature: TEST_VC1_SIGNATURE,
@@ -306,7 +315,8 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.InternalServerError);
-    expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
+    // NATIVE FIX: Direct length check
+    expect(dbMock.commandCalls(TransactWriteItemsCommand)).toHaveLength(0);
   });
 
   it("should return 500 status code if it fails to complete the transaction", async () => {
@@ -331,16 +341,18 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.InternalServerError);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
+    expect(dbMock.commandCalls(QueryCommand)).toHaveLength(1);
   });
 });
 
 describe("processGetIdentityRequest", () => {
   it("should return 404 is the stored identity is not found", async () => {
+    // Arrange
     dbMock.on(GetItemCommand).resolves({
       $metadata: {},
     } satisfies GetItemCommandOutput);
 
+    // Act/Assert
     await expect(
       processGetIdentityRequest(TEST_USER_ID),
     ).resolves.toStrictEqual({
@@ -350,20 +362,15 @@ describe("processGetIdentityRequest", () => {
   });
 
   it("should return 200 if the stored identity is found with no VCs", async () => {
+    // Arrange
     dbMock
       .on(GetItemCommand)
       .resolves({
         $metadata: {},
         Item: {
-          storedIdentity: {
-            S: TEST_SI_JWT,
-          },
-          isValid: {
-            BOOL: true,
-          },
-          levelOfConfidence: {
-            S: "P3",
-          },
+          storedIdentity: { S: TEST_SI_JWT },
+          isValid: { BOOL: true },
+          levelOfConfidence: { S: "P3" },
         },
       } satisfies GetItemCommandOutput)
       .on(QueryCommand)
@@ -372,6 +379,7 @@ describe("processGetIdentityRequest", () => {
         Items: [],
       } satisfies QueryCommandOutput);
 
+    // Act/Assert
     await expect(
       processGetIdentityRequest(TEST_USER_ID),
     ).resolves.toStrictEqual({
@@ -387,20 +395,15 @@ describe("processGetIdentityRequest", () => {
   });
 
   it("should return 404 if the stored identity is found but is inValid", async () => {
+    // Arrange
     dbMock
       .on(GetItemCommand)
       .resolves({
         $metadata: {},
         Item: {
-          storedIdentity: {
-            S: TEST_SI_JWT,
-          },
-          isValid: {
-            BOOL: false,
-          },
-          levelOfConfidence: {
-            S: "P3",
-          },
+          storedIdentity: { S: TEST_SI_JWT },
+          isValid: { BOOL: false },
+          levelOfConfidence: { S: "P3" },
         },
       } satisfies GetItemCommandOutput)
       .on(QueryCommand)
@@ -409,8 +412,9 @@ describe("processGetIdentityRequest", () => {
         Items: [],
       } satisfies QueryCommandOutput);
 
+    // Act/Assert
     await expect(
-      processGetIdentityRequest(TEST_USER_ID)
+      processGetIdentityRequest(TEST_USER_ID),
     ).resolves.toStrictEqual({
       statusCode: 404,
       response: {
@@ -420,20 +424,15 @@ describe("processGetIdentityRequest", () => {
   });
 
   it("should return 200 if the stored identity is found with VCs", async () => {
+    // Arrange
     dbMock
       .on(GetItemCommand)
       .resolves({
         $metadata: {},
         Item: {
-          storedIdentity: {
-            S: TEST_SI_JWT,
-          },
-          isValid: {
-            BOOL: true,
-          },
-          levelOfConfidence: {
-            S: "P3",
-          },
+          storedIdentity: { S: TEST_SI_JWT },
+          isValid: { BOOL: true },
+          levelOfConfidence: { S: "P3" },
         },
       } satisfies GetItemCommandOutput)
       .on(QueryCommand)
@@ -441,23 +440,18 @@ describe("processGetIdentityRequest", () => {
         $metadata: {},
         Items: [
           {
-            vc: {
-              S: TEST_VC1,
-            },
-            state: {
-              S: "CURRENT",
-            },
+            vc: { S: TEST_VC1 },
+            state: { S: "CURRENT" },
             metadata: {
               M: {
-                Hello: {
-                  S: "World",
-                },
+                Hello: { S: "World" },
               },
             },
           },
         ],
       } satisfies QueryCommandOutput);
 
+    // Act/Assert
     await expect(
       processGetIdentityRequest(TEST_USER_ID),
     ).resolves.toStrictEqual({
@@ -497,7 +491,9 @@ describe("invalidateUserSi", () => {
 
     // Assert
     expect(res.statusCode).toBe(StatusCodes.NoContent);
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+    expect(
+      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
+    ).toMatchObject({
       TransactItems: [
         createUpdateSiIsValidUpdateItem(StoredIdentityRecordType.GPG45),
       ],
@@ -513,7 +509,7 @@ describe("invalidateUserSi", () => {
 
     // Assert
     expect(res.statusCode).toBe(StatusCodes.NotFound);
-    expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
+    expect(dbMock.commandCalls(TransactWriteItemsCommand)).toHaveLength(0);
   });
 
   it("should return 500 if it fails to update the user's stored identity", async () => {
@@ -575,7 +571,9 @@ function createStubUserVcPutItem(putVcDetails: {
           provenance: putVcDetails.provenance || VCProvenance.ONLINE,
           ttl: getTestTtl(),
         },
-        { removeUndefinedValues: true },
+        {
+          removeUndefinedValues: true,
+        },
       ),
     },
   };
@@ -600,7 +598,9 @@ function createStoredIdentityPutItem(putSiDetails: {
           expired: false,
           metadata: putSiDetails.metadata,
         },
-        { removeUndefinedValues: true },
+        {
+          removeUndefinedValues: true,
+        },
       ),
     },
   };

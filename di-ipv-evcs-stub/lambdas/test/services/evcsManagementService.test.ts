@@ -4,7 +4,7 @@ import {
   PutItemCommand,
   QueryCommand,
 } from "@aws-sdk/client-dynamodb";
-import { beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeEach } from "vitest";
 import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { Vot } from "../../src/domain/enums/vot";
@@ -13,7 +13,6 @@ import {
   processCreateStoredIdentity,
   processGetStoredIdentity,
 } from "../../src/services/evcsManagementService";
-import "aws-sdk-client-mock-jest";
 import { StatusCodes } from "../../src/domain/enums";
 
 const dbMock = mockClient(DynamoDB);
@@ -71,7 +70,7 @@ describe("processGetStoredIdentity", () => {
     const res = await processGetStoredIdentity(TEST_USER_ID);
 
     // Assert
-    expect(dbMock).toHaveReceivedCommandWith(QueryCommand, {
+    expect(dbMock.call(0).args[0].input).toEqual({
       KeyConditionExpression: "userId = :userIdValue",
       ExpressionAttributeValues: {
         ":userIdValue": marshall(TEST_USER_ID),
@@ -97,7 +96,7 @@ describe("processGetStoredIdentity", () => {
     const res = await processGetStoredIdentity(TEST_USER_ID);
 
     // Assert
-    expect(dbMock).toHaveReceivedCommandWith(QueryCommand, {
+    expect(dbMock.call(0).args[0].input).toEqual({
       KeyConditionExpression: "userId = :userIdValue",
       ExpressionAttributeValues: {
         ":userIdValue": marshall(TEST_USER_ID),
@@ -114,7 +113,7 @@ describe("processGetStoredIdentity", () => {
     const res = await processGetStoredIdentity(TEST_USER_ID);
 
     // Assert
-    expect(dbMock).toHaveReceivedCommandWith(QueryCommand, {
+    expect(dbMock.call(0).args[0].input).toEqual({
       KeyConditionExpression: "userId = :userIdValue",
       ExpressionAttributeValues: {
         ":userIdValue": marshall(TEST_USER_ID),
@@ -133,8 +132,10 @@ describe("processCreateStoredIdentity", () => {
 
     // Assert
     expect(res.statusCode).toEqual(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommandWith(PutItemCommand, {
-      Item: marshall(GPG45_SI_RECORD_EXPIRED, { removeUndefinedValues: true }),
+    expect(dbMock.commandCalls(PutItemCommand)[0].args[0].input).toEqual({
+      Item: marshall(GPG45_SI_RECORD_EXPIRED, {
+        removeUndefinedValues: true,
+      }),
     });
   });
 
@@ -144,7 +145,7 @@ describe("processCreateStoredIdentity", () => {
 
     // Assert
     expect(res.statusCode).toEqual(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommandWith(PutItemCommand, {
+    expect(dbMock.commandCalls(PutItemCommand)[0].args[0].input).toEqual({
       Item: marshall(GPG45_SI_RECORD, { removeUndefinedValues: true }),
     });
   });
