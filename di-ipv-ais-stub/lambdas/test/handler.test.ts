@@ -295,9 +295,9 @@ describe("Management handler primes AIS endpoint responses", () => {
         resetPassword: false,
       },
       auditLevel: "standard",
-      history: []
-    })
-  })
+      history: [],
+    });
+  });
 });
 
 function getManagementRequest(
