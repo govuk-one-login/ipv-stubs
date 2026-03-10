@@ -19,11 +19,15 @@
     "@types/aws-lambda": "^8.10.161",
     "@types/node": "^22.19.15",
     "@types/uuid": "^9.0.8",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.0",
+    "@typescript-eslint/parser": "^8.57.0",
     "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^9.39.3",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-prettier": "^5.5.5",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.0",
     "vitest": "^4.0.18"
   },
   "scripts": {
@@ -31,8 +35,8 @@
     "watch": "tsc -w",
     "test": "vitest --config=vitest.config.ts",
     "compile": "tsc",
-    "format": "eslint --ext=ts . && prettier --list-different .",
-    "fix": "eslint --ext=ts --quiet --fix . && prettier --write .",
+    "format": "eslint . && prettier --list-different .",
+    "fix": "eslint --quiet --fix . && prettier --write .",
     "lint": "./node_modules/.bin/eslint ."
   }
 }
