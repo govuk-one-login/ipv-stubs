@@ -70,7 +70,7 @@ describe("processGetStoredIdentity", () => {
     const res = await processGetStoredIdentity(TEST_USER_ID);
 
     // Assert
-    expect(dbMock.call(0).args[0].input).toEqual({
+    expect(dbMock).toHaveReceivedCommandWith(QueryCommand, {
       KeyConditionExpression: "userId = :userIdValue",
       ExpressionAttributeValues: {
         ":userIdValue": marshall(TEST_USER_ID),
@@ -96,7 +96,7 @@ describe("processGetStoredIdentity", () => {
     const res = await processGetStoredIdentity(TEST_USER_ID);
 
     // Assert
-    expect(dbMock.call(0).args[0].input).toEqual({
+    expect(dbMock).toHaveReceivedCommandWith(QueryCommand, {
       KeyConditionExpression: "userId = :userIdValue",
       ExpressionAttributeValues: {
         ":userIdValue": marshall(TEST_USER_ID),
@@ -113,7 +113,7 @@ describe("processGetStoredIdentity", () => {
     const res = await processGetStoredIdentity(TEST_USER_ID);
 
     // Assert
-    expect(dbMock.call(0).args[0].input).toEqual({
+    expect(dbMock).toHaveReceivedCommandWith(QueryCommand, {
       KeyConditionExpression: "userId = :userIdValue",
       ExpressionAttributeValues: {
         ":userIdValue": marshall(TEST_USER_ID),
@@ -132,10 +132,8 @@ describe("processCreateStoredIdentity", () => {
 
     // Assert
     expect(res.statusCode).toEqual(StatusCodes.Accepted);
-    expect(dbMock.commandCalls(PutItemCommand)[0].args[0].input).toEqual({
-      Item: marshall(GPG45_SI_RECORD_EXPIRED, {
-        removeUndefinedValues: true,
-      }),
+    expect(dbMock).toHaveReceivedCommandWith(PutItemCommand, {
+      Item: marshall(GPG45_SI_RECORD_EXPIRED, { removeUndefinedValues: true }),
     });
   });
 
@@ -145,7 +143,7 @@ describe("processCreateStoredIdentity", () => {
 
     // Assert
     expect(res.statusCode).toEqual(StatusCodes.Accepted);
-    expect(dbMock.commandCalls(PutItemCommand)[0].args[0].input).toEqual({
+    expect(dbMock).toHaveReceivedCommandWith(PutItemCommand, {
       Item: marshall(GPG45_SI_RECORD, { removeUndefinedValues: true }),
     });
   });

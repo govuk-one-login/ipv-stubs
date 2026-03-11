@@ -17,6 +17,7 @@ import {
 } from "../../src/services/evcsService";
 import { PostIdentityRequest, PutRequest } from "../../src/domain/requests";
 import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
+import "aws-sdk-client-mock-vitest";
 import { config } from "../../src/common/config";
 import { Vot } from "../../src/domain/enums/vot";
 import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
@@ -25,9 +26,7 @@ import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
 vi.useFakeTimers().setSystemTime(new Date("2025-01-01"));
 
 vi.mock("../../src/common/ssmParameter", async () => {
-  const module = (await vi.importActual(
-    "../../src/common/ssmParameter",
-  )) as object;
+  const module = vi.importActual("../../src/common/ssmParameter") as object;
   return {
     ...module,
     getSsmParameter: vi.fn(),
@@ -91,11 +90,9 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock.commandCalls(TransactWriteItemsCommand)).toHaveLength(1);
+    expect(dbMock).not.toHaveReceivedCommand(QueryCommand);
 
-    expect(
-      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
-    ).toMatchObject({
+    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
       TransactItems: [
         createStoredIdentityPutItem({
           recordType: StoredIdentityRecordType.GPG45,
@@ -129,11 +126,9 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock.commandCalls(QueryCommand)).toHaveLength(1);
+    expect(dbMock).toHaveReceivedCommand(QueryCommand);
 
-    expect(
-      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
-    ).toMatchObject({
+    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
       TransactItems: [
         createStubUserVcPutItem({
           vcSignature: TEST_VC1_SIGNATURE,
@@ -182,11 +177,9 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock.commandCalls(QueryCommand)).toHaveLength(1);
+    expect(dbMock).toHaveReceivedCommand(QueryCommand);
 
-    expect(
-      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
-    ).toMatchObject({
+    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
       TransactItems: [
         createStubUserVcPutItem({
           vcSignature: TEST_VC1_SIGNATURE,
@@ -224,11 +217,9 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock.commandCalls(QueryCommand)).toHaveLength(1);
+    expect(dbMock).toHaveReceivedCommand(QueryCommand);
 
-    expect(
-      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
-    ).toMatchObject({
+    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
       TransactItems: [
         createStubUserVcPutItem({
           vcSignature: TEST_VC1_SIGNATURE,
@@ -267,11 +258,9 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock.commandCalls(QueryCommand)).toHaveLength(1);
+    expect(dbMock).toHaveReceivedCommand(QueryCommand);
 
-    expect(
-      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
-    ).toMatchObject({
+    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
       TransactItems: [
         createUserVcUpdateItem({
           vcSignature: TEST_VC1_SIGNATURE,
@@ -315,8 +304,7 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.InternalServerError);
-    // NATIVE FIX: Direct length check
-    expect(dbMock.commandCalls(TransactWriteItemsCommand)).toHaveLength(0);
+    expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
   });
 
   it("should return 500 status code if it fails to complete the transaction", async () => {
@@ -341,7 +329,7 @@ describe("processPostIdentityRequest", () => {
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.InternalServerError);
-    expect(dbMock.commandCalls(QueryCommand)).toHaveLength(1);
+    expect(dbMock).toHaveReceivedCommand(QueryCommand);
   });
 });
 
@@ -368,9 +356,15 @@ describe("processGetIdentityRequest", () => {
       .resolves({
         $metadata: {},
         Item: {
-          storedIdentity: { S: TEST_SI_JWT },
-          isValid: { BOOL: true },
-          levelOfConfidence: { S: "P3" },
+          storedIdentity: {
+            S: TEST_SI_JWT,
+          },
+          isValid: {
+            BOOL: true,
+          },
+          levelOfConfidence: {
+            S: "P3",
+          },
         },
       } satisfies GetItemCommandOutput)
       .on(QueryCommand)
@@ -401,9 +395,15 @@ describe("processGetIdentityRequest", () => {
       .resolves({
         $metadata: {},
         Item: {
-          storedIdentity: { S: TEST_SI_JWT },
-          isValid: { BOOL: false },
-          levelOfConfidence: { S: "P3" },
+          storedIdentity: {
+            S: TEST_SI_JWT,
+          },
+          isValid: {
+            BOOL: false,
+          },
+          levelOfConfidence: {
+            S: "P3",
+          },
         },
       } satisfies GetItemCommandOutput)
       .on(QueryCommand)
@@ -430,9 +430,15 @@ describe("processGetIdentityRequest", () => {
       .resolves({
         $metadata: {},
         Item: {
-          storedIdentity: { S: TEST_SI_JWT },
-          isValid: { BOOL: true },
-          levelOfConfidence: { S: "P3" },
+          storedIdentity: {
+            S: TEST_SI_JWT,
+          },
+          isValid: {
+            BOOL: true,
+          },
+          levelOfConfidence: {
+            S: "P3",
+          },
         },
       } satisfies GetItemCommandOutput)
       .on(QueryCommand)
@@ -440,11 +446,17 @@ describe("processGetIdentityRequest", () => {
         $metadata: {},
         Items: [
           {
-            vc: { S: TEST_VC1 },
-            state: { S: "CURRENT" },
+            vc: {
+              S: TEST_VC1,
+            },
+            state: {
+              S: "CURRENT",
+            },
             metadata: {
               M: {
-                Hello: { S: "World" },
+                Hello: {
+                  S: "World",
+                },
               },
             },
           },
@@ -491,9 +503,7 @@ describe("invalidateUserSi", () => {
 
     // Assert
     expect(res.statusCode).toBe(StatusCodes.NoContent);
-    expect(
-      dbMock.commandCalls(TransactWriteItemsCommand)[0].args[0].input,
-    ).toMatchObject({
+    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
       TransactItems: [
         createUpdateSiIsValidUpdateItem(StoredIdentityRecordType.GPG45),
       ],
@@ -509,7 +519,7 @@ describe("invalidateUserSi", () => {
 
     // Assert
     expect(res.statusCode).toBe(StatusCodes.NotFound);
-    expect(dbMock.commandCalls(TransactWriteItemsCommand)).toHaveLength(0);
+    expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
   });
 
   it("should return 500 if it fails to update the user's stored identity", async () => {
@@ -571,9 +581,7 @@ function createStubUserVcPutItem(putVcDetails: {
           provenance: putVcDetails.provenance || VCProvenance.ONLINE,
           ttl: getTestTtl(),
         },
-        {
-          removeUndefinedValues: true,
-        },
+        { removeUndefinedValues: true },
       ),
     },
   };
@@ -598,9 +606,7 @@ function createStoredIdentityPutItem(putSiDetails: {
           expired: false,
           metadata: putSiDetails.metadata,
         },
-        {
-          removeUndefinedValues: true,
-        },
+        { removeUndefinedValues: true },
       ),
     },
   };
