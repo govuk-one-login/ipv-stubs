@@ -198,6 +198,10 @@ Resources:
         Minify: true
         Target: "es2022"
         Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/evcsHandler.ts
@@ -262,6 +266,10 @@ Resources:
         Minify: true
         Target: "es2022"
         Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/evcsHandler.ts
@@ -329,6 +337,10 @@ Resources:
         Minify: true
         Target: "es2022"
         Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/evcsHandler.ts
@@ -395,6 +407,10 @@ Resources:
         Minify: true
         Target: "es2022"
         Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/evcsHandler.ts
@@ -462,6 +478,10 @@ Resources:
         Minify: true
         Target: "es2022"
         Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/evcsHandler.ts
@@ -532,6 +552,10 @@ Resources:
         Minify: true
         Target: "es2022"
         Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/evcsHandler.ts
@@ -599,6 +623,10 @@ Resources:
         Minify: true
         Target: "es2022"
         Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/evcsManagementHandler.ts
@@ -666,6 +694,10 @@ Resources:
         Minify: true
         Target: "es2022"
         Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/evcsManagementHandler.ts
