@@ -14,10 +14,11 @@ import {
 import { StoredIdentityRecordType } from "../src/domain/enums/StoredIdentityRecordType";
 import { Vot } from "../src/domain/enums/vot";
 import { StatusCodes } from "../src/domain/enums";
+import { describe, it, expect, vi } from "vitest";
 
-jest.mock("../src/services/evcsManagementService", () => ({
-  processGetStoredIdentity: jest.fn(),
-  processCreateStoredIdentity: jest.fn(),
+vi.mock("../src/services/evcsManagementService", () => ({
+  processGetStoredIdentity: vi.fn(),
+  processCreateStoredIdentity: vi.fn(),
 }));
 
 const TEST_USER_ID = "test-user-id";
@@ -36,7 +37,7 @@ describe("evcs management handlers", () => {
         levelOfConfidence: Vot.P2,
         expired: false,
       };
-      jest.mocked(processGetStoredIdentity).mockResolvedValue({
+      vi.mocked(processGetStoredIdentity).mockResolvedValue({
         storedIdentities: [expectedGpg45Si],
       });
       const getRequest = generateGetStoredIdentityRequest(TEST_USER_ID);
@@ -68,7 +69,7 @@ describe("evcs management handlers", () => {
     it("should return 404 if no identity found for user", async () => {
       // Arrange
       const getRequest = generateGetStoredIdentityRequest(TEST_USER_ID);
-      jest.mocked(processGetStoredIdentity).mockResolvedValue({
+      vi.mocked(processGetStoredIdentity).mockResolvedValue({
         storedIdentities: [],
       });
 
@@ -87,11 +88,9 @@ describe("evcs management handlers", () => {
     it("should return 500 if processGetStoredIdentity throws an error", async () => {
       // Arrange
       const getRequest = generateGetStoredIdentityRequest(TEST_USER_ID);
-      jest
-        .mocked(processGetStoredIdentity)
-        .mockRejectedValue(
-          new Error("Something bad happened with retrieving the identity"),
-        );
+      vi.mocked(processGetStoredIdentity).mockRejectedValue(
+        new Error("Something bad happened with retrieving the identity"),
+      );
 
       // Act
       const res = (await getUserStoredIdentityHandler(
@@ -120,7 +119,7 @@ describe("evcs management handlers", () => {
           },
         }),
       } as APIGatewayProxyEvent;
-      jest.mocked(processCreateStoredIdentity).mockResolvedValue({
+      vi.mocked(processCreateStoredIdentity).mockResolvedValue({
         response: { result: "success" },
         statusCode: StatusCodes.Accepted,
       });
@@ -147,7 +146,7 @@ describe("evcs management handlers", () => {
           },
         }),
       } as APIGatewayProxyEvent;
-      jest.mocked(processCreateStoredIdentity).mockResolvedValue({
+      vi.mocked(processCreateStoredIdentity).mockResolvedValue({
         response: { result: "failed" },
         statusCode: StatusCodes.InternalServerError,
       });

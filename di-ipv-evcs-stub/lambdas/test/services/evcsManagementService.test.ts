@@ -4,7 +4,7 @@ import {
   PutItemCommand,
   QueryCommand,
 } from "@aws-sdk/client-dynamodb";
-import { beforeEach } from "@jest/globals";
+import { describe, it, expect, beforeEach } from "vitest";
 import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import { Vot } from "../../src/domain/enums/vot";
@@ -13,7 +13,6 @@ import {
   processCreateStoredIdentity,
   processGetStoredIdentity,
 } from "../../src/services/evcsManagementService";
-import "aws-sdk-client-mock-jest";
 import { StatusCodes } from "../../src/domain/enums";
 
 const dbMock = mockClient(DynamoDB);

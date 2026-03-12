@@ -1,4 +1,4 @@
-import { beforeEach } from "@jest/globals";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   DynamoDB,
@@ -17,21 +17,19 @@ import {
 } from "../../src/services/evcsService";
 import { PostIdentityRequest, PutRequest } from "../../src/domain/requests";
 import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
-import "aws-sdk-client-mock-jest";
+import "aws-sdk-client-mock-vitest";
 import { config } from "../../src/common/config";
 import { Vot } from "../../src/domain/enums/vot";
 import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
 import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
 
-jest.useFakeTimers().setSystemTime(new Date("2025-01-01"));
+vi.useFakeTimers().setSystemTime(new Date("2025-01-01"));
 
-jest.mock("../../src/common/ssmParameter", () => {
-  const module = jest.requireActual("../../src/common/ssmParameter");
-
+vi.mock("../../src/common/ssmParameter", async () => {
+  const module = vi.importActual("../../src/common/ssmParameter") as object;
   return {
-    __esModule: true,
     ...module,
-    getSsmParameter: jest.fn(),
+    getSsmParameter: vi.fn(),
   };
 });
 
@@ -74,7 +72,7 @@ const MOCK_TTL = "3600";
 describe("processPostIdentityRequest", () => {
   beforeEach(() => {
     dbMock.reset();
-    jest.mocked(getSsmParameter).mockResolvedValue(MOCK_TTL);
+    vi.mocked(getSsmParameter).mockResolvedValue(MOCK_TTL);
   });
 
   it("should return 200 response when provided just an SI object", async () => {
@@ -337,10 +335,12 @@ describe("processPostIdentityRequest", () => {
 
 describe("processGetIdentityRequest", () => {
   it("should return 404 is the stored identity is not found", async () => {
+    // Arrange
     dbMock.on(GetItemCommand).resolves({
       $metadata: {},
     } satisfies GetItemCommandOutput);
 
+    // Act/Assert
     await expect(
       processGetIdentityRequest(TEST_USER_ID),
     ).resolves.toStrictEqual({
@@ -350,6 +350,7 @@ describe("processGetIdentityRequest", () => {
   });
 
   it("should return 200 if the stored identity is found with no VCs", async () => {
+    // Arrange
     dbMock
       .on(GetItemCommand)
       .resolves({
@@ -372,6 +373,7 @@ describe("processGetIdentityRequest", () => {
         Items: [],
       } satisfies QueryCommandOutput);
 
+    // Act/Assert
     await expect(
       processGetIdentityRequest(TEST_USER_ID),
     ).resolves.toStrictEqual({
@@ -387,6 +389,7 @@ describe("processGetIdentityRequest", () => {
   });
 
   it("should return 404 if the stored identity is found but is inValid", async () => {
+    // Arrange
     dbMock
       .on(GetItemCommand)
       .resolves({
@@ -409,8 +412,9 @@ describe("processGetIdentityRequest", () => {
         Items: [],
       } satisfies QueryCommandOutput);
 
+    // Act/Assert
     await expect(
-      processGetIdentityRequest(TEST_USER_ID)
+      processGetIdentityRequest(TEST_USER_ID),
     ).resolves.toStrictEqual({
       statusCode: 404,
       response: {
@@ -420,6 +424,7 @@ describe("processGetIdentityRequest", () => {
   });
 
   it("should return 200 if the stored identity is found with VCs", async () => {
+    // Arrange
     dbMock
       .on(GetItemCommand)
       .resolves({
@@ -458,6 +463,7 @@ describe("processGetIdentityRequest", () => {
         ],
       } satisfies QueryCommandOutput);
 
+    // Act/Assert
     await expect(
       processGetIdentityRequest(TEST_USER_ID),
     ).resolves.toStrictEqual({
