@@ -1,4 +1,4 @@
-name: Sustainability-Scanner 
+name: Sustainability-Scanner
 
 on:
   pull_request:
@@ -26,15 +26,13 @@ jobs:
             const score = result.sustainability_score
             const number_failed_rules = result.failed_rules.length
 
-            if (score === 0) {
-              body = `✅ Your current sustainability score is **${score}**. Sustainability scanner did not find any improvements to apply to your template.`
-            } else {
+            if (score !== 0) {
               body = `❌ Your current sustainability score is **${score}**. Sustainability scanner suggests **${number_failed_rules}** improvements to apply to your template.\nCheck out the details of the sustainability scanner here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              })
             }
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            })
