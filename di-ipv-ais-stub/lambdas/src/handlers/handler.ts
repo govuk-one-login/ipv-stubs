@@ -19,10 +19,7 @@ export async function handler(
     const response = await getAisResponse(decodeURIComponent(userId));
 
     if (!response) {
-      return buildApiResponse(
-          cases["AIS_NO_INTERVENTION"],
-          200,
-      );
+      return buildApiResponse(cases["AIS_NO_INTERVENTION"], 200);
     }
 
     // Artificially delay the response
@@ -30,10 +27,7 @@ export async function handler(
 
     // Non-200 responses do not have bodies
     if (response?.statusCode === 200) {
-      return buildApiResponse(
-        response?.responseBody ?? {},
-        200,
-      );
+      return buildApiResponse(response?.responseBody ?? {}, 200);
     }
 
     return buildApiResponse({}, response?.statusCode);

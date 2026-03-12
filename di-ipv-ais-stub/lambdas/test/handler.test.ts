@@ -20,25 +20,25 @@ describe("Management handler primes AIS endpoint responses", () => {
   let handler: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   beforeEach(async () => {
-    jest.resetModules();
+    vi.resetModules();
 
     mockDynamoClient = {
-      putItem: jest.fn(),
-      getItem: jest.fn(),
+      putItem: vi.fn(),
+      getItem: vi.fn(),
     };
 
-    jest.doMock("../src/utils/dynamoDbClient", () => ({
+    vi.doMock("../src/utils/dynamoDbClient", () => ({
       __esModule: true,
       default: mockDynamoClient,
     }));
 
-    jest.doMock("../src/utils/config", () => ({
+    vi.doMock("../src/utils/config", () => ({
       __esModule: true,
       config: {
         aisStubUserEvidenceTableName: "stub-table-name",
         aisParamBasePath: "/test/path/",
       },
-      getSsmParameter: jest.fn().mockResolvedValue("60000"),
+      getSsmParameter: vi.fn().mockResolvedValue("60000"),
     }));
 
     managementHandler = (await import("../src/handlers/managementHandler"))
@@ -295,9 +295,9 @@ describe("Management handler primes AIS endpoint responses", () => {
         resetPassword: false,
       },
       auditLevel: "standard",
-      history: []
-    })
-  })
+      history: [],
+    });
+  });
 });
 
 function getManagementRequest(
