@@ -17,27 +17,17 @@ java {
 }
 
 dependencies {
-	implementation  'com.sparkjava:spark-core:2.9.4',
-			'com.sparkjava:spark-template-mustache:2.7.1',
+	implementation  'io.javalin:javalin:7.0.1',
+			"io.javalin:javalin-rendering-mustache:7.0.1",
 			'com.nimbusds:nimbus-jose-jwt:10.8',
 			'org.slf4j:slf4j-simple:2.0.17'
-
-	constraints {
-		implementation("org.eclipse.jetty:jetty-server:10.0.26") {
-			because "older versions introduce a vulnerability"
-		}
-
-		implementation("org.eclipse.jetty:jetty-xml:9.4.52.v20230823") {
-			because "older versions introduce a vulnerability"
-		}
-	}
 
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:6.0.3'
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:6.0.3'
 }
 
 application {
-	mainClass = 'Main'
+	mainClass = 'uk.gov.di.ipv.publiccredentialjwkcreator.App'
 }
 
 run {
