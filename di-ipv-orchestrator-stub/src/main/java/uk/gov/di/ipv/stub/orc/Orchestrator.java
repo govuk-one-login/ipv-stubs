@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.stub.orc;
 
 import io.javalin.Javalin;
+import io.javalin.config.RoutesConfig;
 import io.javalin.rendering.template.JavalinMustache;
 import uk.gov.di.ipv.stub.orc.config.OrchestratorConfig;
 import uk.gov.di.ipv.stub.orc.handlers.BasicAuthHandler;
@@ -21,26 +22,27 @@ public class Orchestrator {
         var app =
                 Javalin.create(
                         config -> {
-                            config.showJavalinBanner = false;
+                            config.startup.showJavalinBanner = false;
                             config.staticFiles.add("/public");
                             config.fileRenderer(new JavalinMustache());
+
+                            initRoutes(config.routes);
                         });
-        initRoutes(app);
         app.start(Integer.parseInt(OrchestratorConfig.PORT));
     }
 
-    public void initRoutes(Javalin app) {
+    public void initRoutes(RoutesConfig routesConfig) {
         if (OrchestratorConfig.BASIC_AUTH_ENABLE) {
             BasicAuthHandler basicAuthHandler = new BasicAuthHandler();
-            app.before(basicAuthHandler::authFilter);
+            routesConfig.before(basicAuthHandler::authFilter);
         }
-        app.get("/", HomeHandler::serveHomePage);
-        app.get("/authorize", ipvHandler::doAuthorize);
-        app.get("/authorize-error", ipvHandler::doAuthorizeError);
-        app.get("/callback", ipvHandler::doCallback);
-        app.get("/.well-known/jwks.json", jwksHandler::getResource);
+        routesConfig.get("/", HomeHandler::serveHomePage);
+        routesConfig.get("/authorize", ipvHandler::doAuthorize);
+        routesConfig.get("/authorize-error", ipvHandler::doAuthorizeError);
+        routesConfig.get("/callback", ipvHandler::doCallback);
+        routesConfig.get("/.well-known/jwks.json", jwksHandler::getResource);
 
-        app.error(
+        routesConfig.error(
                 500,
                 ctx ->
                         ctx.html(
