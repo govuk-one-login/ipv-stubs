@@ -1,6 +1,7 @@
 package uk.gov.di.ipv.stub.cred;
 
 import io.javalin.Javalin;
+import io.javalin.config.RoutesConfig;
 import io.javalin.rendering.template.JavalinMustache;
 import uk.gov.di.ipv.stub.cred.auth.ClientJwtVerifier;
 import uk.gov.di.ipv.stub.cred.config.CredentialIssuerConfig;
@@ -40,14 +41,6 @@ public class CredentialIssuer {
     private final GenerateCredentialHandler generateCredentialHandler;
 
     public CredentialIssuer() {
-        var app =
-                Javalin.create(
-                        config -> {
-                            config.showJavalinBanner = false;
-                            config.staticFiles.add("/public");
-                            config.fileRenderer(new JavalinMustache());
-                        });
-
         AuthCodeService authCodeService = new AuthCodeService();
         TokenService tokenService = new TokenService();
         Validator validator = new Validator(authCodeService);
@@ -82,34 +75,42 @@ public class CredentialIssuer {
         healthCheckHandler = new HealthCheckHandler();
         generateCredentialHandler = new GenerateCredentialHandler(vcGenerator);
 
-        initRoutes(app);
-        initErrorMapping(app);
+        var app =
+                Javalin.create(
+                        config -> {
+                            config.startup.showJavalinBanner = false;
+                            config.staticFiles.add("/public");
+                            config.fileRenderer(new JavalinMustache());
+
+                            initRoutes(config.routes);
+                            initErrorMapping(config.routes);
+                        });
 
         app.start(Integer.parseInt(CredentialIssuerConfig.PORT));
     }
 
-    private void initRoutes(Javalin app) {
-        app.get("/", healthCheckHandler::healthy);
-        app.get(AUTHORIZE_ENDPOINT, authorizeHandler::doAuthorize);
-        app.post(AUTHORIZE_ENDPOINT, authorizeHandler::formAuthorize);
-        app.post(API_AUTHORIZE_ENDPOINT, authorizeHandler::apiAuthorize);
-        app.post(TOKEN_ENDPOINT, tokenHandler::issueAccessToken);
+    private void initRoutes(RoutesConfig routesConfig) {
+        routesConfig.get("/", healthCheckHandler::healthy);
+        routesConfig.get(AUTHORIZE_ENDPOINT, authorizeHandler::doAuthorize);
+        routesConfig.post(AUTHORIZE_ENDPOINT, authorizeHandler::formAuthorize);
+        routesConfig.post(API_AUTHORIZE_ENDPOINT, authorizeHandler::apiAuthorize);
+        routesConfig.post(TOKEN_ENDPOINT, tokenHandler::issueAccessToken);
         if (getCriType().equals(CriType.DOC_CHECK_APP_CRI_TYPE)) {
-            app.post(CREDENTIALS_ENDPOINT, docAppCredentialHandler::getResource);
+            routesConfig.post(CREDENTIALS_ENDPOINT, docAppCredentialHandler::getResource);
         } else if (getCriType().equals(CriType.F2F_CRI_TYPE)) {
-            app.post(CREDENTIALS_ENDPOINT, f2fHandler::getResource);
+            routesConfig.post(CREDENTIALS_ENDPOINT, f2fHandler::getResource);
         } else {
-            app.post(CREDENTIALS_ENDPOINT, credentialHandler::getResource);
+            routesConfig.post(CREDENTIALS_ENDPOINT, credentialHandler::getResource);
         }
-        app.post(
+        routesConfig.post(
                 "/credentials/generate",
                 generateCredentialHandler
                         ::generateCredential); // Make this able to take pending record as well?
-        app.get("/.well-known/jwks.json", jwksHandler::getResource);
+        routesConfig.get("/.well-known/jwks.json", jwksHandler::getResource);
     }
 
-    private void initErrorMapping(Javalin app) {
-        app.error(
+    private void initErrorMapping(RoutesConfig routesConfig) {
+        routesConfig.error(
                 500,
                 ctx -> ctx.html("<html><body><h1>Error! Something went wrong!</h1></body></html>"));
     }
