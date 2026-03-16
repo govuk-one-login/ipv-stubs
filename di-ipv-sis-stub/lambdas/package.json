@@ -12,7 +12,7 @@
     "watch": "tsc -w",
     "test": "vitest --config=vitest.config.ts",
     "compile": "tsc",
-    "format": "eslint . && prettier --list-different .",
+    "check": "eslint . && prettier --list-different .",
     "fix": "eslint --quiet --fix . && prettier --write .",
     "lint": "./node_modules/.bin/eslint ."
   },
