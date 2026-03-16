@@ -1,26 +1,27 @@
+import { describe, it, expect, vi, beforeEach, MockInstance } from "vitest";
 import {
   APIGatewayEventDefaultAuthorizerContext,
   APIGatewayEventRequestContextWithAuthorizer,
 } from "aws-lambda/common/api-gateway";
 
-jest.mock(
+vi.mock(
   "../../../src/external-api/stub-management/service/userService",
   () => ({
-    addUserCis: jest.fn(),
-    updateUserCis: jest.fn(),
+    addUserCis: vi.fn(),
+    updateUserCis: vi.fn(),
   }),
 );
 
-jest.mock("../../../src/common/cimitStubItemService", () => ({
-  getCiForUserId: jest.fn(),
+vi.mock("../../../src/common/cimitStubItemService", () => ({
+  getCiForUserId: vi.fn(),
 }));
 
-jest.mock("../../../src/common/pendingMitigationService", () => ({
-  persistPendingMitigation: jest.fn(),
+vi.mock("../../../src/common/pendingMitigationService", () => ({
+  persistPendingMitigation: vi.fn(),
 }));
 
-jest.mock("../../../src/common/preMitigationService", () => ({
-  persistPreMitigation: jest.fn(),
+vi.mock("../../../src/common/preMitigationService", () => ({
+  persistPreMitigation: vi.fn(),
 }));
 
 import { APIGatewayProxyEvent } from "aws-lambda";
@@ -30,9 +31,12 @@ import * as cimitStubItemService from "../../../src/common/cimitStubItemService"
 import * as pendingMitigationService from "../../../src/common/pendingMitigationService";
 import * as preMitigationService from "../../../src/common/preMitigationService";
 
+const mockGetCi =
+  cimitStubItemService.getCiForUserId as unknown as MockInstance;
+
 describe("stubManagementHandler", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const createEvent = (
@@ -225,9 +229,7 @@ describe("stubManagementHandler", () => {
   describe("Mitigation requests", () => {
     ["POST", "PUT"].forEach((method) => {
       it(`should add pending mitigation when valid mitigation request - ${method}`, async () => {
-        (
-          cimitStubItemService.getCiForUserId as jest.Mock
-        ).mockResolvedValueOnce([{}]);
+        vi.mocked(mockGetCi).mockResolvedValueOnce([{}]);
         const userMitigationRequest = { mitigations: ["V01"], vcJti: "jti123" };
 
         const event = createEvent(
@@ -252,9 +254,8 @@ describe("stubManagementHandler", () => {
 
     ["POST", "PUT"].forEach((method) => {
       it(`should return 404 if CI item not found for mitigation request - ${method}`, async () => {
-        (
-          cimitStubItemService.getCiForUserId as jest.Mock
-        ).mockResolvedValueOnce(null);
+        vi.mocked(mockGetCi).mockResolvedValueOnce(null);
+
         const userMitigationRequest = { mitigations: ["V01"], vcJti: "jti123" };
 
         const event = createEvent(
@@ -294,9 +295,7 @@ describe("stubManagementHandler", () => {
 
     ["POST", "PUT"].forEach((method) => {
       it("should handle default user ID format in mitigations pattern", async () => {
-        (
-          cimitStubItemService.getCiForUserId as jest.Mock
-        ).mockResolvedValueOnce([{}]);
+        vi.mocked(mockGetCi).mockResolvedValueOnce([{}]);
         const urlEncodedUserId =
           "urn%3Auuid%3Ac08630f8-330e-43f8-a782-21432a197fc5";
         const userMitigationRequest = { mitigations: ["V01"], vcJti: "jti123" };
@@ -333,9 +332,7 @@ describe("stubManagementHandler", () => {
             txn: "",
           },
         ];
-        (
-          cimitStubItemService.getCiForUserId as jest.Mock
-        ).mockResolvedValueOnce([]);
+        vi.mocked(mockGetCi).mockResolvedValueOnce([]);
 
         const event = createEvent(
           method,
@@ -378,7 +375,7 @@ describe("stubManagementHandler", () => {
       );
     });
 
-    it("should return bad request when invalid request body for prem itigation", async () => {
+    it("should return bad request when invalid request body for premitigation", async () => {
       const userId = "123";
       const ci = "456";
 
@@ -447,7 +444,7 @@ describe("stubManagementHandler", () => {
         txn: "",
       },
     ];
-    (userService.addUserCis as jest.Mock).mockRejectedValueOnce(
+    vi.mocked(userService.addUserCis).mockRejectedValueOnce(
       new Error("Unknown exception occurred."),
     );
 

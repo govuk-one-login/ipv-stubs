@@ -1,25 +1,30 @@
-jest.mock("../../src/common/configService", () => ({
-  getCimitStubTableName: jest.fn().mockReturnValue("mock-table"),
-  getCimitStubTtl: jest.fn().mockResolvedValue(1800),
-}));
-
-jest.mock("../../src/clients/dynamoDBClient", () => ({
-  dynamoDBClient: {
-    query: jest.fn(),
-    putItem: jest.fn(),
-    deleteItem: jest.fn(),
-  },
-}));
-
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { dynamoDBClient } from "../../src/clients/dynamoDBClient";
 import * as cimitStubItemService from "../../src/common/cimitStubItemService";
 import { CimitStubItem } from "../../src/common/contraIndicatorTypes";
 import { marshall } from "@aws-sdk/util-dynamodb";
 
+interface MockQueryResponse {
+  Items: Record<string, unknown>[];
+}
+
+vi.mock("../../src/common/configService", () => ({
+  getCimitStubTableName: vi.fn().mockReturnValue("mock-table"),
+  getCimitStubTtl: vi.fn().mockResolvedValue(1800),
+}));
+
+vi.mock("../../src/clients/dynamoDBClient", () => ({
+  dynamoDBClient: {
+    query: vi.fn(),
+    putItem: vi.fn(),
+    deleteItem: vi.fn(),
+  },
+}));
+
 const USER_ID = "user-id-1";
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("getCIsForUserId", () => {
@@ -33,7 +38,9 @@ describe("getCIsForUserId", () => {
       },
     ];
 
-    (dynamoDBClient.query as jest.Mock).mockResolvedValue({
+    vi.mocked(
+      dynamoDBClient.query as unknown as () => Promise<MockQueryResponse>,
+    ).mockResolvedValue({
       Items: mockItems,
     });
 
@@ -60,7 +67,9 @@ describe("getCiForUserId", () => {
       },
     ];
 
-    (dynamoDBClient.query as jest.Mock).mockResolvedValue({
+    vi.mocked(
+      dynamoDBClient.query as unknown as () => Promise<MockQueryResponse>,
+    ).mockResolvedValue({
       Items: mockItems,
     });
 
@@ -102,15 +111,16 @@ describe("persistCimitStubItem", () => {
     await cimitStubItemService.persistCimitStubItem(item);
 
     expect(dynamoDBClient.putItem).toHaveBeenCalledTimes(1);
-    const callArgs = (dynamoDBClient.putItem as jest.Mock).mock.calls[0][0];
-    expect(callArgs.TableName).toBe("mock-table");
-    expect(callArgs.Item).toBeDefined();
-    expect(callArgs.Item.ttl.N).not.toBe("0");
-    expect(callArgs.Item.sortKey.S).toBe(ciCode + "#" + issuanceDate);
-  });
-});
 
-describe("persistCimitStubItem", () => {
+    const callArgs = vi.mocked(dynamoDBClient.putItem).mock.calls[0][0];
+
+    expect(callArgs).toBeDefined();
+    expect(callArgs!.Item).toBeDefined();
+
+    expect(callArgs!.Item!.ttl.N).not.toBe("0");
+    expect(callArgs!.Item!.sortKey.S).toBe(ciCode + "#" + issuanceDate);
+  });
+
   it("should update CimitStubItem with new TTL", async () => {
     const item: CimitStubItem = {
       userId: USER_ID,
@@ -127,11 +137,13 @@ describe("persistCimitStubItem", () => {
     await cimitStubItemService.persistCimitStubItem(item);
 
     expect(dynamoDBClient.putItem).toHaveBeenCalledTimes(1);
-    const callArgs = (dynamoDBClient.putItem as jest.Mock).mock.calls[0][0];
-    expect(callArgs.TableName).toBe("mock-table");
-    expect(callArgs.Item).toBeDefined();
-    expect(callArgs.Item.ttl.N).not.toBe("0");
-    expect(callArgs.Item.sortKey.S).toBe("D01#2023-08-17T10:20:53.000Z");
+
+    const callArgs = vi.mocked(dynamoDBClient.putItem).mock.calls[0][0];
+    expect(callArgs).toBeDefined();
+
+    expect(callArgs!.TableName).toBe("mock-table");
+    expect(callArgs!.Item!.ttl.N).not.toBe("0");
+    expect(callArgs!.Item!.sortKey.S).toBe("D01#2023-08-17T10:20:53.000Z");
   });
 });
 

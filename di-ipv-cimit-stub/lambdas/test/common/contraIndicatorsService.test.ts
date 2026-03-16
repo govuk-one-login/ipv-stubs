@@ -1,9 +1,11 @@
+import { expect, vi, beforeEach, test } from "vitest";
+
 // This mock has to be set up before we import anything that might use config.
-jest.mock("../../src/common/configService", () => ({
-  getCimitSigningKey: jest.fn().mockResolvedValue("mock-signing-key"),
-  getCimitComponentId: jest.fn().mockResolvedValue("mock-component-id"),
-  getCimitStubTableName: jest.fn().mockReturnValue("mock-table"),
-  getCimitStubTtl: jest.fn().mockResolvedValue(1000),
+vi.mock("../../src/common/configService", () => ({
+  getCimitSigningKey: vi.fn().mockResolvedValue("mock-signing-key"),
+  getCimitComponentId: vi.fn().mockResolvedValue("mock-component-id"),
+  getCimitStubTableName: vi.fn().mockReturnValue("mock-table"),
+  getCimitStubTtl: vi.fn().mockResolvedValue(1000),
   isRunningLocally: false,
 }));
 
@@ -12,7 +14,7 @@ import { addUserCIs } from "../../src/common/contraIndicatorsService";
 import { PutContraIndicatorRequest } from "../../src/internal-api/put-contra-indicators/putContraIndicatorsHandler";
 import * as preMitigationService from "../../src/common/preMitigationService";
 
-jest.mock("../../src/common/preMitigationService");
+vi.mock("../../src/common/preMitigationService");
 
 const SIGNED_CRI_VC_WITH_ONE_CI =
   "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1cm46dXVpZDpjMjNlYzE2Ni0yYzMyLTRmMDAtYmRmZS1iMjkzOThlMzY4MDEiLCJhdWQiOiJodHRwczpcL1wvaWRlbnRpdHkuYnVpbGQuYWNjb3VudC5nb3YudWsiLCJuYmYiOjE2OTIyNjc2NTMsImlzcyI6Imh0dHBzOlwvXC9rYnYtY3JpLnN0dWJzLmFjY291bnQuZ292LnVrIiwidmMiOnsidHlwZSI6WyJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsIklkZW50aXR5Q2hlY2tDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidHlwZSI6IkdpdmVuTmFtZSIsInZhbHVlIjoiTWFyeSJ9LHsidHlwZSI6IkZhbWlseU5hbWUiLCJ2YWx1ZSI6IldhdHNvbiJ9XX1dLCJiaXJ0aERhdGUiOlt7InZhbHVlIjoiMTkzMi0wMi0yNSJ9XSwiYWRkcmVzcyI6W3siYnVpbGRpbmdOYW1lIjoiMjIxQiIsInN0cmVldE5hbWUiOiJCQUtFUiBTVFJFRVQiLCJwb3N0YWxDb2RlIjoiTlcxIDZYRSIsImFkZHJlc3NMb2NhbGl0eSI6IkxPTkRPTiIsInZhbGlkRnJvbSI6IjE4ODctMDEtMDEifV19LCJldmlkZW5jZSI6W3sidmVyaWZpY2F0aW9uU2NvcmUiOjAsImNpIjpbIlYwMyJdLCJ0eG4iOiIxOGZiZmU5My0yZTcxLTQ0YmItODhjNS0wZjdkZTYwZmJlODAiLCJ0eXBlIjoiSWRlbnRpdHlDaGVjayJ9XX0sImp0aSI6Ijg2ZTc3NmQxLTVjNmMtNDIzYy05OWNmLWUyZjYxOTQyYzY0YiJ9.TO4mRYGbD9QPxI3W8_gKmB87qTcIehhWXQ2RQgPvWrVbYynai0JDuphYRclXraLIBOAh_XK2mtBCpFnK9Rj0OQ"; // pragma: allowlist secret
@@ -25,12 +27,12 @@ const PASSPORT_VC =
 const DRIVING_PERMIT_VC =
   "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJpc3MiOiJodHRwczovL3Jldmlldy1kLnN0YWdpbmcuYWNjb3VudC5nb3YudWsiLCJzdWIiOiJ1cm46dXVpZDo0NTdkODgwMS0wN2VmLTRmNmQtOWI0Ny04MDY5YjI2YjFjOTYiLCJuYmYiOjE3MDg1MDgyNzcsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJJZGVudGl0eUNoZWNrQ3JlZGVudGlhbCJdLCJjcmVkZW50aWFsU3ViamVjdCI6eyJkcml2aW5nUGVybWl0IjpbeyJwZXJzb25hbE51bWJlciI6IkRFQ0VSNjA3MDg1S0U5TE4iLCJleHBpcnlEYXRlIjoiMjA0Mi0xMC0wMSIsImlzc3VlTnVtYmVyIjoiMjMiLCJpc3N1ZWRCeSI6IkRWTEEiLCJpc3N1ZURhdGUiOiIyMDE4LTA0LTE5In1dLCJuYW1lIjpbeyJuYW1lUGFydHMiOlt7InR5cGUiOiJHaXZlbk5hbWUiLCJ2YWx1ZSI6IktFTk5FVEgifSx7InR5cGUiOiJGYW1pbHlOYW1lIiwidmFsdWUiOiJERUNFUlFVRUlSQSJ9XX1dLCJhZGRyZXNzIjpbeyJpZCI6bnVsbCwicG9Cb3hOdW1iZXIiOm51bGwsInN1YkJ1aWxkaW5nTmFtZSI6bnVsbCwiYnVpbGRpbmdOdW1iZXIiOm51bGwsImJ1aWxkaW5nTmFtZSI6bnVsbCwic3RyZWV0TmFtZSI6bnVsbCwiYWRkcmVzc0xvY2FsaXR5IjpudWxsLCJwb3N0YWxDb2RlIjoiQkEyIDVBQSIsImFkZHJlc3NDb3VudHJ5IjoiR0IifV0sImJpcnRoRGF0ZSI6W3sidmFsdWUiOiIxOTY1LTA3LTA4In1dfSwiZXZpZGVuY2UiOlt7InR5cGUiOiJJZGVudGl0eUNoZWNrIiwidHhuIjoiNTNkZGU2ODEtYzZhZC00MzYzLWFkZWYtZmM0MDAxZmI2MTZiIiwiYWN0aXZpdHlIaXN0b3J5U2NvcmUiOjAsInN0cmVuZ3RoU2NvcmUiOjMsInZhbGlkaXR5U2NvcmUiOjAsImNpIjpbIkQwMiJdLCJmYWlsZWRDaGVja0RldGFpbHMiOlt7ImNoZWNrTWV0aG9kIjoiZGF0YSIsImlkZW50aXR5Q2hlY2tQb2xpY3kiOiJwdWJsaXNoZWQifV19XX0sImp0aSI6InVybjp1dWlkOjYxMDY1YTk2LTA4NDgtNDAxNy05YjE0LWFhODllOGI3ZDAzOCJ9.9M862Le368uXMxzUFpBKg13tBDCZErFXRcyjAuspthTho7qubpvuBkPNqiXL-rmi8ZzvRzY1o3St8iE8uvQV8A"; // pragma: allowlist secret
 
-const mockPersist = jest
+const mockPersist = vi
   .spyOn(cimitStubItemService, "persistCimitStubItem")
   .mockImplementation(async () => {});
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 test("addUserCis should insert", async () => {

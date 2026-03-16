@@ -1,23 +1,38 @@
-jest.mock("../../../../src/common/configService", () => ({
-  getCimitStubTtl: jest.fn().mockResolvedValue(1800),
-}));
-
-jest.mock("../../../../src/common/cimitStubItemService", () => ({
-  persistCimitStubItem: jest.fn(),
-  getCIsForUserId: jest.fn(),
-  deleteCimitStubItem: jest.fn(),
-  createStubItem: jest.requireActual(
-    "../../../../src/common/cimitStubItemService",
-  ).createStubItem,
-}));
-
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import * as userService from "../../../../src/external-api/stub-management/service/userService";
 import * as cimitStubItemService from "../../../../src/common/cimitStubItemService";
 import { CimitStubItem } from "../../../../src/common/contraIndicatorTypes";
 
+vi.mock("../../../../src/common/configService", async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import("../../../../src/common/configService")
+    >();
+  return {
+    ...actual,
+    getCimitStubTtl: vi.fn().mockResolvedValue(1800),
+  };
+});
+
+vi.mock(
+  "../../../../src/common/cimitStubItemService",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("../../../../src/common/cimitStubItemService")
+      >();
+    return {
+      ...actual,
+      persistCimitStubItem: vi.fn(),
+      getCIsForUserId: vi.fn(),
+      deleteCimitStubItem: vi.fn(),
+    };
+  },
+);
+
 describe("userService", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("addUserCis", () => {
@@ -96,7 +111,7 @@ describe("userService", () => {
         },
       ];
 
-      (cimitStubItemService.getCIsForUserId as jest.Mock).mockResolvedValue(
+      vi.mocked(cimitStubItemService.getCIsForUserId).mockResolvedValue(
         existingItems,
       );
 

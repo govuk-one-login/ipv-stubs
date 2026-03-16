@@ -1,24 +1,32 @@
-jest.mock("../../src/common/configService", () => ({
-  getCimitStubTtl: jest.fn().mockResolvedValue(1800),
-  getPreMitigationsTableName: jest
-    .fn()
-    .mockReturnValue("mock-pre-mitigations-table"),
-}));
-
-jest.mock("../../src/clients/dynamoDBClient", () => ({
-  dynamoDBClient: {
-    putItem: jest.fn(),
-    query: jest.fn(),
-  },
-}));
-
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { dynamoDBClient } from "../../src/clients/dynamoDBClient";
 import * as preMitigationService from "../../src/common/preMitigationService";
 import { CimitStubItem } from "../../src/common/contraIndicatorTypes";
 
+interface MockQueryResponse {
+  Items: Record<string, unknown>[];
+}
+
+vi.mock("../../src/common/configService", () => ({
+  getCimitStubTtl: vi.fn().mockResolvedValue(1800),
+  getPreMitigationsTableName: vi
+    .fn()
+    .mockReturnValue("mock-pre-mitigations-table"),
+}));
+
+vi.mock("../../src/clients/dynamoDBClient", () => ({
+  dynamoDBClient: {
+    putItem: vi.fn(),
+    query: vi.fn(),
+  },
+}));
+
+const mockQuery =
+  dynamoDBClient.query as unknown as () => Promise<MockQueryResponse>;
+
 describe("preMitigationService", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe("persistPreMitigation", () => {
@@ -28,7 +36,10 @@ describe("preMitigationService", () => {
       await preMitigationService.persistPreMitigation("userId", "CI", request);
 
       expect(dynamoDBClient.putItem).toHaveBeenCalledTimes(1);
-      const callArgs = (dynamoDBClient.putItem as jest.Mock).mock.calls[0][0];
+
+      const callArgs = vi.mocked(dynamoDBClient.putItem).mock.calls[0][0];
+      expect(callArgs).toBeDefined();
+
       expect(callArgs).toEqual({
         TableName: "mock-pre-mitigations-table",
         Item: {
@@ -57,7 +68,7 @@ describe("preMitigationService", () => {
         },
       ];
 
-      (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({
+      vi.mocked(mockQuery).mockResolvedValueOnce({
         Items: [
           {
             userId: { S: "userId" },
@@ -91,7 +102,7 @@ describe("preMitigationService", () => {
         },
       ];
 
-      (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({
+      vi.mocked(mockQuery).mockResolvedValueOnce({
         Items: [
           {
             userId: { S: "userId" },
@@ -125,7 +136,7 @@ describe("preMitigationService", () => {
         },
       ];
 
-      (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({
+      vi.mocked(mockQuery).mockResolvedValueOnce({
         Items: [
           {
             userId: { S: "userId" },
@@ -159,7 +170,7 @@ describe("preMitigationService", () => {
         },
       ];
 
-      (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({
+      vi.mocked(mockQuery).mockResolvedValueOnce({
         Items: [
           {
             userId: { S: "userId" },
@@ -193,7 +204,9 @@ describe("preMitigationService", () => {
         },
       ];
 
-      (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({ Items: [] });
+      vi.mocked(mockQuery).mockResolvedValueOnce({
+        Items: [],
+      });
 
       await preMitigationService.applyPreMitigationsToItems(
         "userId",
