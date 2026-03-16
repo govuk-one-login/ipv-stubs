@@ -35,7 +35,7 @@
     "watch": "tsc -w",
     "test": "jest --config=jest.config.test.js",
     "compile": "tsc",
-    "format": "eslint --ext=ts . && prettier --list-different .",
+    "check": "eslint --ext=ts . && prettier --list-different .",
     "fix": "eslint --ext=ts --quiet --fix . && prettier --write .",
     "lint": "./node_modules/.bin/eslint ."
   }
