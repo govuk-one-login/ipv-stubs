@@ -145,7 +145,9 @@ test("addUserCisShouldApplyPreMitigations", async () => {
 
   await addUserCIs(putContraIndicatorsRequest);
 
-  expect(preMitigationService.applyPreMitigationsToItems).toHaveBeenCalledTimes(1);
+  expect(preMitigationService.applyPreMitigationsToItems).toHaveBeenCalledTimes(
+    1,
+  );
   expect(preMitigationService.applyPreMitigationsToItems).toHaveBeenCalledWith(
     "urn:uuid:c23ec166-2c32-4f00-bdfe-b29398e36801",
     expect.any(Array),

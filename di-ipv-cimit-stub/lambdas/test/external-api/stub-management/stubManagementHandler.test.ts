@@ -382,11 +382,10 @@ describe("stubManagementHandler", () => {
       const userId = "123";
       const ci = "456";
 
-      const event = createEvent(
-        "PUT",
-        `/user/${userId}/premitigations/${ci}`,
-        { userId, ci },
-      );
+      const event = createEvent("PUT", `/user/${userId}/premitigations/${ci}`, {
+        userId,
+        ci,
+      });
       event.body = "invalid json";
 
       const response = await handler(event);
