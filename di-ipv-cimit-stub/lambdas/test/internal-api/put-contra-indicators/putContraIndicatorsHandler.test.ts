@@ -3,6 +3,10 @@ import { APIGatewayProxyEvent, APIGatewayProxyEventHeaders } from "aws-lambda";
 import { putContraIndicatorsHandler } from "../../../src/internal-api/put-contra-indicators/putContraIndicatorsHandler";
 import { addUserCIs } from "../../../src/common/contraIndicatorsService";
 
+vi.mock("../../../src/common/configService", () => ({
+  isRunningLocally: false,
+}));
+
 const SUCCESS_RESPONSE = '{"result":"success"}';
 
 vi.mock("../../../src/common/contraIndicatorsService", () => ({

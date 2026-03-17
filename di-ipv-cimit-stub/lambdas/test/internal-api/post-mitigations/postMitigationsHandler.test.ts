@@ -13,6 +13,10 @@ import {
   PostMitigationsRequest,
 } from "../../../src/internal-api/post-mitigations/postMitigationsHandler";
 
+vi.mock("../../../src/common/configService", () => ({
+  isRunningLocally: false,
+}));
+
 vi.mock("../../../src/common/pendingMitigationService", () => ({
   completePendingMitigation: vi.fn().mockImplementation(async () => {}),
 }));

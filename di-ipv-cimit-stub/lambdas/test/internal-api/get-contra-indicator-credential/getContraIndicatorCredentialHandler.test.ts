@@ -67,6 +67,7 @@ const buildGetContraIndicatorCredentialRequest = (
 };
 
 vi.mock("../../../src/common/configService", () => ({
+  isRunningLocally: false,
   getCimitSigningKey: vi.fn(),
   getCimitComponentId: vi.fn(),
 }));

@@ -15,18 +15,22 @@
     "jose": "^6.1.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.3",
+    "@eslint/js": "^10.0.1",
+    "globals": "^17.4.0",
     "@govuk-one-login/data-vocab": "2.0.0",
     "@types/aws-lambda": "^8.10.161",
     "@types/node": "^22.19.15",
     "@vitest/coverage-v8": "^4.0.18",
     "@vitest/spy": "^4.0.18",
-    "eslint": "^9.39.3",
+    "@typescript-eslint/parser": "^8.57.0",
+    "typescript-eslint": "^8.57.0",
+    "eslint": "^10.0.3",
     "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-prettier": "^5.5.5",
+    "aws-sdk-client-mock": "^4.1.0",
+    "aws-sdk-client-mock-vitest": "^7.0.1",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.56.1",
     "vitest": "^4.0.18"
   },
   "scripts": {
@@ -34,7 +38,7 @@
     "watch": "tsc -w",
     "test": "vitest --config=vitest.config.ts",
     "compile": "tsc",
-    "format": "eslint . && prettier --list-different .",
+    "check": "eslint --ext=ts . && prettier --list-different .",
     "fix": "eslint --quiet --fix . && prettier --write .",
     "lint": "./node_modules/.bin/eslint ."
   }

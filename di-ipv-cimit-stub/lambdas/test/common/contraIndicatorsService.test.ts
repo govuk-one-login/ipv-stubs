@@ -1,6 +1,5 @@
 import { expect, vi, beforeEach, test } from "vitest";
 
-// This mock has to be set up before we import anything that might use config.
 vi.mock("../../src/common/configService", () => ({
   getCimitSigningKey: vi.fn().mockResolvedValue("mock-signing-key"),
   getCimitComponentId: vi.fn().mockResolvedValue("mock-component-id"),

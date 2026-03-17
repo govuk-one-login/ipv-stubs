@@ -1,18 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as userService from "../../../../src/external-api/stub-management/service/userService";
-import * as cimitStubItemService from "../../../../src/common/cimitStubItemService";
-import { CimitStubItem } from "../../../../src/common/contraIndicatorTypes";
 
-vi.mock("../../../../src/common/configService", async (importOriginal) => {
-  const actual =
-    await importOriginal<
-      typeof import("../../../../src/common/configService")
-    >();
-  return {
-    ...actual,
-    getCimitStubTtl: vi.fn().mockResolvedValue(1800),
-  };
-});
+vi.mock("../../../../src/common/configService", () => ({
+  isRunningLocally: false,
+  getCimitStubTtl: vi.fn().mockResolvedValue(1800),
+}));
 
 vi.mock(
   "../../../../src/common/cimitStubItemService",
@@ -29,6 +20,10 @@ vi.mock(
     };
   },
 );
+
+import * as userService from "../../../../src/external-api/stub-management/service/userService";
+import * as cimitStubItemService from "../../../../src/common/cimitStubItemService";
+import { CimitStubItem } from "../../../../src/common/contraIndicatorTypes";
 
 describe("userService", () => {
   beforeEach(() => {
@@ -62,6 +57,7 @@ describe("userService", () => {
       expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledTimes(
         2,
       );
+
       expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledWith(
         expect.objectContaining({
           userId,
@@ -72,6 +68,7 @@ describe("userService", () => {
           document: "document/this/that",
         }),
       );
+
       expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledWith(
         expect.objectContaining({
           userId,
@@ -121,6 +118,7 @@ describe("userService", () => {
         userId,
         existingItems[0].sortKey,
       );
+
       expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledWith(
         expect.objectContaining({
           userId,
