@@ -281,6 +281,10 @@ describe("stubManagementHandler", () => {
 
         expect(response.statusCode).toBe(404);
         expect(response.body).toContain("not found");
+        expect(cimitStubItemService.getCiForUserId).toHaveBeenCalledWith(
+          "123",
+          "456",
+        );
         expect(
           pendingMitigationService.persistPendingMitigation,
         ).not.toHaveBeenCalled();

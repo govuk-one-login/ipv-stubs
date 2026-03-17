@@ -5,6 +5,7 @@ import {
   QueryCommand,
   PutItemCommand,
   DeleteItemCommand,
+  AttributeValue,
 } from "@aws-sdk/client-dynamodb";
 import "aws-sdk-client-mock-vitest";
 
@@ -16,7 +17,7 @@ vi.mock("../../src/common/configService", () => ({
 
 import * as cimitStubItemService from "../../src/common/cimitStubItemService";
 import { CimitStubItem } from "../../src/common/contraIndicatorTypes";
-import { marshall } from "@aws-sdk/util-dynamodb";
+import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 const USER_ID = "user-id-1";
 
@@ -113,12 +114,13 @@ describe("cimitStubItemService", () => {
 
       const callArgs = dbMock.commandCalls(PutItemCommand)[0].args[0].input;
       expect(callArgs.TableName).toBe("mock-table");
-      expect(callArgs.Item).toBeDefined();
 
-      // @ts-expect-error - Accessing marshalled DynamoDB attribute structure
-      expect(callArgs.Item.ttl.N).not.toBe("0");
-      // @ts-expect-error - Accessing marshalled DynamoDB attribute structure
-      expect(callArgs.Item.sortKey.S).toBe(ciCode + "#" + issuanceDate);
+      const unmarshalledItem = unmarshall(
+        callArgs.Item as Record<string, AttributeValue>,
+      );
+
+      expect(unmarshalledItem.ttl).not.toBe(0);
+      expect(unmarshalledItem.sortKey).toBe(ciCode + "#" + issuanceDate);
     });
 
     it("should update CimitStubItem with new TTL", async () => {
@@ -138,14 +140,14 @@ describe("cimitStubItemService", () => {
 
       await cimitStubItemService.persistCimitStubItem(item);
 
-      expect(dbMock).toHaveReceivedCommand(PutItemCommand);
-
       const callArgs = dbMock.commandCalls(PutItemCommand)[0].args[0].input;
 
-      // @ts-expect-error - Accessing marshalled DynamoDB attribute structure
-      expect(callArgs.Item.ttl.N).not.toBe("0");
-      // @ts-expect-error - Accessing marshalled DynamoDB attribute structure
-      expect(callArgs.Item.sortKey.S).toBe("D01#2023-08-17T10:20:53.000Z");
+      const unmarshalledItem = unmarshall(
+        callArgs.Item as Record<string, AttributeValue>,
+      );
+
+      expect(unmarshalledItem.ttl).not.toBe(0);
+      expect(unmarshalledItem.sortKey).toBe("D01#2023-08-17T10:20:53.000Z");
     });
   });
 
