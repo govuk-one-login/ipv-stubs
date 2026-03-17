@@ -1,6 +1,8 @@
 jest.mock("../../src/common/configService", () => ({
   getCimitStubTtl: jest.fn().mockResolvedValue(1800),
-  getPreMitigationsTableName: jest.fn().mockReturnValue("mock-pre-mitigations-table"),
+  getPreMitigationsTableName: jest
+    .fn()
+    .mockReturnValue("mock-pre-mitigations-table"),
 }));
 
 jest.mock("../../src/clients/dynamoDBClient", () => ({
@@ -66,7 +68,10 @@ describe("preMitigationService", () => {
         ],
       });
 
-      await preMitigationService.applyPreMitigationsToItems("userId", cimitItems);
+      await preMitigationService.applyPreMitigationsToItems(
+        "userId",
+        cimitItems,
+      );
 
       expect(cimitItems[0].mitigations).toEqual(["M01"]);
     });
@@ -97,7 +102,10 @@ describe("preMitigationService", () => {
         ],
       });
 
-      await preMitigationService.applyPreMitigationsToItems("userId", cimitItems);
+      await preMitigationService.applyPreMitigationsToItems(
+        "userId",
+        cimitItems,
+      );
 
       expect(cimitItems[0].mitigations).toEqual(["M01", "M02"]);
     });
@@ -128,7 +136,10 @@ describe("preMitigationService", () => {
         ],
       });
 
-      await preMitigationService.applyPreMitigationsToItems("userId", cimitItems);
+      await preMitigationService.applyPreMitigationsToItems(
+        "userId",
+        cimitItems,
+      );
 
       expect(cimitItems[0].mitigations).toEqual(["M01"]);
     });
@@ -159,7 +170,10 @@ describe("preMitigationService", () => {
         ],
       });
 
-      await preMitigationService.applyPreMitigationsToItems("userId", cimitItems);
+      await preMitigationService.applyPreMitigationsToItems(
+        "userId",
+        cimitItems,
+      );
 
       expect(cimitItems[0].mitigations).toEqual([]);
     });
@@ -181,7 +195,10 @@ describe("preMitigationService", () => {
 
       (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({ Items: [] });
 
-      await preMitigationService.applyPreMitigationsToItems("userId", cimitItems);
+      await preMitigationService.applyPreMitigationsToItems(
+        "userId",
+        cimitItems,
+      );
 
       expect(cimitItems[0].mitigations).toEqual([]);
     });

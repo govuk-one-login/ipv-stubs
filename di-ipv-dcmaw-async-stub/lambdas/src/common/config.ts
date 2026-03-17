@@ -29,6 +29,7 @@ async function getSsmConfig(basePath: string): Promise<SsmConfig> {
   } catch (error) {
     throw new Error(
       `Error thrown getting parameter ${parameterPath}: ${getErrorMessage(error)}`,
+      { cause: error },
     );
   }
 
