@@ -61,7 +61,7 @@ export const addUserCIs = async (
     }
   } catch (error) {
     console.error(getErrorMessage(error));
-    throw new Error("Failed to add user CIs");
+    throw new Error("Failed to add user CIs", { cause: error });
   }
 };
 
