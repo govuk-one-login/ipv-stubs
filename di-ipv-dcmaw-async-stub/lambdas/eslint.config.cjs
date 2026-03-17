@@ -6,6 +6,7 @@ const eslint = require("@eslint/js");
 module.exports = [
   {
     // This ignore should be removed once migrated to ES module
+    // and this file should be renamed to 'eslint.config.mjs'
     ignores: ["eslint.config.cjs"],
   },
   eslint.configs.recommended,
