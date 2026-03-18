@@ -19,7 +19,6 @@ module.exports = [
       globals: {
         ...globals.node,
         ...globals.browser,
-        ...globals.jest,
         expect: true,
       },
     },

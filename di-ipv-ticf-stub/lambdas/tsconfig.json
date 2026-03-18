@@ -11,7 +11,7 @@
     "noUnusedParameters": true,
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "outDir": "lib",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "node"]
   },
   "include": ["./**/*.ts"],
   "exclude": ["node_modules/**/*", ".vscode/**/*"]
