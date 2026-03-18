@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from "vitest";
 import { handler } from "../../src/handlers/credentialHandler";
 import {
   APIGatewayProxyEventHeaders,
@@ -7,27 +8,28 @@ import {
 import CredentialResponse from "../../src/domain/credentialResponse";
 import CredentialRequest from "../../src/domain/credentialRequest";
 
-const TEST_CLIENTID = "TEST_CLIENTID";
-const TEST_SECRET = "TEST_SECRET"; //pragma: allowlist secret
-const TEST_ACCESS_TOKEN = "TEST_ACCESS_TOKEN";
-const TOKEN_LIFETIME = 200;
-
-jest.mock(
-  "../../src/common/config",
-  () => () =>
-    Promise.resolve({
-      dcmawAsyncParamBasePath: "TEST_BASE_PATH",
-      dummyAccessTokenValue: TEST_ACCESS_TOKEN,
-      dummyClientId: TEST_CLIENTID,
-      dummySecret: TEST_SECRET,
-      tokenLifetimeSeconds: TOKEN_LIFETIME,
-    }),
-);
-jest.mock("../../src/services/userStateService", () => ({
-  persistState: jest.fn(),
+const mockedVals = vi.hoisted(() => ({
+  clientId: "TEST_CLIENTID",
+  secret: "TEST_SECRET", //pragma: allowlist secret
+  accessToken: "TEST_ACCESS_TOKEN",
+  tokenLifetime: 200,
 }));
 
-describe("DCMAW Async credential handler", function () {
+vi.mock("../../src/common/config", () => ({
+  default: vi.fn().mockResolvedValue({
+    dcmawAsyncParamBasePath: "TEST_BASE_PATH",
+    dummyAccessTokenValue: mockedVals.accessToken,
+    dummyClientId: mockedVals.clientId,
+    dummySecret: mockedVals.secret,
+    tokenLifetimeSeconds: mockedVals.tokenLifetime,
+  }),
+}));
+
+vi.mock("../../src/services/userStateService", () => ({
+  persistState: vi.fn(),
+}));
+
+describe("DCMAW Async credential handler", () => {
   it("returns a successful pending VC response", async () => {
     // arrange
     const requestBody = getValidRequestBody();
@@ -158,7 +160,7 @@ function getValidEvent(requestBody: object): APIGatewayProxyEventV2 {
   return {
     headers: {
       "content-type": "application/json",
-      authorization: "Bearer " + TEST_ACCESS_TOKEN,
+      authorization: "Bearer " + mockedVals.accessToken,
     } as APIGatewayProxyEventHeaders,
     body: JSON.stringify(requestBody),
   } as APIGatewayProxyEventV2;

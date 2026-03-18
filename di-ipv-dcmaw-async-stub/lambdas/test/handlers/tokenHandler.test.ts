@@ -1,3 +1,4 @@
+import { describe, it, expect, vi } from "vitest";
 import { handler } from "../../src/handlers/tokenHandler";
 import {
   APIGatewayProxyEventHeaders,
@@ -7,24 +8,24 @@ import {
 import { toBase64 } from "../helpers/base64";
 import TokenResponse from "../../src/domain/tokenResponse";
 
-const TEST_CLIENTID = "TEST_CLIENTID";
-const TEST_SECRET = "TEST_SECRET"; //pragma: allowlist secret
-const TEST_ACCESS_TOKEN = "TEST_ACCESS_TOKEN";
-const TOKEN_LIFETIME = 200;
+const mockedVals = vi.hoisted(() => ({
+  clientId: "TEST_CLIENTID",
+  secret: "TEST_SECRET", //pragma: allowlist secret
+  accessToken: "TEST_ACCESS_TOKEN",
+  tokenLifetime: 200,
+}));
 
-jest.mock(
-  "../../src/common/config",
-  () => () =>
-    Promise.resolve({
-      dcmawAsyncParamBasePath: "TEST_BASE_PATH",
-      dummyAccessTokenValue: TEST_ACCESS_TOKEN,
-      dummyClientId: TEST_CLIENTID,
-      dummySecret: TEST_SECRET,
-      tokenLifetimeSeconds: TOKEN_LIFETIME,
-    }),
-);
+vi.mock("../../src/common/config", () => ({
+  default: vi.fn().mockResolvedValue({
+    dcmawAsyncParamBasePath: "TEST_BASE_PATH",
+    dummyAccessTokenValue: mockedVals.accessToken,
+    dummyClientId: mockedVals.clientId,
+    dummySecret: mockedVals.secret,
+    tokenLifetimeSeconds: mockedVals.tokenLifetime,
+  }),
+}));
 
-describe("DCMAW Async credential handler", function () {
+describe("DCMAW Async token handler", () => {
   it("returns a token for a valid request", async () => {
     // act
     const result = (await handler(
@@ -34,16 +35,16 @@ describe("DCMAW Async credential handler", function () {
     // assert
     expect(result.statusCode).toEqual(200);
     const response = JSON.parse(result.body!) as TokenResponse;
-    expect(response.access_token).toEqual(TEST_ACCESS_TOKEN);
+    expect(response.access_token).toEqual(mockedVals.accessToken);
     expect(response.token_type).toEqual("Bearer");
-    expect(response.expires_in).toEqual(TOKEN_LIFETIME);
+    expect(response.expires_in).toEqual(mockedVals.tokenLifetime);
   });
 
   it("returns an error for a request with a bad client ID", async () => {
     // arrange
     const event = getValidEvent();
     event.headers["authorization"] =
-      "Basic " + toBase64(`badClientId:${TEST_SECRET}`);
+      "Basic " + toBase64(`badClientId:${mockedVals.secret}`);
 
     // act
     const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
@@ -58,7 +59,7 @@ describe("DCMAW Async credential handler", function () {
     // arrange
     const event = getValidEvent();
     event.headers["authorization"] =
-      "Basic " + toBase64(`${TEST_CLIENTID}:bad_secret`);
+      "Basic " + toBase64(`${mockedVals.clientId}:bad_secret`);
 
     // act
     const result = (await handler(event)) as APIGatewayProxyStructuredResultV2;
@@ -102,7 +103,8 @@ function getValidEvent(): APIGatewayProxyEventV2 {
   return {
     headers: {
       "content-type": "application/x-www/form-urlencoded",
-      authorization: "Basic " + toBase64(`${TEST_CLIENTID}:${TEST_SECRET}`),
+      authorization:
+        "Basic " + toBase64(`${mockedVals.clientId}:${mockedVals.secret}`),
     } as APIGatewayProxyEventHeaders,
     body: "grant_type=client_credentials",
   } as APIGatewayProxyEventV2;

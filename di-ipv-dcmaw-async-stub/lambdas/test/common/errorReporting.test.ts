@@ -1,9 +1,10 @@
+import { describe, it, expect } from "vitest";
 import getErrorMessage from "../../src/common/errorReporting";
 
 const TEST_MESSAGE = "Test message";
 
-describe("getErrorMessage", function () {
-  it("returns a message from an Error object", async () => {
+describe("getErrorMessage", () => {
+  it("returns a message from an Error object", () => {
     // arrange
     const error = new Error(TEST_MESSAGE);
 
@@ -14,7 +15,7 @@ describe("getErrorMessage", function () {
     expect(result).toEqual(TEST_MESSAGE);
   });
 
-  it("serializes an object without a message property", async () => {
+  it("serializes an object without a message property", () => {
     // arrange
     const error = {
       myMessage: TEST_MESSAGE,
@@ -27,7 +28,7 @@ describe("getErrorMessage", function () {
     expect(result).toEqual('{"myMessage":"Test message"}');
   });
 
-  it("serializes an error that can't be converted to a JSON string", async () => {
+  it("serializes an error that can't be converted to a JSON string", () => {
     // arrange
     const child = {};
     const error = {

@@ -1,3 +1,4 @@
+import { describe, test, expect, vi } from "vitest";
 import { buildMockVc } from "../../src/domain/mockVc";
 import {
   DocumentType,
@@ -10,16 +11,14 @@ import { USER_CLAIMS } from "../../src/data/vcUserClaims";
 import { DOCUMENT_CLAIMS } from "../../src/data/vcDocumentClaims";
 import { EVIDENCE_CLAIMS } from "../../src/data/vcEvidenceClaims";
 
-jest.useFakeTimers().setSystemTime(new Date("2023-01-01"));
+vi.useFakeTimers().setSystemTime(new Date("2023-01-01"));
 
-jest.mock(
-  "../../src/common/config",
-  () => () =>
-    Promise.resolve({
-      vcIssuer: "vc-issuer",
-      vcAudience: "vc-audience",
-    }),
-);
+vi.mock("../../src/common/config", () => ({
+  default: vi.fn().mockResolvedValue({
+    vcIssuer: "vc-issuer",
+    vcAudience: "vc-audience",
+  }),
+}));
 
 const TEST_USER_ID = "testUserId";
 
