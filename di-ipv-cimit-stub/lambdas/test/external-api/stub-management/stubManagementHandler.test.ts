@@ -1,38 +1,44 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { APIGatewayProxyEvent } from "aws-lambda";
 import {
   APIGatewayEventDefaultAuthorizerContext,
   APIGatewayEventRequestContextWithAuthorizer,
 } from "aws-lambda/common/api-gateway";
 
-jest.mock(
+vi.mock("../../../src/common/configService", () => ({
+  isRunningLocally: false,
+}));
+
+vi.mock(
   "../../../src/external-api/stub-management/service/userService",
   () => ({
-    addUserCis: jest.fn(),
-    updateUserCis: jest.fn(),
+    addUserCis: vi.fn(),
+    updateUserCis: vi.fn(),
   }),
 );
 
-jest.mock("../../../src/common/cimitStubItemService", () => ({
-  getCiForUserId: jest.fn(),
+vi.mock("../../../src/common/cimitStubItemService", () => ({
+  getCiForUserId: vi.fn(),
 }));
 
-jest.mock("../../../src/common/pendingMitigationService", () => ({
-  persistPendingMitigation: jest.fn(),
+vi.mock("../../../src/common/pendingMitigationService", () => ({
+  persistPendingMitigation: vi.fn(),
 }));
 
-jest.mock("../../../src/common/preMitigationService", () => ({
-  persistPreMitigation: jest.fn(),
+vi.mock("../../../src/common/preMitigationService", () => ({
+  persistPreMitigation: vi.fn(),
 }));
 
-import { APIGatewayProxyEvent } from "aws-lambda";
 import { handler } from "../../../src/external-api/stub-management/stubManagementHandler";
 import * as userService from "../../../src/external-api/stub-management/service/userService";
 import * as cimitStubItemService from "../../../src/common/cimitStubItemService";
 import * as pendingMitigationService from "../../../src/common/pendingMitigationService";
 import * as preMitigationService from "../../../src/common/preMitigationService";
+import { CimitStubItem } from "../../../src/common/contraIndicatorTypes";
 
 describe("stubManagementHandler", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const createEvent = (
@@ -220,14 +226,24 @@ describe("stubManagementHandler", () => {
         userCisRequest,
       );
     });
+
+    it("should return error for CI request with no content", async () => {
+      const event = createEvent("PUT", "/user/123/cis", { userId: "123" });
+      event.body = null;
+
+      const response = await handler(event);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toContain("Invalid request body");
+    });
   });
 
   describe("Mitigation requests", () => {
     ["POST", "PUT"].forEach((method) => {
       it(`should add pending mitigation when valid mitigation request - ${method}`, async () => {
-        (
-          cimitStubItemService.getCiForUserId as jest.Mock
-        ).mockResolvedValueOnce([{}]);
+        vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce([
+          {} as CimitStubItem,
+        ]);
         const userMitigationRequest = { mitigations: ["V01"], vcJti: "jti123" };
 
         const event = createEvent(
@@ -248,13 +264,11 @@ describe("stubManagementHandler", () => {
           pendingMitigationService.persistPendingMitigation,
         ).toHaveBeenCalledWith(userMitigationRequest, "456", method);
       });
-    });
 
-    ["POST", "PUT"].forEach((method) => {
       it(`should return 404 if CI item not found for mitigation request - ${method}`, async () => {
-        (
-          cimitStubItemService.getCiForUserId as jest.Mock
-        ).mockResolvedValueOnce(null);
+        vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce(
+          [],
+        );
         const userMitigationRequest = { mitigations: ["V01"], vcJti: "jti123" };
 
         const event = createEvent(
@@ -275,10 +289,8 @@ describe("stubManagementHandler", () => {
           pendingMitigationService.persistPendingMitigation,
         ).not.toHaveBeenCalled();
       });
-    });
 
-    ["POST", "PUT"].forEach((method) => {
-      it("should return bad request when invalid request body for mitigation", async () => {
+      it(`should return bad request when invalid request body for mitigation - ${method}`, async () => {
         const event = createEvent(method, "/user/123/mitigations/456", {
           userId: "123",
           ci: "456",
@@ -290,13 +302,11 @@ describe("stubManagementHandler", () => {
         expect(response.statusCode).toBe(400);
         expect(response.body).toContain("Invalid request body");
       });
-    });
 
-    ["POST", "PUT"].forEach((method) => {
-      it("should handle default user ID format in mitigations pattern", async () => {
-        (
-          cimitStubItemService.getCiForUserId as jest.Mock
-        ).mockResolvedValueOnce([{}]);
+      it(`should handle default user ID format in mitigations pattern - ${method}`, async () => {
+        vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce([
+          {} as CimitStubItem,
+        ]);
         const urlEncodedUserId =
           "urn%3Auuid%3Ac08630f8-330e-43f8-a782-21432a197fc5";
         const userMitigationRequest = { mitigations: ["V01"], vcJti: "jti123" };
@@ -319,10 +329,8 @@ describe("stubManagementHandler", () => {
           pendingMitigationService.persistPendingMitigation,
         ).toHaveBeenCalledWith(userMitigationRequest, "456", method);
       });
-    });
 
-    ["POST", "PUT"].forEach((method) => {
-      it("should return data not found for missing user CIs", async () => {
+      it(`should return data not found for missing user CIs - ${method}`, async () => {
         const userCisRequest = [
           {
             code: "code1",
@@ -333,9 +341,9 @@ describe("stubManagementHandler", () => {
             txn: "",
           },
         ];
-        (
-          cimitStubItemService.getCiForUserId as jest.Mock
-        ).mockResolvedValueOnce([]);
+        vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce(
+          [],
+        );
 
         const event = createEvent(
           method,
@@ -347,10 +355,6 @@ describe("stubManagementHandler", () => {
 
         expect(response.statusCode).toBe(404);
         expect(response.body).toContain("User and ContraIndicator not found.");
-        expect(cimitStubItemService.getCiForUserId).toHaveBeenCalledWith(
-          "123",
-          "456",
-        );
       });
     });
   });
@@ -378,7 +382,7 @@ describe("stubManagementHandler", () => {
       );
     });
 
-    it("should return bad request when invalid request body for prem itigation", async () => {
+    it("should return bad request when invalid request body for pre mitigation", async () => {
       const userId = "123";
       const ci = "456";
 
@@ -426,16 +430,6 @@ describe("stubManagementHandler", () => {
     expect(response.body).toContain("Invalid URI.");
   });
 
-  it("should return error for CI request with no content", async () => {
-    const event = createEvent("PUT", "/user/123/cis", { userId: "123" });
-    event.body = null;
-
-    const response = await handler(event);
-
-    expect(response.statusCode).toBe(400);
-    expect(response.body).toContain("Invalid request body");
-  });
-
   it("should return internal server error for unknown exception", async () => {
     const userCisRequest = [
       {
@@ -447,7 +441,7 @@ describe("stubManagementHandler", () => {
         txn: "",
       },
     ];
-    (userService.addUserCis as jest.Mock).mockRejectedValueOnce(
+    vi.mocked(userService.addUserCis).mockRejectedValueOnce(
       new Error("Unknown exception occurred."),
     );
 

@@ -1,30 +1,33 @@
-jest.mock("../../src/common/configService", () => ({
-  getCimitStubTtl: jest.fn().mockResolvedValue(1800),
-  getPendingMitigationsTableName: jest
-    .fn()
-    .mockReturnValue("mock-pending-table"),
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { mockClient } from "aws-sdk-client-mock";
+import {
+  DynamoDB,
+  GetItemCommand,
+  PutItemCommand,
+} from "@aws-sdk/client-dynamodb";
+import "aws-sdk-client-mock-vitest";
+
+vi.mock("../../src/common/configService", () => ({
+  isRunningLocally: false,
+  getCimitStubTtl: vi.fn().mockResolvedValue(1800),
+  getPendingMitigationsTableName: vi.fn().mockReturnValue("mock-pending-table"),
 }));
 
-jest.mock("../../src/clients/dynamoDBClient", () => ({
-  dynamoDBClient: {
-    putItem: jest.fn(),
-    getItem: jest.fn(),
-  },
+vi.mock("../../src/common/cimitStubItemService", () => ({
+  getCiForUserId: vi.fn(),
+  persistCimitStubItem: vi.fn(),
 }));
 
-jest.mock("../../src/common/cimitStubItemService", () => ({
-  getCiForUserId: jest.fn(),
-  persistCimitStubItem: jest.fn(),
-}));
-
-import { dynamoDBClient } from "../../src/clients/dynamoDBClient";
 import * as pendingMitigationService from "../../src/common/pendingMitigationService";
 import * as cimitStubItemService from "../../src/common/cimitStubItemService";
 import { CimitStubItem } from "../../src/common/contraIndicatorTypes";
 
+const dbMock = mockClient(DynamoDB);
+
 describe("pendingMitigationService", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    dbMock.reset();
+    vi.clearAllMocks();
   });
 
   describe("persistPendingMitigation", () => {
@@ -40,9 +43,7 @@ describe("pendingMitigationService", () => {
         "POST",
       );
 
-      expect(dynamoDBClient.putItem).toHaveBeenCalledTimes(1);
-      const callArgs = (dynamoDBClient.putItem as jest.Mock).mock.calls[0][0];
-      expect(callArgs).toEqual({
+      expect(dbMock).toHaveReceivedCommandWith(PutItemCommand, {
         TableName: "mock-pending-table",
         Item: {
           vcJti: { S: "someRandomId" },
@@ -77,10 +78,10 @@ describe("pendingMitigationService", () => {
     });
 
     it("should update cimit item with POST method", async () => {
-      (dynamoDBClient.getItem as jest.Mock).mockResolvedValueOnce({
+      dbMock.on(GetItemCommand).resolves({
         Item: createPendingMitigation("POST"),
       });
-      (cimitStubItemService.getCiForUserId as jest.Mock).mockResolvedValueOnce([
+      vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce([
         cimitStubItem,
       ]);
 
@@ -89,7 +90,7 @@ describe("pendingMitigationService", () => {
         "aUserId",
       );
 
-      expect(dynamoDBClient.getItem).toHaveBeenCalledWith({
+      expect(dbMock).toHaveReceivedCommandWith(GetItemCommand, {
         TableName: "mock-pending-table",
         Key: { vcJti: { S: "aJwtId" } },
       });
@@ -100,19 +101,19 @@ describe("pendingMitigationService", () => {
       expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledTimes(
         1,
       );
-      const updatedItem = (
-        cimitStubItemService.persistCimitStubItem as jest.Mock
-      ).mock.calls[0][0];
+
+      const updatedItem = vi.mocked(cimitStubItemService.persistCimitStubItem)
+        .mock.calls[0][0];
       expect(updatedItem.mitigations).toEqual(["M01", "M02"]);
     });
 
     it("should merge mitigations with POST method", async () => {
       const itemWithMitigations = { ...cimitStubItem, mitigations: ["M03"] };
 
-      (dynamoDBClient.getItem as jest.Mock).mockResolvedValueOnce({
+      dbMock.on(GetItemCommand).resolves({
         Item: createPendingMitigation("POST"),
       });
-      (cimitStubItemService.getCiForUserId as jest.Mock).mockResolvedValueOnce([
+      vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce([
         itemWithMitigations,
       ]);
 
@@ -121,7 +122,7 @@ describe("pendingMitigationService", () => {
         "aUserId",
       );
 
-      expect(dynamoDBClient.getItem).toHaveBeenCalledWith({
+      expect(dbMock).toHaveReceivedCommandWith(GetItemCommand, {
         TableName: "mock-pending-table",
         Key: { vcJti: { S: "aJwtId" } },
       });
@@ -132,17 +133,17 @@ describe("pendingMitigationService", () => {
       expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledTimes(
         1,
       );
-      const updatedItem = (
-        cimitStubItemService.persistCimitStubItem as jest.Mock
-      ).mock.calls[0][0];
+
+      const updatedItem = vi.mocked(cimitStubItemService.persistCimitStubItem)
+        .mock.calls[0][0];
       expect(updatedItem.mitigations).toEqual(["M01", "M02", "M03"]);
     });
 
     it("should replace mitigations with PUT method", async () => {
-      (dynamoDBClient.getItem as jest.Mock).mockResolvedValueOnce({
+      dbMock.on(GetItemCommand).resolves({
         Item: createPendingMitigation("PUT"),
       });
-      (cimitStubItemService.getCiForUserId as jest.Mock).mockResolvedValueOnce([
+      vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce([
         cimitStubItem,
       ]);
 
@@ -151,7 +152,7 @@ describe("pendingMitigationService", () => {
         "aUserId",
       );
 
-      expect(dynamoDBClient.getItem).toHaveBeenCalledWith({
+      expect(dbMock).toHaveReceivedCommandWith(GetItemCommand, {
         TableName: "mock-pending-table",
         Key: { vcJti: { S: "aJwtId" } },
       });
@@ -162,19 +163,19 @@ describe("pendingMitigationService", () => {
       expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledTimes(
         1,
       );
-      const updatedItem = (
-        cimitStubItemService.persistCimitStubItem as jest.Mock
-      ).mock.calls[0][0];
+
+      const updatedItem = vi.mocked(cimitStubItemService.persistCimitStubItem)
+        .mock.calls[0][0];
       expect(updatedItem.mitigations).toEqual(["M01", "M02"]);
     });
 
     it("should replace existing mitigations with PUT method", async () => {
       const itemWithMitigations = { ...cimitStubItem, mitigations: ["M03"] };
 
-      (dynamoDBClient.getItem as jest.Mock).mockResolvedValueOnce({
+      dbMock.on(GetItemCommand).resolves({
         Item: createPendingMitigation("PUT"),
       });
-      (cimitStubItemService.getCiForUserId as jest.Mock).mockResolvedValueOnce([
+      vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce([
         itemWithMitigations,
       ]);
 
@@ -183,7 +184,7 @@ describe("pendingMitigationService", () => {
         "aUserId",
       );
 
-      expect(dynamoDBClient.getItem).toHaveBeenCalledWith({
+      expect(dbMock).toHaveReceivedCommandWith(GetItemCommand, {
         TableName: "mock-pending-table",
         Key: { vcJti: { S: "aJwtId" } },
       });
@@ -194,21 +195,21 @@ describe("pendingMitigationService", () => {
       expect(cimitStubItemService.persistCimitStubItem).toHaveBeenCalledTimes(
         1,
       );
-      const updatedItem = (
-        cimitStubItemService.persistCimitStubItem as jest.Mock
-      ).mock.calls[0][0];
+
+      const updatedItem = vi.mocked(cimitStubItemService.persistCimitStubItem)
+        .mock.calls[0][0];
       expect(updatedItem.mitigations).toEqual(["M01", "M02"]);
     });
 
     it("should do nothing if no pending mitigation found", async () => {
-      (dynamoDBClient.getItem as jest.Mock).mockResolvedValueOnce({});
+      dbMock.on(GetItemCommand).resolves({});
 
       await pendingMitigationService.completePendingMitigation(
         "aJwtId",
         "aUserId",
       );
 
-      expect(dynamoDBClient.getItem).toHaveBeenCalledWith({
+      expect(dbMock).toHaveReceivedCommandWith(GetItemCommand, {
         TableName: "mock-pending-table",
         Key: { vcJti: { S: "aJwtId" } },
       });
@@ -217,19 +218,17 @@ describe("pendingMitigationService", () => {
     });
 
     it("should do nothing if no CI found", async () => {
-      (dynamoDBClient.getItem as jest.Mock).mockResolvedValueOnce({
+      dbMock.on(GetItemCommand).resolves({
         Item: createPendingMitigation("POST"),
       });
-      (cimitStubItemService.getCiForUserId as jest.Mock).mockResolvedValueOnce(
-        [],
-      );
+      vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce([]);
 
       await pendingMitigationService.completePendingMitigation(
         "aJwtId",
         "aUserId",
       );
 
-      expect(dynamoDBClient.getItem).toHaveBeenCalledWith({
+      expect(dbMock).toHaveReceivedCommandWith(GetItemCommand, {
         TableName: "mock-pending-table",
         Key: { vcJti: { S: "aJwtId" } },
       });
@@ -241,10 +240,10 @@ describe("pendingMitigationService", () => {
     });
 
     it("should throw if unsupported method", async () => {
-      (dynamoDBClient.getItem as jest.Mock).mockResolvedValueOnce({
+      dbMock.on(GetItemCommand).resolves({
         Item: createPendingMitigation("DELETE"),
       });
-      (cimitStubItemService.getCiForUserId as jest.Mock).mockResolvedValueOnce([
+      vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce([
         cimitStubItem,
       ]);
 
@@ -252,7 +251,7 @@ describe("pendingMitigationService", () => {
         pendingMitigationService.completePendingMitigation("aJwtId", "aUserId"),
       ).rejects.toThrow("Method not supported: DELETE");
 
-      expect(dynamoDBClient.getItem).toHaveBeenCalledWith({
+      expect(dbMock).toHaveReceivedCommandWith(GetItemCommand, {
         TableName: "mock-pending-table",
         Key: { vcJti: { S: "aJwtId" } },
       });

@@ -1,24 +1,28 @@
-jest.mock("../../src/common/configService", () => ({
-  getCimitStubTtl: jest.fn().mockResolvedValue(1800),
-  getPreMitigationsTableName: jest
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { mockClient } from "aws-sdk-client-mock";
+import {
+  DynamoDB,
+  PutItemCommand,
+  QueryCommand,
+} from "@aws-sdk/client-dynamodb";
+import "aws-sdk-client-mock-vitest";
+
+vi.mock("../../src/common/configService", () => ({
+  isRunningLocally: false,
+  getCimitStubTtl: vi.fn().mockResolvedValue(1800),
+  getPreMitigationsTableName: vi
     .fn()
     .mockReturnValue("mock-pre-mitigations-table"),
 }));
-
-jest.mock("../../src/clients/dynamoDBClient", () => ({
-  dynamoDBClient: {
-    putItem: jest.fn(),
-    query: jest.fn(),
-  },
-}));
-
-import { dynamoDBClient } from "../../src/clients/dynamoDBClient";
 import * as preMitigationService from "../../src/common/preMitigationService";
 import { CimitStubItem } from "../../src/common/contraIndicatorTypes";
 
+const dbMock = mockClient(DynamoDB);
+
 describe("preMitigationService", () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    dbMock.reset();
+    vi.clearAllMocks();
   });
 
   describe("persistPreMitigation", () => {
@@ -27,9 +31,7 @@ describe("preMitigationService", () => {
 
       await preMitigationService.persistPreMitigation("userId", "CI", request);
 
-      expect(dynamoDBClient.putItem).toHaveBeenCalledTimes(1);
-      const callArgs = (dynamoDBClient.putItem as jest.Mock).mock.calls[0][0];
-      expect(callArgs).toEqual({
+      expect(dbMock).toHaveReceivedCommandWith(PutItemCommand, {
         TableName: "mock-pre-mitigations-table",
         Item: {
           userId: { S: "userId" },
@@ -42,22 +44,25 @@ describe("preMitigationService", () => {
   });
 
   describe("applyPreMitigationsToItems", () => {
-    it("should apply pre-mitigations to matching CIs", async () => {
-      const cimitItems: CimitStubItem[] = [
-        {
-          userId: "userId",
-          contraIndicatorCode: "CI01",
-          issuanceDate: "2023-08-17T10:20:53.000Z",
-          mitigations: [],
-          sortKey: "",
-          ttl: 0,
-          issuer: "",
-          document: "",
-          txn: "",
-        },
-      ];
+    const createCimitItem = (
+      code: string,
+      mitigations: string[] = [],
+    ): CimitStubItem => ({
+      userId: "userId",
+      contraIndicatorCode: code,
+      issuanceDate: "2023-08-17T10:20:53.000Z",
+      mitigations,
+      sortKey: "",
+      ttl: 0,
+      issuer: "",
+      document: "",
+      txn: "",
+    });
 
-      (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({
+    it("should apply pre-mitigations to matching CIs", async () => {
+      const cimitItems = [createCimitItem("CI01")];
+
+      dbMock.on(QueryCommand).resolves({
         Items: [
           {
             userId: { S: "userId" },
@@ -77,21 +82,9 @@ describe("preMitigationService", () => {
     });
 
     it("should merge pre-mitigations with existing mitigations", async () => {
-      const cimitItems: CimitStubItem[] = [
-        {
-          userId: "userId",
-          contraIndicatorCode: "CI01",
-          issuanceDate: "2023-08-17T10:20:53.000Z",
-          mitigations: ["M02"],
-          sortKey: "",
-          ttl: 0,
-          issuer: "",
-          document: "",
-          txn: "",
-        },
-      ];
+      const cimitItems = [createCimitItem("CI01", ["M02"])];
 
-      (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({
+      dbMock.on(QueryCommand).resolves({
         Items: [
           {
             userId: { S: "userId" },
@@ -111,21 +104,9 @@ describe("preMitigationService", () => {
     });
 
     it("should not add duplicate mitigations", async () => {
-      const cimitItems: CimitStubItem[] = [
-        {
-          userId: "userId",
-          contraIndicatorCode: "CI01",
-          issuanceDate: "2023-08-17T10:20:53.000Z",
-          mitigations: ["M01"],
-          sortKey: "",
-          ttl: 0,
-          issuer: "",
-          document: "",
-          txn: "",
-        },
-      ];
+      const cimitItems = [createCimitItem("CI01", ["M01"])];
 
-      (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({
+      dbMock.on(QueryCommand).resolves({
         Items: [
           {
             userId: { S: "userId" },
@@ -145,21 +126,9 @@ describe("preMitigationService", () => {
     });
 
     it("should not apply pre-mitigations to non-matching CIs", async () => {
-      const cimitItems: CimitStubItem[] = [
-        {
-          userId: "userId",
-          contraIndicatorCode: "CI02",
-          issuanceDate: "2023-08-17T10:20:53.000Z",
-          mitigations: [],
-          sortKey: "",
-          ttl: 0,
-          issuer: "",
-          document: "",
-          txn: "",
-        },
-      ];
+      const cimitItems = [createCimitItem("CI02")];
 
-      (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({
+      dbMock.on(QueryCommand).resolves({
         Items: [
           {
             userId: { S: "userId" },
@@ -179,21 +148,9 @@ describe("preMitigationService", () => {
     });
 
     it("should handle empty pre-mitigations", async () => {
-      const cimitItems: CimitStubItem[] = [
-        {
-          userId: "userId",
-          contraIndicatorCode: "CI01",
-          issuanceDate: "2023-08-17T10:20:53.000Z",
-          mitigations: [],
-          sortKey: "",
-          ttl: 0,
-          issuer: "",
-          document: "",
-          txn: "",
-        },
-      ];
+      const cimitItems = [createCimitItem("CI01")];
 
-      (dynamoDBClient.query as jest.Mock).mockResolvedValueOnce({ Items: [] });
+      dbMock.on(QueryCommand).resolves({ Items: [] });
 
       await preMitigationService.applyPreMitigationsToItems(
         "userId",

@@ -1,3 +1,4 @@
+import { expect, vi, beforeEach, test } from "vitest";
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyEventHeaders,
@@ -16,7 +17,7 @@ import {
 import { getCIsForUserID } from "../../../src/common/dataService";
 import { decodeJwt } from "jose";
 
-jest.useFakeTimers().setSystemTime(new Date("2020-01-01"));
+vi.useFakeTimers().setSystemTime(new Date("2020-01-01"));
 
 const USER_ID = "user_id";
 const CI_V03 = "V03";
@@ -65,19 +66,20 @@ const buildGetContraIndicatorCredentialRequest = (
   } as APIGatewayProxyEvent;
 };
 
-jest.mock("../../../src/common/configService", () => ({
-  getCimitSigningKey: jest.fn(),
-  getCimitComponentId: jest.fn(),
+vi.mock("../../../src/common/configService", () => ({
+  isRunningLocally: false,
+  getCimitSigningKey: vi.fn(),
+  getCimitComponentId: vi.fn(),
 }));
 
-jest.mock("../../../src/common/dataService", () => ({
-  getCIsForUserID: jest.fn(),
+vi.mock("../../../src/common/dataService", () => ({
+  getCIsForUserID: vi.fn(),
 }));
 
 beforeEach(async () => {
-  jest.resetAllMocks();
-  jest.mocked(getCimitComponentId).mockResolvedValue(CIMIT_COMPONENT_ID);
-  jest.mocked(getCimitSigningKey).mockResolvedValue(
+  vi.resetAllMocks();
+  vi.mocked(getCimitComponentId).mockResolvedValue(CIMIT_COMPONENT_ID);
+  vi.mocked(getCimitSigningKey).mockResolvedValue(
     "MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgOXt0P05ZsQcK7eYusgIPsqZdaBCIJiW4imwUtnaAthWhRANCAAQT1nO46ipxVTilUH2umZPN7OPI49GU6Y8YkcqLxFKUgypUzGbYR2VJGM+QJXk0PI339EyYkt6tjgfS+RcOMQNO", // pragma: allowlist secret
   );
 });
@@ -492,7 +494,7 @@ test.each([
   },
 ])("Should $case", async ({ mockedDatabaseEntry, expectedCIs }) => {
   // Arrange
-  jest.mocked(getCIsForUserID).mockResolvedValue(mockedDatabaseEntry);
+  vi.mocked(getCIsForUserID).mockResolvedValue(mockedDatabaseEntry);
 
   const validRequest = buildGetContraIndicatorCredentialRequest();
 
@@ -520,7 +522,7 @@ test.each([
 
 test("Should return 500 for invalid signing key", async () => {
   // Arrange
-  jest.mocked(getCIsForUserID).mockResolvedValue([
+  vi.mocked(getCIsForUserID).mockResolvedValue([
     {
       userId: USER_ID,
       contraIndicatorCode: CI_V03,
@@ -533,9 +535,7 @@ test("Should return 500 for invalid signing key", async () => {
       ttl: TTL,
     },
   ]);
-  jest
-    .mocked(getCimitSigningKey)
-    .mockResolvedValue("Invalid CIMIT signing key");
+  vi.mocked(getCimitSigningKey).mockResolvedValue("Invalid CIMIT signing key");
   const validRequest = buildGetContraIndicatorCredentialRequest();
 
   // Act

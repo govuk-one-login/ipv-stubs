@@ -1,11 +1,16 @@
+import { expect, vi, beforeEach, test } from "vitest";
 import { APIGatewayProxyEvent, APIGatewayProxyEventHeaders } from "aws-lambda";
 import { putContraIndicatorsHandler } from "../../../src/internal-api/put-contra-indicators/putContraIndicatorsHandler";
 import { addUserCIs } from "../../../src/common/contraIndicatorsService";
 
+vi.mock("../../../src/common/configService", () => ({
+  isRunningLocally: false,
+}));
+
 const SUCCESS_RESPONSE = '{"result":"success"}';
 
-jest.mock("../../../src/common/contraIndicatorsService", () => ({
-  addUserCIs: jest.fn(),
+vi.mock("../../../src/common/contraIndicatorsService", () => ({
+  addUserCIs: vi.fn(),
 }));
 
 const buildPutContraIndicatorsRequest = (
@@ -22,7 +27,7 @@ const buildPutContraIndicatorsRequest = (
 };
 
 beforeEach(() => {
-  jest.resetAllMocks();
+  vi.resetAllMocks();
 });
 
 test("the handler should return success if there is a body", async () => {
@@ -68,7 +73,7 @@ test("the handler should error if the request body is empty", async () => {
 
 test("the handler should return exception when cimit service throws one", async () => {
   // Arrange
-  jest.mocked(addUserCIs).mockImplementation(() => {
+  vi.mocked(addUserCIs).mockImplementation(() => {
     throw new Error(
       "CI Codes could not be inserted into the Cimit Stub Table.",
     );

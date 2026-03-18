@@ -142,6 +142,11 @@ Resources:
       BuildProperties:
         Minify: true
         Target: "es2022"
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true
         EntryPoints:
           - postMitigationsHandler.ts
@@ -201,6 +206,11 @@ Resources:
       BuildProperties:
         Minify: true
         Target: "es2022"
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true
         EntryPoints:
           - putContraIndicatorsHandler.ts
@@ -256,6 +266,11 @@ Resources:
       BuildProperties:
         Minify: true
         Target: "es2022"
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true
         EntryPoints:
           - getContraIndicatorCredentialHandler.ts
@@ -349,6 +364,11 @@ Resources:
       BuildProperties:
         Minify: true
         Target: "es2022"
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
         Sourcemap: true
         EntryPoints:
           - stubManagementHandler.ts
