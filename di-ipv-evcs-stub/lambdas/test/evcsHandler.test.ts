@@ -21,14 +21,16 @@ import {
   processGetIdentityRequest,
 } from "../src/services/evcsService";
 import { VcState, VCProvenance } from "../src/domain/enums";
-import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda/trigger/api-gateway-proxy";
 import {
   InvalidateIdentityRequest,
   PostIdentityRequest,
 } from "../src/domain/requests";
 import { Vot } from "../src/domain/enums/vot";
+import { getSsmParameter } from "../src/common/ssmParameter";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
+vi.mock("../src/common/ssmParameter");
 
 vi.mock("../src/services/evcsService", () => ({
   processGetUserVCsRequest: vi.fn(),
@@ -37,10 +39,6 @@ vi.mock("../src/services/evcsService", () => ({
   processGetIdentityRequest: vi.fn(),
   processPostIdentityRequest: vi.fn(),
   invalidateUserSi: vi.fn(),
-}));
-
-vi.mock("@aws-lambda-powertools/parameters/ssm", () => ({
-  getParameter: vi.fn(),
 }));
 
 const EVCS_VERIFY_KEY =
@@ -488,7 +486,8 @@ describe("evcs handlers", () => {
         statusCode: 200,
         response: testResult,
       });
-      vi.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+
+      vi.mocked(getSsmParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
 
       // act
       const response = (await getHandler({
@@ -514,7 +513,8 @@ describe("evcs handlers", () => {
         statusCode: 200,
         response: testResult,
       });
-      vi.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+
+      vi.mocked(getSsmParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
 
       // act
       const response = (await getHandler({
@@ -540,7 +540,8 @@ describe("evcs handlers", () => {
         statusCode: 200,
         response: testResult,
       });
-      vi.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+
+      vi.mocked(getSsmParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
 
       // act
       const response = (await getHandler({
@@ -571,7 +572,6 @@ describe("evcs handlers", () => {
         statusCode: 200,
         response: testResult,
       });
-      vi.mocked(getParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
 
       const event = {
         pathParameters: TEST_PATH_PARAM,

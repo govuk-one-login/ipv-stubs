@@ -51,6 +51,7 @@ Globals:
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
     Layers:
+      - !Sub "arn:aws:lambda:${AWS::Region}:133256977650:layer:AWS-Parameters-and-Secrets-Lambda-Extension-Arm64:59"
       - !If
         - IsDevelopment
         - !Ref AWS::NoValue
