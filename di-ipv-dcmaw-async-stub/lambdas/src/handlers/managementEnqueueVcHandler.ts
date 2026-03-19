@@ -12,7 +12,7 @@ import {
 } from "../domain/managementEnqueueRequest";
 import { getUserStateItem } from "../services/userStateService";
 import getConfig from "../common/config";
-import { JWTPayload } from "jose/dist/types/types";
+import { JWTPayload } from "jose";
 import { vcToSignedJwt } from "../domain/signedJwt";
 
 export async function handler(
