@@ -10,18 +10,18 @@ import TicfVc from "../src/domain/ticfVc";
 import { getUserEvidence } from "../src/management/services/userEvidenceService";
 import UserEvidenceItem from "../src/management/model/userEvidenceItem";
 
-jest.mock("@aws-lambda-powertools/parameters/ssm", () => ({
-  getParameter: jest.fn(),
+vi.mock("@aws-lambda-powertools/parameters/ssm", () => ({
+  getParameter: vi.fn(),
 }));
 
-jest.mock("../src/common/config", () => ({
+vi.mock("../src/common/config", () => ({
   config: {
     ticfParamBasePath: "/test/path/",
   },
 }));
 
-jest.mock("../src/management/services/userEvidenceService", () => ({
-  getUserEvidence: jest.fn(),
+vi.mock("../src/management/services/userEvidenceService", () => ({
+  getUserEvidence: vi.fn(),
 }));
 
 const EC_PRIVATE_KEY =
@@ -55,8 +55,7 @@ async function parseTicfVc(jwt: string): Promise<TicfVc> {
 describe("TICF handler", function () {
   it("returns a successful default VC response", async () => {
     // arrange
-    jest
-      .mocked(getParameter)
+    vi.mocked(getParameter)
       .mockResolvedValueOnce(EC_PRIVATE_KEY)
       .mockResolvedValueOnce(TEST_COMPONENT_ID)
       .mockResolvedValueOnce("10");
@@ -99,8 +98,7 @@ describe("TICF handler", function () {
 
   it("returns a VC with evidence from DB", async () => {
     // arrange
-    jest
-      .mocked(getParameter)
+    vi.mocked(getParameter)
       .mockResolvedValueOnce(EC_PRIVATE_KEY)
       .mockResolvedValueOnce(TEST_COMPONENT_ID)
       .mockResolvedValueOnce("10");
@@ -121,7 +119,7 @@ describe("TICF handler", function () {
       ttl: 3123123,
       responseDelay: 0,
     };
-    jest.mocked(getUserEvidence).mockResolvedValue(userEvidence);
+    vi.mocked(getUserEvidence).mockResolvedValue(userEvidence);
     // act
     const result = (await handler(
       TEST_EVENT,
@@ -191,7 +189,7 @@ describe("TICF handler", function () {
 
   it("returns a 500 for missing SSM parameter", async () => {
     // arrange
-    jest.mocked(getParameter).mockResolvedValueOnce(undefined);
+    vi.mocked(getParameter).mockResolvedValueOnce(undefined);
 
     // act
     const result = (await handler(

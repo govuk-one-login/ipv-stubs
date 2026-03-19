@@ -1,17 +1,18 @@
-const globals = require("globals");
-const parser = require("@typescript-eslint/parser");
-const tseslint = require("typescript-eslint");
-const eslint = require("@eslint/js");
+import globals from "globals";
+import parser from "@typescript-eslint/parser";
+import tseslint from "typescript-eslint";
+import eslint from "@eslint/js";
+import prettier from "eslint-config-prettier";
+import prettierPlugin from "eslint-plugin-prettier";
 
-module.exports = [
-  {
-    // This ignore should be removed once migrated to ES module
-    // and this file should be renamed to 'eslint.config.mjs'
-    ignores: ["eslint.config.cjs"],
-  },
+export default [
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
+  prettier,
   {
+    plugins: {
+      prettier: prettierPlugin,
+    },
     languageOptions: {
       parser: parser,
       ecmaVersion: 2020,
@@ -19,7 +20,6 @@ module.exports = [
       globals: {
         ...globals.node,
         ...globals.browser,
-        ...globals.jest,
         expect: true,
       },
     },
@@ -36,5 +36,8 @@ module.exports = [
         },
       ],
     },
+  },
+  {
+    ignores: ["lib/**", "coverage/**"],
   },
 ];

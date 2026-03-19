@@ -6,7 +6,7 @@ import {
 import { handler } from "../src/management/handlers/managementHandler";
 import persistUserEvidence from "../src/management/services/userEvidenceService";
 
-jest.mock("../src/management/services/userEvidenceService");
+vi.mock("../src/management/services/userEvidenceService");
 
 const TEST_USER_ID: string = "urn:uuid:test-user-id";
 
@@ -34,7 +34,7 @@ const TEST_EVENT = {
 describe("TICF management handler", () => {
   it("returns a 200 for a valid request", async () => {
     // arrange
-    jest.mocked(persistUserEvidence).mockResolvedValueOnce();
+    vi.mocked(persistUserEvidence).mockResolvedValueOnce();
 
     // act
     const result = (await handler(
@@ -51,7 +51,7 @@ describe("TICF management handler", () => {
 
   it("returns a 200 for a request with a response delay", async () => {
     // arrange
-    jest.mocked(persistUserEvidence).mockResolvedValueOnce();
+    vi.mocked(persistUserEvidence).mockResolvedValueOnce();
 
     // act
     const result = (await handler({
@@ -72,7 +72,7 @@ describe("TICF management handler", () => {
 
   it("returns a 200 for a request with error statusCode and no evidence", async () => {
     // arrange
-    jest.mocked(persistUserEvidence).mockResolvedValueOnce();
+    vi.mocked(persistUserEvidence).mockResolvedValueOnce();
 
     // act
     const result = (await handler({
@@ -91,7 +91,7 @@ describe("TICF management handler", () => {
 
   it("returns a 200 for a request with 200 statusCode and no evidence", async () => {
     // arrange
-    jest.mocked(persistUserEvidence).mockResolvedValueOnce();
+    vi.mocked(persistUserEvidence).mockResolvedValueOnce();
 
     // act
     const result = (await handler({
@@ -190,7 +190,7 @@ describe("TICF management handler", () => {
 
   it("returns 500 if storing fails", async () => {
     // arrange
-    jest.mocked(persistUserEvidence).mockRejectedValueOnce(new Error());
+    vi.mocked(persistUserEvidence).mockRejectedValueOnce(new Error());
 
     // act
     const result = (await handler(
