@@ -428,7 +428,7 @@ async function updateUserVC(evcsVcItem: EvcsItemForUpdate) {
 
 async function getTtl(): Promise<number> {
   const evcsTtlSeconds: number = parseInt(
-    await getSsmParameter(config.evcsParamBasePath + "evcsStubTtl"),
+    process.env.EVCS_STUB_TTL ?? "604800",
   );
   return Math.floor(Date.now() / 1000) + evcsTtlSeconds;
 }
