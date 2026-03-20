@@ -9,7 +9,6 @@ import {
   TransactWriteItemsCommand,
 } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
-import { getSsmParameter } from "../../src/common/ssmParameter";
 import {
   invalidateUserSi,
   processGetIdentityRequest,
@@ -24,14 +23,6 @@ import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityR
 import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
 
 vi.useFakeTimers().setSystemTime(new Date("2025-01-01"));
-
-vi.mock("../../src/common/ssmParameter", async () => {
-  const module = vi.importActual("../../src/common/ssmParameter") as object;
-  return {
-    ...module,
-    getSsmParameter: vi.fn(),
-  };
-});
 
 const dbMock = mockClient(DynamoDB);
 
@@ -72,7 +63,7 @@ const MOCK_TTL = "3600";
 describe("processPostIdentityRequest", () => {
   beforeEach(() => {
     dbMock.reset();
-    vi.mocked(getSsmParameter).mockResolvedValue(MOCK_TTL);
+    vi.stubEnv("EVCS_STUB_TTL", MOCK_TTL);
   });
 
   it("should return 200 response when provided just an SI object", async () => {

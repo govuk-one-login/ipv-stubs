@@ -13,8 +13,6 @@ Globals:
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
-    Layers:
-      - !Sub "arn:aws:lambda:${AWS::Region}:133256977650:layer:AWS-Parameters-and-Secrets-Lambda-Extension-Arm64:59"
 
 Description: >-
   This creates the infrastructure for EVCS stub .
@@ -52,7 +50,7 @@ Mappings:
 
 Conditions:
   IsDev01:
-    Fn::Equals: [ !Ref "AWS::AccountId", "130355686670"]
+    Fn::Equals: [!Ref "AWS::AccountId", "130355686670"]
 
   IsReuse:
     Fn::Or:
@@ -60,13 +58,13 @@ Conditions:
       - Condition: IsReuseBuild
 
   IsReuseDev:
-    Fn::Equals: [ !Ref "AWS::AccountId", "110869144943"]
+    Fn::Equals: [!Ref "AWS::AccountId", "110869144943"]
 
   IsReuseBuild:
-    Fn::Equals: [ !Ref "AWS::AccountId", "054367266435"]
+    Fn::Equals: [!Ref "AWS::AccountId", "054367266435"]
 
   IsReuseMain:
-    Fn::Equals: [ !Ref "AWS::StackName", "evcs-stub"]
+    Fn::Equals: [!Ref "AWS::StackName", "evcs-stub"]
 
   UsePermissionsBoundary:
     Fn::Not:
@@ -110,6 +108,8 @@ Resources:
           EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -118,7 +118,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -178,6 +178,8 @@ Resources:
           EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -186,7 +188,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -247,6 +249,8 @@ Resources:
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
           EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -255,7 +259,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -317,6 +321,8 @@ Resources:
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
           EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -388,6 +394,8 @@ Resources:
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
           EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -396,7 +404,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -458,6 +466,8 @@ Resources:
           EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -466,7 +476,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -533,6 +543,8 @@ Resources:
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
           EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -541,7 +553,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -604,6 +616,8 @@ Resources:
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
           EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -612,7 +626,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -839,18 +853,18 @@ Resources:
           - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
       DomainValidationOptions:
         - DomainName: !If
-          - IsReuse
-          - !If
-            - IsReuseDev
+            - IsReuse
             - !If
-              - IsReuseMain
-              - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
-              - !Sub "evcs-${AWS::StackName}.reuse.dev.stubs.account.gov.uk"
-            - !Sub "evcs.reuse.stubs.account.gov.uk"
-          - !If
-            - IsDev01
-            - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
-            - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
+              - IsReuseDev
+              - !If
+                - IsReuseMain
+                - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+                - !Sub "evcs-${AWS::StackName}.reuse.dev.stubs.account.gov.uk"
+              - !Sub "evcs.reuse.stubs.account.gov.uk"
+            - !If
+              - IsDev01
+              - !Sub "evcs-${Environment}.01.core.dev.stubs.account.gov.uk"
+              - !Sub "evcs-${Environment}.02.core.dev.stubs.account.gov.uk"
           HostedZoneId:
             Fn::ImportValue:
               Fn::FindInMap: [HostedZoneImportName, !Ref "AWS::AccountId", Name]
@@ -939,7 +953,7 @@ Resources:
         paths: # workaround to get `sam validate` to work
           /foo:
             options: {} # workaround to get `sam validate` to work
-        'Fn::Transform':
+        "Fn::Transform":
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/evcs-external.yaml"
