@@ -27,7 +27,6 @@ import {
   PostIdentityRequest,
 } from "../src/domain/requests";
 import { Vot } from "../src/domain/enums/vot";
-import { getSsmParameter } from "../src/common/ssmParameter";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 vi.mock("../src/common/ssmParameter");
@@ -487,7 +486,7 @@ describe("evcs handlers", () => {
         response: testResult,
       });
 
-      vi.mocked(getSsmParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+      vi.stubEnv("EVCS_STUB_VERIFY_KEY", EVCS_VERIFY_KEY);
 
       // act
       const response = (await getHandler({
@@ -514,7 +513,7 @@ describe("evcs handlers", () => {
         response: testResult,
       });
 
-      vi.mocked(getSsmParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+      vi.stubEnv("EVCS_STUB_VERIFY_KEY", EVCS_VERIFY_KEY);
 
       // act
       const response = (await getHandler({
@@ -541,7 +540,7 @@ describe("evcs handlers", () => {
         response: testResult,
       });
 
-      vi.mocked(getSsmParameter).mockResolvedValueOnce(EVCS_VERIFY_KEY);
+      vi.stubEnv("EVCS_STUB_VERIFY_KEY", EVCS_VERIFY_KEY);
 
       // act
       const response = (await getHandler({

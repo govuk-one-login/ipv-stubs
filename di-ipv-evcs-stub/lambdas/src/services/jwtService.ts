@@ -1,14 +1,10 @@
 import { JWTPayload, importSPKI, jwtVerify } from "jose";
-import { config } from "../common/config";
-import { getSsmParameter } from "../common/ssmParameter";
 import { getErrorMessage } from "../common/utils";
 
 export const verifyTokenAndReturnPayload = async (
   jwt: string,
 ): Promise<JWTPayload> => {
-  const EVCS_VERIFY_KEY = await getSsmParameter(
-    config.evcsParamBasePath + "verifyKey",
-  );
+  const EVCS_VERIFY_KEY = process.env.EVCS_STUB_VERIFY_KEY;
 
   let payload;
   try {

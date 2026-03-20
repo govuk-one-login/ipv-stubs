@@ -14,32 +14,52 @@ Globals:
           - IsDevelopment
           - !Ref "AWS::NoValue"
           - !Sub
-            - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}'  #pragma: allowlist secret
-            - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]  #pragma: allowlist secret
+            - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" #pragma: allowlist secret
+            - SecretArn: !FindInMap [
+                  EnvironmentConfiguration,
+                  !Ref Environment,
+                  dynatraceSecretArn,
+                ] #pragma: allowlist secret
         DT_CONNECTION_BASE_URL: !If
           - IsDevelopment
           - !Ref "AWS::NoValue"
           - !Sub
-            - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}'   #pragma: allowlist secret
-            - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]  #pragma: allowlist secret
+            - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}" #pragma: allowlist secret
+            - SecretArn: !FindInMap [
+                  EnvironmentConfiguration,
+                  !Ref Environment,
+                  dynatraceSecretArn,
+                ] #pragma: allowlist secret
         DT_CLUSTER_ID: !If
           - IsDevelopment
           - !Ref "AWS::NoValue"
           - !Sub
-            - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}'   #pragma: allowlist secret
-            - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]  #pragma: allowlist secret
+            - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}" #pragma: allowlist secret
+            - SecretArn: !FindInMap [
+                  EnvironmentConfiguration,
+                  !Ref Environment,
+                  dynatraceSecretArn,
+                ] #pragma: allowlist secret
         DT_LOG_COLLECTION_AUTH_TOKEN: !If
           - IsDevelopment
           - !Ref "AWS::NoValue"
           - !Sub
-            - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}'  #pragma: allowlist secret
-            - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]  #pragma: allowlist secret
+            - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}" #pragma: allowlist secret
+            - SecretArn: !FindInMap [
+                  EnvironmentConfiguration,
+                  !Ref Environment,
+                  dynatraceSecretArn,
+                ] #pragma: allowlist secret
         DT_TENANT: !If
           - IsDevelopment
           - !Ref "AWS::NoValue"
           - !Sub
-            - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}'   #pragma: allowlist secret
-            - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn]   #pragma: allowlist secret
+            - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}" #pragma: allowlist secret
+            - SecretArn: !FindInMap [
+                  EnvironmentConfiguration,
+                  !Ref Environment,
+                  dynatraceSecretArn,
+                ] #pragma: allowlist secret
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
     Timeout: 30
     PermissionsBoundary: !If
@@ -51,15 +71,14 @@ Globals:
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
     Layers:
-      - !Sub "arn:aws:lambda:${AWS::Region}:133256977650:layer:AWS-Parameters-and-Secrets-Lambda-Extension-Arm64:59"
       - !If
         - IsDevelopment
         - !Ref AWS::NoValue
         - !FindInMap [
-          EnvironmentConfiguration,
-          !Ref Environment,
-          dynatraceLayerArn,
-        ]
+            EnvironmentConfiguration,
+            !Ref Environment,
+            dynatraceLayerArn,
+          ]
 
 Description: >-
   This creates the infrastructure for EVCS stub .
@@ -86,24 +105,24 @@ Parameters:
 
 Conditions:
   IsDevelopment: !Or
-    - !Equals [ !Ref AWS::AccountId, "130355686670"]
-    - !Equals [ !Ref AWS::AccountId, "175872367215"]
-    - !Equals [ !Ref AWS::AccountId, "110869144943"]
-  IsProduction: !Equals [ !Ref Environment, "production" ]
-  IsNonProd: !Not [!Condition IsProduction ]
+    - !Equals [!Ref AWS::AccountId, "130355686670"]
+    - !Equals [!Ref AWS::AccountId, "175872367215"]
+    - !Equals [!Ref AWS::AccountId, "110869144943"]
+  IsProduction: !Equals [!Ref Environment, "production"]
+  IsNonProd: !Not [!Condition IsProduction]
   IsReuse:
     Fn::Or:
       - Condition: IsReuseDev
       - Condition: IsReuseBuild
 
   IsReuseDev:
-    Fn::Equals: [ !Ref "AWS::AccountId", "110869144943" ]
+    Fn::Equals: [!Ref "AWS::AccountId", "110869144943"]
 
   IsReuseBuild:
-    Fn::Equals: [ !Ref "AWS::AccountId", "054367266435" ]
+    Fn::Equals: [!Ref "AWS::AccountId", "054367266435"]
 
   IsReuseMain:
-    Fn::Equals: [ !Ref "AWS::StackName", "evcs-stub" ]
+    Fn::Equals: [!Ref "AWS::StackName", "evcs-stub"]
 
   UsePermissionsBoundary:
     Fn::Not:
@@ -118,14 +137,17 @@ Conditions:
 
 Mappings:
   EnvironmentConfiguration:
+    devchrisp:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_51_20250331-143707_with_collector_java:1
     dev:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_51_20250331-143707_with_collector_java:1
     build:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_51_20250331-143707_with_collector_java:1
     production:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_51_20250331-143707_with_collector_java:1
 
   HostedZoneImportName:
@@ -169,6 +191,8 @@ Resources:
           EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -177,7 +201,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -237,6 +261,8 @@ Resources:
           EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -245,7 +271,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -306,6 +332,8 @@ Resources:
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
           EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -314,7 +342,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -376,6 +404,8 @@ Resources:
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
           EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -447,6 +477,8 @@ Resources:
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
           EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -455,7 +487,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -517,6 +549,8 @@ Resources:
           EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -525,7 +559,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -592,6 +626,8 @@ Resources:
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
           EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -600,7 +636,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -663,6 +699,8 @@ Resources:
           ISSUER: "https://evcs-cri.stubs.account.gov.uk"
           EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
           EVCS_STUB_STORED_IDENTITY_OBJECT_TABLE_NAME: !Ref EvcsStoredIdentityStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
           NODE_OPTIONS: --enable-source-maps
       VpcConfig:
         SubnetIds:
@@ -671,7 +709,7 @@ Resources:
         SecurityGroupIds:
           - !GetAtt EvcsLambdaSecurityGroup.GroupId
       Policies:
-        - VPCAccessPolicy: { }
+        - VPCAccessPolicy: {}
         - SSMParameterReadPolicy:
             ParameterName: stubs/core/evcs/*
         - KMSDecryptPolicy:
@@ -898,21 +936,21 @@ Resources:
           - evcs.stubs.account.gov.uk
       DomainValidationOptions:
         - DomainName: !If
-          - IsReuse
-          - !If
-            - IsReuseDev
+            - IsReuse
             - !If
-              - IsReuseMain
-              - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
-              - !Sub "evcs-${AWS::StackName}.reuse.dev.stubs.account.gov.uk"
-            - !Sub "evcs.reuse.stubs.account.gov.uk"
-          - !If
-            - IsNonProd
-            - !Sub "evcs.${Environment}.stubs.account.gov.uk"
-            - evcs.stubs.account.gov.uk
+              - IsReuseDev
+              - !If
+                - IsReuseMain
+                - !Sub "evcs.reuse.${Environment}.stubs.account.gov.uk"
+                - !Sub "evcs-${AWS::StackName}.reuse.dev.stubs.account.gov.uk"
+              - !Sub "evcs.reuse.stubs.account.gov.uk"
+            - !If
+              - IsNonProd
+              - !Sub "evcs.${Environment}.stubs.account.gov.uk"
+              - evcs.stubs.account.gov.uk
           HostedZoneId:
             Fn::ImportValue:
-              Fn::FindInMap: [ HostedZoneImportName, !Ref "AWS::AccountId", Name ]
+              Fn::FindInMap: [HostedZoneImportName, !Ref "AWS::AccountId", Name]
       ValidationMethod: DNS
 
   # api domain entries / mapping
@@ -981,7 +1019,7 @@ Resources:
           - evcs.stubs.account.gov.uk
       HostedZoneId:
         Fn::ImportValue:
-          Fn::FindInMap: [ HostedZoneImportName, !Ref "AWS::AccountId", Name ]
+          Fn::FindInMap: [HostedZoneImportName, !Ref "AWS::AccountId", Name]
       AliasTarget:
         DNSName: !GetAtt EvcsStubRestApiDomain.RegionalDomainName
         HostedZoneId: !GetAtt EvcsStubRestApiDomain.RegionalHostedZoneId
@@ -998,7 +1036,7 @@ Resources:
         paths: # workaround to get `sam validate` to work
           /foo:
             options: {} # workaround to get `sam validate` to work
-        'Fn::Transform':
+        "Fn::Transform":
           Name: "AWS::Include"
           Parameters:
             Location: "../openAPI/evcs-external.yaml"
