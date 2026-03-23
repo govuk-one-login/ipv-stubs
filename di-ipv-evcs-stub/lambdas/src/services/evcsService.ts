@@ -14,7 +14,6 @@ import { StatusCodes, VCProvenance, VcState } from "../domain/enums";
 import EvcsVcItem from "../model/evcsVcItem";
 
 import { config } from "../common/config";
-import { getSsmParameter } from "../common/ssmParameter";
 import { v4 as uuid } from "uuid";
 import {
   EvcsItemForUpdate,
@@ -428,7 +427,7 @@ async function updateUserVC(evcsVcItem: EvcsItemForUpdate) {
 
 async function getTtl(): Promise<number> {
   const evcsTtlSeconds: number = parseInt(
-    await getSsmParameter(config.evcsParamBasePath + "evcsStubTtl"),
+    process.env.EVCS_STUB_TTL ?? "604800",
   );
   return Math.floor(Date.now() / 1000) + evcsTtlSeconds;
 }
