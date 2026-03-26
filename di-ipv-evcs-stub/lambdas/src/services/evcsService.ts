@@ -20,7 +20,6 @@ import {
   PatchRequest,
   PostIdentityRequest,
   PostRequest,
-  PutRequest,
 } from "../domain/requests";
 import { VcDetails, StoredIdentityResponse } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
@@ -76,7 +75,7 @@ export async function processPostUserVCsRequest(
 }
 
 export async function processPostIdentityRequest(
-  request: PutRequest | PostIdentityRequest,
+  request: PostIdentityRequest,
 ): Promise<ServiceResponse> {
   console.info("Put user record");
   const userId = request.userId;
@@ -86,6 +85,13 @@ export async function processPostIdentityRequest(
 
     if ("vcs" in request) {
       const newUserVcs = request.vcs;
+      // TODO: Refactor below if statement.
+      if(!newUserVcs) {
+        return {
+          response: { messageId: "" },
+          statusCode: StatusCodes.InternalServerError,
+        };
+      }
       const ttl = await getTtl();
 
       // Read user's existing VCs
