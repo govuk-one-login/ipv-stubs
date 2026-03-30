@@ -148,6 +148,76 @@ Resources:
         EntryPoints:
           - src/handlers/evcsHandler.ts
 
+  # lambda to stub EVCS - evcsCreateUserVCs
+  EvcsCreateUserVCsV2Function:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    # checkov:skip=CKV_AWS_173: doing it later
+    DependsOn:
+      - "EvcsCreateUserVCsV2FunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "evcsCreateUserVCsV2-${Environment}"
+      CodeUri: "../lambdas"
+      Handler: createHandler.createHandler
+      Runtime: nodejs22.x
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
+          ISSUER: "https://evcs-cri.stubs.account.gov.uk"
+          EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
+          NODE_OPTIONS: --enable-source-maps
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt EvcsLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: { }
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/evcs/*
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EvcsStubUserVcsStoreTable
+      AutoPublishAlias: live
+      Events:
+        CreateUserVCs:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /vcs
+            Method: POST
+    Metadata:
+      # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - src/handlers/createHandler.ts
+
   # lambda to stub EVCS - evcsUpdateUserVCs
   EvcsUpdateUserVCsFunction:
     Type: AWS::Serverless::Function
@@ -217,6 +287,76 @@ Resources:
         Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
         EntryPoints:
           - src/handlers/evcsHandler.ts
+
+  # lambda to stub EVCS - evcsUpdateUserVCs
+  EvcsUpdateUserVCsV2Function:
+    Type: AWS::Serverless::Function
+    # checkov:skip=CKV_AWS_109: this requires a broad set of permissions
+    # checkov:skip=CKV_AWS_115: We do not have enough data to allocate the concurrent execution allowance per function.
+    # checkov:skip=CKV_AWS_116: Lambdas invoked via API Gateway do not support Dead Letter Queues.
+    # checkov:skip=CKV_AWS_173: doing it later
+    DependsOn:
+      - "EvcsUpdateUserVCsV2FunctionLogGroup"
+    Properties:
+      FunctionName: !Sub "evcsUpdateUserVCsV2-${Environment}"
+      CodeUri: "../lambdas"
+      Handler: updateHandler.updateHandler
+      Runtime: nodejs22.x
+      PackageType: Zip
+      Architectures:
+        - arm64
+      MemorySize: 2048
+      Tracing: Active
+      CodeSigningConfigArn: !If
+        - UseCodeSigning
+        - !Ref CodeSigningConfigArn
+        - !Ref AWS::NoValue
+      Environment:
+        # checkov:skip=CKV_AWS_173: These environment variables do not require encryption.
+        Variables:
+          ENVIRONMENT: !Sub "${Environment}"
+          EVCS_PARAM_BASE_PATH: "/stubs/core/evcs/"
+          ISSUER: "https://evcs-cri.stubs.account.gov.uk"
+          EVCS_STUB_USER_VCS_STORE_TABLE_NAME: !Ref EvcsStubUserVcsStoreTable
+          EVCS_STUB_TTL: !Sub "{{resolve:ssm:/stubs/core/evcs/evcsStubTtl}}"
+          EVCS_STUB_VERIFY_KEY: !Sub "{{resolve:ssm:/stubs/core/evcs/verifyKey}}"
+          NODE_OPTIONS: --enable-source-maps
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        SecurityGroupIds:
+          - !GetAtt EvcsLambdaSecurityGroup.GroupId
+      Policies:
+        - VPCAccessPolicy: {}
+        - SSMParameterReadPolicy:
+            ParameterName: stubs/core/evcs/*
+        - KMSDecryptPolicy:
+            KeyId: !Ref DynamoDBKmsKey
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EvcsStubUserVcsStoreTable
+      AutoPublishAlias: live
+      Events:
+        UpdateUserVCs:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApiGateway
+            Path: /vcs
+            Method: PATCH
+    Metadata:
+      # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2022"
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+        Sourcemap: true # Enabling source maps will create the required NODE_OPTIONS environment variables on your lambda function during sam build
+        EntryPoints:
+          - src/handlers/updateHandler.ts
 
   # lambda to stub EVCS - evcsPostIdentity
   EvcsPostIdentityFunction:
@@ -665,12 +805,26 @@ Resources:
       RetentionInDays: 14
       LogGroupName: !Sub "/aws/lambda/createEvcsUserVCs-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
+  EvcsCreateUserVCsV2FunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    # checkov:skip=CKV_AWS_158: No need for customer managed keys for short lived logs
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/createEvcsUserVCsV2-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
   EvcsUpdateUserVCsFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     # checkov:skip=CKV_AWS_158: No need for customer managed keys for short lived logs
     Properties:
       RetentionInDays: 14
       LogGroupName: !Sub "/aws/lambda/updateEvcsUserVCs-${Environment}"
+      KmsKeyId: !GetAtt LoggingKmsKey.Arn
+  EvcsUpdateUserVCsV2FunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    # checkov:skip=CKV_AWS_158: No need for customer managed keys for short lived logs
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Sub "/aws/lambda/updateEvcsUserVCsV2-${Environment}"
       KmsKeyId: !GetAtt LoggingKmsKey.Arn
   EvcsPostIdentityFunctionLogGroup:
     Type: AWS::Logs::LogGroup

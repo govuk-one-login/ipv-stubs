@@ -15,7 +15,13 @@ import ServiceResponse, {
   createServiceResponseWithMessage,
   GetResponse,
 } from "../domain/serviceResponse";
-import { StatusCodes, VCProvenance, VcState } from "../domain/enums";
+import {
+  CreateVcStates,
+  StatusCodes,
+  UpdateVcStates,
+  VCProvenance,
+  VcState,
+} from "../domain/enums";
 import EvcsVcItem from "../model/evcsVcItem";
 
 import { config } from "../common/config";
@@ -32,6 +38,8 @@ import { StoredIdentityResponse } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
 import { dynamoClient } from "../clients/dynamodbClient";
+import { PostVcsRequest } from "../domain/requests/postVcsRequest";
+import { PatchVcsRequest } from "../domain/requests/patchVcsRequest";
 
 export async function processPostUserVCsRequest(
   userId: string,
@@ -64,6 +72,120 @@ export async function processPostUserVCsRequest(
   } catch (error) {
     console.error(error);
     return createServiceResponse(StatusCodes.InternalServerError, "");
+  }
+}
+
+export async function processPostUserVCsRequestV2(
+  postRequest: PostVcsRequest,
+): Promise<ServiceResponse> {
+  try {
+    console.info(`Process and save VCs`);
+
+    // Check posted VC states
+    if (postRequest.vcs.some((vc) => !(vc.state in CreateVcStates))) {
+      return createServiceResponseWithMessage(
+        StatusCodes.Conflict,
+        "At least one VC is in the wrong state",
+      );
+    }
+
+    // Check that none of the posted VCs already exist
+    const vcRecords = await getCurrentVcsForUser(postRequest.userId);
+    const requestVcs = postRequest.vcs.map((vcDetails) => vcDetails.vc);
+
+    if (
+      vcRecords.some((vcRecord) => requestVcs.includes(vcRecord.vc.S || ""))
+    ) {
+      return createServiceResponseWithMessage(
+        StatusCodes.Conflict,
+        "At least one VC already exists in EVCS",
+      );
+    }
+
+    const allPromises: Promise<PutItemCommandOutput>[] = [];
+    const ttl = await getTtl();
+    for (const vcDetails of postRequest.vcs) {
+      const vcItem: EvcsVcItem = {
+        userId: postRequest.userId,
+        vc: vcDetails.vc,
+        vcSignature: getSignatureFromJwt(vcDetails.vc),
+        state: vcDetails.state,
+        metadata: vcDetails.metadata != undefined ? vcDetails.metadata : {},
+        provenance:
+          vcDetails.provenance != undefined
+            ? vcDetails.provenance
+            : VCProvenance.ONLINE,
+        ttl,
+      };
+      allPromises.push(saveUserEvcsItem(vcItem));
+    }
+
+    console.info(`Saving all user VC's.`);
+    await Promise.all(allPromises);
+    return createServiceResponse(StatusCodes.Accepted, uuid());
+  } catch (error) {
+    console.error(error);
+    return createServiceResponse(StatusCodes.InternalServerError, "");
+  }
+}
+
+export async function processPatchUserVCsRequestV2(
+  patchRequest: PatchVcsRequest,
+): Promise<ServiceResponse> {
+  try {
+    console.info(`Patch user record.`);
+
+    // Check VC states
+    if (patchRequest.vcs.some((vc) => !(vc.state in UpdateVcStates))) {
+      return createServiceResponseWithMessage(
+        StatusCodes.Conflict,
+        "At least one VC is in the wrong state",
+      );
+    }
+
+    // Check that the request VCs already exist
+    const vcRecords = await getCurrentVcsForUser(patchRequest.userId);
+    const requestSignatures = patchRequest.vcs.map(
+      (vcDetails) => vcDetails.signature,
+    );
+    const dynamoSignatures = vcRecords.map((vcRecord) =>
+      getSignatureFromJwt(vcRecord.vc.S || ""),
+    );
+    if (
+      requestSignatures.some(
+        (signature) => !dynamoSignatures.includes(signature),
+      )
+    ) {
+      return createServiceResponseWithMessage(
+        StatusCodes.NotFound,
+        "At least one request VC doesn't exist in EVCS",
+      );
+    }
+
+    const allPromises: Promise<UpdateItemCommandOutput>[] = [];
+    const ttl = await getTtl();
+    for (const patchRequestItem of patchRequest.vcs) {
+      const vcItem: EvcsItemForUpdate = {
+        userId: patchRequest.userId,
+        vcSignature: patchRequestItem.signature,
+        state: patchRequestItem.state,
+        metadata: patchRequestItem.metadata,
+        ttl,
+      };
+      allPromises.push(updateUserVC(vcItem));
+    }
+
+    console.info(`Updating user VC's.`);
+    await Promise.all(allPromises);
+    return {
+      statusCode: StatusCodes.NoContent,
+    };
+  } catch (error) {
+    console.error(error);
+    return createServiceResponseWithMessage(
+      StatusCodes.InternalServerError,
+      "Unable to update VCs",
+    );
   }
 }
 
@@ -190,23 +312,7 @@ export async function processGetIdentityRequest(
     return createServiceResponseWithMessage(StatusCodes.NotFound, "Not found");
   }
 
-  const value = await dynamoClient.query({
-    TableName: config.evcsStubUserVCsTableName,
-    KeyConditionExpression: "#userId = :userId",
-    FilterExpression: "#state IN (:state0)",
-    ExpressionAttributeNames: {
-      "#userId": "userId",
-      "#state": "state",
-    },
-    ExpressionAttributeValues: {
-      ":userId": {
-        S: userId,
-      },
-      ":state0": {
-        S: "CURRENT",
-      },
-    },
-  });
+  const vcRecords = await getCurrentVcsForUser(userId);
 
   const response: StoredIdentityResponse = {
     si: {
@@ -214,7 +320,7 @@ export async function processGetIdentityRequest(
       unsignedVot: getItemResponse.Item.levelOfConfidence.S,
     },
     vcs:
-      value.Items?.map((vc) => ({
+      vcRecords.map((vc) => ({
         vc: vc.vc.S || "",
         state: vc.state.S,
         metadata: vc.metadata?.M ? unmarshall(vc.metadata.M) : undefined,
@@ -377,7 +483,31 @@ async function saveUserEvcsItem(
   return dynamoClient.putItem(putItemInput);
 }
 
-function createUpdateItemInput(evcsVcItem: EvcsItemForUpdate) {
+async function getCurrentVcsForUser(
+  userId: string,
+): Promise<Record<string, AttributeValue>[]> {
+  const value = await dynamoClient.query({
+    TableName: config.evcsStubUserVCsTableName,
+    KeyConditionExpression: "#userId = :userId",
+    FilterExpression: "#state IN (:state0)",
+    ExpressionAttributeNames: {
+      "#userId": "userId",
+      "#state": "state",
+    },
+    ExpressionAttributeValues: {
+      ":userId": {
+        S: userId,
+      },
+      ":state0": {
+        S: "CURRENT",
+      },
+    },
+  });
+
+  return value.Items || [];
+}
+
+export function createUpdateItemInput(evcsVcItem: EvcsItemForUpdate) {
   return {
     TableName: config.evcsStubUserVCsTableName,
     Key: {
