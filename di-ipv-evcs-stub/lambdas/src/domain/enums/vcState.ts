@@ -22,3 +22,14 @@ export const UpdateVcStates = {
   [VcState.HISTORIC]: VcState.HISTORIC,
   [VcState.VERIFICATION_ARCHIVED]: VcState.VERIFICATION_ARCHIVED,
 } as const;
+
+export const StateTransitions = {
+  ABANDONED: [VcState.PENDING, VcState.PENDING_RETURN, VcState.VERIFICATION],
+  ACCOUNT_DELETED: [],
+  CURRENT: [VcState.PENDING_RETURN, VcState.PENDING],
+  HISTORIC: [VcState.CURRENT],
+  PENDING: [],
+  PENDING_RETURN: [VcState.PENDING],
+  VERIFICATION: [],
+  VERIFICATION_ARCHIVED: [VcState.VERIFICATION],
+};
