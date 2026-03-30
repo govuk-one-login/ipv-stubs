@@ -1,4 +1,4 @@
-import { VcDetails } from "./sharedTypes";
+import { VcDetails } from "./vcDetails";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 
 export default interface ServiceResponse {

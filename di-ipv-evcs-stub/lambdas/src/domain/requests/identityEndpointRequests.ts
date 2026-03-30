@@ -1,4 +1,4 @@
-import { VcDetails } from "../sharedTypes";
+import { VcDetails } from "../vcDetails";
 import { Vot } from "../enums/vot";
 
 export interface StoredIdentityDetails {

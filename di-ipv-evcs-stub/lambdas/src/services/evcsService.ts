@@ -22,7 +22,8 @@ import {
   PostRequest,
   PutRequest,
 } from "../domain/requests";
-import { VcDetails, StoredIdentityResponse } from "../domain/sharedTypes";
+import { VcDetails } from "../domain/vcDetails";
+import { StoredIdentityResponse } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
 import { dynamoClient } from "../clients/dynamodbClient";
