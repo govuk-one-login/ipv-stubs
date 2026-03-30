@@ -1,7 +1,7 @@
 import {
   createUserStoredIdentityHandler,
   getUserStoredIdentityHandler,
-} from "../src/handlers/evcsManagementHandler";
+} from "../../src/handlers/evcsManagementHandler";
 import {
   APIGatewayProxyEvent,
   APIGatewayProxyEventPathParameters,
@@ -10,13 +10,13 @@ import {
 import {
   processCreateStoredIdentity,
   processGetStoredIdentity,
-} from "../src/services/evcsManagementService";
-import { StoredIdentityRecordType } from "../src/domain/enums/StoredIdentityRecordType";
-import { Vot } from "../src/domain/enums/vot";
-import { StatusCodes } from "../src/domain/enums";
+} from "../../src/services/evcsManagementService";
+import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
+import { Vot } from "../../src/domain/enums/vot";
+import { StatusCodes } from "../../src/domain/enums";
 import { describe, it, expect, vi } from "vitest";
 
-vi.mock("../src/services/evcsManagementService", () => ({
+vi.mock("../../src/services/evcsManagementService", () => ({
   processGetStoredIdentity: vi.fn(),
   processCreateStoredIdentity: vi.fn(),
 }));
