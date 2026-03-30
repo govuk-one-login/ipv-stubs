@@ -9,7 +9,12 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
-import ServiceResponse, { GetResponse } from "../domain/serviceResponse";
+import ServiceResponse, {
+  createServiceResponse,
+  createServiceResponseWithBody,
+  createServiceResponseWithMessage,
+  GetResponse,
+} from "../domain/serviceResponse";
 import { StatusCodes, VCProvenance, VcState } from "../domain/enums";
 import EvcsVcItem from "../model/evcsVcItem";
 
@@ -32,9 +37,6 @@ export async function processPostUserVCsRequest(
   userId: string,
   postRequest: PostRequest[],
 ): Promise<ServiceResponse> {
-  let response: ServiceResponse = {
-    response: {},
-  };
   try {
     console.info(`Post user record.`);
     const allPromises: Promise<PutItemCommandOutput>[] = [];
@@ -58,22 +60,11 @@ export async function processPostUserVCsRequest(
 
     console.info(`Saving all user VC's.`);
     await Promise.all(allPromises);
-    response = {
-      response: {
-        messageId: uuid(),
-      },
-      statusCode: StatusCodes.Accepted,
-    };
+    return createServiceResponse(StatusCodes.Accepted, uuid());
   } catch (error) {
     console.error(error);
-    response = {
-      response: {
-        messageId: "",
-      },
-      statusCode: StatusCodes.InternalServerError,
-    };
+    return createServiceResponse(StatusCodes.InternalServerError, "");
   }
-  return response;
 }
 
 export async function processPostIdentityRequest(
@@ -103,10 +94,7 @@ export async function processPostIdentityRequest(
         console.error(
           `Failed to read existing user VCs from EVCS with ${getResponse.statusCode}`,
         );
-        return {
-          response: { messageId: "" },
-          statusCode: StatusCodes.InternalServerError,
-        };
+        return createServiceResponse(StatusCodes.InternalServerError, "");
       }
 
       // Update existing user VCs in EVCS with new states
@@ -172,16 +160,10 @@ export async function processPostIdentityRequest(
       TransactItems: transactItems,
     });
 
-    return {
-      response: { messageId: uuid() },
-      statusCode: StatusCodes.Accepted,
-    };
+    return createServiceResponse(StatusCodes.Accepted, uuid());
   } catch (error) {
     console.error("Failed to complete transaction.", error);
-    return {
-      response: { messageId: "" },
-      statusCode: StatusCodes.InternalServerError,
-    };
+    return createServiceResponse(StatusCodes.InternalServerError, "");
   }
 }
 
@@ -205,7 +187,7 @@ export async function processGetIdentityRequest(
     !getItemResponse.Item?.storedIdentity?.S ||
     !getItemResponse.Item?.isValid?.BOOL
   ) {
-    return { statusCode: 404, response: { message: "Not found" } };
+    return createServiceResponseWithMessage(StatusCodes.NotFound, "Not found");
   }
 
   const value = await dynamoClient.query({
@@ -239,7 +221,7 @@ export async function processGetIdentityRequest(
       })) || [],
   };
 
-  return { statusCode: 200, response };
+  return createServiceResponseWithBody(StatusCodes.Success, response);
 }
 
 export async function invalidateUserSi(userId: string) {
@@ -370,10 +352,10 @@ export async function processPatchUserVCsRequest(
     };
   } catch (error) {
     console.error(error);
-    return {
-      response: { message: "Unable to update VCs" },
-      statusCode: StatusCodes.InternalServerError,
-    };
+    return createServiceResponseWithMessage(
+      StatusCodes.InternalServerError,
+      "Unable to update VCs",
+    );
   }
 }
 

@@ -7,7 +7,6 @@ import {
   PostIdentityRequest,
   InvalidateIdentityRequest,
 } from "../domain/requests";
-import ServiceResponse from "../domain/serviceResponse";
 import {
   CreateVcStates,
   StatusCodes,
@@ -173,13 +172,15 @@ export async function getHandler(
       });
     }
 
-    let res: ServiceResponse = {
-      response: Object,
-    };
-    if (accessTokenVerified)
-      res = await processGetUserVCsRequest(decodedUserId, requestedStates);
+    if (accessTokenVerified) {
+      const res = await processGetUserVCsRequest(
+        decodedUserId,
+        requestedStates,
+      );
+      return buildApiResponse(res.statusCode, res.response);
+    }
 
-    return buildApiResponse(res.statusCode, res.response);
+    return buildApiResponse(undefined, undefined);
   } catch (error) {
     console.error(error);
     return buildApiResponse(StatusCodes.InternalServerError, {
