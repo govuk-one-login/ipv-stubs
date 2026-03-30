@@ -52,7 +52,7 @@ dependencies {
 	compileOnly 'org.projectlombok:lombok:1.18.44'
 	annotationProcessor 'org.projectlombok:lombok:1.18.44'
 
-	testImplementation 'org.junit.jupiter:junit-jupiter:6.0.2',
+	testImplementation 'org.junit.jupiter:junit-jupiter:6.0.3',
 			'org.mockito:mockito-core:5.23.0',
 			"org.mockito:mockito-junit-jupiter:5.23.0",
 			'uk.org.webcompere:system-stubs-jupiter:2.1.8'
