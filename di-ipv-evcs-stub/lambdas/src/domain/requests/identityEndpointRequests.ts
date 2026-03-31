@@ -15,12 +15,6 @@ export type PostIdentityRequest = {
   si: StoredIdentityDetails;
 };
 
-export interface PutRequest {
-  userId: string;
-  vcs: VcDetails[];
-  si?: StoredIdentityDetails;
-}
-
 export interface InvalidateIdentityRequest {
   userId: string;
 }

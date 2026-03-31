@@ -33,3 +33,9 @@ export const StateTransitions = {
   VERIFICATION: [],
   VERIFICATION_ARCHIVED: [VcState.VERIFICATION],
 };
+
+export function getStateTransitions(
+  state: keyof typeof StateTransitions,
+): VcState[] {
+  return StateTransitions[state];
+}

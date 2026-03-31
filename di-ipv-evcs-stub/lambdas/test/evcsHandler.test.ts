@@ -393,19 +393,16 @@ describe("evcs handlers", () => {
         }),
         case: "si.jwt is missing",
       },
-      // TODO PYIC-8458: These tests should be uncommented in phase 2 when the
-      //  /identity endpoint accepts a vcs list as the request parsing should
-      // handle these criteria
+      {
+        request: buildPostIdentityRequest({ vcs: [] }),
+        case: "vcs is empty",
+      },
+      {
+        request: buildPostIdentityRequest({ vcs: [{ vc: "no.base.64url" }] }),
+        case: "not valid jwt",
+      },
       // {
-      //   request: buildPutRequest({ vcs: undefined }),
-      //   case: "vcs is missing",
-      // },
-      // {
-      //   request: buildPutRequest({ vcs: [] }),
-      //   case: "vcs is empty",
-      // },
-      // {
-      //   request: buildPutRequest({
+      //   request: buildPostIdentityRequest({
       //     vcs: [
       //       { vc: "some.vc.sig", state: VcState.CURRENT },
       //       { vc: "some.vc.sig", state: VcState.HISTORIC },

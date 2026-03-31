@@ -14,7 +14,7 @@ import {
   processGetIdentityRequest,
   processPostIdentityRequest,
 } from "../../src/services/evcsService";
-import { PostIdentityRequest, PutRequest } from "../../src/domain/requests";
+import { PostIdentityRequest } from "../../src/domain/requests";
 import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
 import "aws-sdk-client-mock-vitest";
 import { config } from "../../src/common/config";
@@ -27,6 +27,7 @@ vi.useFakeTimers().setSystemTime(new Date("2025-01-01"));
 const dbMock = mockClient(DynamoDB);
 
 const TEST_USER_ID: string = "urn:uuid:d1823066-2137-4380-b0ba-4b61947e08e6";
+const TEST_GOVUK_SIGNIN_JOURNEY_ID: string = "test-journey-id";
 
 const TEST_VC1_SIGNATURE =
   "qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ"; // pragma: allowlist secret"
@@ -98,8 +99,9 @@ describe("processPostIdentityRequest", () => {
     // Arrange
     dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
 
-    const putRequest: PutRequest = {
+    const postIdentityRequest: PostIdentityRequest = {
       userId: TEST_USER_ID,
+      govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
       vcs: [
         {
           vc: TEST_VC1,
@@ -113,7 +115,7 @@ describe("processPostIdentityRequest", () => {
     };
 
     // Act
-    const response = await processPostIdentityRequest(putRequest);
+    const response = await processPostIdentityRequest(postIdentityRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -141,13 +143,14 @@ describe("processPostIdentityRequest", () => {
       createEvcsUserVcsQueryResponse([
         {
           vc: TEST_VC1,
-          state: VcState.HISTORIC,
+          state: VcState.PENDING_RETURN,
         },
       ]),
     );
 
-    const putRequest: PutRequest = {
+    const postIdentityRequest: PostIdentityRequest = {
       userId: TEST_USER_ID,
+      govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
       vcs: [
         {
           vc: TEST_VC1,
@@ -164,7 +167,7 @@ describe("processPostIdentityRequest", () => {
     };
 
     // Act
-    const response = await processPostIdentityRequest(putRequest);
+    const response = await processPostIdentityRequest(postIdentityRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -172,12 +175,9 @@ describe("processPostIdentityRequest", () => {
 
     expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
       TransactItems: [
-        createStubUserVcPutItem({
+        createUserVcUpdateItem({
           vcSignature: TEST_VC1_SIGNATURE,
-          vc: TEST_VC1,
-          metadata: TEST_METADATA,
-          state: VcState.CURRENT,
-          provenance: VCProvenance.EXTERNAL,
+          state: VcState.CURRENT
         }),
         createStoredIdentityPutItem({
           recordType: StoredIdentityRecordType.GPG45,
@@ -189,54 +189,65 @@ describe("processPostIdentityRequest", () => {
     });
   });
 
-  it("should return 200 response if SI not provided", async () => {
-    // Arrange
-    dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
-
-    const putRequest: PutRequest = {
-      userId: TEST_USER_ID,
-      vcs: [
-        {
-          vc: TEST_VC1,
-          state: VcState.CURRENT,
-        },
-      ],
-    };
-
-    // Act
-    const response = await processPostIdentityRequest(putRequest);
-
-    // Assert
-    expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
-
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
-      TransactItems: [
-        createStubUserVcPutItem({
-          vcSignature: TEST_VC1_SIGNATURE,
-          vc: TEST_VC1,
-          state: VcState.CURRENT,
-        }),
-      ],
-    });
-  });
+  // it("should return 200 response if SI not provided", async () => {
+  //   // Arrange
+  //   dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
+  //
+  //   const putRequest: PutRequest = {
+  //     userId: TEST_USER_ID,
+  //     vcs: [
+  //       {
+  //         vc: TEST_VC1,
+  //         state: VcState.CURRENT,
+  //       },
+  //     ],
+  //   };
+  //
+  //   // Act
+  //   const response = await processPostIdentityRequest(putRequest);
+  //
+  //   // Assert
+  //   expect(response.statusCode).toBe(StatusCodes.Accepted);
+  //   expect(dbMock).toHaveReceivedCommand(QueryCommand);
+  //
+  //   expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+  //     TransactItems: [
+  //       createStubUserVcPutItem({
+  //         vcSignature: TEST_VC1_SIGNATURE,
+  //         vc: TEST_VC1,
+  //         state: VcState.CURRENT,
+  //       }),
+  //     ],
+  //   });
+  // });
 
   it("should return 200 response, update existing VCs and add new ones if successful transaction", async () => {
     // Arrange
     dbMock.on(QueryCommand).resolves(
       createEvcsUserVcsQueryResponse([
-        { vc: TEST_VC1, state: VcState.CURRENT },
-        { vc: TEST_VC2, state: VcState.PENDING_RETURN },
+        { vc: TEST_VC1, state: VcState.PENDING },
+        { vc: TEST_VC2, state: VcState.PENDING },
       ]),
     );
 
-    const putRequest: PutRequest = {
+    const postIdentityRequest: PostIdentityRequest = {
       userId: TEST_USER_ID,
+      govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
       vcs: [
         {
-          vc: TEST_VC3,
+          vc: TEST_VC1,
           state: VcState.CURRENT,
+          metadata: TEST_METADATA
         },
+        {
+          vc: TEST_VC2,
+          state: VcState.PENDING_RETURN,
+          metadata: TEST_METADATA
+        },
+        {
+          vc: TEST_VC3,
+          state: VcState.PENDING,
+        }
       ],
       si: {
         jwt: TEST_VC2,
@@ -245,7 +256,7 @@ describe("processPostIdentityRequest", () => {
     };
 
     // Act
-    const response = await processPostIdentityRequest(putRequest);
+    const response = await processPostIdentityRequest(postIdentityRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -255,16 +266,16 @@ describe("processPostIdentityRequest", () => {
       TransactItems: [
         createUserVcUpdateItem({
           vcSignature: TEST_VC1_SIGNATURE,
-          state: VcState.HISTORIC,
+          state: VcState.CURRENT,
         }),
         createUserVcUpdateItem({
           vcSignature: TEST_VC2_SIGNATURE,
-          state: VcState.ABANDONED,
+          state: VcState.PENDING_RETURN,
         }),
         createStubUserVcPutItem({
           vcSignature: TEST_VC3_SIGNATURE,
           vc: TEST_VC3,
-          state: VcState.CURRENT,
+          state: VcState.PENDING,
           provenance: VCProvenance.ONLINE,
         }),
         createStoredIdentityPutItem({
@@ -280,18 +291,23 @@ describe("processPostIdentityRequest", () => {
     // Arrange
     dbMock.on(QueryCommand).rejects(new Error("Failed to get existing VCs"));
 
-    const putRequest: PutRequest = {
+    const postIdentityRequest: PostIdentityRequest = {
       userId: TEST_USER_ID,
+      govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
       vcs: [
         {
           vc: TEST_VC3,
           state: VcState.CURRENT,
         },
       ],
+      si: {
+        jwt: TEST_VC2,
+        vot: Vot.P2,
+      }
     };
 
     // Act
-    const response = await processPostIdentityRequest(putRequest);
+    const response = await processPostIdentityRequest(postIdentityRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.InternalServerError);
@@ -305,18 +321,23 @@ describe("processPostIdentityRequest", () => {
       .on(TransactWriteItemsCommand)
       .rejects(new Error("Failed to complete transaction"));
 
-    const putRequest: PutRequest = {
+    const postIdentityRequest: PostIdentityRequest = {
       userId: TEST_USER_ID,
+      govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
       vcs: [
         {
           vc: TEST_VC3,
           state: VcState.CURRENT,
         },
       ],
+      si: {
+        jwt: TEST_VC2,
+        vot: Vot.P2,
+      }
     };
 
     // Act
-    const response = await processPostIdentityRequest(putRequest);
+    const response = await processPostIdentityRequest(postIdentityRequest);
 
     // Assert
     expect(response.statusCode).toBe(StatusCodes.InternalServerError);

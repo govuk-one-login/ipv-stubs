@@ -23,7 +23,8 @@ import {
   processGetIdentityRequest,
 } from "../services/evcsService";
 import { verifyTokenAndReturnPayload } from "../services/jwtService";
-import { getErrorMessage } from "../common/utils";
+import { getErrorMessage, isValidJWT } from "../common/utils";
+import { VcDetails } from "../domain/sharedTypes";
 
 export async function postIdentityHandler(
   event: APIGatewayProxyEvent,
@@ -217,7 +218,34 @@ function parsePostIdentityRequest(
     throw new Error("Invalid stored identity object: missing vot");
   }
 
+  if (
+    (parsedPostIdentityRequest.govuk_signin_journey_id &&
+      !parsedPostIdentityRequest.vcs) ||
+    (!parsedPostIdentityRequest.govuk_signin_journey_id &&
+      parsedPostIdentityRequest.vcs)
+  ) {
+    throw new Error("Both: govuk_signin_journey_id and vcs must be present.");
+  }
+
+  if (parsedPostIdentityRequest.vcs) {
+    validateVcs(parsedPostIdentityRequest.vcs);
+  }
+
   return parsedPostIdentityRequest;
+}
+
+function validateVcs(vcs: VcDetails[]): void {
+  if (vcs.length < 1) {
+    throw new Error("Minimum vcs array length is 1");
+  }
+
+  const isValidVcs = vcs.every(
+    (item) => item.state && item.vc && isValidJWT(item.vc),
+  );
+
+  if (!isValidVcs) {
+    throw new Error("Invalid JWT in vcs list.");
+  }
 }
 
 function parseInvalidateIdentityRequest(
