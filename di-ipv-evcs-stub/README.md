@@ -61,7 +61,76 @@ Responses
           $ref: "#/components/responses/UnexpectedError"
 ```
 
-2) The format of the PATCH (/vcs/<user-id>) request
+2) The format of the POST (/vcs) request
+Save multiple VCs for a specific user
+Example request
+```
+{
+    "userId": "testUserId",
+    "govuk_signin_journey_id": "testJourneyId",
+    "vcs": [
+        {
+            "vc": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ", # pragma: allowlist secret
+            "state": "CURRENT",
+            "metadata": {
+                reason: "test-created",
+                timestampMs: "1714478033959",
+                txmaEventId: "txma-event-id",
+                testProperty: "testProperty"
+            },
+            "provenance": "ONLINE"
+        },
+        {
+            "vc": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ", # pragma: allowlist secret
+            "state": "CURRENT",
+            "metadata": {
+                reason: "test-created",
+                timestampMs: "1714478033959",
+                txmaEventId: "txma-event-id",
+                testProperty: "testProperty"
+            },
+            "provenance": "ONLINE"
+        }
+    ]
+}    
+```
+Responses
+```
+        "202":
+          description: VCs Accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PersistResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "413":
+          $ref: "#/components/responses/ContentTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/components/responses/Throttled"
+        "500":
+          $ref: "#/components/responses/ServerError"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "504":
+          $ref: "#/components/responses/GatewayTimeout"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+```
+
+3) The format of the PATCH (/vcs/<user-id>) request
 Update multiple VCs' state and metadata for a specific user
 Example request
 ```
@@ -108,7 +177,56 @@ Responses
           $ref: "#/components/responses/UnexpectedError"
 ```
 
-3) The format of the GET (/vcs/<user-id>) request
+4) The format of the PATCH (/vcs) request
+Update multiple VCs' state and metadata for a specific user
+Example request
+```
+    "userId": "testUserId",
+    "govuk_signin_journey_id": "testJourneyId",
+    "vcs": [
+        {
+            "signature": "qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ", # pragma: allowlist secret
+            "state": "CURRENT",
+            "metadata": {
+                reason: "test-created",
+                timestampMs: "1714478033959",
+                txmaEventId: "txma-event-id",
+                testProperty: "testProperty"
+            }
+        }
+    ]
+```
+Responses
+```
+        "204":
+          description: VCs updated successfully
+        "400":
+          $ref: "#/components/responses/BatchUpdateError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/BatchUpdateError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+        "429":
+          $ref: "#/components/responses/Throttled"
+        "500":
+          $ref: "#/components/responses/ServerError"
+        "501":
+          $ref: "#/components/responses/NotImplemented"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "504":
+          $ref: "#/components/responses/GatewayTimeout"
+        default:
+          $ref: "#/components/responses/UnexpectedError"
+```
+
+5) The format of the GET (/vcs/<user-id>) request
 
 Responses
 ```
@@ -143,7 +261,7 @@ Responses
 There is an API gateway deployed in the stubs build account here:
 https://evcs.build.stubs.account.gov.uk/vc-update
 
-4) The format of the `/identity` POST endpoint
+6) The format of the `/identity` POST endpoint
 Example request body
 ```
 {
@@ -175,7 +293,7 @@ Responses
           $ref: '#/components/responses/ServerError'
 ```
 
-5) The format of the `/identity/invalidate` POST endpoint. This is used to set the `isValid` property on a user's stored identities as false.
+7) The format of the `/identity/invalidate` POST endpoint. This is used to set the `isValid` property on a user's stored identities as false.
 Example request body takes just a userId:
 ```
 { "userId": "userId" }
