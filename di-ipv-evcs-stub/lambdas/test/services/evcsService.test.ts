@@ -177,7 +177,7 @@ describe("processPostIdentityRequest", () => {
       TransactItems: [
         createUserVcUpdateItem({
           vcSignature: TEST_VC1_SIGNATURE,
-          state: VcState.CURRENT
+          state: VcState.CURRENT,
         }),
         createStoredIdentityPutItem({
           recordType: StoredIdentityRecordType.GPG45,
@@ -237,17 +237,17 @@ describe("processPostIdentityRequest", () => {
         {
           vc: TEST_VC1,
           state: VcState.CURRENT,
-          metadata: TEST_METADATA
+          metadata: TEST_METADATA,
         },
         {
           vc: TEST_VC2,
           state: VcState.PENDING_RETURN,
-          metadata: TEST_METADATA
+          metadata: TEST_METADATA,
         },
         {
           vc: TEST_VC3,
           state: VcState.PENDING,
-        }
+        },
       ],
       si: {
         jwt: TEST_VC2,
@@ -303,7 +303,7 @@ describe("processPostIdentityRequest", () => {
       si: {
         jwt: TEST_VC2,
         vot: Vot.P2,
-      }
+      },
     };
 
     // Act
@@ -333,7 +333,7 @@ describe("processPostIdentityRequest", () => {
       si: {
         jwt: TEST_VC2,
         vot: Vot.P2,
-      }
+      },
     };
 
     // Act
