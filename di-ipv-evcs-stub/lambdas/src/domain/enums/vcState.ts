@@ -22,3 +22,14 @@ export const UpdateVcStates = {
   [VcState.HISTORIC]: VcState.HISTORIC,
   [VcState.VERIFICATION_ARCHIVED]: VcState.VERIFICATION_ARCHIVED,
 } as const;
+
+// Keys are target states, values are lists of states allowed to transition to those target states
+export const stateTransitions: Record<VcState, VcState[]> = {
+  ABANDONED: [VcState.PENDING, VcState.PENDING_RETURN, VcState.VERIFICATION],
+  CURRENT: [VcState.PENDING_RETURN, VcState.PENDING],
+  HISTORIC: [VcState.CURRENT],
+  PENDING: [],
+  PENDING_RETURN: [VcState.PENDING],
+  VERIFICATION: [],
+  VERIFICATION_ARCHIVED: [VcState.VERIFICATION],
+};

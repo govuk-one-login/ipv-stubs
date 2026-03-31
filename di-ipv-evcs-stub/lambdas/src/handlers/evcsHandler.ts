@@ -180,7 +180,9 @@ export async function getHandler(
       return buildApiResponse(res.statusCode, res.response);
     }
 
-    return buildApiResponse(undefined, undefined);
+    return buildApiResponse(StatusCodes.NotAuthorized, {
+      message: "Access token not verified",
+    });
   } catch (error) {
     console.error(error);
     return buildApiResponse(StatusCodes.InternalServerError, {

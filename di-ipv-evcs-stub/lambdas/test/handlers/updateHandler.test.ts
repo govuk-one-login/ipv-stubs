@@ -30,10 +30,10 @@ beforeEach(() => {
 });
 
 describe("create handler V2", () => {
-  it("should return 202 for a valid request", async () => {
+  it("should return 204 for a valid request", async () => {
     // arrange
     vi.mocked(processPatchUserVCsRequestV2).mockResolvedValueOnce({
-      statusCode: 202,
+      statusCode: 204,
       response: {},
     });
     const event = {
@@ -46,7 +46,7 @@ describe("create handler V2", () => {
     )) as APIGatewayProxyStructuredResultV2;
 
     // assert
-    expect(response.statusCode).toBe(202);
+    expect(response.statusCode).toBe(204);
     expect(processPatchUserVCsRequestV2).toHaveBeenCalledWith(
       TEST_PATCH_REQUEST,
     );
@@ -120,22 +120,6 @@ describe("create handler V2", () => {
     expect(response.statusCode).toBe(400);
     expect(processPatchUserVCsRequestV2).not.toHaveBeenCalled();
   });
-
-  // it("should return 400 for a request with invalid VC creation state", async () => {
-  //     // arrange
-  //     const request = structuredClone(TEST_PATCH_REQUEST_V2);
-  //     request.vcs[0].state = VcState.HISTORIC;
-  //     const event = {
-  //         body: JSON.stringify(request),
-  //     } as APIGatewayProxyEvent;
-  //
-  //     // act
-  //     const response = (await updateHandler(event)) as APIGatewayProxyStructuredResultV2;
-  //
-  //     // assert
-  //     expect(response.statusCode).toBe(400);
-  //     expect(processPostUserVCsRequestV2).not.toHaveBeenCalled();
-  // });
 
   it("should return 400 for a request with duplicate VCs in different states", async () => {
     // arrange

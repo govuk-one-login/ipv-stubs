@@ -17,8 +17,8 @@ import ServiceResponse, {
 } from "../domain/serviceResponse";
 import {
   CreateVcStates,
+  stateTransitions,
   StatusCodes,
-  UpdateVcStates,
   VCProvenance,
   VcState,
 } from "../domain/enums";
@@ -135,30 +135,40 @@ export async function processPatchUserVCsRequestV2(
   try {
     console.info(`Patch user record.`);
 
-    // Check VC states
-    if (patchRequest.vcs.some((vc) => !(vc.state in UpdateVcStates))) {
-      return createServiceResponseWithMessage(
-        StatusCodes.Conflict,
-        "At least one VC is in the wrong state",
-      );
-    }
-
     // Check that the request VCs already exist
     const vcRecords = await getCurrentVcsForUser(patchRequest.userId);
     const requestSignatures = patchRequest.vcs.map(
       (vcDetails) => vcDetails.signature,
     );
-    const dynamoSignatures = vcRecords.map((vcRecord) =>
-      getSignatureFromJwt(vcRecord.vc.S || ""),
+    const dynamoVcsBySignature = Object.fromEntries(
+      vcRecords.map((vcRecord) => [
+        getSignatureFromJwt(vcRecord.vc.S || ""),
+        vcRecord,
+      ]),
     );
+
     if (
-      requestSignatures.some(
-        (signature) => !dynamoSignatures.includes(signature),
-      )
+      requestSignatures.some((signature) => !dynamoVcsBySignature[signature])
     ) {
       return createServiceResponseWithMessage(
         StatusCodes.NotFound,
         "At least one request VC doesn't exist in EVCS",
+      );
+    }
+
+    // Check that the state transitions are allowed
+    const invalidStateTransitionFound = patchRequest.vcs.some((requestVc) => {
+      const validSourceStates = stateTransitions[requestVc.state];
+      const existingVc = dynamoVcsBySignature[requestVc.signature];
+      return (
+        !existingVc.state.S ||
+        !validSourceStates.includes(existingVc.state.S as VcState)
+      );
+    });
+    if (invalidStateTransitionFound) {
+      return createServiceResponseWithMessage(
+        StatusCodes.Conflict,
+        "At least one state transition is invalid",
       );
     }
 

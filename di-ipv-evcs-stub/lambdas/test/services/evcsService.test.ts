@@ -618,17 +618,25 @@ describe("evcsService", () => {
   });
 
   describe("processPatchUserVCsRequestV2", () => {
-    it("should return 409 response when provided invalid VC state", async () => {
+    it("should return 409 response when provided invalid VC state transition", async () => {
       // Arrange
       const request = structuredClone(TEST_PATCH_REQUEST);
-      request.vcs[0].state = VcState.VERIFICATION;
+      // Current to abandoned is not allowed
+      request.vcs[0].state = VcState.ABANDONED;
+      dbMock
+        .on(QueryCommand)
+        .resolves(
+          createEvcsUserVcsQueryResponse([
+            { vc: TEST_VC1, state: VcState.CURRENT },
+          ]),
+        );
 
       // Act
       const response = await processPatchUserVCsRequestV2(request);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.Conflict);
-      expect(dbMock).not.toHaveReceivedCommand(QueryCommand);
+      expect(dbMock).not.toHaveReceivedCommand(UpdateItemCommand);
     });
 
     it("should return 404 response when provided a VC that doesn't exist", async () => {
@@ -641,11 +649,14 @@ describe("evcsService", () => {
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.NotFound);
+      expect(dbMock).not.toHaveReceivedCommand(UpdateItemCommand);
     });
 
     it("should return 204 response when provided valid VCs", async () => {
       // Arrange
       const request = structuredClone(TEST_PATCH_REQUEST);
+      // Current to historic is allowed
+      request.vcs[0].state = VcState.HISTORIC;
       dbMock
         .on(QueryCommand)
         .resolves(
