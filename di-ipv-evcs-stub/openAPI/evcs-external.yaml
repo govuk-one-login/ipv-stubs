@@ -92,8 +92,6 @@ paths:
         responses:
           204:
             statusCode: 204
-            responseTemplates:
-              application/json: '{"result": "success"}'
 
   /vcs/{userId}:
     post:
