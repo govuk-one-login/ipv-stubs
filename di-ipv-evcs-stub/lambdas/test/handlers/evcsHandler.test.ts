@@ -561,6 +561,7 @@ describe("evcs handlers", () => {
         "PENDING_RETURN",
         "HISTORIC",
         "VERIFICATION_ARCHIVED",
+        "ACCOUNT_DELETED",
       ]);
     });
 

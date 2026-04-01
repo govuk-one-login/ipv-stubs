@@ -6,6 +6,7 @@ export enum VcState {
   PENDING_RETURN = "PENDING_RETURN",
   HISTORIC = "HISTORIC",
   VERIFICATION_ARCHIVED = "VERIFICATION_ARCHIVED",
+  ACCOUNT_DELETED = "ACCOUNT_DELETED",
 }
 
 export const CreateVcStates = {
@@ -32,4 +33,5 @@ export const stateTransitions: Record<VcState, VcState[]> = {
   PENDING_RETURN: [VcState.PENDING],
   VERIFICATION: [],
   VERIFICATION_ARCHIVED: [VcState.VERIFICATION],
+  ACCOUNT_DELETED: [],
 };
