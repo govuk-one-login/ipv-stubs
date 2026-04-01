@@ -6,6 +6,9 @@ export function getErrorMessage(error: unknown) {
 }
 
 export function isValidJWT(token: string): boolean {
+  if (!token) {
+    return false;
+  }
   const parts = token.split(".");
   if (parts.length !== 3) {
     return false;

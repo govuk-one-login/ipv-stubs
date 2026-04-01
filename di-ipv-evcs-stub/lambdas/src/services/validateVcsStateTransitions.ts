@@ -22,6 +22,11 @@ export function validateVcsStateTransitions(
     if (!newState) throw Error("Not Allowed");
 
     const allowedTransitions = getStateTransitions(newState);
+
+    if (allowedTransitions.length === 0) {
+      return;
+    }
+
     if (!allowedTransitions.includes(currentState)) {
       throw new Error(
         `State VC transition from: ${currentState} to ${newState} is not allowed`,
