@@ -257,6 +257,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         403:
           $ref: '#/components/responses/Forbidden'
+        409:
+          $ref: '#/components/responses/Conflict'
         500:
           $ref: '#/components/responses/ServerError'
       x-amazon-apigateway-request-validator: ALL
@@ -504,6 +506,14 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
   schemas:
+    GovUkSignInJourneyId:
+      type: object
+      description: An object that specifies the user's GOV.UK Sign In Journey Id
+      example:
+        govuk_signin_journey_id: "45GJHHJuJuPoi-76FGBHjgvjlpi"
+      properties:
+        govuk_signin_journey_id:
+          type: string
     PostUserVCRequestBody:
       description: Request body for EVCS post user VCs request
       type: array
@@ -614,6 +624,11 @@ components:
       description: The request body for the /identity POST endpoint to store a user's stored identity record
       allOf:
         - $ref: "#/components/schemas/UserIdRequestBody"
+        - $ref: "#/components/schemas/GovUkSignInJourneyId"
+        - type: object
+          properties:
+            vcs:
+              $ref: "#/components/schemas/PersistVCsArray"
         - type: object
           properties:
             si:
