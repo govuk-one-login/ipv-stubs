@@ -3,7 +3,7 @@ import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 
 export default interface ServiceResponse {
   response?: ServiceResponseBody;
-  statusCode?: number;
+  statusCode: number;
 }
 
 interface ServiceResponseBody {
@@ -11,26 +11,24 @@ interface ServiceResponseBody {
   message?: string;
 }
 
-export function createServiceResponse(
+export function createServiceResponseWithMessageId(
   statusCode: number,
-  messageId?: string,
+  messageId: string,
 ): ServiceResponse {
-  const responseBody: ServiceResponseBody = {};
-  if (messageId) {
-    responseBody.messageId = messageId;
-  }
-  return {
-    response: responseBody,
-    statusCode,
-  };
+  return createServiceResponse(statusCode, { messageId });
 }
 
-export function createServiceResponseWithBody(
+export function createServiceResponse(
   statusCode: number,
-  body: object,
+  body?: object,
 ): ServiceResponse {
+  if (body) {
+    return {
+      response: body,
+      statusCode,
+    };
+  }
   return {
-    response: body,
     statusCode,
   };
 }
@@ -39,10 +37,7 @@ export function createServiceResponseWithMessage(
   statusCode: number,
   message: string,
 ): ServiceResponse {
-  return {
-    response: { message },
-    statusCode,
-  };
+  return createServiceResponse(statusCode, { message });
 }
 
 type VcFromGetResponse = Omit<VcDetails, "provenance">;
