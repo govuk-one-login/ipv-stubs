@@ -9,8 +9,19 @@ import {
 } from "@aws-sdk/client-dynamodb";
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
-import ServiceResponse, { GetResponse } from "../domain/serviceResponse";
-import { StatusCodes, VCProvenance, VcState } from "../domain/enums";
+import ServiceResponse, {
+  createServiceResponse,
+  createServiceResponseWithBody,
+  createServiceResponseWithMessage,
+  GetResponse,
+} from "../domain/serviceResponse";
+import {
+  CreateVcStates,
+  stateTransitions,
+  StatusCodes,
+  VCProvenance,
+  VcState,
+} from "../domain/enums";
 import EvcsVcItem from "../model/evcsVcItem";
 
 import { config } from "../common/config";
@@ -22,18 +33,18 @@ import {
   PostRequest,
   PutRequest,
 } from "../domain/requests";
-import { VcDetails, StoredIdentityResponse } from "../domain/sharedTypes";
+import { VcDetails } from "../domain/vcDetails";
+import { StoredIdentityResponse } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
 import { dynamoClient } from "../clients/dynamodbClient";
+import { PostVcsRequest } from "../domain/requests/postVcsRequest";
+import { PatchVcsRequest } from "../domain/requests/patchVcsRequest";
 
 export async function processPostUserVCsRequest(
   userId: string,
   postRequest: PostRequest[],
 ): Promise<ServiceResponse> {
-  let response: ServiceResponse = {
-    response: {},
-  };
   try {
     console.info(`Post user record.`);
     const allPromises: Promise<PutItemCommandOutput>[] = [];
@@ -57,22 +68,135 @@ export async function processPostUserVCsRequest(
 
     console.info(`Saving all user VC's.`);
     await Promise.all(allPromises);
-    response = {
-      response: {
-        messageId: uuid(),
-      },
-      statusCode: StatusCodes.Accepted,
+    return createServiceResponse(StatusCodes.Accepted, uuid());
+  } catch (error) {
+    console.error(error);
+    return createServiceResponse(StatusCodes.InternalServerError, "");
+  }
+}
+
+export async function processPostUserVCsRequestV2(
+  postRequest: PostVcsRequest,
+): Promise<ServiceResponse> {
+  try {
+    console.info(`Process and save VCs`);
+
+    // Check posted VC states
+    if (postRequest.vcs.some((vc) => !(vc.state in CreateVcStates))) {
+      return createServiceResponseWithMessage(
+        StatusCodes.Conflict,
+        "At least one VC is in the wrong state",
+      );
+    }
+
+    // Check that none of the posted VCs already exist
+    const vcRecords = await getCurrentVcsForUser(postRequest.userId);
+    const requestVcs = postRequest.vcs.map((vcDetails) => vcDetails.vc);
+
+    if (
+      vcRecords.some((vcRecord) => requestVcs.includes(vcRecord.vc.S || ""))
+    ) {
+      return createServiceResponseWithMessage(
+        StatusCodes.Conflict,
+        "At least one VC already exists in EVCS",
+      );
+    }
+
+    const allPromises: Promise<PutItemCommandOutput>[] = [];
+    const ttl = await getTtl();
+    for (const vcDetails of postRequest.vcs) {
+      const vcItem: EvcsVcItem = {
+        userId: postRequest.userId,
+        vc: vcDetails.vc,
+        vcSignature: getSignatureFromJwt(vcDetails.vc),
+        state: vcDetails.state,
+        metadata: vcDetails.metadata != undefined ? vcDetails.metadata : {},
+        provenance:
+          vcDetails.provenance != undefined
+            ? vcDetails.provenance
+            : VCProvenance.ONLINE,
+        ttl,
+      };
+      allPromises.push(saveUserEvcsItem(vcItem));
+    }
+
+    console.info(`Saving all user VC's.`);
+    await Promise.all(allPromises);
+    return createServiceResponse(StatusCodes.Accepted, uuid());
+  } catch (error) {
+    console.error(error);
+    return createServiceResponse(StatusCodes.InternalServerError, "");
+  }
+}
+
+export async function processPatchUserVCsRequestV2(
+  patchRequest: PatchVcsRequest,
+): Promise<ServiceResponse> {
+  try {
+    console.info(`Patch user record.`);
+
+    // Check that the request VCs already exist
+    const vcRecords = await getCurrentVcsForUser(patchRequest.userId);
+    const requestSignatures = patchRequest.vcs.map(
+      (vcDetails) => vcDetails.signature,
+    );
+    const dynamoVcsBySignature = Object.fromEntries(
+      vcRecords.map((vcRecord) => [
+        getSignatureFromJwt(vcRecord.vc.S || ""),
+        vcRecord,
+      ]),
+    );
+
+    if (
+      requestSignatures.some((signature) => !dynamoVcsBySignature[signature])
+    ) {
+      return createServiceResponseWithMessage(
+        StatusCodes.NotFound,
+        "At least one request VC doesn't exist in EVCS",
+      );
+    }
+
+    // Check that the state transitions are allowed
+    const invalidStateTransitionFound = patchRequest.vcs.some((requestVc) => {
+      const validSourceStates = stateTransitions[requestVc.state];
+      const existingVc = dynamoVcsBySignature[requestVc.signature];
+      return (
+        !existingVc.state.S ||
+        !validSourceStates.includes(existingVc.state.S as VcState)
+      );
+    });
+    if (invalidStateTransitionFound) {
+      return createServiceResponseWithMessage(
+        StatusCodes.Conflict,
+        "At least one state transition is invalid",
+      );
+    }
+
+    const allPromises: Promise<UpdateItemCommandOutput>[] = [];
+    const ttl = await getTtl();
+    for (const patchRequestItem of patchRequest.vcs) {
+      const vcItem: EvcsItemForUpdate = {
+        userId: patchRequest.userId,
+        vcSignature: patchRequestItem.signature,
+        state: patchRequestItem.state,
+        metadata: patchRequestItem.metadata,
+        ttl,
+      };
+      allPromises.push(updateUserVC(vcItem));
+    }
+
+    console.info(`Updating user VC's.`);
+    await Promise.all(allPromises);
+    return {
+      statusCode: StatusCodes.NoContent,
     };
   } catch (error) {
     console.error(error);
-    response = {
-      response: {
-        messageId: "",
-      },
-      statusCode: StatusCodes.InternalServerError,
-    };
+    return createServiceResponseWithMessage(
+      StatusCodes.InternalServerError,
+      "Unable to update VCs",
+    );
   }
-  return response;
 }
 
 export async function processPostIdentityRequest(
@@ -102,10 +226,7 @@ export async function processPostIdentityRequest(
         console.error(
           `Failed to read existing user VCs from EVCS with ${getResponse.statusCode}`,
         );
-        return {
-          response: { messageId: "" },
-          statusCode: StatusCodes.InternalServerError,
-        };
+        return createServiceResponse(StatusCodes.InternalServerError, "");
       }
 
       // Update existing user VCs in EVCS with new states
@@ -171,16 +292,10 @@ export async function processPostIdentityRequest(
       TransactItems: transactItems,
     });
 
-    return {
-      response: { messageId: uuid() },
-      statusCode: StatusCodes.Accepted,
-    };
+    return createServiceResponse(StatusCodes.Accepted, uuid());
   } catch (error) {
     console.error("Failed to complete transaction.", error);
-    return {
-      response: { messageId: "" },
-      statusCode: StatusCodes.InternalServerError,
-    };
+    return createServiceResponse(StatusCodes.InternalServerError, "");
   }
 }
 
@@ -204,26 +319,10 @@ export async function processGetIdentityRequest(
     !getItemResponse.Item?.storedIdentity?.S ||
     !getItemResponse.Item?.isValid?.BOOL
   ) {
-    return { statusCode: 404, response: { message: "Not found" } };
+    return createServiceResponseWithMessage(StatusCodes.NotFound, "Not found");
   }
 
-  const value = await dynamoClient.query({
-    TableName: config.evcsStubUserVCsTableName,
-    KeyConditionExpression: "#userId = :userId",
-    FilterExpression: "#state IN (:state0)",
-    ExpressionAttributeNames: {
-      "#userId": "userId",
-      "#state": "state",
-    },
-    ExpressionAttributeValues: {
-      ":userId": {
-        S: userId,
-      },
-      ":state0": {
-        S: "CURRENT",
-      },
-    },
-  });
+  const vcRecords = await getCurrentVcsForUser(userId);
 
   const response: StoredIdentityResponse = {
     si: {
@@ -231,14 +330,14 @@ export async function processGetIdentityRequest(
       unsignedVot: getItemResponse.Item.levelOfConfidence.S,
     },
     vcs:
-      value.Items?.map((vc) => ({
+      vcRecords.map((vc) => ({
         vc: vc.vc.S || "",
         state: vc.state.S,
         metadata: vc.metadata?.M ? unmarshall(vc.metadata.M) : undefined,
       })) || [],
   };
 
-  return { statusCode: 200, response };
+  return createServiceResponseWithBody(StatusCodes.Success, response);
 }
 
 export async function invalidateUserSi(userId: string) {
@@ -369,10 +468,10 @@ export async function processPatchUserVCsRequest(
     };
   } catch (error) {
     console.error(error);
-    return {
-      response: { message: "Unable to update VCs" },
-      statusCode: StatusCodes.InternalServerError,
-    };
+    return createServiceResponseWithMessage(
+      StatusCodes.InternalServerError,
+      "Unable to update VCs",
+    );
   }
 }
 
@@ -394,7 +493,31 @@ async function saveUserEvcsItem(
   return dynamoClient.putItem(putItemInput);
 }
 
-function createUpdateItemInput(evcsVcItem: EvcsItemForUpdate) {
+async function getCurrentVcsForUser(
+  userId: string,
+): Promise<Record<string, AttributeValue>[]> {
+  const value = await dynamoClient.query({
+    TableName: config.evcsStubUserVCsTableName,
+    KeyConditionExpression: "#userId = :userId",
+    FilterExpression: "#state IN (:state0)",
+    ExpressionAttributeNames: {
+      "#userId": "userId",
+      "#state": "state",
+    },
+    ExpressionAttributeValues: {
+      ":userId": {
+        S: userId,
+      },
+      ":state0": {
+        S: "CURRENT",
+      },
+    },
+  });
+
+  return value.Items || [];
+}
+
+export function createUpdateItemInput(evcsVcItem: EvcsItemForUpdate) {
   return {
     TableName: config.evcsStubUserVCsTableName,
     Key: {

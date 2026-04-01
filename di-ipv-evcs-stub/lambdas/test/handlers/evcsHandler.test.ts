@@ -11,7 +11,7 @@ import {
   invalidateStoredIdentityHandler,
   postIdentityHandler,
   updateHandler,
-} from "../src/handlers/evcsHandler";
+} from "../../src/handlers/evcsHandler";
 import {
   processGetUserVCsRequest,
   processPatchUserVCsRequest,
@@ -19,19 +19,19 @@ import {
   processPostIdentityRequest,
   invalidateUserSi,
   processGetIdentityRequest,
-} from "../src/services/evcsService";
-import { VcState, VCProvenance } from "../src/domain/enums";
+} from "../../src/services/evcsService";
+import { VcState, VCProvenance } from "../../src/domain/enums";
 import { APIGatewayProxyEventQueryStringParameters } from "aws-lambda/trigger/api-gateway-proxy";
 import {
   InvalidateIdentityRequest,
   PostIdentityRequest,
-} from "../src/domain/requests";
-import { Vot } from "../src/domain/enums/vot";
+} from "../../src/domain/requests";
+import { Vot } from "../../src/domain/enums/vot";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("../src/common/ssmParameter");
+vi.mock("../../src/common/ssmParameter");
 
-vi.mock("../src/services/evcsService", () => ({
+vi.mock("../../src/services/evcsService", () => ({
   processGetUserVCsRequest: vi.fn(),
   processPatchUserVCsRequest: vi.fn(),
   processPostUserVCsRequest: vi.fn(),
@@ -561,6 +561,7 @@ describe("evcs handlers", () => {
         "PENDING_RETURN",
         "HISTORIC",
         "VERIFICATION_ARCHIVED",
+        "ACCOUNT_DELETED",
       ]);
     });
 

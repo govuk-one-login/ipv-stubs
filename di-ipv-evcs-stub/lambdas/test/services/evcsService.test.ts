@@ -1,18 +1,24 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { mockClient } from "aws-sdk-client-mock";
 import {
   DynamoDB,
   GetItemCommand,
   GetItemCommandOutput,
+  PutItemCommand,
   QueryCommand,
   QueryCommandOutput,
   TransactWriteItemsCommand,
+  UpdateItemCommand,
 } from "@aws-sdk/client-dynamodb";
 import { marshall } from "@aws-sdk/util-dynamodb";
 import {
+  createPutItem,
+  createUpdateItemInput,
   invalidateUserSi,
   processGetIdentityRequest,
+  processPatchUserVCsRequestV2,
   processPostIdentityRequest,
+  processPostUserVCsRequestV2,
 } from "../../src/services/evcsService";
 import { PostIdentityRequest, PutRequest } from "../../src/domain/requests";
 import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
@@ -21,6 +27,8 @@ import { config } from "../../src/common/config";
 import { Vot } from "../../src/domain/enums/vot";
 import { StoredIdentityRecordType } from "../../src/domain/enums/StoredIdentityRecordType";
 import EvcsStoredIdentityItem from "../../src/model/storedIdentityItem";
+import { PostVcsRequest } from "../../src/domain/requests/postVcsRequest";
+import { PatchVcsRequest } from "../../src/domain/requests/patchVcsRequest";
 
 vi.useFakeTimers().setSystemTime(new Date("2025-01-01"));
 
@@ -42,6 +50,30 @@ const TEST_VC3 = `eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiJ1cm46dXVpZDo5N
 
 const TEST_SI_JWT =
   "eyJraWQiOiJ0ZXN0LXNpZ25pbmcta2V5IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJhdWQiOiJodHRwczovL3JldXNlLWlkZW50aXR5LmJ1aWxkLmFjY291bnQuZ292LnVrIiwic3ViIjoiNmJkMjM1ZGMyYTBhNTliODkyMGU0NTJjNzE1MzY0ZWQiLCJuYmYiOjE3NTA2NzQ3NTUsImNyZWRlbnRpYWxzIjpbInl0NUgtN0EyWXhqeTd0eDlUaXRnQ1NTeW80dV9RUHlTam84Q2FrdXlyY01EMjhLMThKSnFyWG5uemc1TXFmZkZxZTB5clRKRlBNa201V3hRdmlNa01BIiwiVDFHdFA3X01ueUZHYmJhSUl3NER3NmJYcEZwakRaeU5jSlU0V1BiME9tTzBYRmZPV0V4NXNiZEkwTlBGeFpNT1JsQjFUYlRibmMxVHhNMVhybjBfRXciXSwiaXNzIjoiaHR0cHM6Ly9pZGVudGl0eS5sb2NhbC5hY2NvdW50Lmdvdi51ayIsImNsYWltcyI6eyJodHRwczovL3ZvY2FiLmFjY291bnQuZ292LnVrL3YxL2NvcmVJZGVudGl0eSI6eyJuYW1lIjpbeyJuYW1lUGFydHMiOlt7InR5cGUiOiJHaXZlbk5hbWUiLCJ2YWx1ZSI6IkFsaWNlIn0seyJ0eXBlIjoiR2l2ZW5OYW1lIiwidmFsdWUiOiJKYW5lIn0seyJ0eXBlIjoiRmFtaWx5TmFtZSIsInZhbHVlIjoiRG9lIn1dfV0sImJpcnRoRGF0ZSI6W3sidmFsdWUiOiIxOTcwLTAxLTAxIn1dfX0sInZvdCI6IlBDTDI1MCIsImlhdCI6MTc1MDY3NDc1NX0.9OqD33fjZLozlbDHZtbAqtrnMNXHyJ-mFZo5F4sVRB-qzjxdK8Iuz9aK_h5iTP6PFHCx7ZwXLbAbtZKjeCEqHg"; // pragma: allowlist secret
+
+const TEST_POST_REQUEST: PostVcsRequest = {
+  userId: "testUserId",
+  govuk_signin_journey_id: "testJourneyId",
+  vcs: [
+    {
+      vc: TEST_VC1,
+      state: VcState.CURRENT,
+      provenance: VCProvenance.MIGRATED,
+    },
+  ],
+};
+
+const TEST_PATCH_REQUEST: PatchVcsRequest = {
+  userId: "testUserId",
+  govuk_signin_journey_id: "testJourneyId",
+  vcs: [
+    {
+      signature: TEST_VC1_SIGNATURE,
+      state: VcState.CURRENT,
+    },
+  ],
+};
+
 const TEST_SI_TABLE_ITEM_GPG45: EvcsStoredIdentityItem = {
   userId: TEST_USER_ID,
   recordType: StoredIdentityRecordType.GPG45,
@@ -60,590 +92,714 @@ const TEST_METADATA = {
 
 const MOCK_TTL = "3600";
 
-describe("processPostIdentityRequest", () => {
+describe("evcsService", () => {
   beforeEach(() => {
     dbMock.reset();
     vi.stubEnv("EVCS_STUB_TTL", MOCK_TTL);
   });
 
-  it("should return 200 response when provided just an SI object", async () => {
-    // Arrange
-    const postIdentityRequest: PostIdentityRequest = {
-      userId: TEST_USER_ID,
-      si: {
-        jwt: TEST_VC2,
-        vot: Vot.P2,
-      },
-    };
-
-    // Act
-    const response = await processPostIdentityRequest(postIdentityRequest);
-
-    // Assert
-    expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).not.toHaveReceivedCommand(QueryCommand);
-
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
-      TransactItems: [
-        createStoredIdentityPutItem({
-          recordType: StoredIdentityRecordType.GPG45,
-          storedIdentity: TEST_VC2,
-          levelOfConfidence: "P2",
-        }),
-      ],
-    });
-  });
-
-  it("should return 200 response with new vc if successful transaction", async () => {
-    // Arrange
-    dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
-
-    const putRequest: PutRequest = {
-      userId: TEST_USER_ID,
-      vcs: [
-        {
-          vc: TEST_VC1,
-          state: VcState.CURRENT,
-        },
-      ],
-      si: {
-        jwt: TEST_VC2,
-        vot: Vot.P2,
-      },
-    };
-
-    // Act
-    const response = await processPostIdentityRequest(putRequest);
-
-    // Assert
-    expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
-
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
-      TransactItems: [
-        createStubUserVcPutItem({
-          vcSignature: TEST_VC1_SIGNATURE,
-          vc: TEST_VC1,
-          state: VcState.CURRENT,
-        }),
-        createStoredIdentityPutItem({
-          recordType: StoredIdentityRecordType.GPG45,
-          storedIdentity: TEST_VC2,
-          levelOfConfidence: "P2",
-        }),
-      ],
-    });
-  });
-
-  it("should return 200 response with updated vc if successful transaction", async () => {
-    // Arrange
-    dbMock.on(QueryCommand).resolves(
-      createEvcsUserVcsQueryResponse([
-        {
-          vc: TEST_VC1,
-          state: VcState.HISTORIC,
-        },
-      ]),
-    );
-
-    const putRequest: PutRequest = {
-      userId: TEST_USER_ID,
-      vcs: [
-        {
-          vc: TEST_VC1,
-          state: VcState.CURRENT,
-          metadata: TEST_METADATA,
-          provenance: VCProvenance.EXTERNAL,
-        },
-      ],
-      si: {
-        jwt: TEST_VC2,
-        vot: Vot.P2,
-        metadata: TEST_METADATA,
-      },
-    };
-
-    // Act
-    const response = await processPostIdentityRequest(putRequest);
-
-    // Assert
-    expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
-
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
-      TransactItems: [
-        createStubUserVcPutItem({
-          vcSignature: TEST_VC1_SIGNATURE,
-          vc: TEST_VC1,
-          metadata: TEST_METADATA,
-          state: VcState.CURRENT,
-          provenance: VCProvenance.EXTERNAL,
-        }),
-        createStoredIdentityPutItem({
-          recordType: StoredIdentityRecordType.GPG45,
-          storedIdentity: TEST_VC2,
-          levelOfConfidence: Vot.P2,
-          metadata: TEST_METADATA,
-        }),
-      ],
-    });
-  });
-
-  it("should return 200 response if SI not provided", async () => {
-    // Arrange
-    dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
-
-    const putRequest: PutRequest = {
-      userId: TEST_USER_ID,
-      vcs: [
-        {
-          vc: TEST_VC1,
-          state: VcState.CURRENT,
-        },
-      ],
-    };
-
-    // Act
-    const response = await processPostIdentityRequest(putRequest);
-
-    // Assert
-    expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
-
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
-      TransactItems: [
-        createStubUserVcPutItem({
-          vcSignature: TEST_VC1_SIGNATURE,
-          vc: TEST_VC1,
-          state: VcState.CURRENT,
-        }),
-      ],
-    });
-  });
-
-  it("should return 200 response, update existing VCs and add new ones if successful transaction", async () => {
-    // Arrange
-    dbMock.on(QueryCommand).resolves(
-      createEvcsUserVcsQueryResponse([
-        { vc: TEST_VC1, state: VcState.CURRENT },
-        { vc: TEST_VC2, state: VcState.PENDING_RETURN },
-      ]),
-    );
-
-    const putRequest: PutRequest = {
-      userId: TEST_USER_ID,
-      vcs: [
-        {
-          vc: TEST_VC3,
-          state: VcState.CURRENT,
-        },
-      ],
-      si: {
-        jwt: TEST_VC2,
-        vot: Vot.P2,
-      },
-    };
-
-    // Act
-    const response = await processPostIdentityRequest(putRequest);
-
-    // Assert
-    expect(response.statusCode).toBe(StatusCodes.Accepted);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
-
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
-      TransactItems: [
-        createUserVcUpdateItem({
-          vcSignature: TEST_VC1_SIGNATURE,
-          state: VcState.HISTORIC,
-        }),
-        createUserVcUpdateItem({
-          vcSignature: TEST_VC2_SIGNATURE,
-          state: VcState.ABANDONED,
-        }),
-        createStubUserVcPutItem({
-          vcSignature: TEST_VC3_SIGNATURE,
-          vc: TEST_VC3,
-          state: VcState.CURRENT,
-          provenance: VCProvenance.ONLINE,
-        }),
-        createStoredIdentityPutItem({
-          recordType: StoredIdentityRecordType.GPG45,
-          storedIdentity: TEST_VC2,
-          levelOfConfidence: "P2",
-        }),
-      ],
-    });
-  });
-
-  it("should return 500 status code if it fails to get existing user VCs", async () => {
-    // Arrange
-    dbMock.on(QueryCommand).rejects(new Error("Failed to get existing VCs"));
-
-    const putRequest: PutRequest = {
-      userId: TEST_USER_ID,
-      vcs: [
-        {
-          vc: TEST_VC3,
-          state: VcState.CURRENT,
-        },
-      ],
-    };
-
-    // Act
-    const response = await processPostIdentityRequest(putRequest);
-
-    // Assert
-    expect(response.statusCode).toBe(StatusCodes.InternalServerError);
-    expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
-  });
-
-  it("should return 500 status code if it fails to complete the transaction", async () => {
-    // Arrange
-    dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
-    dbMock
-      .on(TransactWriteItemsCommand)
-      .rejects(new Error("Failed to complete transaction"));
-
-    const putRequest: PutRequest = {
-      userId: TEST_USER_ID,
-      vcs: [
-        {
-          vc: TEST_VC3,
-          state: VcState.CURRENT,
-        },
-      ],
-    };
-
-    // Act
-    const response = await processPostIdentityRequest(putRequest);
-
-    // Assert
-    expect(response.statusCode).toBe(StatusCodes.InternalServerError);
-    expect(dbMock).toHaveReceivedCommand(QueryCommand);
-  });
-});
-
-describe("processGetIdentityRequest", () => {
-  it("should return 404 is the stored identity is not found", async () => {
-    // Arrange
-    dbMock.on(GetItemCommand).resolves({
-      $metadata: {},
-    } satisfies GetItemCommandOutput);
-
-    // Act/Assert
-    await expect(
-      processGetIdentityRequest(TEST_USER_ID),
-    ).resolves.toStrictEqual({
-      statusCode: 404,
-      response: { message: "Not found" },
-    });
-  });
-
-  it("should return 200 if the stored identity is found with no VCs", async () => {
-    // Arrange
-    dbMock
-      .on(GetItemCommand)
-      .resolves({
-        $metadata: {},
-        Item: {
-          storedIdentity: {
-            S: TEST_SI_JWT,
-          },
-          isValid: {
-            BOOL: true,
-          },
-          levelOfConfidence: {
-            S: "P3",
-          },
-        },
-      } satisfies GetItemCommandOutput)
-      .on(QueryCommand)
-      .resolves({
-        $metadata: {},
-        Items: [],
-      } satisfies QueryCommandOutput);
-
-    // Act/Assert
-    await expect(
-      processGetIdentityRequest(TEST_USER_ID),
-    ).resolves.toStrictEqual({
-      statusCode: 200,
-      response: {
+  describe("processPostIdentityRequest", () => {
+    it("should return 200 response when provided just an SI object", async () => {
+      // Arrange
+      const postIdentityRequest: PostIdentityRequest = {
+        userId: TEST_USER_ID,
         si: {
-          vc: TEST_SI_JWT,
-          unsignedVot: "P3",
+          jwt: TEST_VC2,
+          vot: Vot.P2,
         },
-        vcs: [],
-      },
-    });
-  });
+      };
 
-  it("should return 404 if the stored identity is found but is inValid", async () => {
-    // Arrange
-    dbMock
-      .on(GetItemCommand)
-      .resolves({
-        $metadata: {},
-        Item: {
-          storedIdentity: {
-            S: TEST_SI_JWT,
-          },
-          isValid: {
-            BOOL: false,
-          },
-          levelOfConfidence: {
-            S: "P3",
-          },
-        },
-      } satisfies GetItemCommandOutput)
-      .on(QueryCommand)
-      .resolves({
-        $metadata: {},
-        Items: [],
-      } satisfies QueryCommandOutput);
+      // Act
+      const response = await processPostIdentityRequest(postIdentityRequest);
 
-    // Act/Assert
-    await expect(
-      processGetIdentityRequest(TEST_USER_ID),
-    ).resolves.toStrictEqual({
-      statusCode: 404,
-      response: {
-        message: "Not found",
-      },
-    });
-  });
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.Accepted);
+      expect(dbMock).not.toHaveReceivedCommand(QueryCommand);
 
-  it("should return 200 if the stored identity is found with VCs", async () => {
-    // Arrange
-    dbMock
-      .on(GetItemCommand)
-      .resolves({
-        $metadata: {},
-        Item: {
-          storedIdentity: {
-            S: TEST_SI_JWT,
-          },
-          isValid: {
-            BOOL: true,
-          },
-          levelOfConfidence: {
-            S: "P3",
-          },
-        },
-      } satisfies GetItemCommandOutput)
-      .on(QueryCommand)
-      .resolves({
-        $metadata: {},
-        Items: [
-          {
-            vc: {
-              S: TEST_VC1,
-            },
-            state: {
-              S: "CURRENT",
-            },
-            metadata: {
-              M: {
-                Hello: {
-                  S: "World",
-                },
-              },
-            },
-          },
+      expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+        TransactItems: [
+          createStoredIdentityPutItem({
+            recordType: StoredIdentityRecordType.GPG45,
+            storedIdentity: TEST_VC2,
+            levelOfConfidence: "P2",
+          }),
         ],
-      } satisfies QueryCommandOutput);
+      });
+    });
 
-    // Act/Assert
-    await expect(
-      processGetIdentityRequest(TEST_USER_ID),
-    ).resolves.toStrictEqual({
-      statusCode: 200,
-      response: {
-        si: {
-          vc: TEST_SI_JWT,
-          unsignedVot: "P3",
-        },
+    it("should return 200 response with new vc if successful transaction", async () => {
+      // Arrange
+      dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
+
+      const putRequest: PutRequest = {
+        userId: TEST_USER_ID,
         vcs: [
           {
             vc: TEST_VC1,
-            state: "CURRENT",
-            metadata: {
-              Hello: "World",
-            },
+            state: VcState.CURRENT,
           },
         ],
-      },
+        si: {
+          jwt: TEST_VC2,
+          vot: Vot.P2,
+        },
+      };
+
+      // Act
+      const response = await processPostIdentityRequest(putRequest);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.Accepted);
+      expect(dbMock).toHaveReceivedCommand(QueryCommand);
+
+      expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+        TransactItems: [
+          createStubUserVcPutItem({
+            vcSignature: TEST_VC1_SIGNATURE,
+            vc: TEST_VC1,
+            state: VcState.CURRENT,
+          }),
+          createStoredIdentityPutItem({
+            recordType: StoredIdentityRecordType.GPG45,
+            storedIdentity: TEST_VC2,
+            levelOfConfidence: "P2",
+          }),
+        ],
+      });
+    });
+
+    it("should return 200 response with updated vc if successful transaction", async () => {
+      // Arrange
+      dbMock.on(QueryCommand).resolves(
+        createEvcsUserVcsQueryResponse([
+          {
+            vc: TEST_VC1,
+            state: VcState.HISTORIC,
+          },
+        ]),
+      );
+
+      const putRequest: PutRequest = {
+        userId: TEST_USER_ID,
+        vcs: [
+          {
+            vc: TEST_VC1,
+            state: VcState.CURRENT,
+            metadata: TEST_METADATA,
+            provenance: VCProvenance.EXTERNAL,
+          },
+        ],
+        si: {
+          jwt: TEST_VC2,
+          vot: Vot.P2,
+          metadata: TEST_METADATA,
+        },
+      };
+
+      // Act
+      const response = await processPostIdentityRequest(putRequest);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.Accepted);
+      expect(dbMock).toHaveReceivedCommand(QueryCommand);
+
+      expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+        TransactItems: [
+          createStubUserVcPutItem({
+            vcSignature: TEST_VC1_SIGNATURE,
+            vc: TEST_VC1,
+            metadata: TEST_METADATA,
+            state: VcState.CURRENT,
+            provenance: VCProvenance.EXTERNAL,
+          }),
+          createStoredIdentityPutItem({
+            recordType: StoredIdentityRecordType.GPG45,
+            storedIdentity: TEST_VC2,
+            levelOfConfidence: Vot.P2,
+            metadata: TEST_METADATA,
+          }),
+        ],
+      });
+    });
+
+    it("should return 200 response if SI not provided", async () => {
+      // Arrange
+      dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
+
+      const putRequest: PutRequest = {
+        userId: TEST_USER_ID,
+        vcs: [
+          {
+            vc: TEST_VC1,
+            state: VcState.CURRENT,
+          },
+        ],
+      };
+
+      // Act
+      const response = await processPostIdentityRequest(putRequest);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.Accepted);
+      expect(dbMock).toHaveReceivedCommand(QueryCommand);
+
+      expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+        TransactItems: [
+          createStubUserVcPutItem({
+            vcSignature: TEST_VC1_SIGNATURE,
+            vc: TEST_VC1,
+            state: VcState.CURRENT,
+          }),
+        ],
+      });
+    });
+
+    it("should return 200 response, update existing VCs and add new ones if successful transaction", async () => {
+      // Arrange
+      dbMock.on(QueryCommand).resolves(
+        createEvcsUserVcsQueryResponse([
+          { vc: TEST_VC1, state: VcState.CURRENT },
+          { vc: TEST_VC2, state: VcState.PENDING_RETURN },
+        ]),
+      );
+
+      const putRequest: PutRequest = {
+        userId: TEST_USER_ID,
+        vcs: [
+          {
+            vc: TEST_VC3,
+            state: VcState.CURRENT,
+          },
+        ],
+        si: {
+          jwt: TEST_VC2,
+          vot: Vot.P2,
+        },
+      };
+
+      // Act
+      const response = await processPostIdentityRequest(putRequest);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.Accepted);
+      expect(dbMock).toHaveReceivedCommand(QueryCommand);
+
+      expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+        TransactItems: [
+          createUserVcUpdateItem({
+            vcSignature: TEST_VC1_SIGNATURE,
+            state: VcState.HISTORIC,
+          }),
+          createUserVcUpdateItem({
+            vcSignature: TEST_VC2_SIGNATURE,
+            state: VcState.ABANDONED,
+          }),
+          createStubUserVcPutItem({
+            vcSignature: TEST_VC3_SIGNATURE,
+            vc: TEST_VC3,
+            state: VcState.CURRENT,
+            provenance: VCProvenance.ONLINE,
+          }),
+          createStoredIdentityPutItem({
+            recordType: StoredIdentityRecordType.GPG45,
+            storedIdentity: TEST_VC2,
+            levelOfConfidence: "P2",
+          }),
+        ],
+      });
+    });
+
+    it("should return 500 status code if it fails to get existing user VCs", async () => {
+      // Arrange
+      dbMock.on(QueryCommand).rejects(new Error("Failed to get existing VCs"));
+
+      const putRequest: PutRequest = {
+        userId: TEST_USER_ID,
+        vcs: [
+          {
+            vc: TEST_VC3,
+            state: VcState.CURRENT,
+          },
+        ],
+      };
+
+      // Act
+      const response = await processPostIdentityRequest(putRequest);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.InternalServerError);
+      expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
+    });
+
+    it("should return 500 status code if it fails to complete the transaction", async () => {
+      // Arrange
+      dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
+      dbMock
+        .on(TransactWriteItemsCommand)
+        .rejects(new Error("Failed to complete transaction"));
+
+      const putRequest: PutRequest = {
+        userId: TEST_USER_ID,
+        vcs: [
+          {
+            vc: TEST_VC3,
+            state: VcState.CURRENT,
+          },
+        ],
+      };
+
+      // Act
+      const response = await processPostIdentityRequest(putRequest);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.InternalServerError);
+      expect(dbMock).toHaveReceivedCommand(QueryCommand);
     });
   });
-});
 
-describe("invalidateUserSi", () => {
-  beforeEach(() => {
-    dbMock.reset();
-  });
+  describe("processGetIdentityRequest", () => {
+    it("should return 404 is the stored identity is not found", async () => {
+      // Arrange
+      dbMock.on(GetItemCommand).resolves({
+        $metadata: {},
+      } satisfies GetItemCommandOutput);
 
-  it("should return 204 for user with an existing stored identity", async () => {
-    // Arrange
-    dbMock.on(QueryCommand).resolves({
-      Items: [marshall(TEST_SI_TABLE_ITEM_GPG45)],
+      // Act/Assert
+      await expect(
+        processGetIdentityRequest(TEST_USER_ID),
+      ).resolves.toStrictEqual({
+        statusCode: 404,
+        response: { message: "Not found" },
+      });
     });
 
-    // Act
-    const res = await invalidateUserSi(TEST_USER_ID);
+    it("should return 200 if the stored identity is found with no VCs", async () => {
+      // Arrange
+      dbMock
+        .on(GetItemCommand)
+        .resolves({
+          $metadata: {},
+          Item: {
+            storedIdentity: {
+              S: TEST_SI_JWT,
+            },
+            isValid: {
+              BOOL: true,
+            },
+            levelOfConfidence: {
+              S: "P3",
+            },
+          },
+        } satisfies GetItemCommandOutput)
+        .on(QueryCommand)
+        .resolves({
+          $metadata: {},
+          Items: [],
+        } satisfies QueryCommandOutput);
 
-    // Assert
-    expect(res.statusCode).toBe(StatusCodes.NoContent);
-    expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
-      TransactItems: [
-        createUpdateSiIsValidUpdateItem(StoredIdentityRecordType.GPG45),
-      ],
+      // Act/Assert
+      await expect(
+        processGetIdentityRequest(TEST_USER_ID),
+      ).resolves.toStrictEqual({
+        statusCode: 200,
+        response: {
+          si: {
+            vc: TEST_SI_JWT,
+            unsignedVot: "P3",
+          },
+          vcs: [],
+        },
+      });
+    });
+
+    it("should return 404 if the stored identity is found but is inValid", async () => {
+      // Arrange
+      dbMock
+        .on(GetItemCommand)
+        .resolves({
+          $metadata: {},
+          Item: {
+            storedIdentity: {
+              S: TEST_SI_JWT,
+            },
+            isValid: {
+              BOOL: false,
+            },
+            levelOfConfidence: {
+              S: "P3",
+            },
+          },
+        } satisfies GetItemCommandOutput)
+        .on(QueryCommand)
+        .resolves({
+          $metadata: {},
+          Items: [],
+        } satisfies QueryCommandOutput);
+
+      // Act/Assert
+      await expect(
+        processGetIdentityRequest(TEST_USER_ID),
+      ).resolves.toStrictEqual({
+        statusCode: 404,
+        response: {
+          message: "Not found",
+        },
+      });
+    });
+
+    it("should return 200 if the stored identity is found with VCs", async () => {
+      // Arrange
+      dbMock
+        .on(GetItemCommand)
+        .resolves({
+          $metadata: {},
+          Item: {
+            storedIdentity: {
+              S: TEST_SI_JWT,
+            },
+            isValid: {
+              BOOL: true,
+            },
+            levelOfConfidence: {
+              S: "P3",
+            },
+          },
+        } satisfies GetItemCommandOutput)
+        .on(QueryCommand)
+        .resolves({
+          $metadata: {},
+          Items: [
+            {
+              vc: {
+                S: TEST_VC1,
+              },
+              state: {
+                S: "CURRENT",
+              },
+              metadata: {
+                M: {
+                  Hello: {
+                    S: "World",
+                  },
+                },
+              },
+            },
+          ],
+        } satisfies QueryCommandOutput);
+
+      // Act/Assert
+      await expect(
+        processGetIdentityRequest(TEST_USER_ID),
+      ).resolves.toStrictEqual({
+        statusCode: 200,
+        response: {
+          si: {
+            vc: TEST_SI_JWT,
+            unsignedVot: "P3",
+          },
+          vcs: [
+            {
+              vc: TEST_VC1,
+              state: "CURRENT",
+              metadata: {
+                Hello: "World",
+              },
+            },
+          ],
+        },
+      });
     });
   });
 
-  it("should return 404 for user with no existing stored identity", async () => {
-    // Arrange
-    dbMock.on(QueryCommand).resolves({ Items: [] });
+  describe("invalidateUserSi", () => {
+    it("should return 204 for user with an existing stored identity", async () => {
+      // Arrange
+      dbMock.on(QueryCommand).resolves({
+        Items: [marshall(TEST_SI_TABLE_ITEM_GPG45)],
+      });
 
-    // Act
-    const res = await invalidateUserSi(TEST_USER_ID);
+      // Act
+      const res = await invalidateUserSi(TEST_USER_ID);
 
-    // Assert
-    expect(res.statusCode).toBe(StatusCodes.NotFound);
-    expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
+      // Assert
+      expect(res.statusCode).toBe(StatusCodes.NoContent);
+      expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+        TransactItems: [
+          createUpdateSiIsValidUpdateItem(StoredIdentityRecordType.GPG45),
+        ],
+      });
+    });
+
+    it("should return 404 for user with no existing stored identity", async () => {
+      // Arrange
+      dbMock.on(QueryCommand).resolves({ Items: [] });
+
+      // Act
+      const res = await invalidateUserSi(TEST_USER_ID);
+
+      // Assert
+      expect(res.statusCode).toBe(StatusCodes.NotFound);
+      expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
+    });
+
+    it("should return 500 if it fails to update the user's stored identity", async () => {
+      // Arrange
+      dbMock
+        .on(QueryCommand)
+        .resolves({ Items: [marshall(TEST_SI_TABLE_ITEM_GPG45)] });
+      dbMock
+        .on(TransactWriteItemsCommand)
+        .rejects(new Error("Failed to update SI item"));
+
+      // Act
+      const res = await invalidateUserSi(TEST_USER_ID);
+
+      // Assert
+      expect(res.statusCode).toBe(StatusCodes.InternalServerError);
+    });
   });
 
-  it("should return 500 if it fails to update the user's stored identity", async () => {
-    // Arrange
-    dbMock
-      .on(QueryCommand)
-      .resolves({ Items: [marshall(TEST_SI_TABLE_ITEM_GPG45)] });
-    dbMock
-      .on(TransactWriteItemsCommand)
-      .rejects(new Error("Failed to update SI item"));
+  describe("processPostUserVCsRequestV2", () => {
+    it("should return 409 response when provided invalid VC state", async () => {
+      // Arrange
+      const request = structuredClone(TEST_POST_REQUEST);
+      request.vcs[0].state = VcState.HISTORIC;
 
-    // Act
-    const res = await invalidateUserSi(TEST_USER_ID);
+      // Act
+      const response = await processPostUserVCsRequestV2(request);
 
-    // Assert
-    expect(res.statusCode).toBe(StatusCodes.InternalServerError);
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.Conflict);
+      expect(dbMock).not.toHaveReceivedCommand(QueryCommand);
+    });
+
+    it("should return 409 response when provided a VC that already exists", async () => {
+      // Arrange
+      const request = structuredClone(TEST_POST_REQUEST);
+      dbMock.on(QueryCommand).resolves(
+        createEvcsUserVcsQueryResponse([
+          {
+            vc: request.vcs[0].vc,
+            state: VcState.CURRENT,
+          },
+        ]),
+      );
+
+      // Act
+      const response = await processPostUserVCsRequestV2(request);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.Conflict);
+    });
+
+    it("should return 202 response when provided valid VCs", async () => {
+      // Arrange
+      const request = structuredClone(TEST_POST_REQUEST);
+      dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
+
+      // Act
+      const response = await processPostUserVCsRequestV2(request);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.Accepted);
+      expect(dbMock).toHaveReceivedCommandWith(
+        PutItemCommand,
+        createPutItem({
+          userId: request.userId,
+          vcSignature: TEST_VC1_SIGNATURE,
+          vc: TEST_VC1,
+          state: request.vcs[0].state,
+          ttl: 1735693200,
+          metadata: {},
+          provenance: request.vcs[0].provenance,
+        }),
+      );
+    });
   });
-});
 
-function getTestTtl() {
-  return Math.floor(Date.now() / 1000) + parseInt(MOCK_TTL);
-}
+  describe("processPatchUserVCsRequestV2", () => {
+    it("should return 409 response when provided invalid VC state transition", async () => {
+      // Arrange
+      const request = structuredClone(TEST_PATCH_REQUEST);
+      // Current to abandoned is not allowed
+      request.vcs[0].state = VcState.ABANDONED;
+      dbMock
+        .on(QueryCommand)
+        .resolves(
+          createEvcsUserVcsQueryResponse([
+            { vc: TEST_VC1, state: VcState.CURRENT },
+          ]),
+        );
 
-function createEvcsUserVcsQueryResponse(
-  vcsForReturn: {
+      // Act
+      const response = await processPatchUserVCsRequestV2(request);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.Conflict);
+      expect(dbMock).not.toHaveReceivedCommand(UpdateItemCommand);
+    });
+
+    it("should return 404 response when provided a VC that doesn't exist", async () => {
+      // Arrange
+      const request = structuredClone(TEST_PATCH_REQUEST);
+      dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
+
+      // Act
+      const response = await processPatchUserVCsRequestV2(request);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.NotFound);
+      expect(dbMock).not.toHaveReceivedCommand(UpdateItemCommand);
+    });
+
+    it("should return 204 response when provided valid VCs", async () => {
+      // Arrange
+      const request = structuredClone(TEST_PATCH_REQUEST);
+      // Current to historic is allowed
+      request.vcs[0].state = VcState.HISTORIC;
+      dbMock
+        .on(QueryCommand)
+        .resolves(
+          createEvcsUserVcsQueryResponse([
+            { vc: TEST_VC1, state: VcState.CURRENT },
+          ]),
+        );
+
+      // Act
+      const response = await processPatchUserVCsRequestV2(request);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.NoContent);
+      expect(dbMock).toHaveReceivedCommandWith(
+        UpdateItemCommand,
+        createUpdateItemInput({
+          userId: request.userId,
+          vcSignature: TEST_VC1_SIGNATURE,
+          state: request.vcs[0].state,
+          ttl: 1735693200,
+        }),
+      );
+    });
+  });
+
+  function getTestTtl() {
+    return Math.floor(Date.now() / 1000) + parseInt(MOCK_TTL);
+  }
+
+  function createEvcsUserVcsQueryResponse(
+    vcsForReturn: {
+      vc: string;
+      state: VcState;
+    }[],
+  ) {
+    return {
+      Items: vcsForReturn.map(({ vc, state }) =>
+        marshall({
+          userId: TEST_USER_ID,
+          vc,
+          state,
+          metadata: TEST_METADATA,
+        }),
+      ),
+    };
+  }
+
+  function createStubUserVcPutItem(putVcDetails: {
     vc: string;
+    vcSignature: string;
+    metadata?: object;
+    state?: VcState;
+    provenance?: VCProvenance;
+  }) {
+    return {
+      Put: {
+        TableName: config.evcsStubUserVCsTableName,
+        Item: marshall(
+          {
+            userId: TEST_USER_ID,
+            vcSignature: putVcDetails.vcSignature,
+            vc: putVcDetails.vc,
+            metadata: putVcDetails.metadata,
+            state: putVcDetails.state,
+            provenance: putVcDetails.provenance || VCProvenance.ONLINE,
+            ttl: getTestTtl(),
+          },
+          { removeUndefinedValues: true },
+        ),
+      },
+    };
+  }
+
+  function createStoredIdentityPutItem(putSiDetails: {
+    recordType: string;
+    storedIdentity: string;
+    levelOfConfidence: string;
+    metadata?: object;
+  }) {
+    return {
+      Put: {
+        TableName: config.evcsStoredIdentityObjectTableName,
+        Item: marshall(
+          {
+            userId: TEST_USER_ID,
+            recordType: putSiDetails.recordType,
+            storedIdentity: putSiDetails.storedIdentity,
+            levelOfConfidence: putSiDetails.levelOfConfidence,
+            isValid: true,
+            expired: false,
+            metadata: putSiDetails.metadata,
+          },
+          { removeUndefinedValues: true },
+        ),
+      },
+    };
+  }
+
+  function createUserVcUpdateItem(updateVcDetails: {
+    vcSignature: string;
     state: VcState;
-  }[],
-) {
-  return {
-    Items: vcsForReturn.map(({ vc, state }) =>
-      marshall({
-        userId: TEST_USER_ID,
-        vc,
-        state,
-        metadata: TEST_METADATA,
-      }),
-    ),
-  };
-}
-
-function createStubUserVcPutItem(putVcDetails: {
-  vc: string;
-  vcSignature: string;
-  metadata?: object;
-  state?: VcState;
-  provenance?: VCProvenance;
-}) {
-  return {
-    Put: {
-      TableName: config.evcsStubUserVCsTableName,
-      Item: marshall(
-        {
+  }) {
+    return {
+      Update: {
+        TableName: config.evcsStubUserVCsTableName,
+        Key: marshall({
           userId: TEST_USER_ID,
-          vcSignature: putVcDetails.vcSignature,
-          vc: putVcDetails.vc,
-          metadata: putVcDetails.metadata,
-          state: putVcDetails.state,
-          provenance: putVcDetails.provenance || VCProvenance.ONLINE,
-          ttl: getTestTtl(),
+          vcSignature: updateVcDetails.vcSignature,
+        }),
+        UpdateExpression:
+          "set #state = :stateValue, #metadata = :metadataValue",
+        ExpressionAttributeNames: {
+          "#state": "state",
+          "#metadata": "metadata",
         },
-        { removeUndefinedValues: true },
-      ),
-    },
-  };
-}
+        ExpressionAttributeValues: {
+          ":stateValue": marshall(updateVcDetails.state),
+          ":metadataValue": {
+            M: marshall(TEST_METADATA),
+          },
+        },
+      },
+    };
+  }
 
-function createStoredIdentityPutItem(putSiDetails: {
-  recordType: string;
-  storedIdentity: string;
-  levelOfConfidence: string;
-  metadata?: object;
-}) {
-  return {
-    Put: {
-      TableName: config.evcsStoredIdentityObjectTableName,
-      Item: marshall(
-        {
+  function createUpdateSiIsValidUpdateItem(
+    recordType: StoredIdentityRecordType,
+  ) {
+    return {
+      Update: {
+        TableName: config.evcsStoredIdentityObjectTableName,
+        Key: marshall({
           userId: TEST_USER_ID,
-          recordType: putSiDetails.recordType,
-          storedIdentity: putSiDetails.storedIdentity,
-          levelOfConfidence: putSiDetails.levelOfConfidence,
-          isValid: true,
-          expired: false,
-          metadata: putSiDetails.metadata,
+          recordType: recordType,
+        }),
+        UpdateExpression: "set #isValid = :isValid",
+        ExpressionAttributeNames: {
+          "#isValid": "isValid",
         },
-        { removeUndefinedValues: true },
-      ),
-    },
-  };
-}
-
-function createUserVcUpdateItem(updateVcDetails: {
-  vcSignature: string;
-  state: VcState;
-}) {
-  return {
-    Update: {
-      TableName: config.evcsStubUserVCsTableName,
-      Key: marshall({
-        userId: TEST_USER_ID,
-        vcSignature: updateVcDetails.vcSignature,
-      }),
-      UpdateExpression: "set #state = :stateValue, #metadata = :metadataValue",
-      ExpressionAttributeNames: {
-        "#state": "state",
-        "#metadata": "metadata",
-      },
-      ExpressionAttributeValues: {
-        ":stateValue": marshall(updateVcDetails.state),
-        ":metadataValue": {
-          M: marshall(TEST_METADATA),
+        ExpressionAttributeValues: {
+          ":isValid": marshall(false),
         },
       },
-    },
-  };
-}
-
-function createUpdateSiIsValidUpdateItem(recordType: StoredIdentityRecordType) {
-  return {
-    Update: {
-      TableName: config.evcsStoredIdentityObjectTableName,
-      Key: marshall({
-        userId: TEST_USER_ID,
-        recordType: recordType,
-      }),
-      UpdateExpression: "set #isValid = :isValid",
-      ExpressionAttributeNames: {
-        "#isValid": "isValid",
-      },
-      ExpressionAttributeValues: {
-        ":isValid": marshall(false),
-      },
-    },
-  };
-}
+    };
+  }
+});
