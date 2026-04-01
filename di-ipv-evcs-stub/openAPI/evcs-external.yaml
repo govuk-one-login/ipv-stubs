@@ -796,8 +796,6 @@ components:
       properties:
         message:
           type: string
-      required:
-        - message
 
 x-amazon-apigateway-request-validators:
   ALL:
