@@ -29,7 +29,7 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("create handler V2", () => {
+describe("update handler V2", () => {
   it("should return 204 for a valid request", async () => {
     // arrange
     vi.mocked(processPatchUserVCsRequestV2).mockResolvedValueOnce({
