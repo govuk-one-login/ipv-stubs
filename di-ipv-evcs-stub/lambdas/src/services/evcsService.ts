@@ -304,34 +304,27 @@ export async function processPostIdentityRequest(
 
 function validateVcsStateTransitions(
   existingVcs: VcDetails[],
-  newVcs: VcDetails[],
+  vcsToUpdate: VcDetails[],
 ): void {
-  const newVcSignatures = newVcs.map(({ vc }) => getSignatureFromJwt(vc));
-
-  const existingMatchingVcs = existingVcs.filter(({ vc }) =>
-    newVcSignatures.includes(getSignatureFromJwt(vc)),
+  const newVcsSignatureToState = new Map(
+    vcsToUpdate.map((vc) => [getSignatureFromJwt(vc.vc), vc.state]),
   );
 
-  existingMatchingVcs.forEach((existingMatchingVc) => {
-    const currentState = existingMatchingVc.state;
-    const newState = newVcs.find(
-      (newVc) =>
-        getSignatureFromJwt(newVc.vc) ===
-        getSignatureFromJwt(existingMatchingVc.vc),
-    )?.state;
+  existingVcs.forEach((existingVc) => {
+    const newState = newVcsSignatureToState.get(
+      getSignatureFromJwt(existingVc.vc),
+    );
     if (!newState) {
-      throw Error("Couldn't find matching jwt signatures");
-    }
-
-    const allowedTransitions = stateTransitions[newState];
-
-    if (allowedTransitions.length === 0) {
       return;
     }
 
-    if (!allowedTransitions.includes(currentState)) {
+    const allowedTransitions = stateTransitions[newState];
+    const hasRules = allowedTransitions.length > 0;
+    const isAllowed = allowedTransitions.includes(existingVc.state);
+
+    if (hasRules && !isAllowed) {
       throw new Error(
-        `State VC transition from: ${currentState} to ${newState} is not allowed`,
+        `State VC transition from: ${existingVc.state} to ${newState} is not allowed`,
       );
     }
   });
