@@ -21,7 +21,12 @@ import {
   processPostUserVCsRequestV2,
 } from "../../src/services/evcsService";
 import { PostIdentityRequest } from "../../src/domain/requests";
-import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
+import {
+  stateTransitions,
+  StatusCodes,
+  VCProvenance,
+  VcState,
+} from "../../src/domain/enums";
 import "aws-sdk-client-mock-vitest";
 import { config } from "../../src/common/config";
 import { Vot } from "../../src/domain/enums/vot";
@@ -270,57 +275,19 @@ describe("evcsService", () => {
       });
     });
 
-    it.each([
-      // ABANDONED (allowed from: PENDING, PENDING_RETURN, VERIFICATION)
-      { from: VcState.ABANDONED, to: VcState.ABANDONED },
-      { from: VcState.CURRENT, to: VcState.ABANDONED },
-      { from: VcState.HISTORIC, to: VcState.ABANDONED },
-      { from: VcState.VERIFICATION_ARCHIVED, to: VcState.ABANDONED },
-      { from: VcState.ACCOUNT_DELETED, to: VcState.ABANDONED },
+    const invalidTransitions = Object.values(VcState).flatMap((to) => {
+      const allowed = stateTransitions[to];
+      if (allowed.length === 0) {
+        return [];
+      }
+      return Object.values(VcState)
+        .filter((from) => !allowed.includes(from))
+        .map((from) => ({ from, to }));
+    });
 
-      // CURRENT (allowed from: PENDING_RETURN, PENDING)
-      { from: VcState.ABANDONED, to: VcState.CURRENT },
-      { from: VcState.CURRENT, to: VcState.CURRENT },
-      { from: VcState.HISTORIC, to: VcState.CURRENT },
-      { from: VcState.VERIFICATION, to: VcState.CURRENT },
-      { from: VcState.VERIFICATION_ARCHIVED, to: VcState.CURRENT },
-      { from: VcState.ACCOUNT_DELETED, to: VcState.CURRENT },
-
-      // HISTORIC (allowed from: CURRENT)
-      { from: VcState.ABANDONED, to: VcState.HISTORIC },
-      { from: VcState.HISTORIC, to: VcState.HISTORIC },
-      { from: VcState.PENDING, to: VcState.HISTORIC },
-      { from: VcState.PENDING_RETURN, to: VcState.HISTORIC },
-      { from: VcState.VERIFICATION, to: VcState.HISTORIC },
-      { from: VcState.VERIFICATION_ARCHIVED, to: VcState.HISTORIC },
-      { from: VcState.ACCOUNT_DELETED, to: VcState.HISTORIC },
-
-      // PENDING_RETURN (allowed from: PENDING)
-      { from: VcState.ABANDONED, to: VcState.PENDING_RETURN },
-      { from: VcState.CURRENT, to: VcState.PENDING_RETURN },
-      { from: VcState.HISTORIC, to: VcState.PENDING_RETURN },
-      { from: VcState.PENDING_RETURN, to: VcState.PENDING_RETURN },
-      { from: VcState.VERIFICATION, to: VcState.PENDING_RETURN },
-      { from: VcState.VERIFICATION_ARCHIVED, to: VcState.PENDING_RETURN },
-      { from: VcState.ACCOUNT_DELETED, to: VcState.PENDING_RETURN },
-
-      // VERIFICATION_ARCHIVED (allowed from: VERIFICATION)
-      { from: VcState.ABANDONED, to: VcState.VERIFICATION_ARCHIVED },
-      { from: VcState.CURRENT, to: VcState.VERIFICATION_ARCHIVED },
-      { from: VcState.HISTORIC, to: VcState.VERIFICATION_ARCHIVED },
-      { from: VcState.PENDING, to: VcState.VERIFICATION_ARCHIVED },
-      { from: VcState.PENDING_RETURN, to: VcState.VERIFICATION_ARCHIVED },
-      {
-        from: VcState.VERIFICATION_ARCHIVED,
-        to: VcState.VERIFICATION_ARCHIVED,
-      },
-      { from: VcState.ACCOUNT_DELETED, to: VcState.VERIFICATION_ARCHIVED },
-      // ACCOUNT_DELETED (allowed from: ANY)
-      // VERIFICATION (allowed from: ANY)
-      // PENDING (allowed from: ANY)
-    ])(
+    it.each(invalidTransitions)(
       "should return 409 if vcs state transitions is not allowed",
-      async ({ from, to }: { from: VcState; to: VcState }) => {
+      async ({ from, to }) => {
         // Arrange
         dbMock
           .on(QueryCommand)
