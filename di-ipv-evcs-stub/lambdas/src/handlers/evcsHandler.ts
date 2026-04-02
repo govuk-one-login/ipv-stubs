@@ -235,7 +235,9 @@ function parsePostIdentityRequest(
     (!parsedPostIdentityRequest.govuk_signin_journey_id &&
       parsedPostIdentityRequest.vcs)
   ) {
-    throw new Error("Either both govuk_signin_journey_id and vcs must be present or none of those.");
+    throw new Error(
+      "Either both govuk_signin_journey_id and vcs must be present or none of those.",
+    );
   }
 
   if (parsedPostIdentityRequest.vcs) {
