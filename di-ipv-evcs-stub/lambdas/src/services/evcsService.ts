@@ -39,7 +39,7 @@ import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordTy
 import { dynamoClient } from "../clients/dynamodbClient";
 import { PostVcsRequest } from "../domain/requests/postVcsRequest";
 import { PatchVcsRequest } from "../domain/requests/patchVcsRequest";
-import { getErrorMessage } from "../common/utils";
+import { getErrorMessage, getSignatureFromJwt } from "../common/utils";
 
 export async function processPostUserVCsRequest(
   userId: string,
@@ -591,10 +591,6 @@ async function getTtl(): Promise<number> {
     process.env.EVCS_STUB_TTL ?? "604800",
   );
   return Math.floor(Date.now() / 1000) + evcsTtlSeconds;
-}
-
-function getSignatureFromJwt(jwt: string): string {
-  return jwt.split(".")[2];
 }
 
 function isEvcsVcItem(
