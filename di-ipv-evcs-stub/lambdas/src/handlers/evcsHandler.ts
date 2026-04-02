@@ -221,6 +221,10 @@ function parsePostIdentityRequest(
     throw new Error("Invalid stored identity object: missing jwt");
   }
 
+  if (!isValidJWT(parsedPostIdentityRequest.si.jwt)) {
+    throw new Error("Invalid stored identity object jwt");
+  }
+
   if (!parsedPostIdentityRequest.si.vot) {
     throw new Error("Invalid stored identity object: missing vot");
   }
@@ -231,11 +235,7 @@ function parsePostIdentityRequest(
     (!parsedPostIdentityRequest.govuk_signin_journey_id &&
       parsedPostIdentityRequest.vcs)
   ) {
-    throw new Error("Both: govuk_signin_journey_id and vcs must be present.");
-  }
-
-  if (!isValidJWT(parsedPostIdentityRequest.si.jwt)) {
-    throw new Error("Invalid stored identity object jwt");
+    throw new Error("Either both govuk_signin_journey_id and vcs must be present or none of those.");
   }
 
   if (parsedPostIdentityRequest.vcs) {
