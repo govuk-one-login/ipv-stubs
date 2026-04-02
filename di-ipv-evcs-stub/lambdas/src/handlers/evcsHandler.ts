@@ -22,7 +22,12 @@ import {
   processGetIdentityRequest,
 } from "../services/evcsService";
 import { verifyTokenAndReturnPayload } from "../services/jwtService";
-import { getErrorMessage } from "../common/utils";
+import {
+  getErrorMessage,
+  getSignatureFromJwt,
+  isValidJWT,
+} from "../common/utils";
+import { VcDetails } from "../domain/vcDetails";
 
 export async function postIdentityHandler(
   event: APIGatewayProxyEvent,
@@ -216,11 +221,55 @@ function parsePostIdentityRequest(
     throw new Error("Invalid stored identity object: missing jwt");
   }
 
+  if (!isValidJWT(parsedPostIdentityRequest.si.jwt)) {
+    throw new Error("Invalid stored identity object jwt");
+  }
+
   if (!parsedPostIdentityRequest.si.vot) {
     throw new Error("Invalid stored identity object: missing vot");
   }
 
+  if (
+    (parsedPostIdentityRequest.govuk_signin_journey_id &&
+      !parsedPostIdentityRequest.vcs) ||
+    (!parsedPostIdentityRequest.govuk_signin_journey_id &&
+      parsedPostIdentityRequest.vcs)
+  ) {
+    throw new Error(
+      "Either both govuk_signin_journey_id and vcs must be present or none of those.",
+    );
+  }
+
+  if (parsedPostIdentityRequest.vcs) {
+    validateVcs(parsedPostIdentityRequest.vcs);
+  }
+
   return parsedPostIdentityRequest;
+}
+
+function validateVcs(vcs: VcDetails[]): void {
+  // Validate vc length is at least 1
+  if (vcs.length < 1) {
+    throw new Error("Minimum vcs array length is 1");
+  }
+
+  // Validate state and jwt
+  const isValidVcs = vcs.every(
+    (item) => item.state && item.vc && isValidJWT(item.vc),
+  );
+
+  if (!isValidVcs) {
+    throw new Error("Invalid JWT in vcs list.");
+  }
+
+  // Validate each vc is unique
+  const uniqueSignatures = new Set(
+    vcs.map((item) => getSignatureFromJwt(item.vc)),
+  );
+
+  if (uniqueSignatures.size !== vcs.length) {
+    throw new Error("Signatures are duplicated in vcs list.");
+  }
 }
 
 function parseInvalidateIdentityRequest(
