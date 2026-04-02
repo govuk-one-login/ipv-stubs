@@ -338,6 +338,35 @@ paths:
             responseTemplates:
               application/json: '{"result": "success"}'
 
+  /identity/invalidate/si:
+    post:
+      description: Set a User's SI document as invalid hence the SI document should no longer be used.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserIdRequestBody"
+      responses:
+        204:
+          description: "Successfully invalidated user stored identity record"
+        400:
+          $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          $ref: '#/components/responses/ServerError'
+      x-amazon-apigateway-request-validator: ALL
+      x-amazon-apigateway-integration:
+        type: "aws_proxy"
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsInvalidateStoredIdentityV2Function.Arn}:live/invocations
+        passthroughBehavior: "WHEN_NO_TEMPLATES"
+        responses:
+          204:
+            statusCode: 204
+
   /migration/{userId}:
     get:
       description: "Returns a list of user verifiable credentials"
@@ -767,8 +796,6 @@ components:
       properties:
         message:
           type: string
-      required:
-        - message
 
 x-amazon-apigateway-request-validators:
   ALL:

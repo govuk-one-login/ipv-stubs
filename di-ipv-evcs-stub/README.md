@@ -299,6 +299,12 @@ Example request body takes just a userId:
 { "userId": "userId" }
 ```
 
+8) The format of the `/identity/invalidate/si` POST endpoint. This is used to set the `isValid` property on a user's stored identities as false.
+Example request body takes just a userId:
+```
+{ "userId": "userId" }
+```
+
 #### Management Endpoint
 The `/management` endpoints are used for testing.
 

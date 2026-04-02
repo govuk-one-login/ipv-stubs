@@ -10,8 +10,8 @@ import {
 import { marshall, unmarshall } from "@aws-sdk/util-dynamodb";
 
 import ServiceResponse, {
+  createServiceResponseWithMessageId,
   createServiceResponse,
-  createServiceResponseWithBody,
   createServiceResponseWithMessage,
   GetResponse,
 } from "../domain/serviceResponse";
@@ -68,10 +68,10 @@ export async function processPostUserVCsRequest(
 
     console.info(`Saving all user VC's.`);
     await Promise.all(allPromises);
-    return createServiceResponse(StatusCodes.Accepted, uuid());
+    return createServiceResponseWithMessageId(StatusCodes.Accepted, uuid());
   } catch (error) {
     console.error(error);
-    return createServiceResponse(StatusCodes.InternalServerError, "");
+    return createServiceResponse(StatusCodes.InternalServerError);
   }
 }
 
@@ -122,10 +122,10 @@ export async function processPostUserVCsRequestV2(
 
     console.info(`Saving all user VC's.`);
     await Promise.all(allPromises);
-    return createServiceResponse(StatusCodes.Accepted, uuid());
+    return createServiceResponseWithMessageId(StatusCodes.Accepted, uuid());
   } catch (error) {
     console.error(error);
-    return createServiceResponse(StatusCodes.InternalServerError, "");
+    return createServiceResponse(StatusCodes.InternalServerError);
   }
 }
 
@@ -187,9 +187,7 @@ export async function processPatchUserVCsRequestV2(
 
     console.info(`Updating user VC's.`);
     await Promise.all(allPromises);
-    return {
-      statusCode: StatusCodes.NoContent,
-    };
+    return createServiceResponse(StatusCodes.NoContent);
   } catch (error) {
     console.error(error);
     return createServiceResponseWithMessage(
@@ -226,7 +224,7 @@ export async function processPostIdentityRequest(
         console.error(
           `Failed to read existing user VCs from EVCS with ${getResponse.statusCode}`,
         );
-        return createServiceResponse(StatusCodes.InternalServerError, "");
+        return createServiceResponse(StatusCodes.InternalServerError);
       }
 
       // Update existing user VCs in EVCS with new states
@@ -292,10 +290,10 @@ export async function processPostIdentityRequest(
       TransactItems: transactItems,
     });
 
-    return createServiceResponse(StatusCodes.Accepted, uuid());
+    return createServiceResponseWithMessageId(StatusCodes.Accepted, uuid());
   } catch (error) {
     console.error("Failed to complete transaction.", error);
-    return createServiceResponse(StatusCodes.InternalServerError, "");
+    return createServiceResponse(StatusCodes.InternalServerError);
   }
 }
 
@@ -337,10 +335,12 @@ export async function processGetIdentityRequest(
       })) || [],
   };
 
-  return createServiceResponseWithBody(StatusCodes.Success, response);
+  return createServiceResponse(StatusCodes.Success, response);
 }
 
-export async function invalidateUserSi(userId: string) {
+export async function invalidateUserSi(
+  userId: string,
+): Promise<ServiceResponse> {
   try {
     const queryInput: QueryInput = {
       TableName: config.evcsStoredIdentityObjectTableName,
@@ -385,17 +385,13 @@ export async function invalidateUserSi(userId: string) {
       TransactItems: updateTransactItems,
     });
 
-    return {
-      statusCode: StatusCodes.NoContent,
-    };
+    return createServiceResponse(StatusCodes.NoContent);
   } catch (error) {
     console.error(
       "Transaction failed. Failed to invalidate stored identity",
       error,
     );
-    return {
-      statusCode: StatusCodes.InternalServerError,
-    };
+    return createServiceResponse(StatusCodes.InternalServerError);
   }
 }
 
@@ -463,9 +459,7 @@ export async function processPatchUserVCsRequest(
 
     console.info(`Updating user VC's.`);
     await Promise.all(allPromises);
-    return {
-      statusCode: StatusCodes.NoContent,
-    };
+    return createServiceResponse(StatusCodes.NoContent);
   } catch (error) {
     console.error(error);
     return createServiceResponseWithMessage(
