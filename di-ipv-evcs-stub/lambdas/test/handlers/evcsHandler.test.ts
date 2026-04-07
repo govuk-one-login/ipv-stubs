@@ -44,6 +44,7 @@ const EVCS_VERIFY_KEY =
   "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEE9ZzuOoqcVU4pVB9rpmTzezjyOPRlOmPGJHKi8RSlIMqVMxm2EdlSRjPkCV5NDyN9/RMmJLerY4H0vkXDjEDTg=="; // pragma: allowlist secret
 
 const TEST_USER_ID: string = "urn:uuid:d1823066-2137-4380-b0ba-4b61947e08e6";
+const TEST_GOV_UK_SINGIN_JOURNEY_ID: string = "test-journey-id";
 const TEST_VC_STRING =
   "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ"; // pragma: allowlist secret
 const TEST_METADATA = {
@@ -53,7 +54,7 @@ const TEST_METADATA = {
   testProperty: "testProperty",
 };
 
-const TEST_POST_REQUEST = [
+const TEST_VALID_VCS_ARRAY = [
   {
     vc: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ", // pragma: allowlist secret
     state: VcState.CURRENT,
@@ -78,6 +79,105 @@ const TEST_POST_REQUEST = [
     state: VcState.PENDING_RETURN,
   },
 ];
+
+const TEST_DUPLICATED_VCS_ARRAY = [
+  {
+    vc: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ", // pragma: allowlist secret
+    state: VcState.CURRENT,
+    metadata: {
+      reason: "test-created",
+      timestampMs: "1714478033959",
+      txmaEventId: "txma-event-id",
+      testProperty: "testProperty",
+    },
+  },
+  {
+    vc: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ", // pragma: allowlist secret
+    state: VcState.CURRENT,
+    metadata: {
+      reason: "test-created",
+      timestampMs: "1714478033959",
+      txmaEventId: "txma-event-id",
+      testProperty: "testProperty",
+    },
+  },
+];
+
+const TEST_MALFORMED_VC_MISSING_STATE = {
+  vc: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ", // pragma: allowlist secret
+  metadata: {
+    reason: "test-created",
+    timestampMs: "1714478033959",
+    txmaEventId: "txma-event-id",
+    testProperty: "testProperty",
+  },
+};
+
+const TEST_MALFORMED_VC_MISSING_VC = {
+  state: VcState.CURRENT,
+  metadata: {
+    reason: "test-created",
+    timestampMs: "1714478033959",
+    txmaEventId: "txma-event-id",
+    testProperty: "testProperty",
+  },
+};
+
+const TEST_MALFORMED_VC_PAYLOAD = {
+  vc: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.malformed.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ", // pragma: allowlist secret
+  state: VcState.CURRENT,
+  metadata: {
+    reason: "test-created",
+    timestampMs: "1714478033959",
+    txmaEventId: "txma-event-id",
+    testProperty: "testProperty",
+  },
+};
+
+const TEST_MALFORMED_VC_JWT_1 = {
+  vc: "not+base+64.not+base+64.not+base+64", // pragma: allowlist secret
+  state: VcState.CURRENT,
+  metadata: {
+    reason: "test-created",
+    timestampMs: "1714478033959",
+    txmaEventId: "txma-event-id",
+    testProperty: "testProperty",
+  },
+};
+
+const TEST_MALFORMED_VC_JWT_2 = {
+  vc: "two.parts", // pragma: allowlist secret
+  state: VcState.CURRENT,
+  metadata: {
+    reason: "test-created",
+    timestampMs: "1714478033959",
+    txmaEventId: "txma-event-id",
+    testProperty: "testProperty",
+  },
+};
+
+const TEST_MALFORMED_VC_EMPTY_PARTS = {
+  vc: ".two.parts", // pragma: allowlist secret
+  state: VcState.CURRENT,
+  metadata: {
+    reason: "test-created",
+    timestampMs: "1714478033959",
+    txmaEventId: "txma-event-id",
+    testProperty: "testProperty",
+  },
+};
+
+const TEST_MALFORMED_VC_FOUR_PARTS = {
+  vc: "one.two.three.four", // pragma: allowlist secret
+  state: VcState.CURRENT,
+  metadata: {
+    reason: "test-created",
+    timestampMs: "1714478033959",
+    txmaEventId: "txma-event-id",
+    testProperty: "testProperty",
+  },
+};
+
 const TEST_POST_INVALID_STATE_REQUEST = [
   {
     vc: "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ", // pragma: allowlist secret
@@ -150,7 +250,7 @@ const TEST_HEADERS_NO_SUBJECT = {
 } as APIGatewayProxyEventHeaders;
 
 const TEST_POST_EVENT = {
-  body: JSON.stringify(TEST_POST_REQUEST),
+  body: JSON.stringify(TEST_VALID_VCS_ARRAY),
   pathParameters: TEST_PATH_PARAM,
 } as APIGatewayProxyEvent;
 
@@ -193,7 +293,7 @@ describe("evcs handlers", () => {
       expect(response.statusCode).toBe(202);
       expect(processPostUserVCsRequest).toHaveBeenCalledWith(
         TEST_USER_ID,
-        TEST_POST_REQUEST,
+        TEST_VALID_VCS_ARRAY,
       );
     });
 
@@ -354,6 +454,27 @@ describe("evcs handlers", () => {
       expect(processPostIdentityRequest).toHaveBeenCalledWith(testRequest);
     });
 
+    it("should return 202 for valid request with vcs and govuk journey id", async () => {
+      // arrange
+      vi.mocked(processPostIdentityRequest).mockResolvedValue({
+        statusCode: 202,
+        response: {},
+      });
+      const testRequest = buildPostIdentityRequest({
+        vcs: TEST_VALID_VCS_ARRAY,
+        govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+      });
+
+      // act
+      const response = (await postIdentityHandler(
+        createEvent<PostIdentityRequest>(testRequest),
+      )) as APIGatewayProxyStructuredResultV2;
+
+      // assert
+      expect(response.statusCode).toBe(202);
+      expect(processPostIdentityRequest).toHaveBeenCalledWith(testRequest);
+    });
+
     it("should return a 500 if saving to EVCS fails", async () => {
       // arrange
       vi.mocked(processPostIdentityRequest).mockResolvedValue({
@@ -393,26 +514,89 @@ describe("evcs handlers", () => {
         }),
         case: "si.jwt is missing",
       },
-      // TODO PYIC-8458: These tests should be uncommented in phase 2 when the
-      //  /identity endpoint accepts a vcs list as the request parsing should
-      // handle these criteria
-      // {
-      //   request: buildPutRequest({ vcs: undefined }),
-      //   case: "vcs is missing",
-      // },
-      // {
-      //   request: buildPutRequest({ vcs: [] }),
-      //   case: "vcs is empty",
-      // },
-      // {
-      //   request: buildPutRequest({
-      //     vcs: [
-      //       { vc: "some.vc.sig", state: VcState.CURRENT },
-      //       { vc: "some.vc.sig", state: VcState.HISTORIC },
-      //     ],
-      //   }),
-      //   case: "duplicate vcs with different states",
-      // },
+      {
+        request: buildPostIdentityRequest({
+          si: { jwt: "second.part-is.not-valid-payload", vot: Vot.P2 },
+        }),
+        case: "si.jwt is missing",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: [TEST_MALFORMED_VC_MISSING_STATE],
+          govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+        }),
+        case: "vc is missing state",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: [TEST_MALFORMED_VC_JWT_1],
+          govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+        }),
+        case: "vs is not base64Url encoded",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: [TEST_MALFORMED_VC_JWT_2],
+          govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+        }),
+        case: "missing jwt part",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: [TEST_MALFORMED_VC_EMPTY_PARTS],
+          govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+        }),
+        case: "vc has empty part",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: [TEST_MALFORMED_VC_FOUR_PARTS],
+          govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+        }),
+        case: "vc has more than 3 parts",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: [TEST_MALFORMED_VC_MISSING_VC],
+          govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+        }),
+        case: "missing vc",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: [TEST_MALFORMED_VC_PAYLOAD],
+          govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+        }),
+        case: "vc has invalid payload",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: TEST_DUPLICATED_VCS_ARRAY,
+          govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+        }),
+        case: "vcs are duplicated",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: TEST_VALID_VCS_ARRAY,
+          govuk_signin_journey_id: undefined,
+        }),
+        case: "govuk_signin_journey_id is missing and vcs are present",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: undefined,
+          govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+        }),
+        case: "vcs is missing and govuk_signing_journey_id is present",
+      },
+      {
+        request: buildPostIdentityRequest({
+          vcs: [],
+          govuk_signin_journey_id: TEST_GOV_UK_SINGIN_JOURNEY_ID,
+        }),
+        case: "vcs array length is less than 1",
+      },
     ])("should return a 400 if $case", async ({ request }) => {
       // act
       const response = (await postIdentityHandler(

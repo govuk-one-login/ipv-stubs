@@ -31,7 +31,6 @@ import {
   PatchRequest,
   PostIdentityRequest,
   PostRequest,
-  PutRequest,
 } from "../domain/requests";
 import { VcDetails } from "../domain/vcDetails";
 import { StoredIdentityResponse } from "../domain/sharedTypes";
@@ -40,6 +39,7 @@ import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordTy
 import { dynamoClient } from "../clients/dynamodbClient";
 import { PostVcsRequest } from "../domain/requests/postVcsRequest";
 import { PatchVcsRequest } from "../domain/requests/patchVcsRequest";
+import { getErrorMessage, getSignatureFromJwt } from "../common/utils";
 
 export async function processPostUserVCsRequest(
   userId: string,
@@ -198,7 +198,7 @@ export async function processPatchUserVCsRequestV2(
 }
 
 export async function processPostIdentityRequest(
-  request: PutRequest | PostIdentityRequest,
+  request: PostIdentityRequest,
 ): Promise<ServiceResponse> {
   console.info("Put user record");
   const userId = request.userId;
@@ -206,15 +206,10 @@ export async function processPostIdentityRequest(
   try {
     const transactItems: TransactWriteItem[] = [];
 
-    if ("vcs" in request) {
-      const newUserVcs = request.vcs;
-      const ttl = await getTtl();
-
+    if (request.vcs) {
       // Read user's existing VCs
-      const getResponse = await processGetUserVCsRequest(userId, [
-        VcState.CURRENT,
-        VcState.PENDING_RETURN,
-      ]);
+      const allVcStates: VcState[] = Object.values(VcState);
+      const getResponse = await processGetUserVCsRequest(userId, allVcStates);
 
       if (
         getResponse.statusCode !== StatusCodes.Success ||
@@ -227,34 +222,44 @@ export async function processPostIdentityRequest(
         return createServiceResponse(StatusCodes.InternalServerError);
       }
 
-      // Update existing user VCs in EVCS with new states
-      const existingUserVcs = getResponse.response.vcs;
-      const newVcSignatures = newUserVcs.map(({ vc }) =>
+      const existingVcs = getResponse.response.vcs;
+      const existingVcsSignatures = existingVcs.map(({ vc }) =>
         getSignatureFromJwt(vc),
       );
+      const newVcs = request.vcs;
 
-      // We skip creating an update request for an existing VC that is in the
-      // put request as TransactWriteItems cannot perform multiple operations
-      // on the same item. The put method will replace the existing vc anyway
-      // so we get to save an operation
-      const updateExistingVcsRequests = existingUserVcs
-        .filter(({ vc }) => !newVcSignatures.includes(getSignatureFromJwt(vc)))
-        .map(({ vc, state: currentState, metadata }) => {
-          const vcSignature = getSignatureFromJwt(vc);
+      const vcsToUpdate = newVcs.filter(({ vc }) =>
+        existingVcsSignatures.includes(getSignatureFromJwt(vc)),
+      );
 
-          const mappedVcToUpdateItem = createUpdateItemInput({
-            vcSignature,
-            state: getUpdatedState(vcSignature, newVcSignatures, currentState),
-            metadata,
-            userId,
-            ttl,
-          }) as Update;
+      try {
+        validateVcsStateTransitions(existingVcs, vcsToUpdate);
+      } catch (error) {
+        return {
+          response: { messageId: getErrorMessage(error) },
+          statusCode: StatusCodes.Conflict,
+        };
+      }
 
-          return { Update: mappedVcToUpdateItem };
-        });
+      const ttl = await getTtl();
+      const updateExistingVcsRequests = vcsToUpdate.map((vc) => {
+        const vcSignature = getSignatureFromJwt(vc.vc);
+        const mappedVcToUpdateItem = createUpdateItemInput({
+          userId: userId,
+          vcSignature: vcSignature,
+          state: vc.state,
+          metadata: vc.metadata,
+          provenance: vc.provenance,
+          ttl: ttl,
+        }) as Update;
 
-      // Write new VCs with new state using PUT
-      const putNewUserVsRequests = newUserVcs.map(
+        return { Update: mappedVcToUpdateItem };
+      });
+
+      const vcsToAdd = newVcs.filter(
+        ({ vc }) => !existingVcsSignatures.includes(getSignatureFromJwt(vc)),
+      );
+      const putNewUserVsRequests = vcsToAdd.map(
         ({ vc, state, metadata, provenance }: VcDetails) => {
           const vcItemForStorage: EvcsVcItem = {
             userId,
@@ -273,18 +278,16 @@ export async function processPostIdentityRequest(
     }
 
     // Save stored identity object if present
-    if (request.si) {
-      const storedIdentityItem: EvcsStoredIdentityItem = {
-        userId: request.userId,
-        recordType: StoredIdentityRecordType.GPG45,
-        storedIdentity: request.si.jwt,
-        levelOfConfidence: request.si.vot,
-        metadata: request.si.metadata,
-        isValid: true,
-        expired: false,
-      };
-      transactItems.push({ Put: createPutItem(storedIdentityItem) });
-    }
+    const storedIdentityItem: EvcsStoredIdentityItem = {
+      userId: request.userId,
+      recordType: StoredIdentityRecordType.GPG45,
+      storedIdentity: request.si.jwt,
+      levelOfConfidence: request.si.vot,
+      metadata: request.si.metadata,
+      isValid: true,
+      expired: false,
+    };
+    transactItems.push({ Put: createPutItem(storedIdentityItem) });
 
     await dynamoClient.transactWriteItems({
       TransactItems: transactItems,
@@ -295,6 +298,34 @@ export async function processPostIdentityRequest(
     console.error("Failed to complete transaction.", error);
     return createServiceResponse(StatusCodes.InternalServerError);
   }
+}
+
+function validateVcsStateTransitions(
+  existingVcs: VcDetails[],
+  vcsToUpdate: VcDetails[],
+): void {
+  const newVcsSignatureToState = new Map(
+    vcsToUpdate.map((vc) => [getSignatureFromJwt(vc.vc), vc.state]),
+  );
+
+  existingVcs.forEach((existingVc) => {
+    const newState = newVcsSignatureToState.get(
+      getSignatureFromJwt(existingVc.vc),
+    );
+    if (!newState) {
+      return;
+    }
+
+    const allowedTransitions = stateTransitions[newState];
+    const hasRules = allowedTransitions.length > 0;
+    const isAllowed = allowedTransitions.includes(existingVc.state);
+
+    if (hasRules && !isAllowed) {
+      throw new Error(
+        `State VC transition from: ${existingVc.state} to ${newState} is not allowed`,
+      );
+    }
+  });
 }
 
 export async function processGetIdentityRequest(
@@ -549,30 +580,8 @@ async function getTtl(): Promise<number> {
   return Math.floor(Date.now() / 1000) + evcsTtlSeconds;
 }
 
-function getSignatureFromJwt(jwt: string): string {
-  return jwt.split(".")[2];
-}
-
 function isEvcsVcItem(
   evcsSaveItem: EvcsVcItem | EvcsStoredIdentityItem,
 ): evcsSaveItem is EvcsVcItem {
   return (evcsSaveItem as EvcsVcItem).vcSignature !== undefined;
-}
-
-function getUpdatedState(
-  currentVcSignature: string,
-  newVcSignatures: string[],
-  currentVcState: VcState,
-): VcState {
-  if (!newVcSignatures.includes(currentVcSignature)) {
-    switch (currentVcState) {
-      case VcState.CURRENT:
-        return VcState.HISTORIC;
-      case VcState.PENDING_RETURN:
-        return VcState.ABANDONED;
-      default:
-        return currentVcState;
-    }
-  }
-  return currentVcState;
 }

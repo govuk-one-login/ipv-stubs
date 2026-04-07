@@ -20,8 +20,13 @@ import {
   processPostIdentityRequest,
   processPostUserVCsRequestV2,
 } from "../../src/services/evcsService";
-import { PostIdentityRequest, PutRequest } from "../../src/domain/requests";
-import { StatusCodes, VCProvenance, VcState } from "../../src/domain/enums";
+import { PostIdentityRequest } from "../../src/domain/requests";
+import {
+  stateTransitions,
+  StatusCodes,
+  VCProvenance,
+  VcState,
+} from "../../src/domain/enums";
 import "aws-sdk-client-mock-vitest";
 import { config } from "../../src/common/config";
 import { Vot } from "../../src/domain/enums/vot";
@@ -35,6 +40,7 @@ vi.useFakeTimers().setSystemTime(new Date("2025-01-01"));
 const dbMock = mockClient(DynamoDB);
 
 const TEST_USER_ID: string = "urn:uuid:d1823066-2137-4380-b0ba-4b61947e08e6";
+const TEST_GOVUK_SIGNIN_JOURNEY_ID: string = "test-journey-id";
 
 const TEST_VC1_SIGNATURE =
   "qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ"; // pragma: allowlist secret"
@@ -131,8 +137,9 @@ describe("evcsService", () => {
       // Arrange
       dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
 
-      const putRequest: PutRequest = {
+      const postIdentityRequest: PostIdentityRequest = {
         userId: TEST_USER_ID,
+        govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
         vcs: [
           {
             vc: TEST_VC1,
@@ -146,7 +153,7 @@ describe("evcsService", () => {
       };
 
       // Act
-      const response = await processPostIdentityRequest(putRequest);
+      const response = await processPostIdentityRequest(postIdentityRequest);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -174,13 +181,14 @@ describe("evcsService", () => {
         createEvcsUserVcsQueryResponse([
           {
             vc: TEST_VC1,
-            state: VcState.HISTORIC,
+            state: VcState.PENDING_RETURN,
           },
         ]),
       );
 
-      const putRequest: PutRequest = {
+      const postIdentityRequest: PostIdentityRequest = {
         userId: TEST_USER_ID,
+        govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
         vcs: [
           {
             vc: TEST_VC1,
@@ -197,7 +205,7 @@ describe("evcsService", () => {
       };
 
       // Act
-      const response = await processPostIdentityRequest(putRequest);
+      const response = await processPostIdentityRequest(postIdentityRequest);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -205,12 +213,9 @@ describe("evcsService", () => {
 
       expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
         TransactItems: [
-          createStubUserVcPutItem({
+          createUserVcUpdateItem({
             vcSignature: TEST_VC1_SIGNATURE,
-            vc: TEST_VC1,
-            metadata: TEST_METADATA,
             state: VcState.CURRENT,
-            provenance: VCProvenance.EXTERNAL,
           }),
           createStoredIdentityPutItem({
             recordType: StoredIdentityRecordType.GPG45,
@@ -222,39 +227,7 @@ describe("evcsService", () => {
       });
     });
 
-    it("should return 200 response if SI not provided", async () => {
-      // Arrange
-      dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
-
-      const putRequest: PutRequest = {
-        userId: TEST_USER_ID,
-        vcs: [
-          {
-            vc: TEST_VC1,
-            state: VcState.CURRENT,
-          },
-        ],
-      };
-
-      // Act
-      const response = await processPostIdentityRequest(putRequest);
-
-      // Assert
-      expect(response.statusCode).toBe(StatusCodes.Accepted);
-      expect(dbMock).toHaveReceivedCommand(QueryCommand);
-
-      expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
-        TransactItems: [
-          createStubUserVcPutItem({
-            vcSignature: TEST_VC1_SIGNATURE,
-            vc: TEST_VC1,
-            state: VcState.CURRENT,
-          }),
-        ],
-      });
-    });
-
-    it("should return 200 response, update existing VCs and add new ones if successful transaction", async () => {
+    it("should return 200 response, create new VC, override SI, and NOT update existing VCs not included in the request, if successful transaction", async () => {
       // Arrange
       dbMock.on(QueryCommand).resolves(
         createEvcsUserVcsQueryResponse([
@@ -263,8 +236,9 @@ describe("evcsService", () => {
         ]),
       );
 
-      const putRequest: PutRequest = {
+      const postIdentityRequest: PostIdentityRequest = {
         userId: TEST_USER_ID,
+        govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
         vcs: [
           {
             vc: TEST_VC3,
@@ -278,7 +252,7 @@ describe("evcsService", () => {
       };
 
       // Act
-      const response = await processPostIdentityRequest(putRequest);
+      const response = await processPostIdentityRequest(postIdentityRequest);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -286,14 +260,6 @@ describe("evcsService", () => {
 
       expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
         TransactItems: [
-          createUserVcUpdateItem({
-            vcSignature: TEST_VC1_SIGNATURE,
-            state: VcState.HISTORIC,
-          }),
-          createUserVcUpdateItem({
-            vcSignature: TEST_VC2_SIGNATURE,
-            state: VcState.ABANDONED,
-          }),
           createStubUserVcPutItem({
             vcSignature: TEST_VC3_SIGNATURE,
             vc: TEST_VC3,
@@ -309,22 +275,71 @@ describe("evcsService", () => {
       });
     });
 
+    const invalidTransitions = Object.values(VcState).flatMap((to) => {
+      const allowed = stateTransitions[to];
+      if (allowed.length === 0) {
+        return [];
+      }
+      return Object.values(VcState)
+        .filter((from) => !allowed.includes(from))
+        .map((from) => ({ from, to }));
+    });
+
+    it.each(invalidTransitions)(
+      "should return 409 if vcs state transitions is not allowed",
+      async ({ from, to }) => {
+        // Arrange
+        dbMock
+          .on(QueryCommand)
+          .resolves(
+            createEvcsUserVcsQueryResponse([{ vc: TEST_VC1, state: from }]),
+          );
+
+        const postIdentityRequest: PostIdentityRequest = {
+          userId: TEST_USER_ID,
+          govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
+          vcs: [
+            {
+              vc: TEST_VC1,
+              state: to,
+            },
+          ],
+          si: {
+            jwt: TEST_VC2,
+            vot: Vot.P2,
+          },
+        };
+
+        // Act
+        const response = await processPostIdentityRequest(postIdentityRequest);
+
+        // Assert
+        expect(response.statusCode).toBe(StatusCodes.Conflict);
+        expect(dbMock).not.toHaveReceivedCommand(TransactWriteItemsCommand);
+      },
+    );
+
     it("should return 500 status code if it fails to get existing user VCs", async () => {
       // Arrange
       dbMock.on(QueryCommand).rejects(new Error("Failed to get existing VCs"));
 
-      const putRequest: PutRequest = {
+      const postIdentityRequest: PostIdentityRequest = {
         userId: TEST_USER_ID,
+        govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
         vcs: [
           {
             vc: TEST_VC3,
             state: VcState.CURRENT,
           },
         ],
+        si: {
+          jwt: TEST_VC2,
+          vot: Vot.P2,
+        },
       };
 
       // Act
-      const response = await processPostIdentityRequest(putRequest);
+      const response = await processPostIdentityRequest(postIdentityRequest);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.InternalServerError);
@@ -338,18 +353,23 @@ describe("evcsService", () => {
         .on(TransactWriteItemsCommand)
         .rejects(new Error("Failed to complete transaction"));
 
-      const putRequest: PutRequest = {
+      const postIdentityRequest: PostIdentityRequest = {
         userId: TEST_USER_ID,
+        govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
         vcs: [
           {
             vc: TEST_VC3,
             state: VcState.CURRENT,
           },
         ],
+        si: {
+          jwt: TEST_VC2,
+          vot: Vot.P2,
+        },
       };
 
       // Act
-      const response = await processPostIdentityRequest(putRequest);
+      const response = await processPostIdentityRequest(postIdentityRequest);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.InternalServerError);
