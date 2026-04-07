@@ -1,4 +1,5 @@
 import { decodeJwt } from "jose";
+import { decode } from "jose/base64url";
 
 export function getErrorMessage(error: unknown) {
   if (error instanceof Error) return error.message;
@@ -9,29 +10,25 @@ export function isValidJWT(token: string): boolean {
   if (!token) {
     return false;
   }
-  const parts = token.split(".");
-  if (parts.length !== 3) {
-    return false;
-  }
-  const [header, payload, signature] = parts;
-  if (!header || !payload || !signature) {
-    return false;
-  }
-  const isBase64Url = (str: string) => /^[A-Za-z0-9_-]+$/.test(str);
-  if (
-    !isBase64Url(header) ||
-    !isBase64Url(payload) ||
-    !isBase64Url(signature)
-  ) {
-    return false;
-  }
-
   try {
+    // decodeJwt validates only payload shape and 3 parts jwt format
     decodeJwt(token);
   } catch {
     return false;
   }
-  return true;
+  const parts = token.split(".");
+  const header = parts[0];
+  const signature = parts[2];
+  return !(!isBase64Url(header) || !isBase64Url(signature));
+}
+
+export function isBase64Url(str: string): boolean {
+  try {
+    decode(str);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function getSignatureFromJwt(jwt: string): string {
