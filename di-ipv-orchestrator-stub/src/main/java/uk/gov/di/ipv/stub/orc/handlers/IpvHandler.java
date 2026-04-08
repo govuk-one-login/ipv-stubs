@@ -194,10 +194,7 @@ public class IpvHandler {
                     // dev02
                     case ("PERF") -> "https://dev-perf.02.dev.identity.account.gov.uk/";
                     case ("DEV_DANC") -> "https://dev-danc.02.dev.identity.account.gov.uk/";
-                    case ("DEV_JOEE") -> "https://dev-joee.02.dev.identity.account.gov.uk/";
-                    case ("DEV_MIKEC") -> "https://dev-mikec.02.dev.identity.account.gov.uk/";
                     case ("DEV_DOMINIKT") -> "https://dev-dominikt.02.dev.identity.account.gov.uk/";
-                    case ("DEV_THEAB") -> "https://dev-theab.02.dev.identity.account.gov.uk/";
 
                     // higher
                     case ("BUILD") -> "https://identity.build.account.gov.uk/";
@@ -222,11 +219,8 @@ public class IpvHandler {
                     // dev02
                     case ("PERF") -> "https://api-dev-perf.02.dev.identity.account.gov.uk/";
                     case ("DEV_DANC") -> "https://api-dev-danc.02.dev.identity.account.gov.uk/";
-                    case ("DEV_JOEE") -> "https://api-dev-joee.02.dev.identity.account.gov.uk/";
-                    case ("DEV_MIKEC") -> "https://api-dev-mikec.02.dev.identity.account.gov.uk/";
                     case ("DEV_DOMINIKT") ->
                             "https://api-dev-dominikt.02.dev.identity.account.gov.uk/";
-                    case ("DEV_THEAB") -> "https://api-dev-theab.02.dev.identity.account.gov.uk/";
 
                     // higher
                     case ("BUILD") -> "https://api.identity.build.account.gov.uk/";

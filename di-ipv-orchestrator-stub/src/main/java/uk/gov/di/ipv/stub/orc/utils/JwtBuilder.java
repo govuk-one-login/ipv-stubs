@@ -146,10 +146,7 @@ public class JwtBuilder {
                     RSAKey.parse(ORCHESTRATOR_DEV01_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("PERF"),
                     ("DEV_DANC"),
-                    ("DEV_JOEE"),
-                    ("DEV_MIKEC"),
-                    ("DEV_DOMINIKT"),
-                    ("DEV_THEAB") ->
+                    ("DEV_DOMINIKT") ->
                     RSAKey.parse(ORCHESTRATOR_DEV02_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("BUILD") -> RSAKey.parse(ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("STAGING") -> RSAKey.parse(ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK);
@@ -170,10 +167,7 @@ public class JwtBuilder {
             // dev02
             case ("PERF") -> "https://dev-perf.02.dev.identity.account.gov.uk";
             case ("DEV_DANC") -> "https://dev-danc.02.dev.identity.account.gov.uk";
-            case ("DEV_JOEE") -> "https://dev-joee.02.dev.identity.account.gov.uk";
-            case ("DEV_MIKEC") -> "https://dev-mikec.02.dev.identity.account.gov.uk";
             case ("DEV_DOMINIKT") -> "https://dev-dominikt.02.dev.identity.account.gov.uk";
-            case ("DEV_THEAB") -> "https://dev-theab.02.dev.identity.account.gov.uk";
 
             // higher
             case ("BUILD") -> "https://identity.build.account.gov.uk";
