@@ -98,6 +98,22 @@ const TEST_METADATA = {
 
 const MOCK_TTL = "3600";
 
+const INVALID_FROM_TO_STATE_TRANSITIONS = Object.values(VcState).flatMap(
+  (to) => {
+    const allowed = stateTransitions[to];
+    if (allowed.length === 0) {
+      return [];
+    }
+    return Object.values(VcState)
+      .filter((from) => !allowed.includes(from))
+      .map((from) => ({ from, to }));
+  },
+);
+
+const VALID_FROM_TO_STATE_TRANSITIONS = (
+  Object.entries(stateTransitions) as [VcState, VcState[]][]
+).flatMap(([to, fromStates]) => fromStates.map((from) => ({ from, to })));
+
 describe("evcsService", () => {
   beforeEach(() => {
     dbMock.reset();
@@ -275,18 +291,8 @@ describe("evcsService", () => {
       });
     });
 
-    const invalidTransitions = Object.values(VcState).flatMap((to) => {
-      const allowed = stateTransitions[to];
-      if (allowed.length === 0) {
-        return [];
-      }
-      return Object.values(VcState)
-        .filter((from) => !allowed.includes(from))
-        .map((from) => ({ from, to }));
-    });
-
-    it.each(invalidTransitions)(
-      "should return 409 if vcs state transitions is not allowed",
+    it.each(INVALID_FROM_TO_STATE_TRANSITIONS)(
+      "should return 409 if vcs state transitions is not allowed from $from to $to",
       async ({ from, to }) => {
         // Arrange
         dbMock
@@ -638,26 +644,35 @@ describe("evcsService", () => {
   });
 
   describe("processPatchUserVCsRequestV2", () => {
-    it("should return 409 response when provided invalid VC state transition", async () => {
-      // Arrange
-      const request = structuredClone(TEST_PATCH_REQUEST);
-      // Current to abandoned is not allowed
-      request.vcs[0].state = VcState.ABANDONED;
-      dbMock
-        .on(QueryCommand)
-        .resolves(
-          createEvcsUserVcsQueryResponse([
-            { vc: TEST_VC1, state: VcState.CURRENT },
-          ]),
-        );
+    it.each(INVALID_FROM_TO_STATE_TRANSITIONS)(
+      "should return 409 if vcs state transitions is not allowed from $from to $to",
+      async ({ from, to }) => {
+        // Arrange
+        dbMock
+          .on(QueryCommand)
+          .resolves(
+            createEvcsUserVcsQueryResponse([{ vc: TEST_VC1, state: from }]),
+          );
 
-      // Act
-      const response = await processPatchUserVCsRequestV2(request);
+        const patchVcsRequest: PatchVcsRequest = {
+          userId: "testUserId",
+          govuk_signin_journey_id: "testJourneyId",
+          vcs: [
+            {
+              signature: TEST_VC1_SIGNATURE,
+              state: to,
+            },
+          ],
+        };
 
-      // Assert
-      expect(response.statusCode).toBe(StatusCodes.Conflict);
-      expect(dbMock).not.toHaveReceivedCommand(UpdateItemCommand);
-    });
+        // Act
+        const response = await processPatchUserVCsRequestV2(patchVcsRequest);
+
+        // Assert
+        expect(response.statusCode).toBe(StatusCodes.Conflict);
+        expect(dbMock).not.toHaveReceivedCommand(UpdateItemCommand);
+      },
+    );
 
     it("should return 404 response when provided a VC that doesn't exist", async () => {
       // Arrange
@@ -672,34 +687,35 @@ describe("evcsService", () => {
       expect(dbMock).not.toHaveReceivedCommand(UpdateItemCommand);
     });
 
-    it("should return 204 response when provided valid VCs", async () => {
-      // Arrange
-      const request = structuredClone(TEST_PATCH_REQUEST);
-      // Current to historic is allowed
-      request.vcs[0].state = VcState.HISTORIC;
-      dbMock
-        .on(QueryCommand)
-        .resolves(
-          createEvcsUserVcsQueryResponse([
-            { vc: TEST_VC1, state: VcState.CURRENT },
-          ]),
+    it.each(VALID_FROM_TO_STATE_TRANSITIONS)(
+      "should return 204 response when provided valid VCs with state transition from $from to $to",
+      async ({ from, to }) => {
+        // Arrange
+        const request = structuredClone(TEST_PATCH_REQUEST);
+        // Current to historic is allowed
+        request.vcs[0].state = to;
+        dbMock
+          .on(QueryCommand)
+          .resolves(
+            createEvcsUserVcsQueryResponse([{ vc: TEST_VC1, state: from }]),
+          );
+
+        // Act
+        const response = await processPatchUserVCsRequestV2(request);
+
+        // Assert
+        expect(response.statusCode).toBe(StatusCodes.NoContent);
+        expect(dbMock).toHaveReceivedCommandWith(
+          UpdateItemCommand,
+          createUpdateItemInput({
+            userId: request.userId,
+            vcSignature: TEST_VC1_SIGNATURE,
+            state: request.vcs[0].state,
+            ttl: 1735693200,
+          }),
         );
-
-      // Act
-      const response = await processPatchUserVCsRequestV2(request);
-
-      // Assert
-      expect(response.statusCode).toBe(StatusCodes.NoContent);
-      expect(dbMock).toHaveReceivedCommandWith(
-        UpdateItemCommand,
-        createUpdateItemInput({
-          userId: request.userId,
-          vcSignature: TEST_VC1_SIGNATURE,
-          state: request.vcs[0].state,
-          ttl: 1735693200,
-        }),
-      );
-    });
+      },
+    );
   });
 
   function getTestTtl() {
