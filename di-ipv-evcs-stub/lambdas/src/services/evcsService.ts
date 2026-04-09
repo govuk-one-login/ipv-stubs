@@ -136,40 +136,55 @@ export async function processPatchUserVCsRequestV2(
     console.info(`Patch user record.`);
 
     // Check that the request VCs already exist
-    const vcRecords = await getCurrentVcsForUser(patchRequest.userId);
-    const requestSignatures = patchRequest.vcs.map(
-      (vcDetails) => vcDetails.signature,
+    const allVcStates: VcState[] = Object.values(VcState);
+    const getResponse = await processGetUserVCsRequest(
+      patchRequest.userId,
+      allVcStates,
     );
-    const dynamoVcsBySignature = Object.fromEntries(
-      vcRecords.map((vcRecord) => [
-        getSignatureFromJwt(vcRecord.vc.S || ""),
-        vcRecord,
+    if (
+      getResponse.statusCode !== StatusCodes.Success ||
+      !getResponse.response ||
+      (!!getResponse.response && !("vcs" in getResponse.response))
+    ) {
+      console.error(
+        `Failed to read existing user VCs from EVCS with ${getResponse.statusCode}`,
+      );
+      return createServiceResponse(StatusCodes.InternalServerError);
+    }
+
+    const existingVcs = getResponse.response.vcs;
+
+    const requestVcSignatureToState = new Map(
+      patchRequest.vcs.map((vcItem) => [vcItem.signature, vcItem.state]),
+    );
+    const existingVcSignatureToState = new Map(
+      existingVcs.map((vcItem) => [
+        getSignatureFromJwt(vcItem.vc),
+        vcItem.state,
       ]),
     );
 
-    if (
-      requestSignatures.some((signature) => !dynamoVcsBySignature[signature])
-    ) {
-      return createServiceResponseWithMessage(
-        StatusCodes.NotFound,
-        "At least one request VC doesn't exist in EVCS",
-      );
+    for (const requestSignature of requestVcSignatureToState.keys()) {
+      const existingState = existingVcSignatureToState.get(requestSignature);
+      if (!existingState) {
+        return createServiceResponseWithMessage(
+          StatusCodes.NotFound,
+          "At least one request VC doesn't exist in EVCS",
+        );
+      }
     }
 
     // Check that the state transitions are allowed
-    const invalidStateTransitionFound = patchRequest.vcs.some((requestVc) => {
-      const validSourceStates = stateTransitions[requestVc.state];
-      const existingVc = dynamoVcsBySignature[requestVc.signature];
-      return (
-        !existingVc.state.S ||
-        !validSourceStates.includes(existingVc.state.S as VcState)
+    try {
+      validateStateTransitions(
+        existingVcSignatureToState,
+        requestVcSignatureToState,
       );
-    });
-    if (invalidStateTransitionFound) {
-      return createServiceResponseWithMessage(
-        StatusCodes.Conflict,
-        "At least one state transition is invalid",
-      );
+    } catch (error) {
+      return {
+        response: { messageId: getErrorMessage(error) },
+        statusCode: StatusCodes.Conflict,
+      };
     }
 
     const allPromises: Promise<UpdateItemCommandOutput>[] = [];
@@ -233,7 +248,26 @@ export async function processPostIdentityRequest(
       );
 
       try {
-        validateVcsStateTransitions(existingVcs, vcsToUpdate);
+        const vcsToUpdateSignatures = vcsToUpdate.map((vc) =>
+          getSignatureFromJwt(vc.vc),
+        );
+        const existingVcsToUpdate = existingVcs.filter((vc) => {
+          const existingVcSignature = getSignatureFromJwt(vc.vc);
+          return vcsToUpdateSignatures.includes(existingVcSignature);
+        });
+        const existingVcsSignatureToState = new Map(
+          existingVcsToUpdate.map((vc) => [
+            getSignatureFromJwt(vc.vc),
+            vc.state,
+          ]),
+        );
+        const updatableVcsSignatureToState = new Map(
+          vcsToUpdate.map((vc) => [getSignatureFromJwt(vc.vc), vc.state]),
+        );
+        validateStateTransitions(
+          existingVcsSignatureToState,
+          updatableVcsSignatureToState,
+        );
       } catch (error) {
         return {
           response: { messageId: getErrorMessage(error) },
@@ -300,32 +334,31 @@ export async function processPostIdentityRequest(
   }
 }
 
-function validateVcsStateTransitions(
-  existingVcs: VcDetails[],
-  vcsToUpdate: VcDetails[],
-): void {
-  const newVcsSignatureToState = new Map(
-    vcsToUpdate.map((vc) => [getSignatureFromJwt(vc.vc), vc.state]),
-  );
-
-  existingVcs.forEach((existingVc) => {
-    const newState = newVcsSignatureToState.get(
-      getSignatureFromJwt(existingVc.vc),
-    );
+function validateStateTransitions(
+  existingVcsSignatureToState: Map<string, VcState>,
+  newVcsSignatureToState: Map<string, VcState>,
+) {
+  for (const [
+    existingSignature,
+    existingState,
+  ] of existingVcsSignatureToState) {
+    const newState = newVcsSignatureToState.get(existingSignature);
     if (!newState) {
-      return;
+      throw new Error(
+        "No matching signature while validating state transitions.",
+      );
     }
 
     const allowedTransitions = stateTransitions[newState];
     const hasRules = allowedTransitions.length > 0;
-    const isAllowed = allowedTransitions.includes(existingVc.state);
+    const isAllowed = allowedTransitions.includes(existingState);
 
     if (hasRules && !isAllowed) {
       throw new Error(
-        `State VC transition from: ${existingVc.state} to ${newState} is not allowed`,
+        `State VC transition from: ${existingState} to ${newState} is not allowed`,
       );
     }
-  });
+  }
 }
 
 export async function processGetIdentityRequest(
