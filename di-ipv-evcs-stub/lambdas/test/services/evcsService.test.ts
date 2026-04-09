@@ -112,7 +112,11 @@ const INVALID_FROM_TO_STATE_TRANSITIONS = Object.values(VcState).flatMap(
 
 const VALID_FROM_TO_STATE_TRANSITIONS = (
   Object.entries(stateTransitions) as [VcState, VcState[]][]
-).flatMap(([to, fromStates]) => fromStates.map((from) => ({ from, to })));
+).flatMap(([to, fromStates]) => {
+  const sources = fromStates.length === 0 ? Object.values(VcState) : fromStates;
+
+  return sources.map((from) => ({ from, to }));
+});
 
 describe("evcsService", () => {
   beforeEach(() => {
@@ -191,57 +195,60 @@ describe("evcsService", () => {
       });
     });
 
-    it("should return 200 response with updated vc if successful transaction", async () => {
-      // Arrange
-      dbMock.on(QueryCommand).resolves(
-        createEvcsUserVcsQueryResponse([
-          {
-            vc: TEST_VC1,
-            state: VcState.PENDING_RETURN,
-          },
-        ]),
-      );
+    it.each(VALID_FROM_TO_STATE_TRANSITIONS)(
+      "should return 200 response with updated vc with state transition from $from to $to if successful transaction",
+      async ({ from, to }) => {
+        // Arrange
+        dbMock.on(QueryCommand).resolves(
+          createEvcsUserVcsQueryResponse([
+            {
+              vc: TEST_VC1,
+              state: from,
+            },
+          ]),
+        );
 
-      const postIdentityRequest: PostIdentityRequest = {
-        userId: TEST_USER_ID,
-        govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
-        vcs: [
-          {
-            vc: TEST_VC1,
-            state: VcState.CURRENT,
+        const postIdentityRequest: PostIdentityRequest = {
+          userId: TEST_USER_ID,
+          govuk_signin_journey_id: TEST_GOVUK_SIGNIN_JOURNEY_ID,
+          vcs: [
+            {
+              vc: TEST_VC1,
+              state: to,
+              metadata: TEST_METADATA,
+              provenance: VCProvenance.EXTERNAL,
+            },
+          ],
+          si: {
+            jwt: TEST_VC2,
+            vot: Vot.P2,
             metadata: TEST_METADATA,
-            provenance: VCProvenance.EXTERNAL,
           },
-        ],
-        si: {
-          jwt: TEST_VC2,
-          vot: Vot.P2,
-          metadata: TEST_METADATA,
-        },
-      };
+        };
 
-      // Act
-      const response = await processPostIdentityRequest(postIdentityRequest);
+        // Act
+        const response = await processPostIdentityRequest(postIdentityRequest);
 
-      // Assert
-      expect(response.statusCode).toBe(StatusCodes.Accepted);
-      expect(dbMock).toHaveReceivedCommand(QueryCommand);
+        // Assert
+        expect(response.statusCode).toBe(StatusCodes.Accepted);
+        expect(dbMock).toHaveReceivedCommand(QueryCommand);
 
-      expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
-        TransactItems: [
-          createUserVcUpdateItem({
-            vcSignature: TEST_VC1_SIGNATURE,
-            state: VcState.CURRENT,
-          }),
-          createStoredIdentityPutItem({
-            recordType: StoredIdentityRecordType.GPG45,
-            storedIdentity: TEST_VC2,
-            levelOfConfidence: Vot.P2,
-            metadata: TEST_METADATA,
-          }),
-        ],
-      });
-    });
+        expect(dbMock).toHaveReceivedCommandWith(TransactWriteItemsCommand, {
+          TransactItems: [
+            createUserVcUpdateItem({
+              vcSignature: TEST_VC1_SIGNATURE,
+              state: to,
+            }),
+            createStoredIdentityPutItem({
+              recordType: StoredIdentityRecordType.GPG45,
+              storedIdentity: TEST_VC2,
+              levelOfConfidence: Vot.P2,
+              metadata: TEST_METADATA,
+            }),
+          ],
+        });
+      },
+    );
 
     it("should return 200 response, create new VC, override SI, and NOT update existing VCs not included in the request, if successful transaction", async () => {
       // Arrange
