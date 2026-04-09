@@ -699,7 +699,6 @@ describe("evcsService", () => {
       async ({ from, to }) => {
         // Arrange
         const request = structuredClone(TEST_PATCH_REQUEST);
-        // Current to historic is allowed
         request.vcs[0].state = to;
         dbMock
           .on(QueryCommand)
