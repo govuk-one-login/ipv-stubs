@@ -248,22 +248,16 @@ export async function processPostIdentityRequest(
       );
 
       try {
-        const vcsToUpdateSignatures = vcsToUpdate.map((vc) =>
-          getSignatureFromJwt(vc.vc),
-        );
-        const existingVcsToUpdate = existingVcs.filter((vc) => {
-          const existingVcSignature = getSignatureFromJwt(vc.vc);
-          return vcsToUpdateSignatures.includes(existingVcSignature);
-        });
-        const existingVcsSignatureToState = new Map(
-          existingVcsToUpdate.map((vc) => [
-            getSignatureFromJwt(vc.vc),
-            vc.state,
-          ]),
-        );
         const updatableVcsSignatureToState = new Map(
           vcsToUpdate.map((vc) => [getSignatureFromJwt(vc.vc), vc.state]),
         );
+        const existingVcsSignatureToState = new Map<string, VcState>();
+        for (const vc of existingVcs) {
+          const sig = getSignatureFromJwt(vc.vc);
+          if (updatableVcsSignatureToState.has(sig)) {
+            existingVcsSignatureToState.set(sig, vc.state);
+          }
+        }
         validateStateTransitions(
           existingVcsSignatureToState,
           updatableVcsSignatureToState,
