@@ -19,7 +19,7 @@ java {
 dependencies {
 	implementation  'io.javalin:javalin:7.1.0',
 			"io.javalin:javalin-rendering-mustache:7.1.0",
-			'com.nimbusds:nimbus-jose-jwt:10.8',
+			'com.nimbusds:nimbus-jose-jwt:10.9',
 			'org.slf4j:slf4j-simple:2.0.17'
 
 	testImplementation 'org.junit.jupiter:junit-jupiter-api:6.0.3'
