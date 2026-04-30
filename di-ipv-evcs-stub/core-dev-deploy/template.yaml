@@ -44,9 +44,9 @@ Mappings:
     "175872367215": # IPV Core dev02
       Name: Dev02StubsHostedZoneId
     "110869144943": # Reuse stubs dev
-      Name: ReusePublicHostedZoneId
+      Name: shared-ReusePublicHostedZoneId
     "054367266435": # Reuse stubs build
-      Name: ReusePublicHostedZoneId
+      Name: shared-ReusePublicHostedZoneId
 
 Conditions:
   IsDev01:
