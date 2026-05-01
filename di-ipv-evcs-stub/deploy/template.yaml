@@ -153,9 +153,9 @@ Mappings:
     "388905755587": # IPV Core Prod
       Name: RootPublicHostedZoneId
     "110869144943": # Reuse stubs dev
-      Name: ReusePublicHostedZoneId
+      Name: shared-ReusePublicHostedZoneId
     "054367266435": # Reuse stubs build
-      Name: ReusePublicHostedZoneId
+      Name: shared-ReusePublicHostedZoneId
 
 Resources:
   # lambda to stub EVCS - evcsCreateUserVCs
