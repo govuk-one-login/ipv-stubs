@@ -14,7 +14,7 @@
     "@eslint/js": "^10.0.1",
     "esbuild": "0.27.3",
     "jose": "^6.2.1",
-    "uuid": "^9.0.1"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.161",
