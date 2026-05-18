@@ -324,7 +324,7 @@
         "validityScore" : 3,
         "activityHistoryScore": 1,
         "ci": [],
-        "checkDetails" : [ 
+        "checkDetails" : [
           {
             "checkMethod" : "vcrypt",
             "identityCheckPolicy" : "published",
@@ -417,7 +417,7 @@
         "strengthScore": 4,
         "validityScore": 0,
         "verificationScore": 3,
-        "ci": ["D14"],
+        "ci": ["D16"],
         "failedCheckDetails": [
           {
             "checkMethod": "vcrypt",
@@ -498,15 +498,15 @@
         "verificationScore": 0,
         "ci": ["V03"],
         "failedCheckDetails": [{
-					"kbvResponseMode": "free_text",
-					"kbvQuality": 3,
-					"checkMethod": "kbv"
-				},
-				{
-					"kbvResponseMode": "multiple_choice",
-					"kbvQuality": 2,
-					"checkMethod": "kbv"
-				}
+                    "kbvResponseMode": "free_text",
+                    "kbvQuality": 3,
+                    "checkMethod": "kbv"
+                },
+                {
+                    "kbvResponseMode": "multiple_choice",
+                    "kbvQuality": 2,
+                    "checkMethod": "kbv"
+                }
         ],
         "checkDetails": [{
           "kbvResponseMode": "free_text",

@@ -14,6 +14,8 @@ public class Passports {
     // Kenneth Decerqueira passports
     public static final PassportDetails KENNETH_DECERQUEIRA_PASSPORT =
             createPassport("321654987", "2030-01-01", "GBR");
+    public static final PassportDetails KENNETH_DECERQUEIRA_EXPIRED_PASSPORT =
+            createPassport("321654987", "2022-01-01", "GBR");
     public static final PassportDetails KENNETH_DECERQUEIRA_INTERNATIONAL_PASSPORT =
             createPassport("321654987", "2030-01-01", "UTO");
 
