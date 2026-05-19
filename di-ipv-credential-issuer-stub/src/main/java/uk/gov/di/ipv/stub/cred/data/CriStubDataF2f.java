@@ -38,6 +38,11 @@ public class CriStubDataF2f {
                         Names.Kenneth_Decerqueira,
                         BirthDates.KENNETH_DECERQUEIRA,
                         Passports.KENNETH_DECERQUEIRA_PASSPORT),
+                createData("Kenneth Decerqueira (Expired Passport)",
+                        Names.Kenneth_Decerqueira,
+                        BirthDates.KENNETH_DECERQUEIRA,
+                        Passports.KENNETH_DECERQUEIRA_EXPIRED_PASSPORT
+                        ),
                 createData(
                         "Nora Porter DVLA Licence (DWP)",
                         Names.Nora_Porter,
