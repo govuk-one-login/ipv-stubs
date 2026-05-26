@@ -372,6 +372,7 @@ Resources:
     Properties:
       HealthCheckEnabled: TRUE
       HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10
       Matcher:
         HttpCode: 200
       Port: 8080
