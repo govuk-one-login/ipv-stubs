@@ -370,6 +370,7 @@ Resources:
     Properties:
       HealthCheckEnabled: TRUE
       HealthCheckProtocol: HTTP
+      HealthCheckIntervalSeconds: 60
       HealthCheckTimeoutSeconds: 30
       Matcher:
         HttpCode: 200
