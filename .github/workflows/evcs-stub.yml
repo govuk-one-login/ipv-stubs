@@ -24,7 +24,7 @@ jobs:
           fetch-depth: '0'
 
       - name: Set up SAM cli
-        uses: aws-actions/setup-sam@v2
+        uses: aws-actions/setup-sam@v3
 
       - name: Set up esbuild
         run: curl -fsSL https://esbuild.github.io/dl/latest | sh
