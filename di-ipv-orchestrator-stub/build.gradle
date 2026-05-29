@@ -20,7 +20,7 @@ dependencies {
 			"com.github.spullara.mustache.java:compiler:0.9.14",
 			"com.nimbusds:oauth2-oidc-sdk:11.37.2",
 			"com.fasterxml.jackson.core:jackson-databind:2.21.3",
-			"org.slf4j:slf4j-simple:2.0.17"
+			"org.slf4j:slf4j-simple:2.0.18"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:6.0.3"
 }
