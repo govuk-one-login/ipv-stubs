@@ -22,8 +22,8 @@ dependencies {
 			'com.nimbusds:nimbus-jose-jwt:10.9.1',
 			'org.slf4j:slf4j-simple:2.0.18'
 
-	testImplementation 'org.junit.jupiter:junit-jupiter-api:6.0.3'
-	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:6.0.3'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:6.1.0'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:6.1.0'
 }
 
 application {
