@@ -58,7 +58,7 @@ public class OrchestratorConfig {
     public static final String EVCS_ACCESS_TOKEN_ENDPOINT =
             getConfigValue(
                     "EVCS_ACCESS_TOKEN_ENDPOINT",
-                    "https://mock.credential-store.build.account.gov.uk/generate");
+                    "https://token-generator.reuse.stubs.account.gov.uk/generate");
     public static final String EVCS_ACCESS_TOKEN_TTL =
             getConfigValue("EVCS_ACCESS_TOKEN_TTL", "60");
     public static final String EVCS_ACCESS_TOKEN_SIGNING_JWK =
