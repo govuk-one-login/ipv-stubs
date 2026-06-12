@@ -8,8 +8,8 @@
   "license": "GDS",
   "dependencies": {
     "@aws-lambda-powertools/parameters": "^1.18.1",
-    "@aws-sdk/client-ssm": "^3.1004.0",
     "@aws-sdk/client-dynamodb": "^3.1004.0",
+    "@aws-sdk/client-ssm": "^3.1004.0",
     "@aws-sdk/lib-dynamodb": "^3.1004.0",
     "esbuild": "0.27.3",
     "jose": "^6.2.1",
@@ -21,7 +21,8 @@
     "@types/node": "^22.19.15",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/parser": "^8.58.0",
-    "@vitest/coverage-v8": "^4.1.2",
+    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/spy": "^4.1.8",
     "eslint": "^10.0.3",
     "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-prettier": "^5.5.5",
@@ -29,7 +30,7 @@
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.0",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.8"
   },
   "scripts": {
     "build": "tsc",

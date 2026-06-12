@@ -30,7 +30,8 @@
     "@types/aws-lambda": "^8.10.161",
     "@types/node": "^20.19.37",
     "@types/uuid": "^9.0.8",
-    "@vitest/coverage-v8": "^4.1.2",
+    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/spy": "^4.1.8",
     "aws-sdk-client-mock": "^4.1.0",
     "eslint": "^10.0.3",
     "eslint-config-prettier": "^9.1.2",
@@ -38,6 +39,6 @@
     "globals": "^16.5.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.0",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.8"
   }
 }

@@ -16,20 +16,20 @@
     "jose": "6.1.3"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/aws-lambda": "8.10.161",
     "@types/basic-auth": "1.1.8",
     "@typescript-eslint/parser": "^8.58.0",
-    "@eslint/js": "^10.0.1",
-    "@vitest/coverage-v8": "^4.1.2",
-    "@vitest/spy": "^4.0.18",
+    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/spy": "^4.1.8",
+    "eslint": "10.0.3",
     "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-prettier": "^5.5.5",
-    "eslint": "10.0.3",
     "globals": "^17.4.0",
     "prettier": "3.8.1",
-    "vitest": "^4.1.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.58.0"
+    "typescript-eslint": "^8.58.0",
+    "vitest": "^4.1.8"
   },
   "scripts": {
     "build": "tsc",
