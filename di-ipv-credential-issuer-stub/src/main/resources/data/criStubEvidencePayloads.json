@@ -98,7 +98,79 @@
     },
     {
       "criType": "Fraud Check (Stub)",
-      "label": "Failed fraud check (Mortality) (M1C)",
+      "label": "Fraud check with CI N01",
+      "payload": {
+        "type": "IdentityCheck",
+        "activityHistoryScore": 1,
+        "identityFraudScore": 1,
+        "checkDetails": [
+          {
+            "checkMethod": "data",
+            "fraudCheck": "applicable_authoritative_source"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "available_authoritative_source"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "mortality_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "identity_theft_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "synthetic_identity_check"
+          }
+        ],
+        "ci": [
+          "N01"
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Fraud check with CI (PEP - P02)",
+      "payload": {
+        "type": "IdentityCheck",
+        "activityHistoryScore": 1,
+        "identityFraudScore": 2,
+        "checkDetails": [
+          {
+            "checkMethod": "data",
+            "fraudCheck": "applicable_authoritative_source"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "available_authoritative_source"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "mortality_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "identity_theft_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "synthetic_identity_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "impersonation_risk"
+          }
+        ],
+        "ci": [
+          "P02"
+        ]
+      }
+    },
+    {
+      "criType": "Fraud Check (Stub)",
+      "label": "Failed fraud check (Mortality - T02) (M1C)",
       "payload": {
         "type": "IdentityCheck",
         "activityHistoryScore": 0,
@@ -126,6 +198,9 @@
             "checkMethod": "data",
             "fraudCheck": "synthetic_identity_check"
           }
+        ],
+        "ci": [
+          "T02"
         ]
       }
     },
