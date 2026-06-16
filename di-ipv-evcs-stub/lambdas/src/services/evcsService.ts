@@ -90,7 +90,7 @@ export async function processPostUserVCsRequestV2(
     }
 
     // Check that none of the posted VCs already exist
-    const vcRecords = await getCurrentVcsForUser(postRequest.userId);
+    const vcRecords = await getAllVcsForUser(postRequest.userId);
     const requestVcs = postRequest.vcs.map((vcDetails) => vcDetails.vc);
 
     if (
@@ -543,6 +543,25 @@ async function saveUserEvcsItem(
 ): Promise<PutItemCommandOutput> {
   const putItemInput = createPutItem(evcsItem);
   return dynamoClient.putItem(putItemInput);
+}
+
+async function getAllVcsForUser(
+  userId: string,
+): Promise<Record<string, AttributeValue>[]> {
+  const value = await dynamoClient.query({
+    TableName: config.evcsStubUserVCsTableName,
+    KeyConditionExpression: "#userId = :userId",
+    ExpressionAttributeNames: {
+      "#userId": "userId",
+    },
+    ExpressionAttributeValues: {
+      ":userId": {
+        S: userId,
+      },
+    },
+  });
+
+  return value.Items || [];
 }
 
 async function getCurrentVcsForUser(
