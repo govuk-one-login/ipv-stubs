@@ -181,6 +181,7 @@ export async function processPatchUserVCsRequestV2(
         requestVcSignatureToState,
       );
     } catch (error) {
+      console.error(getErrorMessage(error));
       return {
         response: { messageId: getErrorMessage(error) },
         statusCode: StatusCodes.Conflict,
@@ -330,26 +331,23 @@ export async function processPostIdentityRequest(
 
 function validateStateTransitions(
   existingVcsSignatureToState: Map<string, VcState>,
-  newVcsSignatureToState: Map<string, VcState>,
+  requestVcsSignatureToState: Map<string, VcState>,
 ) {
-  for (const [
-    existingSignature,
-    existingState,
-  ] of existingVcsSignatureToState) {
-    const newState = newVcsSignatureToState.get(existingSignature);
-    if (!newState) {
+  for (const [requestSignature, requestState] of requestVcsSignatureToState) {
+    const existingState = existingVcsSignatureToState.get(requestSignature);
+    if (!existingState) {
       throw new Error(
         "No matching signature while validating state transitions.",
       );
     }
 
-    const allowedTransitions = stateTransitions[newState];
+    const allowedTransitions = stateTransitions[requestState];
     const hasRules = allowedTransitions.length > 0;
     const isAllowed = allowedTransitions.includes(existingState);
 
     if (hasRules && !isAllowed) {
       throw new Error(
-        `State VC transition from: ${existingState} to ${newState} is not allowed`,
+        `State VC transition from: ${existingState} to ${requestState} is not allowed`,
       );
     }
   }

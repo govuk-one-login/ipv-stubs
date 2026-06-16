@@ -722,6 +722,61 @@ describe("evcsService", () => {
         );
       },
     );
+
+    it("should update only requested VCs when user has more VCs than in the request", async () => {
+      // Arrange
+      dbMock.on(QueryCommand).resolves(
+        createEvcsUserVcsQueryResponse([
+          { vc: TEST_VC1, state: VcState.CURRENT },
+          { vc: TEST_VC2, state: VcState.CURRENT },
+          { vc: TEST_VC3, state: VcState.CURRENT },
+        ]),
+      );
+
+      const request: PatchVcsRequest = {
+        userId: "testUserId",
+        govuk_signin_journey_id: "testJourneyId",
+        vcs: [
+          { signature: TEST_VC1_SIGNATURE, state: VcState.HISTORIC },
+          { signature: TEST_VC2_SIGNATURE, state: VcState.HISTORIC },
+        ],
+      };
+
+      // Act
+      const response = await processPatchUserVCsRequestV2(request);
+
+      // Assert
+      expect(response.statusCode).toBe(StatusCodes.NoContent);
+      expect(dbMock).toHaveReceivedCommandTimes(UpdateItemCommand, 2);
+      expect(dbMock).toHaveReceivedCommandWith(
+        UpdateItemCommand,
+        createUpdateItemInput({
+          userId: request.userId,
+          vcSignature: TEST_VC1_SIGNATURE,
+          state: VcState.HISTORIC,
+          ttl: 1735693200,
+        }),
+      );
+      expect(dbMock).toHaveReceivedCommandWith(
+        UpdateItemCommand,
+        createUpdateItemInput({
+          userId: request.userId,
+          vcSignature: TEST_VC2_SIGNATURE,
+          state: VcState.HISTORIC,
+          ttl: 1735693200,
+        }),
+      );
+
+      expect(dbMock).not.toHaveReceivedCommandWith(
+        UpdateItemCommand,
+        expect.objectContaining({
+          Key: {
+            userId: { S: request.userId },
+            vcSignature: { S: TEST_VC3_SIGNATURE },
+          },
+        }),
+      );
+    });
   });
 
   function getTestTtl() {
