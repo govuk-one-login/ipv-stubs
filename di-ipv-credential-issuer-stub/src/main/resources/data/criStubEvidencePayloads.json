@@ -5,7 +5,34 @@
       "label": "Passed fraud check (M1A)",
       "payload": {
         "type": "IdentityCheck",
-        "identityFraudScore": 2
+        "identityFraudScore": 2,
+        "activityHistoryScore": 0,
+        "checkDetails": [
+          {
+            "checkMethod": "data",
+            "fraudCheck": "applicable_authoritative_source"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "available_authoritative_source"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "mortality_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "identity_theft_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "synthetic_identity_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "impersonation_risk"
+          }
+        ]
       }
     },
     {
@@ -18,8 +45,27 @@
         "checkDetails": [
           {
             "checkMethod": "data",
-            "identityCheckPolicy": "published",
-            "activityFrom": "2019-01-01"
+            "fraudCheck": "applicable_authoritative_source"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "available_authoritative_source"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "mortality_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "identity_theft_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "synthetic_identity_check"
+          },
+          {
+            "checkMethod": "data",
+            "fraudCheck": "impersonation_risk"
           }
         ]
       }
