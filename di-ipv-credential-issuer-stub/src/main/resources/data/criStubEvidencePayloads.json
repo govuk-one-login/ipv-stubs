@@ -30,7 +30,7 @@
           },
           {
             "checkMethod": "data",
-            "fraudCheck": "impersonation_risk"
+            "fraudCheck": "impersonation_risk_check"
           }
         ]
       }
@@ -65,7 +65,7 @@
           },
           {
             "checkMethod": "data",
-            "fraudCheck": "impersonation_risk"
+            "fraudCheck": "impersonation_risk_check"
           }
         ]
       }
@@ -160,7 +160,7 @@
           },
           {
             "checkMethod": "data",
-            "fraudCheck": "impersonation_risk"
+            "fraudCheck": "impersonation_risk_check"
           }
         ],
         "ci": [
