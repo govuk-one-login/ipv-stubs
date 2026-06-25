@@ -1,0 +1,31 @@
+name: Open Banking CRI Stub - Secure Pipeline build, push & Ship
+on:
+  workflow_dispatch:
+  workflow_call:
+    secrets:
+      CRI_OPEN_BANKING_ARTIFACT_BUCKET_NAME:
+        required: true
+      CONTAINER_SIGN_KMS_KEY:
+        required: true
+      DYNATRACE_PAAS_TOKEN:
+        required: true
+      CRI_OPEN_BANKING_ECR_REPOSITORY:
+        required: true
+      CRI_OPEN_BANKING_GH_ACTIONS_ROLE_ARN:
+        required: true
+
+jobs:
+  dockerBuildAndPush:
+    uses: ./.github/workflows/cri-stub-build-and-push.yml
+    permissions:
+      id-token: write
+      contents: read
+      packages: read
+    with:
+      WORKING_DIRECTORY: ./di-ipv-credential-issuer-stub/deploy/open-banking
+    secrets:
+      ARTIFACT_BUCKET_NAME: ${{ secrets.CRI_OPEN_BANKING_ARTIFACT_BUCKET_NAME }}
+      CONTAINER_SIGN_KMS_KEY: ${{ secrets.CONTAINER_SIGN_KMS_KEY }}
+      DYNATRACE_PAAS_TOKEN: ${{ secrets.DYNATRACE_PAAS_TOKEN }}
+      ECR_REPOSITORY: ${{ secrets.CRI_OPEN_BANKING_ECR_REPOSITORY }}
+      GH_ACTIONS_ROLE_ARN: ${{ secrets.CRI_OPEN_BANKING_GH_ACTIONS_ROLE_ARN }}

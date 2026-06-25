@@ -678,6 +678,43 @@
           }
         ]
       }
+    },
+    {
+      "criType": "Open Banking (Stub)",
+      "label": "Open Banking success",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 3,
+        "validityScore": 3,
+        "verificationScore": 2,
+        "checkDetails": [
+          {
+            "checkMethod": "data",
+            "identityCheckPolicy": "none"
+          },
+          {
+            "checkMethod": "auth"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Open Banking (Stub)",
+      "label": "Failed Open Banking with CI - failed login",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 0,
+        "validityScore": 0,
+        "verificationScore": 0,
+        "ci": ["V04"],
+        "checkDetails": [
+        ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "auth"
+          }
+        ]
+      }
     }
   ]
 }

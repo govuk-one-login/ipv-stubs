@@ -10,7 +10,8 @@ public enum CriType {
     USER_ASSERTED_CRI_TYPE("USER_ASSERTED", false),
     DOC_CHECK_APP_CRI_TYPE("DOC_CHECK_APP", true),
     F2F_CRI_TYPE("F2F", true),
-    NINO_CRI_TYPE("NINO", true);
+    NINO_CRI_TYPE("NINO", true),
+    OPEN_BANKING_CRI_TYPE("OPEN_BANKING", true);
 
     public final String value;
     private final boolean isIdentityCheck;

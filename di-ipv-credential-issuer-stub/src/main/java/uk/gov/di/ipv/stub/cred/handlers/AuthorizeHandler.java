@@ -37,6 +37,7 @@ import uk.gov.di.ipv.stub.cred.data.CriStubDataExperianKbv;
 import uk.gov.di.ipv.stub.cred.data.CriStubDataF2f;
 import uk.gov.di.ipv.stub.cred.data.CriStubDataFraud;
 import uk.gov.di.ipv.stub.cred.data.CriStubDataNino;
+import uk.gov.di.ipv.stub.cred.data.CriStubDataOpenBanking;
 import uk.gov.di.ipv.stub.cred.data.CriStubDataUkPassport;
 import uk.gov.di.ipv.stub.cred.data.IdentityCheckSubjectCriStubData;
 import uk.gov.di.ipv.stub.cred.domain.*;
@@ -213,14 +214,16 @@ public class AuthorizeHandler {
         frontendParams.put(
                 IS_EVIDENCE_TYPE_PARAM,
                 criType.equals(CriType.EVIDENCE_CRI_TYPE)
-                        || criType.equals(CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE));
+                        || criType.equals(CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE)
+                        || criType.equals(CriType.OPEN_BANKING_CRI_TYPE));
         frontendParams.put(
                 IS_EVIDENCE_DRIVING_LICENCE_TYPE_PARAM,
                 criType.equals(CriType.EVIDENCE_DRIVING_LICENCE_CRI_TYPE));
         frontendParams.put(IS_ACTIVITY_TYPE_PARAM, criType.equals(CriType.ACTIVITY_CRI_TYPE));
         frontendParams.put(IS_FRAUD_TYPE_PARAM, criType.equals(CriType.FRAUD_CRI_TYPE));
         frontendParams.put(
-                IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE));
+                IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE)
+                        || criType.equals(CriType.OPEN_BANKING_CRI_TYPE));
         frontendParams.put(IS_DOC_CHECKING_TYPE_PARAM, criType.equals(DOC_CHECK_APP_CRI_TYPE));
         frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
         frontendParams.put(IS_NINO_TYPE, criType.equals(CriType.NINO_CRI_TYPE));
@@ -759,6 +762,9 @@ public class AuthorizeHandler {
                 break;
             case "National Insurance Number (Stub)":
                 data = CriStubDataNino.Data;
+                break;
+            case "Open Banking (Stub)":
+                data = CriStubDataOpenBanking.Data;
                 break;
             case "UK Passport (Stub)":
                 data = CriStubDataUkPassport.Data;
