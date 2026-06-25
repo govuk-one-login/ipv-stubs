@@ -684,7 +684,6 @@
       "label": "Open Banking success",
       "payload": {
         "type": "IdentityCheck",
-        "activityHistoryScore": 2,
         "strengthScore": 3,
         "validityScore": 3,
         "verificationScore": 2,
