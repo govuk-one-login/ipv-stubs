@@ -22,7 +22,7 @@ dependencies {
 			"com.fasterxml.jackson.core:jackson-databind:2.22.0",
 			"org.slf4j:slf4j-simple:2.0.18"
 
-	testImplementation "org.junit.jupiter:junit-jupiter:6.1.0"
+	testImplementation "org.junit.jupiter:junit-jupiter:6.1.1"
 }
 
 run {
