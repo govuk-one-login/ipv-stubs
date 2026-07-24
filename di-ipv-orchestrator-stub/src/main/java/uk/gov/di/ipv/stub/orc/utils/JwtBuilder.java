@@ -142,7 +142,7 @@ public class JwtBuilder {
 
     private static RSAKey getEncryptionKey(String targetEnvironment) throws ParseException {
         return switch (targetEnvironment) {
-            case ("DEV"), ("DEV_AMRITS"), ("DEV_ALIR"), ("DEV_PATRICKB") ->
+            case ("DEV"), ("DEV_AMRITS"), ("DEV_PATRICKB") ->
                     RSAKey.parse(ORCHESTRATOR_DEV01_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("PERF"),
                     ("DEV_DANC"),
@@ -161,7 +161,6 @@ public class JwtBuilder {
             // dev01
             case ("DEV") -> "https://dev.01.dev.identity.account.gov.uk";
             case ("DEV_AMRITS") -> "https://dev-amrits.01.dev.identity.account.gov.uk";
-            case ("DEV_ALIR") -> "https://dev-alir.01.dev.identity.account.gov.uk";
             case ("DEV_PATRICKB") -> "https://dev-patrickb.01.dev.identity.account.gov.uk";
 
             // dev02
