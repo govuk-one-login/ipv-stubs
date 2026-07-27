@@ -188,7 +188,6 @@ public class IpvHandler {
                     // dev01
                     case ("DEV") -> "https://dev.01.dev.identity.account.gov.uk/";
                     case ("DEV_AMRITS") -> "https://dev-amrits.01.dev.identity.account.gov.uk/";
-                    case ("DEV_ALIR") -> "https://dev-alir.01.dev.identity.account.gov.uk/";
                     case ("DEV_PATRICKB") -> "https://dev-patrickb.01.dev.identity.account.gov.uk/";
 
                     // dev02
@@ -212,7 +211,6 @@ public class IpvHandler {
                     // dev01
                     case ("DEV") -> "https://api-dev.01.dev.identity.account.gov.uk/";
                     case ("DEV_AMRITS") -> "https://api-dev-amrits.01.dev.identity.account.gov.uk/";
-                    case ("DEV_ALIR") -> "https://api-dev-alir.01.dev.identity.account.gov.uk/";
                     case ("DEV_PATRICKB") ->
                             "https://api-dev-patrickb.01.dev.identity.account.gov.uk/";
 
