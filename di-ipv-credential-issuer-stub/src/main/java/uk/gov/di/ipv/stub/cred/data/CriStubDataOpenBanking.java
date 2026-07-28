@@ -1,6 +1,5 @@
 package uk.gov.di.ipv.stub.cred.data;
 
-import uk.gov.di.model.BankAccountDetails;
 import uk.gov.di.model.BirthDate;
 import uk.gov.di.model.IdentityCheckSubject;
 import uk.gov.di.model.Name;
@@ -16,23 +15,23 @@ public class CriStubDataOpenBanking {
     public static final List<IdentityCheckSubjectCriStubData> Data =
             List.of(
                     createData(
-                            "Alice Parker BAV",
+                            "Alice Parker",
                             Names.Alice_Jane_Parker,
                             BirthDates.ALICE_PARKER),
                     createData(
-                            "Bob Parker BAV",
+                            "Bob Parker",
                             Names.Bob_Parker,
                             BirthDates.BOB_PARKER),
                     createData(
-                            "James Moriarty BAV",
+                            "James Moriarty",
                             Names.James_Moriarty,
                             BirthDates.JAMES_MORIARTY),
                     createData(
-                            "Kenneth Decerqueira BAV",
+                            "Kenneth Decerqueira",
                             Names.Kenneth_Decerqueira,
                             BirthDates.KENNETH_DECERQUEIRA),
                     createData(
-                            "Mary Watson BAV",
+                            "Mary Watson",
                             Names.Mary_Watson,
                             BirthDates.MARY_WATSON));
 
