@@ -105,12 +105,6 @@ public class EvcsAccessTokenGenerator {
 
     private ECDSASigner createJwtSigner() {
         try {
-            if(EVCS_ACCESS_TOKEN_SIGNING_JWK.length() >= 25) {
-                var keyPart = EVCS_ACCESS_TOKEN_SIGNING_JWK.substring(0, 25);
-                LOGGER.info(keyPart);
-            } else {
-                LOGGER.info("Key is less than 25 characters");
-            }
             return new ECDSASigner(ECKey.parse(EVCS_ACCESS_TOKEN_SIGNING_JWK).toECPrivateKey());
         } catch (ParseException | JOSEException e) {
             LOGGER.error("Failed to create jwt signer");

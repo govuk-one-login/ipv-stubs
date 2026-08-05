@@ -5,7 +5,6 @@ export const verifyTokenAndReturnPayload = async (
   jwt: string,
 ): Promise<JWTPayload> => {
   const EVCS_VERIFY_KEY = process.env.EVCS_STUB_VERIFY_KEY;
-  console.info(EVCS_VERIFY_KEY);
 
   let payload;
   try {
