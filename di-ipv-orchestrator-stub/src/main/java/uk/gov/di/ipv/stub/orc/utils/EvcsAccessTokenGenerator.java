@@ -105,6 +105,8 @@ public class EvcsAccessTokenGenerator {
 
     private ECDSASigner createJwtSigner() {
         try {
+            var keyPart = EVCS_ACCESS_TOKEN_SIGNING_JWK.substring(0, 25);
+            System.out.println(keyPart);
             return new ECDSASigner(ECKey.parse(EVCS_ACCESS_TOKEN_SIGNING_JWK).toECPrivateKey());
         } catch (ParseException | JOSEException e) {
             LOGGER.error("Failed to create jwt signer");
