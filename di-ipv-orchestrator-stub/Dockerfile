@@ -15,6 +15,17 @@ COPY --from=build \
     /home/gradle/build/distributions/di-ipv-orchestrator-stub.tar \
     /app/
 
+
+## Add in jmx exporter
+
+RUN mkdir -p /opt/jmx_exporter
+COPY ./jmx_prometheus_javaagent-1.0.1.jar /opt/jmx_exporter
+COPY ./build/libs/di-ipv-orchestrator-stub.jar /opt/jmx_exporter
+COPY ./start.sh /opt/jmx_exporter
+COPY ./config.yaml /opt/jmx_exporter
+
+RUN chmod -R o+x /opt/jmx_exporter
+
 WORKDIR /app
 RUN tar -xvf di-ipv-orchestrator-stub.tar \
     && rm di-ipv-orchestrator-stub.tar
@@ -28,6 +39,7 @@ ENV LD_PRELOAD /opt/dynatrace/oneagent/agent/lib64/liboneagentproc.so
 
 EXPOSE $PORT
 EXPOSE 5007
+EXPOSE 9404
 
-ENTRYPOINT ["./di-ipv-orchestrator-stub/bin/di-ipv-orchestrator-stub"]
+ENTRYPOINT exec /opt/jmx_exporter/start.sh
 LABEL project="di-ipv-orchestrator-stub"
