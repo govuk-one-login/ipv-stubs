@@ -12,7 +12,7 @@ Globals:
         DT_CONNECTION_BASE_URL: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}'   #pragma: allowlist secret
           - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
-        DT_CLUSTER_ID: !Sub
+        DT_CLUSTER: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}'   #pragma: allowlist secret
           - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]  #pragma: allowlist secret
         DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
@@ -21,7 +21,6 @@ Globals:
         DT_TENANT: !Sub
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}'   #pragma: allowlist secret
           - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]   #pragma: allowlist secret
-        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
     Timeout: 30
     PermissionsBoundary: !If
       - UsePermissionsBoundary
@@ -79,10 +78,10 @@ Mappings:
   EnvironmentConfiguration:
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
-      dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_51_20250331-143707_with_collector_java:1
+      dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_329_73_20260123-140641_with_collector_nodejs_arm:1
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables  #pragma: allowlist secret
-      dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_311_51_20250331-143707_with_collector_java:1
+      dynatraceLayerArn: arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_329_73_20260123-140641_with_collector_nodejs_arm:1
   CoreAccounts:
     dev01:
       accountId: "130355686670"
