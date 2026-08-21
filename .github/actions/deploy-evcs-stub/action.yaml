@@ -3,7 +3,7 @@ description: Deploy the EVCS stub to a given environment
 inputs:
   role-to-assume:
     required: true
-    description: The AWS role to assume for the deploymnet
+    description: The AWS role to assume for the deployment
   artifact-bucket-name:
     required: true
     description: The S3 bucket to upload the artefact to
