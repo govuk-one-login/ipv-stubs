@@ -50,7 +50,7 @@ Resources:
     Properties:
       CodeUri: "../"
       Handler: app.lambdaHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       Architectures:
         - arm64
       DeadLetterQueue:
