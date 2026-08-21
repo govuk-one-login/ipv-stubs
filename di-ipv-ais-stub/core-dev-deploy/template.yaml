@@ -73,7 +73,7 @@ Resources:
       FunctionName: !Sub "getAccountInterventions-${Environment}"
       CodeUri: "../lambdas"
       Handler: handler.handler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -140,7 +140,7 @@ Resources:
       FunctionName: !Sub "manageAccountInterventions-${Environment}"
       CodeUri: "../lambdas"
       Handler: managementHandler.handler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64

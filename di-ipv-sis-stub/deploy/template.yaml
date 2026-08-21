@@ -144,7 +144,7 @@ Resources:
       FunctionName: !Sub "sisPostUserIdentity-${Environment}"
       CodeUri: "../lambdas"
       Handler: sisHandler.postUserIdentityHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
