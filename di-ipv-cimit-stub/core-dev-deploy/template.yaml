@@ -63,7 +63,7 @@ Resources:
       FunctionName: !Sub "postMitigations-${Environment}"
       CodeUri: "../lambdas"
       Handler: src/internal-api/post-mitigations/postMitigationsHandler.postMitigationsHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -126,7 +126,7 @@ Resources:
       FunctionName: !Sub "putContraIndicators-${Environment}"
       CodeUri: "../lambdas"
       Handler: src/internal-api/put-contra-indicators/putContraIndicatorsHandler.putContraIndicatorsHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -190,7 +190,7 @@ Resources:
       FunctionName: !Sub "getContraIndicatorCredential-${Environment}"
       CodeUri: "../lambdas"
       Handler: src/internal-api/get-contra-indicator-credential/getContraIndicatorCredentialHandler.getContraIndicatorCredentialHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -250,7 +250,7 @@ Resources:
       FunctionName: !Sub "stubManagement-${Environment}"
       CodeUri: "../lambdas"
       Handler: src/external-api/stub-management/stubManagementHandler.handler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64

@@ -3,10 +3,13 @@
     "description": "Enqueues events to SQS",
     "version": "0.0.1",
     "private": true,
+    "engines": {
+        "node": ">=24.19"
+    },
     "devDependencies": {
         "@aws-sdk/client-sqs": "^3.1004.0",
         "@types/aws-lambda": "^8.10.161",
-        "@types/node": "^20.19.37",
+        "@types/node": "^24.13.3",
         "typescript": "^5.9.3"
     }
 }

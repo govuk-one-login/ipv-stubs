@@ -16,9 +16,12 @@
     "jose": "^6.2.1",
     "uuid": "^14.0.1"
   },
+  "engines": {
+    "node": ">=24.19"
+  },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.161",
-    "@types/node": "^22.19.15",
+    "@types/node": "^24.13.3",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^8.57.0",
     "@typescript-eslint/parser": "^8.57.0",

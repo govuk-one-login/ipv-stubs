@@ -23,6 +23,13 @@ jobs:
         with:
           fetch-depth: '0'
 
+      - name: Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
+
       - name: Set up AWS creds
         uses: aws-actions/configure-aws-credentials@v5.1.1
         with:

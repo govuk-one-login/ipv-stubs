@@ -25,10 +25,13 @@
     "esbuild": "0.28.1",
     "jose": "^6.2.1"
   },
+  "engines": {
+    "node": ">=24.19"
+  },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/aws-lambda": "^8.10.161",
-    "@types/node": "^20.19.37",
+    "@types/node": "^24.13.3",
     "@types/uuid": "^9.0.8",
     "@vitest/coverage-v8": "^4.1.8",
     "@vitest/spy": "^4.1.8",

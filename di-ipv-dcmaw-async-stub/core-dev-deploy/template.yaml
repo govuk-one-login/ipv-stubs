@@ -73,7 +73,7 @@ Resources:
       FunctionName: !Sub "getDcmawAsyncVc-${Environment}"
       CodeUri: "../lambdas"
       Handler: credentialHandler.handler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -138,7 +138,7 @@ Resources:
       FunctionName: !Sub "getDcmawAsyncAccessToken-${Environment}"
       CodeUri: "../lambdas"
       Handler: tokenHandler.handler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -194,7 +194,7 @@ Resources:
       FunctionName: !Sub "managementEnqueueVc-${Environment}"
       CodeUri: "../lambdas"
       Handler: managementEnqueueVcHandler.handler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -260,7 +260,7 @@ Resources:
       FunctionName: !Sub "managementGenerateVc-${Environment}"
       CodeUri: "../lambdas"
       Handler: managementGenerateVcHandler.handler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -326,7 +326,7 @@ Resources:
       FunctionName: !Sub "managementCleanupSession-${Environment}"
       CodeUri: "../lambdas"
       Handler: managementCleanupSessionHandler.handler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -391,7 +391,7 @@ Resources:
       FunctionName: !Sub "managementEnqueueError-${Environment}"
       CodeUri: "../lambdas"
       Handler: managementEnqueueErrorHandler.handler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64

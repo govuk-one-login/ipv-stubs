@@ -91,7 +91,7 @@ Resources:
       FunctionName: !Sub "evcsCreateUserVCs-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsHandler.createHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -161,7 +161,7 @@ Resources:
       FunctionName: !Sub "evcsCreateUserVCsV2-${Environment}"
       CodeUri: "../lambdas"
       Handler: createHandler.createHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -231,7 +231,7 @@ Resources:
       FunctionName: !Sub "evcsUpdateUserVCs-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsHandler.updateHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -301,7 +301,7 @@ Resources:
       FunctionName: !Sub "evcsUpdateUserVCsV2-${Environment}"
       CodeUri: "../lambdas"
       Handler: updateHandler.updateHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -371,7 +371,7 @@ Resources:
       FunctionName: !Sub "evcsPostIdentity-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsHandler.postIdentityHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -443,7 +443,7 @@ Resources:
       FunctionName: !Sub "evcsGetIdentity-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsHandler.getIdentityHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -516,7 +516,7 @@ Resources:
       FunctionName: !Sub "evcsInvalidateStoredIdentity-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsHandler.invalidateStoredIdentityHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -589,7 +589,7 @@ Resources:
       FunctionName: !Sub "evcsInvalidateStoredIdentityV2-${Environment}"
       CodeUri: "../lambdas"
       Handler: invalidateHandler.invalidateStoredIdentityHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -662,7 +662,7 @@ Resources:
       FunctionName: !Sub "evcsGetUserVCs-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsHandler.getHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -738,7 +738,7 @@ Resources:
       FunctionName: !Sub "evcsManagementGetStoredIdentity-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsManagementHandler.getUserStoredIdentityHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
@@ -811,7 +811,7 @@ Resources:
       FunctionName: !Sub "evcsManagementCreateStoredIdentity-${Environment}"
       CodeUri: "../lambdas"
       Handler: evcsManagementHandler.createUserStoredIdentityHandler
-      Runtime: nodejs22.x
+      Runtime: nodejs24.x
       PackageType: Zip
       Architectures:
         - arm64
