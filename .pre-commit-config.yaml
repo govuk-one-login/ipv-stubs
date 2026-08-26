@@ -52,7 +52,7 @@ repos:
         files: ^(?!\..*).*/template\.(json|yml|yaml)$
 
   - repo: https://github.com/bridgecrewio/checkov.git
-    rev: '3.3.11'
+    rev: '3.3.13'
     hooks:
       - id: checkov_diff
         args:
