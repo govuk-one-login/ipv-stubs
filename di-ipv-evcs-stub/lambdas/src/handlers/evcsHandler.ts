@@ -2,24 +2,15 @@ import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
 import { JWTPayload, decodeJwt } from "jose";
 import { buildApiResponse } from "../common/apiResponses";
 import {
-  PostRequest,
-  PatchRequest,
-  PostIdentityRequest,
   InvalidateIdentityRequest,
+  PostIdentityRequest,
 } from "../domain/requests";
+import { StatusCodes, VcState } from "../domain/enums";
 import {
-  CreateVcStates,
-  StatusCodes,
-  UpdateVcStates,
-  VcState,
-} from "../domain/enums";
-import {
-  processPostUserVCsRequest,
   processPostIdentityRequest,
   processGetUserVCsRequest,
-  processPatchUserVCsRequest,
-  invalidateUserSi,
   processGetIdentityRequest,
+  invalidateUserSi,
 } from "../services/evcsService";
 import { verifyTokenAndReturnPayload } from "../services/jwtService";
 import {
@@ -91,62 +82,6 @@ export async function invalidateStoredIdentityHandler(
   const res = await invalidateUserSi(parsedInvalidateSiRequest.userId);
 
   return buildApiResponse(res.statusCode);
-}
-
-export async function createHandler(
-  event: APIGatewayProxyEvent,
-): Promise<APIGatewayProxyResultV2> {
-  console.info(`---Create Request received----`);
-  const userId = event.pathParameters?.userId;
-  if (!userId) {
-    return buildApiResponse(StatusCodes.BadRequest, {
-      message: "Missing userId.",
-    });
-  }
-
-  let request;
-  try {
-    request = parsePostRequest(event);
-  } catch (error) {
-    console.error(error);
-    return buildApiResponse(StatusCodes.BadRequest, {
-      message: getErrorMessage(error),
-    });
-  }
-  const res = await processPostUserVCsRequest(
-    decodeURIComponent(userId),
-    request,
-  );
-
-  return buildApiResponse(res.statusCode, res.response);
-}
-
-export async function updateHandler(
-  event: APIGatewayProxyEvent,
-): Promise<APIGatewayProxyResultV2> {
-  console.info(`---Update request received----`);
-  const userId = event.pathParameters?.userId;
-  if (!userId) {
-    return buildApiResponse(StatusCodes.BadRequest, {
-      message: "Missing userId.",
-    });
-  }
-
-  let request;
-  try {
-    request = parsePatchRequest(event);
-  } catch (error) {
-    console.error(error);
-    return buildApiResponse(StatusCodes.BadRequest, {
-      message: getErrorMessage(error),
-    });
-  }
-  const res = await processPatchUserVCsRequest(
-    decodeURIComponent(userId),
-    request,
-  );
-
-  return buildApiResponse(res.statusCode, res.response);
 }
 
 export async function getHandler(
@@ -287,55 +222,6 @@ function parseInvalidateIdentityRequest(
   }
 
   return invalidateSi;
-}
-
-function parsePostRequest(event: APIGatewayProxyEvent): PostRequest[] {
-  console.info(`---Request parsing----`);
-  if (!event.body) {
-    throw new Error("Missing request body");
-  }
-
-  const postRequest = JSON.parse(event.body);
-  if (postRequest?.length <= 0 || !isValidCreateVcState(postRequest)) {
-    throw new Error("Invalid request");
-  }
-
-  return postRequest;
-}
-
-function parsePatchRequest(event: APIGatewayProxyEvent): PatchRequest[] {
-  console.info(`---Request parsing----`);
-  if (!event.body) {
-    throw new Error("Missing request body");
-  }
-
-  const patchRequest = JSON.parse(event.body);
-  if (
-    patchRequest?.updateVCs?.length <= 0 ||
-    !isValidUpdateVcState(patchRequest)
-  ) {
-    throw new Error("Invalid request");
-  }
-
-  return patchRequest;
-}
-
-function isValidCreateVcState(postRequest: PostRequest[]): boolean {
-  for (const postRequestItem of postRequest) {
-    if (!(postRequestItem.state in CreateVcStates)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-function isValidUpdateVcState(patchRequest: PatchRequest[]): boolean {
-  for (const patchRequestItem of patchRequest) {
-    if (!(patchRequestItem.state in UpdateVcStates)) {
-      return false;
-    }
-  }
-  return true;
 }
 
 function getRequestedStates(event: APIGatewayProxyEvent): string[] {

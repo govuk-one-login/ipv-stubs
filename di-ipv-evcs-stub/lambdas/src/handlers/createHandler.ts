@@ -4,14 +4,14 @@ import {
   isPostVcsRequest,
   PostVcsRequest,
 } from "../domain/requests/postVcsRequest";
-import { processPostUserVCsRequestV2 } from "../services/evcsService";
+import { processPostUserVCsRequest } from "../services/evcsService";
 import { getErrorMessage } from "../common/utils";
 import { StatusCodes } from "../domain/enums";
 
 export async function createHandler(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResultV2> {
-  console.info(`---Create V2 request received----`);
+  console.info(`---Create request received----`);
 
   let request;
   try {
@@ -23,7 +23,7 @@ export async function createHandler(
     });
   }
 
-  const res = await processPostUserVCsRequestV2(request);
+  const res = await processPostUserVCsRequest(request);
   return buildApiResponse(res.statusCode, res.response);
 }
 

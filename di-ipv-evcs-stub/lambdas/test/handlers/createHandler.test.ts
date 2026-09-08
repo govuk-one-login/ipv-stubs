@@ -3,13 +3,13 @@ import {
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
 import { createHandler } from "../../src/handlers/createHandler";
-import { processPostUserVCsRequestV2 } from "../../src/services/evcsService";
+import { processPostUserVCsRequest } from "../../src/services/evcsService";
 import { VcState, VCProvenance } from "../../src/domain/enums";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { PostVcsRequest } from "../../src/domain/requests/postVcsRequest";
 
 vi.mock("../../src/services/evcsService", () => ({
-  processPostUserVCsRequestV2: vi.fn(),
+  processPostUserVCsRequest: vi.fn(),
 }));
 
 const TEST_POST_REQUEST: PostVcsRequest = {
@@ -31,7 +31,7 @@ beforeEach(() => {
 describe("create handler V2", () => {
   it("should return 202 for a valid request", async () => {
     // arrange
-    vi.mocked(processPostUserVCsRequestV2).mockResolvedValueOnce({
+    vi.mocked(processPostUserVCsRequest).mockResolvedValueOnce({
       statusCode: 202,
       response: {},
     });
@@ -46,7 +46,7 @@ describe("create handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(202);
-    expect(processPostUserVCsRequestV2).toHaveBeenCalledWith(TEST_POST_REQUEST);
+    expect(processPostUserVCsRequest).toHaveBeenCalledWith(TEST_POST_REQUEST);
   });
 
   it("should return 400 for a request with no body", async () => {
@@ -62,7 +62,7 @@ describe("create handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(400);
-    expect(processPostUserVCsRequestV2).not.toHaveBeenCalled();
+    expect(processPostUserVCsRequest).not.toHaveBeenCalled();
   });
 
   it("should return 400 for an invalid request object", async () => {
@@ -79,7 +79,7 @@ describe("create handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(400);
-    expect(processPostUserVCsRequestV2).not.toHaveBeenCalled();
+    expect(processPostUserVCsRequest).not.toHaveBeenCalled();
   });
 
   it("should return 400 for a request with no user id", async () => {
@@ -97,7 +97,7 @@ describe("create handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(400);
-    expect(processPostUserVCsRequestV2).not.toHaveBeenCalled();
+    expect(processPostUserVCsRequest).not.toHaveBeenCalled();
   });
 
   it("should return 400 for a request with no VCs", async () => {
@@ -115,7 +115,7 @@ describe("create handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(400);
-    expect(processPostUserVCsRequestV2).not.toHaveBeenCalled();
+    expect(processPostUserVCsRequest).not.toHaveBeenCalled();
   });
 
   it("should return 400 for a request with duplicate VCs in different states", async () => {
@@ -136,6 +136,6 @@ describe("create handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(400);
-    expect(processPostUserVCsRequestV2).not.toHaveBeenCalled();
+    expect(processPostUserVCsRequest).not.toHaveBeenCalled();
   });
 });

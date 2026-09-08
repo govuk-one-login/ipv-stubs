@@ -16,9 +16,9 @@ import {
   createUpdateItemInput,
   invalidateUserSi,
   processGetIdentityRequest,
-  processPatchUserVCsRequestV2,
+  processPatchUserVCsRequest,
   processPostIdentityRequest,
-  processPostUserVCsRequestV2,
+  processPostUserVCsRequest,
 } from "../../src/services/evcsService";
 import { PostIdentityRequest } from "../../src/domain/requests";
 import {
@@ -599,7 +599,7 @@ describe("evcsService", () => {
       request.vcs[0].state = VcState.HISTORIC;
 
       // Act
-      const response = await processPostUserVCsRequestV2(request);
+      const response = await processPostUserVCsRequest(request);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.Conflict);
@@ -619,7 +619,7 @@ describe("evcsService", () => {
       );
 
       // Act
-      const response = await processPostUserVCsRequestV2(request);
+      const response = await processPostUserVCsRequest(request);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.Conflict);
@@ -631,7 +631,7 @@ describe("evcsService", () => {
       dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
 
       // Act
-      const response = await processPostUserVCsRequestV2(request);
+      const response = await processPostUserVCsRequest(request);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.Accepted);
@@ -673,7 +673,7 @@ describe("evcsService", () => {
         };
 
         // Act
-        const response = await processPatchUserVCsRequestV2(patchVcsRequest);
+        const response = await processPatchUserVCsRequest(patchVcsRequest);
 
         // Assert
         expect(response.statusCode).toBe(StatusCodes.Conflict);
@@ -687,7 +687,7 @@ describe("evcsService", () => {
       dbMock.on(QueryCommand).resolves(createEvcsUserVcsQueryResponse([]));
 
       // Act
-      const response = await processPatchUserVCsRequestV2(request);
+      const response = await processPatchUserVCsRequest(request);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.NotFound);
@@ -707,7 +707,7 @@ describe("evcsService", () => {
           );
 
         // Act
-        const response = await processPatchUserVCsRequestV2(request);
+        const response = await processPatchUserVCsRequest(request);
 
         // Assert
         expect(response.statusCode).toBe(StatusCodes.NoContent);
@@ -743,7 +743,7 @@ describe("evcsService", () => {
       };
 
       // Act
-      const response = await processPatchUserVCsRequestV2(request);
+      const response = await processPatchUserVCsRequest(request);
 
       // Assert
       expect(response.statusCode).toBe(StatusCodes.NoContent);
