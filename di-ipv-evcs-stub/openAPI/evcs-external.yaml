@@ -32,84 +32,6 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostUserVCV2RequestBody"
-      responses:
-        202:
-          description: "Accepted"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  messageId:
-                    type: string
-                    description: The SQS message ID.
-                    example: "bd8359d9-d559-47dd-9467-2a31e88a9e2d"
-        400:
-          $ref: '#/components/responses/BadRequest'
-        409:
-          $ref: '#/components/responses/Conflict'
-        500:
-          $ref: '#/components/responses/ServerError'
-      x-amazon-apigateway-request-validator: ALL
-      x-amazon-apigateway-integration:
-        type: "aws_proxy"
-        httpMethod: "POST"
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsCreateUserVCsV2Function.Arn}:live/invocations
-        passthroughBehavior: "WHEN_NO_TEMPLATES"
-        responses:
-          202:
-            statusCode: 202
-            responseTemplates:
-              application/json: '{"result": "success"}'
-    patch:
-      description: Update multiple VCs' state and metadata for a specific user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PatchUserVCV2RequestBody"
-      responses:
-        204:
-          description: "Success"
-        400:
-          $ref: '#/components/responses/BadRequest'
-        404:
-          $ref: '#/components/responses/NotFound'
-        409:
-          $ref: '#/components/responses/Conflict'
-        500:
-          $ref: '#/components/responses/ServerError'
-      x-amazon-apigateway-request-validator: ALL
-      x-amazon-apigateway-integration:
-        type: "aws_proxy"
-        httpMethod: "POST"
-        uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${EvcsUpdateUserVCsV2Function.Arn}:live/invocations
-        passthroughBehavior: "WHEN_NO_TEMPLATES"
-        responses:
-          204:
-            statusCode: 204
-
-  /vcs/{userId}:
-    post:
-      description: Save multiple VCs for a specific user
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: urn:uuid:d1823066-2137-4380-b0ba-4b61947e08e6
-          description: A valid uuid as user Id.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
               $ref: "#/components/schemas/PostUserVCRequestBody"
       responses:
         202:
@@ -125,6 +47,8 @@ paths:
                     example: "bd8359d9-d559-47dd-9467-2a31e88a9e2d"
         400:
           $ref: '#/components/responses/BadRequest'
+        409:
+          $ref: '#/components/responses/Conflict'
         500:
           $ref: '#/components/responses/ServerError'
       x-amazon-apigateway-request-validator: ALL
@@ -141,15 +65,6 @@ paths:
               application/json: '{"result": "success"}'
     patch:
       description: Update multiple VCs' state and metadata for a specific user
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-            example: urn:uuid:d1823066-2137-4380-b0ba-4b61947e08e6
-          description: A valid uuid as user Id.
       requestBody:
         required: true
         content:
@@ -161,6 +76,10 @@ paths:
           description: "Success"
         400:
           $ref: '#/components/responses/BadRequest'
+        404:
+          $ref: '#/components/responses/NotFound'
+        409:
+          $ref: '#/components/responses/Conflict'
         500:
           $ref: '#/components/responses/ServerError'
       x-amazon-apigateway-request-validator: ALL
@@ -173,8 +92,8 @@ paths:
         responses:
           204:
             statusCode: 204
-            responseTemplates:
-              application/json: '{"result": "success"}'
+
+  /vcs/{userId}:
     get:
       description: "Returns a list of User Verifiable Credentials"
       parameters:
@@ -545,25 +464,6 @@ components:
           type: string
     PostUserVCRequestBody:
       description: Request body for EVCS post user VCs request
-      type: array
-      minItems: 1
-      items:
-        type: "object"
-        additionalProperties: false
-        properties:
-          vc:
-            $ref: "#/components/schemas/VC"
-          state:
-            $ref: "#/components/schemas/CreateStates"
-          metadata:
-            $ref: "#/components/schemas/VCMetadata"
-          provenance:
-            $ref: "#/components/schemas/VCProvenance"
-        required:
-          - vc
-          - state
-    PostUserVCV2RequestBody:
-      description: Request body for EVCS post user VCs request
       type: object
       properties:
         userId:
@@ -593,25 +493,6 @@ components:
         - govuk_signin_journey_id
         - vcs
     PatchUserVCRequestBody:
-      description: State and Metadata Array Schema to update Verifiable Credentials
-      type: array
-      minItems: 1
-      maxItems: 100
-      uniqueItems: true
-      items:
-        type: "object"
-        additionalProperties: false
-        properties:
-          signature:
-            $ref: "#/components/schemas/VCSignature"
-          state:
-            $ref: "#/components/schemas/UpdateStates"
-          metadata:
-            $ref: "#/components/schemas/VCMetadata"
-        required:
-          - signature
-          - state
-    PatchUserVCV2RequestBody:
       description: State and Metadata Array Schema to update Verifiable Credentials
       type: object
       properties:

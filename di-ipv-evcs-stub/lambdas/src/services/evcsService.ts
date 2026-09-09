@@ -26,56 +26,20 @@ import EvcsVcItem from "../model/evcsVcItem";
 
 import { config } from "../common/config";
 import { v4 as uuid } from "uuid";
-import {
-  EvcsItemForUpdate,
-  PatchRequest,
-  PostIdentityRequest,
-  PostRequest,
-} from "../domain/requests";
+import { PostIdentityRequest } from "../domain/requests";
 import { VcDetails } from "../domain/vcDetails";
 import { StoredIdentityResponse } from "../domain/sharedTypes";
 import EvcsStoredIdentityItem from "../model/storedIdentityItem";
 import { StoredIdentityRecordType } from "../domain/enums/StoredIdentityRecordType";
 import { dynamoClient } from "../clients/dynamodbClient";
-import { PostVcsRequest } from "../domain/requests/postVcsRequest";
+import {
+  EvcsItemForUpdate,
+  PostVcsRequest,
+} from "../domain/requests/postVcsRequest";
 import { PatchVcsRequest } from "../domain/requests/patchVcsRequest";
 import { getErrorMessage, getSignatureFromJwt } from "../common/utils";
 
 export async function processPostUserVCsRequest(
-  userId: string,
-  postRequest: PostRequest[],
-): Promise<ServiceResponse> {
-  try {
-    console.info(`Post user record.`);
-    const allPromises: Promise<PutItemCommandOutput>[] = [];
-    const ttl = await getTtl();
-    for (const postRequestItem of postRequest) {
-      const vcItem: EvcsVcItem = {
-        userId,
-        vc: postRequestItem.vc,
-        vcSignature: getSignatureFromJwt(postRequestItem.vc),
-        state: postRequestItem.state,
-        metadata:
-          postRequestItem.metadata != undefined ? postRequestItem.metadata : {},
-        provenance:
-          postRequestItem.provenance != undefined
-            ? postRequestItem.provenance
-            : VCProvenance.ONLINE,
-        ttl,
-      };
-      allPromises.push(saveUserEvcsItem(vcItem));
-    }
-
-    console.info(`Saving all user VC's.`);
-    await Promise.all(allPromises);
-    return createServiceResponseWithMessageId(StatusCodes.Accepted, uuid());
-  } catch (error) {
-    console.error(error);
-    return createServiceResponse(StatusCodes.InternalServerError);
-  }
-}
-
-export async function processPostUserVCsRequestV2(
   postRequest: PostVcsRequest,
 ): Promise<ServiceResponse> {
   try {
@@ -129,7 +93,7 @@ export async function processPostUserVCsRequestV2(
   }
 }
 
-export async function processPatchUserVCsRequestV2(
+export async function processPatchUserVCsRequest(
   patchRequest: PatchVcsRequest,
 ): Promise<ServiceResponse> {
   try {
@@ -492,37 +456,6 @@ export async function processGetUserVCsRequest(
     },
     statusCode: StatusCodes.Success,
   };
-}
-
-export async function processPatchUserVCsRequest(
-  userId: string,
-  patchRequest: PatchRequest[],
-): Promise<ServiceResponse> {
-  try {
-    console.info(`Patch user record.`);
-    const allPromises: Promise<UpdateItemCommandOutput>[] = [];
-    const ttl = await getTtl();
-    for (const patchRequestItem of patchRequest) {
-      const vcItem: EvcsItemForUpdate = {
-        userId,
-        vcSignature: patchRequestItem.signature,
-        state: patchRequestItem.state,
-        metadata: patchRequestItem.metadata,
-        ttl,
-      };
-      allPromises.push(updateUserVC(vcItem));
-    }
-
-    console.info(`Updating user VC's.`);
-    await Promise.all(allPromises);
-    return createServiceResponse(StatusCodes.NoContent);
-  } catch (error) {
-    console.error(error);
-    return createServiceResponseWithMessage(
-      StatusCodes.InternalServerError,
-      "Unable to update VCs",
-    );
-  }
 }
 
 export function createPutItem(evcsItem: EvcsVcItem | EvcsStoredIdentityItem) {

@@ -2,7 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResultV2 } from "aws-lambda";
 import { buildApiResponse } from "../common/apiResponses";
 import { getErrorMessage } from "../common/utils";
 import { StatusCodes } from "../domain/enums";
-import { processPatchUserVCsRequestV2 } from "../services/evcsService";
+import { processPatchUserVCsRequest } from "../services/evcsService";
 import {
   isPatchVcsRequest,
   PatchVcsRequest,
@@ -11,7 +11,7 @@ import {
 export async function updateHandler(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResultV2> {
-  console.info(`---Update V2 request received----`);
+  console.info(`---Update request received----`);
 
   let request;
   try {
@@ -23,7 +23,7 @@ export async function updateHandler(
     });
   }
 
-  const res = await processPatchUserVCsRequestV2(request);
+  const res = await processPatchUserVCsRequest(request);
   return buildApiResponse(res.statusCode, res.response);
 }
 
