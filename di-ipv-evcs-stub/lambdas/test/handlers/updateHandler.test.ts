@@ -3,13 +3,13 @@ import {
   APIGatewayProxyStructuredResultV2,
 } from "aws-lambda";
 import { updateHandler } from "../../src/handlers/updateHandler";
-import { processPatchUserVCsRequest } from "../../src/services/evcsService";
+import { processPatchUserVCsRequestV2 } from "../../src/services/evcsService";
 import { VcState } from "../../src/domain/enums";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { PatchVcsRequest } from "../../src/domain/requests/patchVcsRequest";
 
 vi.mock("../../src/services/evcsService", () => ({
-  processPatchUserVCsRequest: vi.fn(),
+  processPatchUserVCsRequestV2: vi.fn(),
 }));
 
 const TEST_PATCH_REQUEST: PatchVcsRequest = {
@@ -32,7 +32,7 @@ beforeEach(() => {
 describe("update handler V2", () => {
   it("should return 204 for a valid request", async () => {
     // arrange
-    vi.mocked(processPatchUserVCsRequest).mockResolvedValueOnce({
+    vi.mocked(processPatchUserVCsRequestV2).mockResolvedValueOnce({
       statusCode: 204,
       response: {},
     });
@@ -47,7 +47,9 @@ describe("update handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(204);
-    expect(processPatchUserVCsRequest).toHaveBeenCalledWith(TEST_PATCH_REQUEST);
+    expect(processPatchUserVCsRequestV2).toHaveBeenCalledWith(
+      TEST_PATCH_REQUEST,
+    );
   });
 
   it("should return 400 for a request with no body", async () => {
@@ -63,7 +65,7 @@ describe("update handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(400);
-    expect(processPatchUserVCsRequest).not.toHaveBeenCalled();
+    expect(processPatchUserVCsRequestV2).not.toHaveBeenCalled();
   });
 
   it("should return 400 for an invalid request object", async () => {
@@ -80,7 +82,7 @@ describe("update handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(400);
-    expect(processPatchUserVCsRequest).not.toHaveBeenCalled();
+    expect(processPatchUserVCsRequestV2).not.toHaveBeenCalled();
   });
 
   it("should return 400 for a request with no user id", async () => {
@@ -98,7 +100,7 @@ describe("update handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(400);
-    expect(processPatchUserVCsRequest).not.toHaveBeenCalled();
+    expect(processPatchUserVCsRequestV2).not.toHaveBeenCalled();
   });
 
   it("should return 400 for a request with no VCs", async () => {
@@ -116,7 +118,7 @@ describe("update handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(400);
-    expect(processPatchUserVCsRequest).not.toHaveBeenCalled();
+    expect(processPatchUserVCsRequestV2).not.toHaveBeenCalled();
   });
 
   it("should return 400 for a request with duplicate VCs in different states", async () => {
@@ -137,6 +139,6 @@ describe("update handler V2", () => {
 
     // assert
     expect(response.statusCode).toBe(400);
-    expect(processPatchUserVCsRequest).not.toHaveBeenCalled();
+    expect(processPatchUserVCsRequestV2).not.toHaveBeenCalled();
   });
 });
