@@ -52,6 +52,7 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -64,6 +65,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
@@ -72,6 +74,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Flow;
+import java.util.concurrent.TimeUnit;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -91,6 +96,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.CLIENT_CONFIG;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.DCMAW_VC;
+import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.KENNY_VC;
 import static uk.gov.di.ipv.stub.cred.fixtures.TestFixtures.RSA_PRIVATE_KEY_JWK;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.CRI_MITIGATION_ENABLED_PARAM;
 import static uk.gov.di.ipv.stub.cred.handlers.AuthorizeHandler.SHARED_CLAIMS;
@@ -651,7 +657,11 @@ class AuthorizeHandlerTest {
                                     null,
                                     null,
                                     new F2fDetails(
-                                            true, false, "stubQueue_criResponseQueue_build", 0),
+                                            true,
+                                            false,
+                                            "stubQueue_criResponseQueue_build",
+                                            0,
+                                            null),
                                     null));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
@@ -669,6 +679,72 @@ class AuthorizeHandlerTest {
         }
 
         @Test
+        void apiAuthorizeShouldAllowDifferentSubjectToBeUsedInVcSentToCriResponseQueue()
+                throws Exception {
+            // Arrange
+            when(mockContext.bodyAsClass(ApiAuthRequest.class))
+                    .thenReturn(
+                            new ApiAuthRequest(
+                                    "clientIdValid",
+                                    signedRequestJwt(defaultClaimSetBuilder().build()).serialize(),
+                                    "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenneth\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}",
+                                    "{\"activityHistoryScore\":1,\"checkDetails\":[{\"checkMethod\":\"vri\"},{\"biometricVerificationProcessLevel\":3,\"checkMethod\":\"bvr\"}],\"validityScore\":2,\"strengthScore\":3,\"type\":\"IdentityCheck\"}\"",
+                                    null,
+                                    null,
+                                    new F2fDetails(
+                                            true,
+                                            false,
+                                            "stubQueue_criResponseQueue_build",
+                                            0,
+                                            "{\"passport\":[{\"expiryDate\":\"2030-01-01\",\"icaoIssuerCode\":\"GBR\",\"documentNumber\":\"321654987\"}],\"name\":[{\"nameParts\":[{\"type\":\"GivenName\",\"value\":\"Kenny\"},{\"type\":\"FamilyName\",\"value\":\"Decerqueira\"}]}],\"birthDate\":[{\"value\":\"1965-07-08\"}]}"),
+                                    null));
+
+            var mockKennySignedJwt = mock(SignedJWT.class);
+            when(mockKennySignedJwt.serialize()).thenReturn(KENNY_VC);
+            when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
+
+            when(mockVcGenerator.generate(any()))
+                    .thenAnswer(
+                            invocation -> {
+                                Credential credential = invocation.getArgument(0);
+                                if (credential.credentialSubject().toString().contains("Kenny")) {
+                                    return mockKennySignedJwt;
+                                }
+                                return mockSignedJwt;
+                            });
+
+            var httpResponse = mock(HttpResponse.class);
+            when(httpResponse.statusCode()).thenReturn(200);
+            when(mockHttpClient.send(any(HttpRequest.class), any(HttpResponse.BodyHandler.class)))
+                    .thenReturn(httpResponse);
+
+            // Act
+            authorizeHandler.apiAuthorize(mockContext);
+
+            // Assert
+            verify(mockHttpClient).send(httpRequestArgumentCaptor.capture(), any());
+            var requestBody = getRequestBody(httpRequestArgumentCaptor.getValue());
+
+            var bodyJson = new ObjectMapper().readTree(requestBody);
+            var vcJwt =
+                    bodyJson.path("queueEvent")
+                            .path("https://vocab.account.gov.uk/v1/credentialJWT")
+                            .get(0)
+                            .asText();
+            var claimsSet = SignedJWT.parse(vcJwt).getJWTClaimsSet();
+            var vc = new ObjectMapper().valueToTree(claimsSet.getJSONObjectClaim("vc"));
+            var givenName =
+                    vc.path("credentialSubject")
+                            .path("name")
+                            .get(0)
+                            .path("nameParts")
+                            .get(0)
+                            .path("value")
+                            .asText();
+            assertEquals("Kenny", givenName);
+        }
+
+        @Test
         void apiAuthorizeShouldAllowErrorToBeSentToCriResponseQueue() throws Exception {
             when(mockContext.bodyAsClass(ApiAuthRequest.class))
                     .thenReturn(
@@ -680,7 +756,11 @@ class AuthorizeHandlerTest {
                                     null,
                                     null,
                                     new F2fDetails(
-                                            false, true, "stubQueue_criResponseQueue_build", 0),
+                                            false,
+                                            true,
+                                            "stubQueue_criResponseQueue_build",
+                                            0,
+                                            null),
                                     null));
             when(mockVcGenerator.generate(any())).thenReturn(mockSignedJwt);
             when(mockSignedJwt.serialize()).thenReturn(DCMAW_VC);
@@ -1012,5 +1092,49 @@ class AuthorizeHandlerTest {
         signedJWT.sign(ecdsaSigner);
 
         return signedJWT;
+    }
+
+    private String getRequestBody(HttpRequest request) throws Exception {
+        HttpRequest.BodyPublisher publisher = request.bodyPublisher().orElseThrow();
+        var subscriber = new StringSubscriber();
+        publisher.subscribe(subscriber);
+        return subscriber.getBody().get(5, TimeUnit.SECONDS);
+    }
+
+    private static class StringSubscriber implements Flow.Subscriber<ByteBuffer> {
+        private final CompletableFuture<String> body = new CompletableFuture<>();
+        private final List<ByteBuffer> buffers = new ArrayList<>();
+
+        @Override
+        public void onSubscribe(Flow.Subscription subscription) {
+            subscription.request(Long.MAX_VALUE);
+        }
+
+        @Override
+        public void onNext(ByteBuffer item) {
+            buffers.add(item);
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+            body.completeExceptionally(throwable);
+        }
+
+        @Override
+        public void onComplete() {
+            int size = buffers.stream().mapToInt(ByteBuffer::remaining).sum();
+            byte[] result = new byte[size];
+            int offset = 0;
+            for (ByteBuffer buf : buffers) {
+                int len = buf.remaining();
+                buf.get(result, offset, len);
+                offset += len;
+            }
+            body.complete(new String(result, StandardCharsets.UTF_8));
+        }
+
+        public CompletableFuture<String> getBody() {
+            return body;
+        }
     }
 }

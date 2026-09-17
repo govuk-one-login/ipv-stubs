@@ -31,6 +31,7 @@ public class RequestParamConstants {
     public static final String F2F_STUB_QUEUE_NAME = "f2f_stub_queue_name";
     public static final String F2F_SEND_VC_QUEUE = "f2f_send_vc_queue";
     public static final String F2F_SEND_ERROR_QUEUE = "f2f_send_error_queue";
+    public static final String F2F_QUEUE_SUBJECT_JSON = "f2f_queue_subject_json";
 
     public static final String VC_NOT_BEFORE_FLAG = "vcNotBeforeFlg";
     public static final String VC_NOT_BEFORE_DAY = "vcNotBeforeDay";
