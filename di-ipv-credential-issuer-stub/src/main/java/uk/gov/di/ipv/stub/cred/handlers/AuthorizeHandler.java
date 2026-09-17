@@ -222,7 +222,8 @@ public class AuthorizeHandler {
         frontendParams.put(IS_ACTIVITY_TYPE_PARAM, criType.equals(CriType.ACTIVITY_CRI_TYPE));
         frontendParams.put(IS_FRAUD_TYPE_PARAM, criType.equals(CriType.FRAUD_CRI_TYPE));
         frontendParams.put(
-                IS_VERIFICATION_TYPE_PARAM, criType.equals(CriType.VERIFICATION_CRI_TYPE)
+                IS_VERIFICATION_TYPE_PARAM,
+                criType.equals(CriType.VERIFICATION_CRI_TYPE)
                         || criType.equals(CriType.OPEN_BANKING_CRI_TYPE));
         frontendParams.put(IS_DOC_CHECKING_TYPE_PARAM, criType.equals(DOC_CHECK_APP_CRI_TYPE));
         frontendParams.put(IS_F2F_TYPE, criType.equals(CriType.F2F_CRI_TYPE));
@@ -280,41 +281,31 @@ public class AuthorizeHandler {
             return requestedAuthErrorResponse.toURI().toString();
         }
 
-        String clientIdValue = authRequest.clientId();
         String redirectUri = claimsSet.getClaim(RequestParamConstants.REDIRECT_URI).toString();
         String userId = claimsSet.getSubject();
         String state = claimsSet.getClaim(RequestParamConstants.STATE).toString();
 
         try {
-            AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
-
-            var credentialsSubject = authRequest.credentialSubjectJson();
-
-            var credentialAttributesMap = jsonStringToMap(credentialsSubject);
-
-            Long nbf =
-                    authRequest.nbf() != null ? authRequest.nbf() : Instant.now().getEpochSecond();
-
-            String signedVcJwt =
-                    verifiableCredentialGenerator
-                            .generate(
-                                    new Credential(
-                                            credentialAttributesMap,
-                                            generateEvidenceMap(authRequest),
-                                            userId,
-                                            clientIdValue,
-                                            nbf))
-                            .serialize();
-
-            if (CredentialIssuerConfig.isEnabled(
-                    CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
-                processMitigatedCIs(userId, authRequest, signedVcJwt);
+            // For F2F the final VC may contain different data to the initial information given to
+            // the CRI
+            String immediateVcJwt = generateSignedVcJwt(authRequest, userId);
+            String finalVcJwt = immediateVcJwt;
+            if (authRequest.f2f() != null) {
+                finalVcJwt = handleF2fRequests(authRequest, userId, state, immediateVcJwt);
             }
 
-            handleF2fRequests(authRequest.f2f(), userId, state, signedVcJwt);
+            AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
+            if (CredentialIssuerConfig.isEnabled(
+                    CredentialIssuerConfig.CRI_MITIGATION_ENABLED, "false")) {
+                processMitigatedCIs(userId, authRequest, finalVcJwt);
+            }
 
+            // Persist the immediate JWT as that will be returned to core straight away
             persistData(
-                    authRequest, successResponse.getAuthorizationCode(), signedVcJwt, redirectUri);
+                    authRequest,
+                    successResponse.getAuthorizationCode(),
+                    immediateVcJwt,
+                    redirectUri);
 
             return successResponse.toURI().toString();
         } catch (CriStubException e) {
@@ -329,6 +320,46 @@ public class AuthorizeHandler {
                             redirectUri);
             return errorResponse.toURI().toString();
         }
+    }
+
+    private String generateSignedVcJwt(AuthRequest authRequest, String userId)
+            throws CriStubException,
+                    NoSuchAlgorithmException,
+                    InvalidKeySpecException,
+                    JOSEException {
+        var credentialAttributesMap = generateSubjectMap(authRequest);
+        return generateVc(authRequest, userId, credentialAttributesMap);
+    }
+
+    private String generateF2fQueueVc(AuthRequest authRequest, String userId)
+            throws CriStubException,
+                    NoSuchAlgorithmException,
+                    InvalidKeySpecException,
+                    JOSEException {
+        var credentialAttributesMap = generateF2fSubjectMap(authRequest);
+        return generateVc(authRequest, userId, credentialAttributesMap);
+    }
+
+    private String generateVc(
+            AuthRequest authRequest, String userId, Map<String, Object> credentialAttributesMap)
+            throws CriStubException,
+                    NoSuchAlgorithmException,
+                    InvalidKeySpecException,
+                    JOSEException {
+        String clientIdValue = authRequest.clientId();
+        var evidenceAttributesMap = generateEvidenceMap(authRequest);
+
+        Long nbf = authRequest.nbf() != null ? authRequest.nbf() : Instant.now().getEpochSecond();
+
+        return verifiableCredentialGenerator
+                .generate(
+                        new Credential(
+                                credentialAttributesMap,
+                                evidenceAttributesMap,
+                                userId,
+                                clientIdValue,
+                                nbf))
+                .serialize();
     }
 
     private JWTClaimsSet getClaimsSet(AuthRequest authRequest)
@@ -349,12 +380,27 @@ public class AuthorizeHandler {
         return signedJWT.getJWTClaimsSet();
     }
 
+    private Map<String, Object> generateSubjectMap(AuthRequest authRequest)
+            throws CriStubException {
+        var credentialsSubject = authRequest.credentialSubjectJson();
+        return jsonStringToMap(credentialsSubject);
+    }
+
+    private Map<String, Object> generateF2fSubjectMap(AuthRequest authRequest)
+            throws CriStubException {
+        var credentialsSubject = authRequest.f2f().queueSubjectJson();
+        return jsonStringToMap(credentialsSubject);
+    }
+
     private Map<String, Object> generateEvidenceMap(AuthRequest authRequest)
             throws CriStubException {
         Map<String, Object> evidenceMap = jsonStringToMap(authRequest.evidenceJson());
 
+        // If this request is from the CRI stub page (not the API)
         if (authRequest instanceof FormAuthRequest formAuthRequest) {
+            // If the evidence JSON in the request is blank
             if (MapUtils.isEmpty(evidenceMap)) {
+                // Generate evidence data just from the GPG45 values on the stub page
                 evidenceMap.putAll(generateGpg45Score(getCriType(), formAuthRequest.gpg45Scores()));
             }
 
@@ -473,6 +519,7 @@ public class AuthorizeHandler {
         }
     }
 
+    // Generate a default evidence block for the relevant CRI based on the requested GPG45 socres
     private Map<String, Object> generateGpg45Score(CriType criType, Gpg45Scores gpg45Scores)
             throws CriStubException {
 
@@ -877,18 +924,32 @@ public class AuthorizeHandler {
         return requestedErrorResponseService.getRequestedAuthErrorResponse(authRequest);
     }
 
-    private void handleF2fRequests(
-            F2fDetails f2fDetails, String userId, String state, String signedVcJwt)
-            throws IOException, InterruptedException {
+    private String handleF2fRequests(
+            AuthRequest authRequest, String userId, String state, String signedVcJwt)
+            throws IOException,
+                    InterruptedException,
+                    NoSuchAlgorithmException,
+                    InvalidKeySpecException,
+                    JOSEException,
+                    CriStubException {
+        var f2fDetails = authRequest.f2f();
+
         if (f2fDetails == null) {
-            return;
+            return signedVcJwt;
         }
-        if (f2fDetails.sendVcToQueue() && !f2fDetails.sendErrorToQueue() && signedVcJwt != null) {
+
+        var f2fJwt = signedVcJwt;
+
+        if (f2fDetails.queueSubjectJson() != null && !f2fDetails.queueSubjectJson().isBlank()) {
+            f2fJwt = generateF2fQueueVc(authRequest, userId);
+        }
+
+        if (f2fDetails.sendVcToQueue() && !f2fDetails.sendErrorToQueue() && f2fJwt != null) {
             LOGGER.info("Sending VC to queue");
             F2FEnqueueLambdaRequest enqueueLambdaRequest =
                     new F2FEnqueueLambdaRequest(
                             f2fDetails.queueName(),
-                            new CriResponseQueueEvent(userId, state, List.of(signedVcJwt)),
+                            new CriResponseQueueEvent(userId, state, List.of(f2fJwt)),
                             requireNonNullElse(
                                     f2fDetails.delaySeconds(), F2F_DEFAULT_DELAY_SECONDS));
 
@@ -938,5 +999,7 @@ public class AuthorizeHandler {
                                 responseStatusCode));
             }
         }
+
+        return f2fJwt;
     }
 }
