@@ -764,7 +764,7 @@
       "label": "Failed Open Banking check with CI - OB03",
       "payload": {
         "type": "IdentityCheck",
-        "strengthScore": 0,
+        "strengthScore": 3,
         "validityScore": 0,
         "verificationScore": 0,
         "checkDetails": [
