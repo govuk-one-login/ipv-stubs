@@ -690,7 +690,7 @@
         "checkDetails": [
           {
             "checkMethod": "data",
-            "identityCheckPolicy": "none"
+            "identityCheckPolicy": "published"
           },
           {
             "checkMethod": "auth"
@@ -700,19 +700,103 @@
     },
     {
       "criType": "Open Banking (Stub)",
-      "label": "Failed Open Banking with CI - failed login",
+      "label": "Failed Open Banking check",
       "payload": {
         "type": "IdentityCheck",
         "strengthScore": 0,
         "validityScore": 0,
         "verificationScore": 0,
-        "ci": ["V04"],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ]
+      }
+    },
+    {
+      "criType": "Open Banking (Stub)",
+      "label": "Failed Open Banking check (No Photo ID only) with CI - OB01",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 3,
+        "validityScore": 0,
+        "verificationScore": 0,
         "checkDetails": [
+          {
+            "checkMethod": "auth"
+          }
         ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ],
+        "ci": [
+          "OB01"
+        ]
+      }
+    },
+    {
+      "criType": "Open Banking (Stub)",
+      "label": "Failed Open Banking check with CI - OB02",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 3,
+        "validityScore": 0,
+        "verificationScore": 0,
+        "checkDetails": [
+          {
+            "checkMethod": "auth"
+          }
+        ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ],
+        "ci": [
+          "OB02"
+        ]
+      }
+    },
+    {
+      "criType": "Open Banking (Stub)",
+      "label": "Failed Open Banking check with CI - OB03",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 3,
+        "validityScore": 0,
+        "verificationScore": 0,
+        "checkDetails": [
+          {
+            "checkMethod": "auth"
+          }
+        ],
+        "failedCheckDetails": [
+          {
+            "checkMethod": "data"
+          }
+        ],
+        "ci": [
+          "OB03"
+        ]
+      }
+    },
+    {
+      "criType": "Open Banking (Stub)",
+      "label": "Failed Open Banking check with CI - failed to login - OB04",
+      "payload": {
+        "type": "IdentityCheck",
+        "strengthScore": 0,
+        "validityScore": 0,
+        "verificationScore": 0,
         "failedCheckDetails": [
           {
             "checkMethod": "auth"
           }
+        ],
+        "ci": [
+          "OB04"
         ]
       }
     }
