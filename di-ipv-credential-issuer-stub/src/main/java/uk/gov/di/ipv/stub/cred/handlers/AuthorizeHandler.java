@@ -290,10 +290,12 @@ public class AuthorizeHandler {
             // For F2F the final VC may contain different data to the initial information given to
             // the CRI
             String immediateVcJwt = generateSignedVcJwt(authRequest, userId);
+            LOGGER.info("JWT generated for immediate response to core = {}", immediateVcJwt);
             String finalVcJwt = immediateVcJwt;
             if (authRequest.f2f() != null) {
                 finalVcJwt = handleF2fRequests(authRequest, userId, state, immediateVcJwt);
             }
+            LOGGER.info("JWT generated for queue response to core = {}", finalVcJwt);
 
             AuthorizationSuccessResponse successResponse = generateAuthCode(state, redirectUri);
             if (CredentialIssuerConfig.isEnabled(
@@ -970,13 +972,13 @@ public class AuthorizeHandler {
                 LOGGER.error("Error logging about queue", e);
             }
 
-            var responseStatusCode =
-                    httpClient.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
-            if (responseStatusCode < 200 || responseStatusCode > 299) {
+            var response =
+                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() > 299) {
                 LOGGER.warn(
                         String.format(
-                                "failed to send VC to F2F queue - status code: %d",
-                                responseStatusCode));
+                                "failed to send VC to F2F queue - status code: %d, response body: %s",
+                                response.statusCode(), response.body()));
             }
         }
 
@@ -998,13 +1000,13 @@ public class AuthorizeHandler {
                                             OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest)))
                             .build();
 
-            var responseStatusCode =
-                    httpClient.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
-            if (responseStatusCode < 200 || responseStatusCode > 299) {
+            var response =
+                    httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() < 200 || response.statusCode() > 299) {
                 LOGGER.warn(
                         String.format(
-                                "failed to send error to F2F queue - status code: %d",
-                                responseStatusCode));
+                                "failed to send error to F2F queue - status code: %d, response body: %s",
+                                response.statusCode(), response.body()));
             }
         }
 
