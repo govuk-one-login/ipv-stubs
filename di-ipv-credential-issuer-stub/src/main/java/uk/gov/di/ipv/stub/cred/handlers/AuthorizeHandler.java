@@ -62,6 +62,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.InvalidKeySpecException;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -961,6 +962,13 @@ public class AuthorizeHandler {
                                     HttpRequest.BodyPublishers.ofString(
                                             OBJECT_MAPPER.writeValueAsString(enqueueLambdaRequest)))
                             .build();
+
+            try {
+                LOGGER.info(MessageFormat.format("Sent VC to queue {0} at URL {1}", f2fDetails.queueName(), getConfigValue(F2F_STUB_QUEUE_URL)));
+            }
+            catch (Exception e) {
+                LOGGER.error("Error logging about queue", e);
+            }
 
             var responseStatusCode =
                     httpClient.send(request, HttpResponse.BodyHandlers.discarding()).statusCode();
