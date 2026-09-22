@@ -160,8 +160,11 @@ needs to be updated to point at these dev-deployed stubs instead of those in pro
 The [dev-deploy](https://github.com/govuk-one-login/ipv-core-common-infra/tree/main/utils/dev-deploy) tool can be used to
 update the credential issuer configs automatically using the `--use-dev` or `-ud` option:
 ```
-dev-deploy update -u <user> -s <service> -ud <dev-stub>
+dev-deploy update -u <user> -ud <dev-stub>
 ```
+
+Note that the `<dev-stub>` value is the name of the stub, not it's directory so `f2f` not `f2f-stub`
+
 This automatically updates the API invoke URLs for the specified CRI stub to use the custom dev domains as well as
 api keys, if required (for more info on this option see [here](https://github.com/govuk-one-login/ipv-core-common-infra/blob/main/utils/dev-deploy/docs/cli-userguide.md#update)).
 Other parts of the ipv core config can still be overridden by updating the user dev-deploy config (see below).
