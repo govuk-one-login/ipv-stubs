@@ -24,7 +24,7 @@ jobs:
           script: |
             result=${{ (steps.scanner.outputs.results) }}
             const score = result.sustainability_score
-            const number_failed_rules = result.failed_rules.length
+            const number_failed_rules = result.failed_rules ? result.failed_rules.length : 0
 
             if (score !== 0) {
               body = `❌ Your current sustainability score is **${score}**. Sustainability scanner suggests **${number_failed_rules}** improvements to apply to your template.\nCheck out the details of the sustainability scanner here: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`
