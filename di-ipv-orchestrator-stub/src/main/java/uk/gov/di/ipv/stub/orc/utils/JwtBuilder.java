@@ -142,11 +142,16 @@ public class JwtBuilder {
 
     private static RSAKey getEncryptionKey(String targetEnvironment) throws ParseException {
         return switch (targetEnvironment) {
-            case ("DEV"), ("DEV_AMRITS"), ("DEV_PATRICKB") ->
+            case ("DEV"),
+                 ("DEV_AMRITS"),
+                 ("DEV_PATRICKB"),
+                 ("DEV_PETARS") ->
                     RSAKey.parse(ORCHESTRATOR_DEV01_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("PERF"),
-                    ("DEV_DANC"),
-                    ("DEV_DOMINIKT") ->
+                 ("DEV_BETHANYH"),
+                 ("DEV_DANC"),
+                 ("DEV_DOMINIKT"),
+                 ("DEV_SEAMUSM") ->
                     RSAKey.parse(ORCHESTRATOR_DEV02_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("BUILD") -> RSAKey.parse(ORCHESTRATOR_BUILD_JAR_ENCRYPTION_PUBLIC_JWK);
             case ("STAGING") -> RSAKey.parse(ORCHESTRATOR_STAGING_JAR_ENCRYPTION_PUBLIC_JWK);
@@ -162,11 +167,14 @@ public class JwtBuilder {
             case ("DEV") -> "https://dev.01.dev.identity.account.gov.uk";
             case ("DEV_AMRITS") -> "https://dev-amrits.01.dev.identity.account.gov.uk";
             case ("DEV_PATRICKB") -> "https://dev-patrickb.01.dev.identity.account.gov.uk";
+            case ("DEV_PETARS") -> "https://dev-petars.01.dev.identity.account.gov.uk";
 
             // dev02
             case ("PERF") -> "https://dev-perf.02.dev.identity.account.gov.uk";
+            case ("DEV_BETHANYH") -> "https://dev-bethanyh.02.dev.identity.account.gov.uk";
             case ("DEV_DANC") -> "https://dev-danc.02.dev.identity.account.gov.uk";
             case ("DEV_DOMINIKT") -> "https://dev-dominikt.02.dev.identity.account.gov.uk";
+            case ("DEV_SEAMUSM") -> "https://dev-seamusm.02.dev.identity.account.gov.uk";
 
             // higher
             case ("BUILD") -> "https://identity.build.account.gov.uk";
