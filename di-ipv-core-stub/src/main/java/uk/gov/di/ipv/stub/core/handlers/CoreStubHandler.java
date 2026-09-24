@@ -254,6 +254,9 @@ public class CoreStubHandler {
                 var scoringPolicy = request.queryParams("evidence_request");
                 var verificationScore = request.queryParams("verification_score");
                 var identityFraudScore = request.queryParams("identity_fraud_score");
+                var rowNumber =
+                        Integer.valueOf(Objects.requireNonNull(request.queryParams("rowNumber")));
+                var identity = handlerHelper.findIdentityByRowNumber(rowNumber);
 
                 if (credentialIssuer.sendIdentityClaims()
                         && Objects.isNull(request.queryParams("postcode"))) {
@@ -277,7 +280,7 @@ public class CoreStubHandler {
                     sendAuthorizationRequest(request, response, credentialIssuer, claimIdentity);
                     return null;
                 } else {
-                    sendAuthorizationRequest(request, response, credentialIssuer, null);
+                    sendAuthorizationRequest(request, response, credentialIssuer, new IdentityMapper().mapToSharedClaim(identity, CoreStubConfig.CORE_STUB_CONFIG_AGED_DOB));
                     return null;
                 }
             };
