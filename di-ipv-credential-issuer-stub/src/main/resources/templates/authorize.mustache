@@ -130,17 +130,26 @@
                                                 Send VC to async queue
                                             </label>
                                         </div>
+                                        <div class="govuk-checkboxes__item">
+                                            <input class="govuk-checkboxes__input" type="checkbox" name="f2f_send_error_queue" id="f2f_send_error_queue" value="checked">
+                                            <label class="govuk-label govuk-checkboxes__label" for="f2f_send_error_queue">
+                                                Send Error to async queue
+                                            </label>
+                                        </div>
                                         <div class="govuk-form-group">
                                             <label class="govuk-label" for="f2f_stub_queue_name">
                                                 Queue name:
                                             </label>
                                             <input type="text" class="govuk-textarea" id="f2f_stub_queue_name" name="f2f_stub_queue_name" value="{{f2f_stub_queue_name}}">
                                         </div>
-                                        <div class="govuk-checkboxes__item">
-                                            <input class="govuk-checkboxes__input" type="checkbox" name="f2f_send_error_queue" id="f2f_send_error_queue" value="checked">
-                                            <label class="govuk-label govuk-checkboxes__label" for="f2f_send_error_queue">
-                                                Send Error to async queue
+                                        <div class="govuk-form-group">
+                                            <label class="govuk-label" for="f2f_queue_subject_json">
+                                                Queue VC subject JSON (Optional - leave blank unless you know you need this):
                                             </label>
+                                            <div id="f2f_queue_subject_json_hint" class="govuk-hint">
+                                                Can be used to simulate the name on the document used at the post office not matching what the user entered previously. This field will be the details on the document at the Post Office. (Copy subject details from the CRI data field below and change as required)
+                                            </div>
+                                            <textarea class="govuk-textarea" id="f2f_queue_subject_json" name="f2f_queue_subject_json" rows="5" aria-describedby="f2f_queue_subject_json_hint"></textarea>
                                         </div>
                                     </div>
                                 </td>
