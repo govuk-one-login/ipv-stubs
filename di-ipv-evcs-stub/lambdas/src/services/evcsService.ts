@@ -97,7 +97,7 @@ export async function processPatchUserVCsRequest(
   patchRequest: PatchVcsRequest,
 ): Promise<ServiceResponse> {
   try {
-    console.info(`Patch user record.`);
+    console.info(`Patch user record (V2).`);
 
     // Check that the request VCs already exist
     const allVcStates: VcState[] = Object.values(VcState);
@@ -131,6 +131,10 @@ export async function processPatchUserVCsRequest(
     for (const requestSignature of requestVcSignatureToState.keys()) {
       const existingState = existingVcSignatureToState.get(requestSignature);
       if (!existingState) {
+        console.warn(
+          "At least one request VC doesn't exist in EVCS - signature: " +
+            requestSignature,
+        );
         return createServiceResponseWithMessage(
           StatusCodes.NotFound,
           "At least one request VC doesn't exist in EVCS",
@@ -145,7 +149,7 @@ export async function processPatchUserVCsRequest(
         requestVcSignatureToState,
       );
     } catch (error) {
-      console.error(getErrorMessage(error));
+      console.error("State transition(s) are invalid: " + getErrorMessage(error));
       return {
         response: { messageId: getErrorMessage(error) },
         statusCode: StatusCodes.Conflict,
@@ -169,7 +173,7 @@ export async function processPatchUserVCsRequest(
     await Promise.all(allPromises);
     return createServiceResponse(StatusCodes.NoContent);
   } catch (error) {
-    console.error(error);
+    console.error("Error patching user record V2: " + error);
     return createServiceResponseWithMessage(
       StatusCodes.InternalServerError,
       "Unable to update VCs",
@@ -311,7 +315,7 @@ function validateStateTransitions(
 
     if (hasRules && !isAllowed) {
       throw new Error(
-        `State VC transition from: ${existingState} to ${requestState} is not allowed`,
+        `State VC transition from: ${existingState} to ${requestState} for VC with signature ${requestSignature} is not allowed`,
       );
     }
   }
