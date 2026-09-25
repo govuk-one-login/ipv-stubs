@@ -77,6 +77,7 @@ public class IpvHandler {
     private static final String ENVIRONMENT_PARAM = "targetEnvironment";
     private static final String EMAIL_ADDRESS_PARAM = "emailAddress";
     private static final String MFA_RESET_PARAM = "mfaReset";
+    private static final String UPDATE_IDENTITY_PARAM = "updateIdentity";
     private static final String ERROR_TYPE_PARAM = "error";
     private static final String CHECKBOX_CHECKED_VALUE = "checked";
 
@@ -118,6 +119,7 @@ public class IpvHandler {
         var userEmailAddress = stripIfNotNull(ctx.queryParam(EMAIL_ADDRESS_PARAM));
         var userId = getUserIdValue(userIdTextValue);
         var isMfaReset = Objects.equals(ctx.queryParam(MFA_RESET_PARAM), CHECKBOX_CHECKED_VALUE);
+        var isUpdateIdentity = Objects.equals(ctx.queryParam(UPDATE_IDENTITY_PARAM), CHECKBOX_CHECKED_VALUE);
 
         JWTClaimsSet claims;
         Scope scope;
@@ -138,7 +140,8 @@ public class IpvHandler {
                             environment,
                             scope,
                             clientId,
-                            evcsAccessTokenGenerator.getAccessToken(environment, userId));
+                            evcsAccessTokenGenerator.getAccessToken(environment, userId),
+                            false);
         } else {
             scope = ORCHESTRATOR_STUB_SCOPE;
             clientId = ORCHESTRATOR_CLIENT_ID;
@@ -160,7 +163,8 @@ public class IpvHandler {
                             environment,
                             scope,
                             clientId,
-                            evcsAccessTokenGenerator.getAccessToken(environment, userId));
+                            evcsAccessTokenGenerator.getAccessToken(environment, userId),
+                            isUpdateIdentity);
         }
 
         SignedJWT signedJwt = JwtBuilder.createSignedJwt(claims, isMfaReset);
