@@ -149,7 +149,9 @@ export async function processPatchUserVCsRequest(
         requestVcSignatureToState,
       );
     } catch (error) {
-      console.error("State transition(s) are invalid: " + getErrorMessage(error));
+      console.error(
+        "State transition(s) are invalid: " + getErrorMessage(error),
+      );
       return {
         response: { messageId: getErrorMessage(error) },
         statusCode: StatusCodes.Conflict,

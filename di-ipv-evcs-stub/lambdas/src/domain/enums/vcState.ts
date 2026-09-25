@@ -28,7 +28,7 @@ export const UpdateVcStates = {
 export const stateTransitions: Record<VcState, VcState[]> = {
   ABANDONED: [VcState.PENDING, VcState.PENDING_RETURN, VcState.VERIFICATION],
   CURRENT: [VcState.PENDING_RETURN, VcState.PENDING],
-  HISTORIC: [VcState.CURRENT],
+  HISTORIC: [VcState.CURRENT, VcState.PENDING_RETURN],
   PENDING: [],
   PENDING_RETURN: [VcState.PENDING],
   VERIFICATION: [],
