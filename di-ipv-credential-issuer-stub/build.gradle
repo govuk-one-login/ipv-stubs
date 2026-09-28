@@ -45,7 +45,7 @@ dependencies {
 			"com.fasterxml.jackson.core:jackson-databind:2.22.2",
 			"com.fasterxml.jackson.core:jackson-annotations:2.22",
 			"com.google.code.gson:gson:2.14.0",
-			"org.slf4j:slf4j-simple:2.0.18",
+			"org.slf4j:slf4j-simple:2.0.19",
 			"software.amazon.awssdk:ssm:2.54.7",
 			"uk.gov.di.model:di-data-model-jackson:1.9.3"
 
