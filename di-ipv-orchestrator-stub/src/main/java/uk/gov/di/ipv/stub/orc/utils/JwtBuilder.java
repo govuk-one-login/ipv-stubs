@@ -71,7 +71,8 @@ public class JwtBuilder {
             String environment,
             Scope scope,
             String clientId,
-            String evcsAccessToken) {
+            String evcsAccessToken,
+            boolean updateIdentity) {
         String audience = getIpvCoreAudience(environment);
         String redirectUri = ORCHESTRATOR_REDIRECT_URL;
 
@@ -82,7 +83,7 @@ public class JwtBuilder {
             }
         }
 
-        var jarClaims = new JarClaims(evcsAccessToken);
+        var jarClaims = new JarClaims(evcsAccessToken, updateIdentity);
         var jarClaimsMap =
                 OBJECT_MAPPER.convertValue(jarClaims, new TypeReference<Map<String, Object>>() {});
 
