@@ -713,7 +713,7 @@
     },
     {
       "criType": "Open Banking (Stub)",
-      "label": "Failed Open Banking check (No Photo ID only) with CI - OB01",
+      "label": "Failed Open Banking check with CI - OB01",
       "payload": {
         "type": "IdentityCheck",
         "strengthScore": 3,
