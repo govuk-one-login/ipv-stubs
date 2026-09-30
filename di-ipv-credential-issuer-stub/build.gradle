@@ -49,8 +49,8 @@ dependencies {
 			"software.amazon.awssdk:ssm:2.55.6",
 			"uk.gov.di.model:di-data-model-jackson:1.9.3"
 
-	compileOnly 'org.projectlombok:lombok:1.18.46'
-	annotationProcessor 'org.projectlombok:lombok:1.18.46'
+	compileOnly 'org.projectlombok:lombok:1.18.48'
+	annotationProcessor 'org.projectlombok:lombok:1.18.48'
 
 	testImplementation 'org.junit.jupiter:junit-jupiter:6.1.3',
 			'org.mockito:mockito-core:5.24.0',
