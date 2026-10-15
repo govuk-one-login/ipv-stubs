@@ -31,10 +31,8 @@ vi.mock("../../../src/common/preMitigationService", () => ({
 
 import { handler } from "../../../src/external-api/stub-management/stubManagementHandler";
 import * as userService from "../../../src/external-api/stub-management/service/userService";
-import * as cimitStubItemService from "../../../src/common/cimitStubItemService";
 import * as pendingMitigationService from "../../../src/common/pendingMitigationService";
 import * as preMitigationService from "../../../src/common/preMitigationService";
-import { CimitStubItem } from "../../../src/common/contraIndicatorTypes";
 
 describe("stubManagementHandler", () => {
   beforeEach(() => {
@@ -241,9 +239,6 @@ describe("stubManagementHandler", () => {
   describe("Mitigation requests", () => {
     ["POST", "PUT"].forEach((method) => {
       it(`should add pending mitigation when valid mitigation request - ${method}`, async () => {
-        vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce([
-          {} as CimitStubItem,
-        ]);
         const userMitigationRequest = { mitigations: ["V01"], vcJti: "jti123" };
 
         const event = createEvent(
@@ -256,38 +251,9 @@ describe("stubManagementHandler", () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.body).toContain("success");
-        expect(cimitStubItemService.getCiForUserId).toHaveBeenCalledWith(
-          "123",
-          "456",
-        );
         expect(
           pendingMitigationService.persistPendingMitigation,
         ).toHaveBeenCalledWith(userMitigationRequest, "456", method);
-      });
-
-      it(`should return 404 if CI item not found for mitigation request - ${method}`, async () => {
-        vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce(
-          [],
-        );
-        const userMitigationRequest = { mitigations: ["V01"], vcJti: "jti123" };
-
-        const event = createEvent(
-          method,
-          "/user/123/mitigations/456",
-          { userId: "123", ci: "456" },
-          userMitigationRequest,
-        );
-        const response = await handler(event);
-
-        expect(response.statusCode).toBe(404);
-        expect(response.body).toContain("not found");
-        expect(cimitStubItemService.getCiForUserId).toHaveBeenCalledWith(
-          "123",
-          "456",
-        );
-        expect(
-          pendingMitigationService.persistPendingMitigation,
-        ).not.toHaveBeenCalled();
       });
 
       it(`should return bad request when invalid request body for mitigation - ${method}`, async () => {
@@ -304,9 +270,6 @@ describe("stubManagementHandler", () => {
       });
 
       it(`should handle default user ID format in mitigations pattern - ${method}`, async () => {
-        vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce([
-          {} as CimitStubItem,
-        ]);
         const urlEncodedUserId =
           "urn%3Auuid%3Ac08630f8-330e-43f8-a782-21432a197fc5";
         const userMitigationRequest = { mitigations: ["V01"], vcJti: "jti123" };
@@ -321,40 +284,9 @@ describe("stubManagementHandler", () => {
 
         expect(response.statusCode).toBe(200);
         expect(response.body).toContain("success");
-        expect(cimitStubItemService.getCiForUserId).toHaveBeenCalledWith(
-          "urn:uuid:c08630f8-330e-43f8-a782-21432a197fc5",
-          "456",
-        );
         expect(
           pendingMitigationService.persistPendingMitigation,
         ).toHaveBeenCalledWith(userMitigationRequest, "456", method);
-      });
-
-      it(`should return data not found for missing user CIs - ${method}`, async () => {
-        const userCisRequest = [
-          {
-            code: "code1",
-            issuanceDate: "2023-07-25T10:00:00Z",
-            mitigations: ["V01", "V03"],
-            issuer: "",
-            document: "",
-            txn: "",
-          },
-        ];
-        vi.mocked(cimitStubItemService.getCiForUserId).mockResolvedValueOnce(
-          [],
-        );
-
-        const event = createEvent(
-          method,
-          "/user/123/mitigations/456",
-          { userId: "123", ci: "456" },
-          userCisRequest,
-        );
-        const response = await handler(event);
-
-        expect(response.statusCode).toBe(404);
-        expect(response.body).toContain("User and ContraIndicator not found.");
       });
     });
   });

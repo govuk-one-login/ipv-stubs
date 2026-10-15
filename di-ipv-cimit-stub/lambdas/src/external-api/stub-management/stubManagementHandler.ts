@@ -4,7 +4,6 @@ import {
   updateUserCis,
   UserCisRequest,
 } from "./service/userService";
-import * as cimitStubItemService from "../../common/cimitStubItemService";
 import * as pendingMitigationService from "../../common/pendingMitigationService";
 import * as preMitigationService from "../../common/preMitigationService";
 import { UserMitigationRequest } from "../../common/pendingMitigationService";
@@ -62,10 +61,6 @@ export const handler = async (
         return buildErrorResponse("Invalid request body", 400);
       }
 
-      const ciData = await cimitStubItemService.getCiForUserId(userId, ci);
-      if (!ciData || ciData.length === 0) {
-        return buildErrorResponse("User and ContraIndicator not found.", 404);
-      }
       await pendingMitigationService.persistPendingMitigation(
         userMitigationRequest,
         ci,
