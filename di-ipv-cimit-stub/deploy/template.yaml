@@ -182,7 +182,6 @@ Resources:
           CIMIT_PARAM_BASE_PATH: "/stubs/core/cimit/"
           IS_LOCAL: false
           CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
-          PRE_MITIGATIONS_TABLE: !Ref PreMitigationsTable
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -195,8 +194,6 @@ Resources:
             ParameterName: stubs/core/*
         - DynamoDBCrudPolicy:
             TableName: !Ref CimitStubTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref PreMitigationsTable
         - KMSDecryptPolicy:
             KeyId: !Ref DynamoDBKmsKey
       AutoPublishAlias: live
@@ -307,7 +304,6 @@ Resources:
           IS_LOCAL: false
           CIMIT_STUB_TABLE_NAME: !Ref CimitStubTable
           PENDING_MITIGATIONS_TABLE: !Ref PendingMitigationsTable
-          PRE_MITIGATIONS_TABLE: !Ref PreMitigationsTable
       VpcConfig:
         SubnetIds:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
@@ -324,8 +320,6 @@ Resources:
             TableName: !Ref CimitStubTable
         - DynamoDBCrudPolicy:
             TableName: !Ref PendingMitigationsTable
-        - DynamoDBCrudPolicy:
-            TableName: !Ref PreMitigationsTable
       AutoPublishAlias: live
       Events:
         PostCis:
@@ -352,12 +346,6 @@ Resources:
             RestApiId: !Ref RestApiGateway
             Path: /user/{userId}/mitigations/{ci}
             Method: PUT
-        PostPreMitigations:
-          Type: Api
-          Properties:
-            RestApiId: !Ref RestApiGateway
-            Path: /user/{userId}/premitigations/{ci}
-            Method: POST
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -450,26 +438,6 @@ Resources:
           AttributeType: "S"
       KeySchema:
         - AttributeName: "vcJti"
-          KeyType: "HASH"
-      TimeToLiveSpecification:
-        AttributeName: "ttl"
-        Enabled: true
-      SSESpecification:
-        SSEEnabled: true
-        SSEType: KMS
-        KMSMasterKeyId: !GetAtt DynamoDBKmsKey.Arn
-
-  PreMitigationsTable:
-    Type: AWS::DynamoDB::Table
-    # checkov:skip=CKV_AWS_28: Point in time recovery is not necessary for this table.
-    Properties:
-      TableName: !Sub "cimit-stub-future-ci-mitigations-${Environment}"
-      BillingMode: "PAY_PER_REQUEST"
-      AttributeDefinitions:
-        - AttributeName: "userId"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "userId"
           KeyType: "HASH"
       TimeToLiveSpecification:
         AttributeName: "ttl"
