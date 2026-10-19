@@ -10,7 +10,6 @@ import {
 } from "@govuk-one-login/data-vocab/credentials";
 import { createStubItem, persistCimitStubItem } from "./cimitStubItemService";
 import { CimitStubItem } from "./contraIndicatorTypes";
-import { applyPreMitigationsToItems } from "./preMitigationService";
 
 export const addUserCIs = async (
   request: PutContraIndicatorRequest,
@@ -52,9 +51,6 @@ export const addUserCIs = async (
       );
       dbItems.push(item);
     }
-
-    // Apply pre-mitigations before persisting
-    await applyPreMitigationsToItems(signedJwt.sub || "", dbItems);
 
     for (const item of dbItems) {
       await persistCimitStubItem(item);

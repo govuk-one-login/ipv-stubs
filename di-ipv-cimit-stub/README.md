@@ -111,27 +111,12 @@ This data is put into a `PendingMitigationItem` and stored in the dynamo table s
 
 This method is the way that CRI stubs (`../di-ipv-credential-issuer-stub`) action any mitigations you specify to them.
 
+Note that you can specify CIs that have not yet occurred so that they are "auto-mitigated" when they are received.
+
 ##### Examples
 Update a CI with a pending mitigation
 ```bash
 curl -X POST -d '{"mitigations": ["M02", "M03"], "vcJti": "<jti from mitigating VC>"}' -H "x-api-key: <API gateway API key>" https://<cimit-stub-domain>/user/<userId>/mitigations/<CiCode>
-```
-
-#### POST to `/user/<userId>/premitigations/<ciCode>`
-
-This is a management endpoint (it is on the external API) for setting up pre-mitigations that will be automatically applied to CIs when they are created.
-This is needed to simulate scenarios where the CI is mitigated by a VC that CIMIT has received previously.
-
-The request body should be a `UserPreMitigationRequest` containing the list of mitigations to apply.
-The `UserId` and CI code are passed in the URL.
-This data is put into a `PreMitigationItem` and stored in the dynamo table specified by `PRE_MITIGATIONS_TABLE`.
-
-When a CI is subsequently created via `PutContraIndicators`, the stub checks for any matching pre-mitigations and automatically applies them to the new CI.
-
-##### Examples
-Set up a pre-mitigation for a CI
-```bash
-curl -X POST -d '{"mitigations": ["M01"]}' -H "x-api-key: <API gateway API key>" https://<cimit-stub-domain>/user/<userId>/premitigations/<CiCode>
 ```
 
 ## Environment variables
