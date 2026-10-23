@@ -1,5 +1,9 @@
 name: Pull Request Labeler
 on:
+  # Uses pull_request_target so the runner has write permissions to label PRs.
+  # Explicitly allowed via Settings>Actions>Policies to comply with GitHub's default restriction policy.
+  # Keep this restricted to actions/labeler. Do not execute untrusted code or checkout PR head refs.
+  # See https://gh.io/securely-using-pull_request_target
   pull_request_target:
     types: [opened, synchronize, reopened]
 
