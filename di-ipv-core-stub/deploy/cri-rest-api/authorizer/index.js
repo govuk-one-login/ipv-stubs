@@ -3,12 +3,12 @@ const ssm = new SSMClient({region: 'eu-west-2'});
 
 console.log("Running Authorization Lambda")
 
-exports.handler = async(event, context, callback) => {
+exports.handler = async(event, context) => {
     const auth = await getParam();
     console.log("Lambda Context:", context)
     console.log("Lambda Event:", event)
     const authorizationHeader = event.headers.authorization
-    if (!authorizationHeader) return callback('Unauthorized')
+    if (!authorizationHeader) throw new Error('Unauthorized')
     const encodedCreds = authorizationHeader.split(' ')[1]
     const plainCreds = (Buffer.from(encodedCreds, 'base64')).toString().split(':')
     const username = plainCreds[0]
@@ -20,11 +20,11 @@ exports.handler = async(event, context, callback) => {
       console.log(plainCreds)
     */
 
-    if (!(username === auth.username && password === auth.password)) return callback('Unauthorized')
+    if (!(username === auth.username && password === auth.password)) throw new Error('Unauthorized')
 
     const authResponse = buildAllowAllPolicy(event, username)
     console.log("Login Succeeded, Returning:", authResponse)
-    callback(null, authResponse)
+    return authResponse
 }
 
 async function getParam() {
