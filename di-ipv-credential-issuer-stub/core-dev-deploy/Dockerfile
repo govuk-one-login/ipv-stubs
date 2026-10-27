@@ -1,9 +1,9 @@
-FROM amazoncorretto:21.0.6-al2@sha256:c0643148d077b3917bf6c085aaa1ac35ff1f202344ab8691cc0f5953f9b97f8e AS build
+FROM amazoncorretto:21.0.13-al2@sha256:5d282fd62a4c14c3f7e045a9f9f7cbd5cf77b2f87dc10f08d851fdd30e1e474d AS build
 COPY . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN ./gradlew build --no-daemon
 
-FROM amazoncorretto:21.0.6-al2@sha256:c0643148d077b3917bf6c085aaa1ac35ff1f202344ab8691cc0f5953f9b97f8e
+FROM amazoncorretto:21.0.13-al2@sha256:5d282fd62a4c14c3f7e045a9f9f7cbd5cf77b2f87dc10f08d851fdd30e1e474d
 
 ENV PORT 8084
 ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006
