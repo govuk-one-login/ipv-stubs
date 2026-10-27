@@ -1,7 +1,8 @@
 version: 2
 updates:
   - package-ecosystem: 'npm'
-    directory: '/'
+    directories:
+      - '/**/*'
     schedule:
       interval: daily
       time: "03:00"
@@ -16,7 +17,8 @@ updates:
     commit-message:
       prefix: BAU
   - package-ecosystem: docker
-    directory: "/"
+    directories:
+      - '/**/*'
     schedule:
       interval: daily
       time: "03:00"
@@ -26,7 +28,8 @@ updates:
     commit-message:
       prefix: BAU
   - package-ecosystem: "gradle"
-    directory: "/"
+    directories:
+      - '/**/*'
     schedule:
       interval: daily
       time: "03:00"
