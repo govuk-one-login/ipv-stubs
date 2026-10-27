@@ -28,6 +28,7 @@ updates:
     commit-message:
       prefix: BAU
   - package-ecosystem: "gradle"
+    open-pull-requests-limit: 10
     directories:
       - '/**/*'
     schedule:
