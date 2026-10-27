@@ -23,7 +23,7 @@
     "@types/aws-lambda": "^8.10.161",
     "@types/node": "^24.13.3",
     "@types/uuid": "^9.0.8",
-    "@typescript-eslint/parser": "^8.58.0",
+    "@typescript-eslint/parser": "^8.72.0",
     "@vitest/coverage-v8": "^5.0.0",
     "@vitest/spy": "^5.0.0",
     "eslint": "^10.0.3",
