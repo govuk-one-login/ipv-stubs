@@ -21,7 +21,7 @@
     "@eslint/js": "^10.0.1",
     "@govuk-one-login/data-vocab": "2.0.0",
     "@types/aws-lambda": "^8.10.161",
-    "@types/node": "^24.13.3",
+    "@types/node": "^26.6.5",
     "@typescript-eslint/parser": "^8.72.0",
     "@vitest/coverage-v8": "^5.0.0",
     "@vitest/spy": "^5.0.0",
