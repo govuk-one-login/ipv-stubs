@@ -12,8 +12,12 @@ updates:
     ignore:
       - dependency-name: "node"
         versions: ["17.x","18.x","20.x"]
+      # Patch updates generate a lot of noise (security patches will still be included)
       - dependency-name: "*"
         update-types: [ "version-update:semver-patch" ]
+      # We handle Node major upgrades separately - @types/node should stay aligned with current major version
+      - dependency-name: "@types/node"
+        update-types: [ "version-update:semver-major" ]
     commit-message:
       prefix: BAU
   - package-ecosystem: docker
