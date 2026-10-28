@@ -31,7 +31,7 @@ jobs:
           cache-dependency-path: '**/package-lock.json'
 
       - name: Set up AWS creds
-        uses: aws-actions/configure-aws-credentials@v5.1.1
+        uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
           role-to-assume: ${{ secrets.QUEUE_STUB_BUILD_GH_ROLE }}
           aws-region: eu-west-2
