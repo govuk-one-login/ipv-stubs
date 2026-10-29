@@ -7,7 +7,7 @@
   "author": "IPVCore",
   "license": "GDS",
   "dependencies": {
-    "@aws-lambda-powertools/parameters": "^1.18.1",
+    "@aws-lambda-powertools/parameters": "^2.36.0",
     "@aws-sdk/client-dynamodb": "^3.1156.0",
     "@aws-sdk/client-ssm": "^3.1156.0",
     "@aws-sdk/lib-dynamodb": "^3.1004.0",
