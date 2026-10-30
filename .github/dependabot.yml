@@ -18,6 +18,9 @@ updates:
       # We handle Node major upgrades separately - @types/node should stay aligned with current major version
       - dependency-name: "@types/node"
         update-types: [ "version-update:semver-major" ]
+      # The update includes breaking changes that need to be checked - https://govukverify.atlassian.net/browse/PYIC-9382
+      - dependency-name: "@aws-lambda-powertools/parameters"
+        update-types: [ "version-update:semver-major" ]
     commit-message:
       prefix: BAU
   - package-ecosystem: docker
