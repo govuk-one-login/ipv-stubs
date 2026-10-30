@@ -27,7 +27,7 @@
     "@vitest/coverage-v8": "^5.0.0",
     "@vitest/spy": "^5.0.0",
     "eslint": "10.0.3",
-    "eslint-config-prettier": "^9.1.2",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
     "globals": "^17.4.0",
     "prettier": "3.9.10",
