@@ -1,5 +1,5 @@
 # ---- Build stage ----
-FROM --platform=$BUILDPLATFORM amazoncorretto:17.0.17-alpine3.22@sha256:858bf22e4155164ccf7ac1373cc9e1a596ceb987b206e0284c266f675cb76e4d AS build
+FROM --platform=$BUILDPLATFORM amazoncorretto:27.0.0-alpine3.22@sha256:560162ade7194bc91bfa900779c433272a99ce23ee0fdf5b2041084f9dc05492 AS build
 
 
 WORKDIR /home/gradle/src
@@ -10,7 +10,7 @@ COPY src src
 RUN ./gradlew build --no-daemon
 
 # ---- Runtime stage ----
-FROM --platform=$BUILDPLATFORM amazoncorretto:17.0.17-alpine3.22@sha256:858bf22e4155164ccf7ac1373cc9e1a596ceb987b206e0284c266f675cb76e4d AS runtime
+FROM --platform=$BUILDPLATFORM amazoncorretto:27.0.0-alpine3.22@sha256:560162ade7194bc91bfa900779c433272a99ce23ee0fdf5b2041084f9dc05492 AS runtime
 ARG TARGETARCH
 ARG TARGETOS
 
