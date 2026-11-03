@@ -1,6 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: 'npm'
+    open-pull-requests-limit: 20
     directories:
       - '/**/*'
     schedule:
@@ -39,7 +40,7 @@ updates:
     commit-message:
       prefix: BAU
   - package-ecosystem: "gradle"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 20
     directories:
       - '/**/*'
     schedule:
