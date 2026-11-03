@@ -21,6 +21,10 @@ updates:
       # The update includes breaking changes that need to be checked - https://govukverify.atlassian.net/browse/PYIC-9382
       - dependency-name: "@aws-lambda-powertools/parameters"
         update-types: [ "version-update:semver-major" ]
+      # Keep TypeScript on v5 for now - typescript-eslint peer range is `>=4.8.4 <6.1.0`, so TS 6/7
+      # break npm peer resolution (ERESOLVE). https://govukverify.atlassian.net/browse/PYIC-9383
+      - dependency-name: "typescript"
+        update-types: [ "version-update:semver-major" ]
     commit-message:
       prefix: BAU
   - package-ecosystem: docker
