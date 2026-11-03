@@ -281,7 +281,9 @@ async function verifyAccessToken(
     payload = await verifyTokenAndReturnPayload(jwt);
   } catch (error) {
     console.error(error);
-    throw new Error("Access token verification failed");
+    throw new Error("Access token verification failed", {
+      cause: error,
+    });
   }
   if (userId !== payload.sub) {
     throw new Error(
