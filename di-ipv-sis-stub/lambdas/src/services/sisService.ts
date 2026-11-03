@@ -61,12 +61,11 @@ export const getUserIdentity = async (
   }
 
   const signedJwt = validatedResponse.siJwt;
-  let matchedProfile = validatedResponse.maxVot;
   let siContent: StoredIdentityContents | undefined = undefined;
   if (signedJwt && validatedResponse.maxVot) {
     const decodedSiJwt = decodeJwt<StoredIdentityJwt>(signedJwt);
 
-    matchedProfile = getVotForUserIdentity(
+    const matchedProfile = getVotForUserIdentity(
       validatedResponse.maxVot,
       requestedVtrs,
       validatedResponse.isValid,
