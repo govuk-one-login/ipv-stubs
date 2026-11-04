@@ -14,7 +14,9 @@ export const verifyTokenAndReturnPayload = async (
     );
     payload = (await jwtVerify(jwt, key)).payload as JWTPayload;
   } catch (error) {
-    throw Error(getErrorMessage(error));
+    throw Error(getErrorMessage(error), {
+      cause: error,
+    });
   }
   return payload;
 };
