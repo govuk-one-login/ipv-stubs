@@ -1,10 +1,10 @@
-FROM amazoncorretto:21.0.13-al2@sha256:5d282fd62a4c14c3f7e045a9f9f7cbd5cf77b2f87dc10f08d851fdd30e1e474d AS build
+FROM amazoncorretto:21.0.13-al2@sha256:95ff45e69538515d9f55dd43a1c6e46d1ecebf63faa38a4fdd303f3b3e37ccba AS build
 COPY . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN yum update -y && yum install -y findutils tar
 RUN ./gradlew build --no-daemon
 
-FROM amazoncorretto:21.0.13-al2@sha256:5d282fd62a4c14c3f7e045a9f9f7cbd5cf77b2f87dc10f08d851fdd30e1e474d
+FROM amazoncorretto:21.0.13-al2@sha256:95ff45e69538515d9f55dd43a1c6e46d1ecebf63faa38a4fdd303f3b3e37ccba
 
 ENV PORT=8084
 ENV JAVA_TOOL_OPTIONS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5006"
