@@ -40,7 +40,7 @@ updates:
     commit-message:
       prefix: BAU
   - package-ecosystem: "gradle"
-    open-pull-requests-limit: 20
+    open-pull-requests-limit: 30
     directories:
       - '/**/*'
     schedule:
