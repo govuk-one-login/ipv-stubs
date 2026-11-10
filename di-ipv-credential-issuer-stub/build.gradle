@@ -4,7 +4,7 @@ plugins {
 	id 'java'
 }
 
-group 'uk.gov.di.ipv'
+group = 'uk.gov.di.ipv'
 
 String githubUsername
 String githubToken
